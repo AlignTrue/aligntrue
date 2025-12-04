@@ -74,7 +74,7 @@ async function migrateRuler(cwd: string, flags: MigrationFlags): Promise<void> {
     copyAgentsMdIfNeeded,
     shouldIncludeAgentsMd,
     loadConfig,
-    saveConfig,
+    saveConfigAuto,
     getAlignTruePaths,
   } = await import("@aligntrue/core");
 
@@ -213,7 +213,7 @@ async function migrateRuler(cwd: string, flags: MigrationFlags): Promise<void> {
       finalConfig = aligntrueConfig as AlignTrueConfig;
     }
 
-    await saveConfig(finalConfig, configPath);
+    await saveConfigAuto(finalConfig, configPath);
     clack.log.success("Converted ruler.toml → .aligntrue/config.yaml");
   }
 

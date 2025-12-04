@@ -3,11 +3,13 @@
  * Guides users through solo → team mode conversion
  */
 
-import { writeFileSync } from "fs";
 import { join } from "path";
-import { stringify as stringifyYaml } from "yaml";
 import * as clack from "@clack/prompts";
-import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
+import {
+  BackupManager,
+  saveConfigAuto,
+  type AlignTrueConfig,
+} from "@aligntrue/core";
 
 export interface MigrationResult {
   success: boolean;
@@ -68,8 +70,7 @@ export async function runTeamMigrationWizard(
     };
 
     const configPath = join(cwd, ".aligntrue", "config.yaml");
-    const configContent = stringifyYaml(updatedConfig);
-    writeFileSync(configPath, configContent, "utf-8");
+    await saveConfigAuto(updatedConfig, configPath, cwd);
 
     spinner.stop("Configuration updated");
 

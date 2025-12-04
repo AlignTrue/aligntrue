@@ -6,6 +6,7 @@ import {
   loadConfig,
   saveConfig,
   saveMinimalConfig,
+  saveConfigAuto,
   type AlignTrueConfig,
 } from "../src/config/index.js";
 
@@ -434,5 +435,321 @@ describe("saveMinimalConfig", () => {
       custom_format_priority: { cursor: "mdc" },
       cleanup: "auto",
     });
+  });
+
+  it("preserves remotes when present", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor", "agents"],
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "off",
+      },
+      git: {},
+      sync: {},
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      remotes: {
+        personal: "https://github.com/user/rules-backup",
+      },
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        retention_days: 30,
+        minimum_keep: 3,
+      },
+    };
+
+    await saveMinimalConfig(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    expect(parsed.exporters).toEqual(["cursor", "agents"]);
+    expect(parsed.remotes).toEqual({
+      personal: "https://github.com/user/rules-backup",
+    });
+    // Default values should be omitted
+    expect(parsed.mode).toBeUndefined();
+    expect(parsed.version).toBeUndefined();
+  });
+
+  it("preserves plugs fills when present", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "off",
+      },
+      git: {},
+      sync: {},
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      plugs: {
+        fills: {
+          "testing.framework": "vitest",
+          "linter.command": "eslint",
+        },
+      },
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        retention_days: 30,
+        minimum_keep: 3,
+      },
+    };
+
+    await saveMinimalConfig(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    expect(parsed.exporters).toEqual(["cursor"]);
+    expect(parsed.plugs).toEqual({
+      fills: {
+        "testing.framework": "vitest",
+        "linter.command": "eslint",
+      },
+    });
+  });
+
+  it("preserves mcp servers when present", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor"],
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "off",
+      },
+      git: {},
+      sync: {},
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      mcp: {
+        servers: [
+          {
+            name: "test-server",
+            command: "node",
+            args: ["server.js"],
+          },
+        ],
+      },
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        retention_days: 30,
+        minimum_keep: 3,
+      },
+    };
+
+    await saveMinimalConfig(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    expect(parsed.exporters).toEqual(["cursor"]);
+    expect(parsed.mcp).toEqual({
+      servers: [
+        {
+          name: "test-server",
+          command: "node",
+          args: ["server.js"],
+        },
+      ],
+    });
+  });
+
+  it("preserves git per_exporter when present", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor", "agents"],
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "off",
+      },
+      git: {
+        mode: "ignore",
+        per_exporter: {
+          cursor: "commit",
+          agents: "ignore",
+        },
+      },
+      sync: {},
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        retention_days: 30,
+        minimum_keep: 3,
+      },
+    };
+
+    await saveMinimalConfig(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    expect(parsed.exporters).toEqual(["cursor", "agents"]);
+    // git.mode is "ignore" (default), so omitted, but per_exporter should be preserved
+    expect(parsed.git).toEqual({
+      per_exporter: {
+        cursor: "commit",
+        agents: "ignore",
+      },
+    });
+  });
+});
+
+describe("saveConfigAuto", () => {
+  it("uses saveMinimalConfig for solo mode", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "solo",
+      exporters: ["cursor", "agents"],
+      modules: {
+        lockfile: false,
+        bundle: false,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "off",
+      },
+      git: {
+        mode: "ignore",
+        branch_check_interval: 86400,
+        tag_check_interval: 604800,
+        offline_fallback: true,
+        auto_gitignore: "auto",
+      },
+      sync: {},
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        retention_days: 30,
+        minimum_keep: 3,
+      },
+      detection: {
+        auto_enable: false,
+        ignored_agents: [],
+      },
+    };
+
+    await saveConfigAuto(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    // Solo mode should result in minimal config (only exporters, no defaults)
+    expect(parsed).toEqual({
+      exporters: ["cursor", "agents"],
+    });
+    expect(parsed.mode).toBeUndefined();
+    expect(parsed.git).toBeUndefined();
+    expect(parsed.modules).toBeUndefined();
+  });
+
+  it("uses saveConfig for team mode", async () => {
+    const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
+    mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
+
+    const config: AlignTrueConfig = {
+      version: "1",
+      mode: "team",
+      exporters: ["cursor", "agents"],
+      modules: {
+        lockfile: true,
+        bundle: true,
+        checks: true,
+        mcp: false,
+      },
+      lockfile: {
+        mode: "soft",
+      },
+      git: {
+        mode: "ignore",
+      },
+      sync: {},
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      performance: {
+        max_file_size_mb: 10,
+        max_directory_depth: 10,
+        ignore_patterns: [],
+      },
+      backup: {
+        retention_days: 30,
+        minimum_keep: 3,
+      },
+    };
+
+    await saveConfigAuto(config, configPath, TEST_DIR);
+
+    const written = readFileSync(configPath, "utf8");
+    const parsed = yaml.parse(written);
+
+    // Team mode should result in full config with all fields
+    expect(parsed.mode).toBe("team");
+    expect(parsed.version).toBe("1");
+    expect(parsed.modules).toEqual({
+      lockfile: true,
+      bundle: true,
+      checks: true,
+      mcp: false,
+    });
+    expect(parsed.lockfile).toEqual({ mode: "soft" });
+    expect(parsed.git).toEqual({ mode: "ignore" });
   });
 });

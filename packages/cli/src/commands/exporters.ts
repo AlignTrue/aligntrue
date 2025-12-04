@@ -3,8 +3,7 @@
  */
 
 import {
-  saveConfig,
-  saveMinimalConfig,
+  saveConfigAuto,
   type AlignTrueConfig,
   getExporterNames,
 } from "@aligntrue/core";
@@ -399,13 +398,9 @@ async function enableExporters(
   // Always use array format for simplicity in exporters command
   config.exporters = Array.from(currentExporters).sort();
 
-  // Save config (use minimal save for solo mode to keep config clean)
+  // Save config (auto-selects minimal for solo mode)
   try {
-    if (config.mode === "solo") {
-      await saveMinimalConfig(config);
-    } else {
-      await saveConfig(config);
-    }
+    await saveConfigAuto(config);
   } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(
@@ -466,13 +461,9 @@ async function disableExporter(args: string[]): Promise<void> {
   // Remove exporter and always use array format for simplicity
   config.exporters = currentExporters.filter((e: string) => e !== exporterName);
 
-  // Save config (use minimal save for solo mode to keep config clean)
+  // Save config (auto-selects minimal for solo mode)
   try {
-    if (config.mode === "solo") {
-      await saveMinimalConfig(config);
-    } else {
-      await saveConfig(config);
-    }
+    await saveConfigAuto(config);
   } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(
@@ -542,13 +533,9 @@ async function ignoreAgent(args: string[]): Promise<void> {
   if (!config.detection.ignored_agents) config.detection.ignored_agents = [];
   config.detection.ignored_agents.push(agentName);
 
-  // Save config
+  // Save config (auto-selects minimal for solo mode)
   try {
-    if (config.mode === "solo") {
-      await saveMinimalConfig(config);
-    } else {
-      await saveConfig(config);
-    }
+    await saveConfigAuto(config);
   } catch (_error) {
     console.error("✗ Failed to save config");
     console.error(

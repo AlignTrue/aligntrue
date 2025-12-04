@@ -4,10 +4,12 @@
  */
 
 import * as clack from "@clack/prompts";
-import { writeFileSync } from "fs";
 import { join } from "path";
-import * as yaml from "yaml";
-import { BackupManager, type AlignTrueConfig } from "@aligntrue/core";
+import {
+  BackupManager,
+  saveConfigAuto,
+  type AlignTrueConfig,
+} from "@aligntrue/core";
 
 export interface SoloMigrationResult {
   success: boolean;
@@ -67,8 +69,7 @@ export async function runSoloMigrationWizard(
     };
 
     const configPath = join(cwd, ".aligntrue", "config.yaml");
-    const configContent = yaml.stringify(updatedConfig);
-    writeFileSync(configPath, configContent, "utf-8");
+    await saveConfigAuto(updatedConfig, configPath, cwd);
 
     spinner.stop("Configuration updated");
 

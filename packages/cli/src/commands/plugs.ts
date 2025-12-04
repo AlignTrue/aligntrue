@@ -10,10 +10,9 @@ import {
   validateFill,
   type PlugFormat,
   loadConfig,
-  saveConfig, // saveConfig is exported from @aligntrue/core/config and re-exported via core/index
+  saveConfigAuto,
   type AlignTrueConfig,
   loadIRAndResolvePlugs,
-  // This enables plugs.fills persistence to .aligntrue/config.yaml
 } from "@aligntrue/core";
 import type { Align } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
@@ -663,7 +662,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
     config.plugs.fills[slotName] = fillValue;
 
     // Save config
-    await saveConfig(config, configPath);
+    await saveConfigAuto(config, configPath);
 
     console.log(`✓ Set plug fill: ${slotName} = "${fillValue}"\n`);
     console.log("  Run 'aligntrue sync' to apply the fill\n");
@@ -719,7 +718,7 @@ async function unsetPlugFill(
     }
 
     // Save config
-    await saveConfig(config, configPath);
+    await saveConfigAuto(config, configPath);
 
     console.log(`✓ Removed plug fill: ${slotName}\n`);
     console.log("  Run 'aligntrue sync' to apply changes\n");
