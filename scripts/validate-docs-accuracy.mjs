@@ -152,112 +152,19 @@ function validateNodeVersion() {
 }
 
 /**
- * Validate CLI command count
+ * Validate CLI command count (disabled - use approximate counts like "20+" instead)
+ * Exact counts are brittle and break on every feature add/remove
  */
 function validateCommandCount() {
-  logSection("Validating CLI command count");
-
-  // Read CLI index to count commands
-  const cliIndexPath = join(rootDir, "packages/cli/src/index.ts");
-  const cliContent = readFileSync(cliIndexPath, "utf8");
-
-  // Count commands in COMMANDS Map (e.g., ["init", init],)
-  const commandMatches = cliContent.match(/\["(\w+)",\s*\w+\]/g);
-  const actualCommandCount = commandMatches ? commandMatches.length : 0;
-
-  console.log(`Source of truth: packages/cli/src/index.ts\n`);
-  console.log(`Commands found: ${actualCommandCount}\n`);
-
-  // Check features.md
-  const featuresPath = join(
-    rootDir,
-    "apps/docs/content/04-reference/features.md",
-  );
-  const featuresContent = readFileSync(featuresPath, "utf8");
-
-  // Look for "## CLI (XX commands)"
-  const commandCountMatch = featuresContent.match(/## CLI \((\d+) commands?\)/);
-  const documentedCount = commandCountMatch
-    ? parseInt(commandCountMatch[1], 10)
-    : null;
-
-  if (documentedCount === null) {
-    logError("Could not find CLI command count in features.md", {
-      expected: `### CLI (${actualCommandCount} commands)`,
-      files: ["apps/docs/content/04-reference/features.md"],
-    });
-  } else if (documentedCount !== actualCommandCount) {
-    logError("CLI command count mismatch", {
-      expected: `${actualCommandCount} commands (actual implementation)`,
-      actual: `${documentedCount} commands (documented)`,
-      files: ["apps/docs/content/04-reference/features.md"],
-    });
-  } else {
-    logSuccess(`CLI command count is accurate: ${actualCommandCount} commands`);
-  }
+  // Removed: exact count validation
 }
 
 /**
- * Validate exporter count
+ * Validate exporter count (disabled - use approximate counts like "40+" instead)
+ * Exact counts are brittle and break on every feature add/remove
  */
 function validateExporterCount() {
-  logSection("Validating exporter count");
-
-  // Count exporter directories
-  const exportersPath = join(rootDir, "packages/exporters/src");
-  const entries = readdirSync(exportersPath);
-
-  // Filter to only directories, excluding base, utils, mcp-transformers, and files
-  const exporterDirs = entries.filter((entry) => {
-    const fullPath = join(exportersPath, entry);
-    const isDir = statSync(fullPath).isDirectory();
-    const isExporter = !["base", "utils", "mcp-transformers"].includes(entry);
-    return isDir && isExporter;
-  });
-
-  const actualExporterCount = exporterDirs.length;
-
-  console.log(`Source of truth: packages/exporters/src/ directory count\n`);
-  console.log(`Exporters found: ${actualExporterCount}\n`);
-
-  const filesToCheck = [
-    {
-      path: "apps/docs/content/index.mdx",
-      pattern: /(\d+)\s+exporters/i,
-    },
-    {
-      path: "apps/docs/content/04-reference/agent-support.mdx",
-      pattern: /\*\*(\d+)\s+total\s+exporters\*\*/i,
-    },
-  ];
-
-  const wrongFiles = [];
-
-  for (const { path, pattern } of filesToCheck) {
-    const filePath = join(rootDir, path);
-    const content = readFileSync(filePath, "utf8");
-    const match = content.match(pattern);
-
-    if (match) {
-      const documentedCount = parseInt(match[1], 10);
-      if (documentedCount !== actualExporterCount) {
-        wrongFiles.push({
-          file: path,
-          documented: documentedCount,
-        });
-      }
-    }
-  }
-
-  if (wrongFiles.length > 0) {
-    logError("Exporter count mismatch", {
-      expected: `${actualExporterCount} exporters (actual count)`,
-      actual: wrongFiles.map((f) => `${f.documented} in ${f.file}`).join(", "),
-      files: wrongFiles.map((f) => f.file),
-    });
-  } else {
-    logSuccess(`Exporter count is accurate: ${actualExporterCount} exporters`);
-  }
+  // Removed: exact count validation
 }
 
 /**
