@@ -336,6 +336,7 @@ async function teamEnable(
         },
       },
       configPath,
+      process.cwd(),
     );
 
     // Create empty lockfile immediately
