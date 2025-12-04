@@ -120,8 +120,10 @@ export interface SimilarityResult {
 /**
  * Agent format priority for canonical source selection
  * Lower number = higher priority
+ *
+ * Exported for use in init command recommendation logic.
  */
-const FORMAT_PRIORITY: Record<string, number> = {
+export const FORMAT_PRIORITY: Record<string, number> = {
   // Multi-file formats (preferred)
   cursor: 1,
   amazonq: 2,
@@ -149,8 +151,33 @@ const FORMAT_PRIORITY: Record<string, number> = {
 /**
  * Get priority for a file type (lower = preferred)
  */
-function getFormatPriority(type: string): number {
+export function getFormatPriority(type: string): number {
   return FORMAT_PRIORITY[type] ?? 100;
+}
+
+/**
+ * Get the best (highest priority) format from a list of types
+ *
+ * Used by init command to recommend the most structured format
+ * when multiple agent file types are detected.
+ *
+ * @param types - Array of agent types (e.g., ["cursor", "agents", "claude"])
+ * @param fallback - Fallback value if types array is empty (default: "multi-file")
+ * @returns The type with the lowest priority number (most preferred)
+ */
+export function getBestFormat(
+  types: string[],
+  fallback: string = "multi-file",
+): string {
+  if (types.length === 0) {
+    return fallback;
+  }
+
+  return types.reduce((best, current) => {
+    const currentPriority = getFormatPriority(current);
+    const bestPriority = getFormatPriority(best);
+    return currentPriority < bestPriority ? current : best;
+  }, types[0]!);
 }
 
 /**

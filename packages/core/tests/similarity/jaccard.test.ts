@@ -8,6 +8,9 @@ import {
   jaccardSimilarity,
   findSimilarContent,
   DEFAULT_SIMILARITY_THRESHOLD,
+  FORMAT_PRIORITY,
+  getFormatPriority,
+  getBestFormat,
   type FileWithContent,
 } from "../../src/similarity/jaccard.js";
 
@@ -343,5 +346,87 @@ Enable HTTPS only. Implement rate limiting.
     // Should not be grouped
     expect(result.groups.length).toBe(0);
     expect(result.unique.length).toBe(2);
+  });
+});
+
+describe("FORMAT_PRIORITY", () => {
+  it("should have cursor as highest priority (lowest number)", () => {
+    expect(FORMAT_PRIORITY["cursor"]).toBe(1);
+  });
+
+  it("should have multi-file formats as higher priority than single-file", () => {
+    expect(FORMAT_PRIORITY["cursor"]).toBeLessThan(FORMAT_PRIORITY["agents"]!);
+    expect(FORMAT_PRIORITY["cursor"]).toBeLessThan(FORMAT_PRIORITY["claude"]!);
+    expect(FORMAT_PRIORITY["cursor"]).toBeLessThan(
+      FORMAT_PRIORITY["windsurf"]!,
+    );
+  });
+
+  it("should have agents before claude in priority", () => {
+    expect(FORMAT_PRIORITY["agents"]).toBeLessThan(FORMAT_PRIORITY["claude"]!);
+  });
+});
+
+describe("getFormatPriority", () => {
+  it("should return correct priority for known formats", () => {
+    expect(getFormatPriority("cursor")).toBe(1);
+    expect(getFormatPriority("agents")).toBe(10);
+    expect(getFormatPriority("claude")).toBe(11);
+  });
+
+  it("should return 100 for unknown formats", () => {
+    expect(getFormatPriority("unknown-format")).toBe(100);
+    expect(getFormatPriority("other")).toBe(100);
+  });
+});
+
+describe("getBestFormat", () => {
+  it("should return cursor when cursor files are present", () => {
+    expect(getBestFormat(["cursor", "agents", "claude"])).toBe("cursor");
+    expect(getBestFormat(["agents", "cursor", "claude"])).toBe("cursor");
+    expect(getBestFormat(["claude", "agents", "cursor"])).toBe("cursor");
+  });
+
+  it("should return agents when cursor is not present", () => {
+    expect(getBestFormat(["agents", "claude"])).toBe("agents");
+    expect(getBestFormat(["claude", "agents"])).toBe("agents");
+  });
+
+  it("should return fallback for empty array", () => {
+    expect(getBestFormat([])).toBe("multi-file");
+    expect(getBestFormat([], "custom-fallback")).toBe("custom-fallback");
+  });
+
+  it("should handle single type", () => {
+    expect(getBestFormat(["claude"])).toBe("claude");
+    expect(getBestFormat(["cursor"])).toBe("cursor");
+  });
+
+  it("should handle unknown types with low priority", () => {
+    // Unknown types get priority 100, so known types win
+    expect(getBestFormat(["unknown", "agents"])).toBe("agents");
+    expect(getBestFormat(["unknown", "other", "cursor"])).toBe("cursor");
+  });
+
+  it("should prefer cursor over agents even when agents is first", () => {
+    // This is the exact scenario from the bug report:
+    // 4 Cursor files (unique) + 1 AGENTS.md (canonical of similarity group)
+    // CLAUDE.md is a duplicate and not in the types array
+    const types = ["cursor", "cursor", "cursor", "cursor", "agents"];
+    expect(getBestFormat(types)).toBe("cursor");
+  });
+
+  it("should work correctly for init overlap scenario", () => {
+    // Scenario: 4 Cursor files (unique, no duplicates) + AGENTS.md/CLAUDE.md similarity group
+    // The types array includes all rules to import (canonicals + uniques)
+    // AGENTS.md is canonical of the similarity group, CLAUDE.md is backed up
+    // Cursor files are unique (not in any similarity group)
+    const allTypesToImport = ["cursor", "cursor", "cursor", "cursor", "agents"];
+    const fallbackFromSimilarityGroup = "agents"; // From similarityGroups[0].canonical.type
+
+    const result = getBestFormat(allTypesToImport, fallbackFromSimilarityGroup);
+
+    // Should recommend cursor (priority 1) over agents (priority 10)
+    expect(result).toBe("cursor");
   });
 });

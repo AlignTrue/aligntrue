@@ -12,6 +12,7 @@ import {
   type AlignTrueConfig,
   writeRuleFile,
   type RuleFile,
+  getBestFormat,
 } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
 import {
@@ -238,10 +239,20 @@ async function handleOverlapDetection(
     }
   }
 
+  // Find the best format from ALL rules being imported
+  // (both unique files and canonical files from similarity groups)
+  // This ensures Cursor (priority 1) is recommended over AGENTS (priority 10)
+  // even when only AGENTS/CLAUDE form a similarity group
+  const allTypes = rules.map((r) => inferAgentTypeFromPath(r.path));
+  const bestFormat = getBestFormat(
+    allTypes,
+    similarityGroups[0]?.canonical.type || "multi-file",
+  );
+
   const overlapMessage =
     `Overlap detected:\n` +
     dupMessages.join("\n") +
-    `\n\nRecommendation: Use ${similarityGroups[0]?.canonical.type || "multi-file"} format as your source (most structured).` +
+    `\n\nRecommendation: Use ${bestFormat} format as your source (most structured).` +
     `\nSimilar files will be backed up to .aligntrue/.backups/init-duplicates/`;
 
   if (nonInteractive) {
