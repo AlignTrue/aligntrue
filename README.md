@@ -157,7 +157,7 @@ Why this matters: AlignTrue validates every operation against schemas and ensure
 
 ## Broad agent support
 
-AlignTrue supports **28+ AI coding agents** through **50 exporters**:
+AlignTrue supports **28+ AI coding agents** through **40+ exporters**:
 
 **Popular agents:**
 
@@ -171,7 +171,7 @@ AlignTrue supports **28+ AI coding agents** through **50 exporters**:
 
 **Coverage:**
 
-- 50 total exporters supporting 28+ agents
+- 40+ exporters supporting 28+ agents
 - 14 MCP configurations for protocol-based agents
 - 15 unique format exporters for agent-specific formats
 - 11 universal format agents using AGENTS.md
