@@ -17,7 +17,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 - Multiple exporters (Cursor, AGENTS.md, VS Code MCP)
 - Hierarchical scopes for monorepo structure
-- Team mode with lockfile and allow list
+- Team mode with lockfile for reproducibility
 - Overlay customizations
 - Test scripts for validation
 
@@ -75,36 +75,6 @@ Complete, runnable examples in the AlignTrue repository:
 
 **Files:** YAML format with vendor bags, multiple agent outputs
 
-### Markdown authoring examples
-
-**Natural markdown** examples showing natural sections with YAML frontmatter.
-
-- Simple rules with inline documentation
-- Multi-block validation examples
-- Round-trip markdown ↔ YAML workflows
-
-[View markdown examples on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/markdown)
-
-**When to use:** Prefer markdown over YAML, documentation-heavy rules
-
-**Files:** Markdown format (`.md` with YAML frontmatter)
-
-### Team repository example
-
-**Team collaboration** setup with vendored aligns.
-
-- Vendored align management
-- Team approval workflows
-- Git submodule integration
-- Lockfile and drift detection
-- CI/CD integration
-
-[View team-repo on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/team-repo)
-
-**When to use:** Team workflows, lockfile enforcement, drift detection
-
-**Files:** YAML format with vendor directory
-
 ---
 
 ## Curated rule aligns
@@ -127,8 +97,6 @@ Complete, runnable examples in the AlignTrue repository:
 
 - **[Security and Compliance](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.md)** - Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Natural markdown format.
 
-- **[Rule Authoring Guide](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/rule-authoring.md)** - Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence. Natural markdown format.
-
 ### Framework & stack aligns
 
 - **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.md)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Natural markdown format.
@@ -142,19 +110,18 @@ Complete, runnable examples in the AlignTrue repository:
 <details>
 <summary>View as table</summary>
 
-| Align                       | ID                                | Description                                                                                                                                        | Categories                         | Compatible Tools                                                     |
-| --------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| **Base Global**             | `aligns/base/base-global`         | Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. | foundations, code-quality          | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Base Documentation**      | `aligns/base/base-docs`           | Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates.                          | foundations, development-workflow  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **TypeScript Standards**    | `aligns/base/base-typescript`     | TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types.               | code-quality                       | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Testing Baseline**        | `aligns/base/base-testing`        | Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements.           | code-quality, development-workflow | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **TDD Workflow**            | `aligns/base/base-tdd`            | Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation.                              | development-workflow, code-quality | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Debugging Workflow**      | `aligns/base/base-debugging`      | Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles.             | development-workflow               | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Security and Compliance** | `aligns/base/base-security`       | Security and compliance baseline covering secrets management, supply chain security, and dependency auditing.                                      | security, code-quality             | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Rule Authoring Guide**    | `aligns/base/base-rule-authoring` | Meta-guide for authoring AlignTrue rules with clear scope, actionable directives, and explicit precedence.                                         | development-workflow, foundations  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
-| **Next.js App Router**      | `aligns/frameworks/nextjs-app`    | Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns.                           | frameworks, web                    | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Vercel Deployments**      | `aligns/platforms/vercel`         | Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene.                                               | platforms, web                     | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
-| **Web Quality Standards**   | `aligns/base/base-web-quality`    | Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.                     | web, code-quality                  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| Align                       | ID                             | Description                                                                                                                                        | Categories                         | Compatible Tools                                                     |
+| --------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
+| **Base Global**             | `aligns/base/base-global`      | Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. | foundations, code-quality          | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Base Documentation**      | `aligns/base/base-docs`        | Docs-as-code baseline enforcing readme-first development, CI-enforced quality, and behavior-synced documentation updates.                          | foundations, development-workflow  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **TypeScript Standards**    | `aligns/base/base-typescript`  | TypeScript development standards for correctness, safety, and maintainability. Enforces strict compiler settings and no 'any' types.               | code-quality                       | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Testing Baseline**        | `aligns/base/base-testing`     | Testing baseline ensuring fast, deterministic, useful tests with clear strategy. Emphasizes test pyramid balance and speed requirements.           | code-quality, development-workflow | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **TDD Workflow**            | `aligns/base/base-tdd`         | Test-Driven Development workflow implementing red-green-refactor cycle. Enforces writing tests before implementation.                              | development-workflow, code-quality | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Debugging Workflow**      | `aligns/base/base-debugging`   | Systematic debugging workflow ensuring reproduce-before-fix discipline. Covers reproduce, reduce, root-cause, fix, and prevent cycles.             | development-workflow               | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Security and Compliance** | `aligns/base/base-security`    | Security and compliance baseline covering secrets management, supply chain security, and dependency auditing.                                      | security, code-quality             | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf, Aider |
+| **Next.js App Router**      | `aligns/frameworks/nextjs-app` | Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns.                           | frameworks, web                    | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Vercel Deployments**      | `aligns/platforms/vercel`      | Vercel deployment best practices covering environment tiers, runtime selection, and preview hygiene.                                               | platforms, web                     | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
+| **Web Quality Standards**   | `aligns/base/base-web-quality` | Core Web Vitals targets, performance budgets, and accessibility standards. Enforces LCP under 2.5s and WCAG 2.0 AA compliance.                     | web, code-quality                  | Cursor, Claude Code, GitHub Copilot, Cody, Continue, Windsurf        |
 
 </details>
 

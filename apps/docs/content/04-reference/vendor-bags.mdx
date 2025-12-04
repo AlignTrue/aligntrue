@@ -291,14 +291,6 @@ volatile: ["*.temp_*", "*.cache_*"]
 
 Vendor bags are preserved during:
 
-### Pull from agent
-
-```bash
-aligntrue sync --accept-agent cursor
-```
-
-Cursor-specific fields → `vendor.cursor` namespace
-
 ### Export to agent
 
 ```bash
@@ -461,13 +453,10 @@ vendor:
 
 ### 5. Test round-trips
 
-Verify vendor bags are preserved:
+Verify vendor bags are preserved during export:
 
 ```bash
-# Pull from agent
-aligntrue sync --accept-agent cursor
-
-# Export back
+# Export to agents
 aligntrue sync
 
 # Check preserved

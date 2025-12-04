@@ -35,6 +35,90 @@ aligntrue sync
 
 **Result:** Rules synced to Cursor and AGENTS.md. Start coding with consistent agent behavior.
 
+## Organizing your rules
+
+As your project grows, you may want to organize rules differently:
+
+### Single file (getting started)
+
+**Best for:** Solo developers, < 20 rules, getting started
+
+Store all rules in one file:
+
+```
+project/
+├── .aligntrue/
+│   └── config.yaml
+└── AGENTS.md  ← Single source file
+```
+
+**Setup:**
+
+```bash
+aligntrue init
+aligntrue sync
+```
+
+Everything is simple and fast. `.aligntrue/rules/` is the source of truth (auto-generated from init), and `AGENTS.md` is the exported output.
+
+### Multi-file (when AGENTS.md grows large)
+
+**Best for:** Projects with 20+ rules, easier navigation
+
+Split rules into multiple files in `.aligntrue/rules/`:
+
+```
+project/
+├── .aligntrue/
+│   ├── config.yaml
+│   └── rules/
+│       ├── typescript.md
+│       ├── testing.md
+│       └── security.md
+└── AGENTS.md  ← Auto-generated from rules/
+```
+
+**Migration:**
+
+```bash
+# Split your AGENTS.md into multiple files
+aligntrue sources split --yes
+
+# Sync
+aligntrue sync
+```
+
+**Benefits:**
+
+- Logical organization by concern
+- Reduced merge conflicts if using git
+- Easier to find and update specific rules
+
+### Monorepo scopes (multiple stacks)
+
+**Best for:** Monorepos with frontend/backend/services
+
+Use scopes to apply different rules to different directories:
+
+```yaml
+# .aligntrue/config.yaml
+sources:
+  - type: local
+    path: .aligntrue/rules
+
+scopes:
+  - path: "apps/web"
+    inherit: true # Includes root rules
+  - path: "services/api"
+    inherit: true
+```
+
+Each scope can have its own `AGENTS.md` or `.cursor/rules/` with inherited rules.
+
+**When to use:** Multiple projects in one repo that need context-specific rules.
+
+---
+
 ## Solo mode features
 
 **What you get:**
@@ -48,7 +132,6 @@ aligntrue sync
 **What you don't need:**
 
 - Team mode (enable with `aligntrue team enable` if needed)
-- Allow lists (no source approval required)
 - Lockfile validation (enable if you want reproducibility)
 
 ## Daily workflow scenarios
@@ -417,7 +500,7 @@ aligntrue backup create "before-major-refactor"
 # ... edit rules, add overlays, etc ...
 
 # If something breaks, restore
-aligntrue backup restore "before-major-refactor"
+aligntrue revert
 ```
 
 ### Document your decisions
@@ -600,8 +683,7 @@ aligntrue sync
 # ... code and see how it feels ...
 
 # 4. If you don't like it, restore
-aligntrue backup restore "before-experiment"
-aligntrue sync
+aligntrue revert
 ```
 
 ### Example 3: Share rules with friend
@@ -630,10 +712,9 @@ aligntrue team enable
 
 # Creates:
 # - .aligntrue.lock.json (lockfile for reproducibility)
-# - .aligntrue.allow (approved sources)
 
 # Commit team files
-git add .aligntrue.lock.json .aligntrue.allow
+git add .aligntrue.lock.json
 git commit -m "Enable AlignTrue team mode"
 ```
 

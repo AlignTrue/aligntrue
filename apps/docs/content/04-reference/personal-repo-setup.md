@@ -7,7 +7,7 @@ description: Guide for setting up remote sources and backup for personal rules
 
 Set up remote git repositories to pull and backup personal rules across machines.
 
-> **Conceptual overview:** For detailed information about rule privacy, sharing, and remote routing, see [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing).
+> **Conceptual overview:** For detailed information about rule privacy, sharing, and remote routing, see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
 
 ## Overview
 
@@ -203,6 +203,6 @@ git config --global credential.helper store
 
 ## Related
 
-- [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) - Complete guide to rule privacy, scoping, and remote synchronization
-- [Managing Sources](/docs/01-guides/07-managing-sources) - Adding and customizing external rules
+- [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) - Complete guide to rule privacy, scoping, and remote synchronization
+- [Working with external sources](/docs/01-guides/04-external-sources) - Adding and customizing external rules
 - [Troubleshooting Remote Access](/docs/05-troubleshooting/remote-access) - Solutions for SSH and connection issues

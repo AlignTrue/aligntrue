@@ -17,11 +17,6 @@ vi.mock("fs", async () => {
   };
 });
 
-// Mock allow list parser
-vi.mock("../../src/team/allow.js", () => ({
-  parseAllowList: vi.fn(),
-}));
-
 describe("lockfile validator", () => {
   const mockRule: AlignSection = {
     heading: "Test Rule One",

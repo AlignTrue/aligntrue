@@ -191,7 +191,7 @@ For complete rollback:
 aligntrue backup list
 
 # Restore entire backup
-aligntrue backup restore --to 2025-11-18T14-30-00-000
+aligntrue backup restore --timestamp 2025-11-18T14-30-00-000
 ```
 
 **When to use full restore:**
@@ -221,7 +221,7 @@ aligntrue backup create --notes "Before schema migration"
 
 # If something breaks
 aligntrue backup list
-aligntrue backup restore --to <your-checkpoint-timestamp>
+aligntrue backup restore --timestamp <your-checkpoint-timestamp>
 ```
 
 ## Safe editing workflows
@@ -294,7 +294,7 @@ aligntrue sync
 # 4a. Keep changes (do nothing)
 # 4b. Rollback experiment
 aligntrue backup list
-aligntrue backup restore --to <experiment-checkpoint>
+aligntrue backup restore --timestamp <experiment-checkpoint>
 ```
 
 ## Managing backup retention
@@ -434,7 +434,7 @@ aligntrue sync --dry-run
 aligntrue sync
 
 # If any step breaks things
-aligntrue backup restore --to <stable-timestamp>
+aligntrue backup restore --timestamp <stable-timestamp>
 ```
 
 ### Testing new exporters
@@ -465,7 +465,7 @@ git status
 
 # Restore known-good state
 aligntrue backup list
-aligntrue backup restore --to <before-merge>
+aligntrue backup restore --timestamp <before-merge>
 
 # Retry merge more carefully
 git merge --abort

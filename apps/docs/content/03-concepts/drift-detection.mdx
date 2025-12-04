@@ -16,7 +16,6 @@ Drift detection helps teams monitor alignment between their lockfile and approve
 
 Drift detection compares your lockfile's rule hashes against:
 
-- **Allowed sources** - Approved versions in `.aligntrue.allow`
 - **Vendored aligns** - Integrity of git submodule/subtree vendored rules
 - **Severity remapping** - Policy changes in `.aligntrue.team.yaml`
 
@@ -31,13 +30,12 @@ Drift detection compares your lockfile's rule hashes against:
 
 ### Upstream drift
 
-**What it detects:** Rule content in lockfile differs from the approved version in allow list.
+**What it detects:** Rule content changed since last lockfile generation.
 
 **Common causes:**
 
 - Upstream align updated to new version
 - Local modifications to rules
-- Allow list not updated after rule changes
 
 **How to fix:**
 
@@ -45,10 +43,7 @@ Drift detection compares your lockfile's rule hashes against:
 # Review the changes
 aligntrue drift
 
-# Approve new version
-aligntrue team approve <source>@<new-version>
-
-# Or accept current state
+# Accept current state
 aligntrue sync --force
 ```
 
@@ -80,16 +75,13 @@ aligntrue sync
 
 **Common causes:**
 
-- Developer edited `AGENTS.md` directly but didn't run `aligntrue sync --accept-agent`
+- Developer edited agent files directly
 - Copy/pasting new rules into agent files
 
 **How to fix:**
 
 ```bash
-# If changes are intended (pull back to IR):
-aligntrue sync --accept-agent agents
-
-# If changes are accidental (overwrite with IR):
+# Overwrite with current IR state:
 aligntrue sync
 ```
 
@@ -119,7 +111,7 @@ aligntrue drift
 #
 # Upstream drift (1 items):
 #   • base-global: Lockfile hash differs from allowed version
-#     Suggestion: Run: aligntrue team approve git:...
+#     Suggestion: Review and approve via git PR
 ```
 
 ### CI integration
@@ -261,18 +253,17 @@ echo "mode: team" >> .aligntrue/config.yaml
 aligntrue sync
 ```
 
-### "Allow list not found"
+### Resolving drift
 
-**Cause:** No sources approved yet.
+**Scenario:** Rules were updated and need approval.
 
-**Solution:**
+**Solution:** Commit lockfile changes via git PR for team review:
 
 ```bash
-# Approve sources
-aligntrue team approve <source>
-
-# Or create allow list manually
-# .aligntrue.allow
+# After syncing with rule changes
+git add .aligntrue.lock.json
+git commit -m "chore: Update rules (team approval via PR)"
+git push
 ```
 
 ### False positives
@@ -282,18 +273,14 @@ aligntrue team approve <source>
 **Debugging:**
 
 1. Check lockfile generation date
-2. Verify allow list hashes
+2. Check for stray edits in `.aligntrue/rules/`
 3. Re-sync to update lockfile
-4. Check for local modifications
 
 **Solution:**
 
 ```bash
 # Regenerate lockfile
 aligntrue sync --force
-
-# Update allow list
-aligntrue team approve <source>@latest
 ```
 
 ## Configuration
@@ -363,6 +350,5 @@ performance:
 
 ## See also
 
-- **Allow list**: `.aligntrue.allow` format and approval workflow
 - **Lockfile**: `.aligntrue.lock.json` generation and validation
 - **Team mode**: Enabling and configuring team collaboration

@@ -43,14 +43,6 @@ pnpm format        # Format code with Prettier
 pnpm format:check  # Check formatting without changes
 ```
 
-### Validation workflow
-
-Run before large refactors to ensure clean baseline:
-
-```bash
-pnpm pre-refactor  # Type check + lint entire workspace
-```
-
 ### Clean
 
 ```bash

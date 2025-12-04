@@ -87,7 +87,7 @@ lockfile:
   mode: soft # Warn on unapproved changes (default)
 ```
 
-Edit `.aligntrue/rules/` → changes validated against lockfile → team approves if needed.
+Edit `.aligntrue/rules/` → changes validated against lockfile.
 
 ## Common sync scenarios
 
@@ -115,7 +115,7 @@ aligntrue sync
 # ◇ Detected 1 edited file(s)
 # ◇ Merging changes from rules
 # ✓ Merged changes to IR
-# ⚠ Bundle hash not in allow list (soft mode - warning)
+# ⚠ Lockfile drift (soft mode - warning)
 # ✓ Synced to: .cursor/rules/*.mdc, AGENTS.md
 ```
 
@@ -124,7 +124,6 @@ aligntrue sync
 - Changes merge to IR
 - Bundle hash computed and checked
 - If hash not approved: warning shown, sync continues (soft mode)
-- Team lead approves later via `aligntrue team approve --current`
 
 ## Technical details: rule loading and merging
 

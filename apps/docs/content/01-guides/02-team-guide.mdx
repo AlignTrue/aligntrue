@@ -33,16 +33,94 @@ git push origin main
 **What you get:**
 
 - **Lockfile** - Reproducible builds with pinned hashes
-- **Allow list** - Approved rule sources only
 - **Drift detection** - Detect upstream changes and local modifications
 - **Bundle** - Dependency merging with precedence rules
 - **Audit trail** - Track who changed what and when
+- **Git-native workflows** - Source approval via PR review
 
 **What changes from solo mode:**
 
 - Lockfile enabled (off/soft/strict validation)
-- Allow list required (approved sources only)
 - Bundle enabled (dependency merging)
+- Source approval via git PR workflow
+
+## Organizing rules for teams
+
+Teams often need to organize rules differently than solo developers:
+
+### Multi-file by concern (recommended for teams)
+
+**Best for:** Teams, 20+ rules, clear ownership needs
+
+Store rules in logically organized files in `.aligntrue/rules/`:
+
+```
+project/
+├── .aligntrue/
+│   ├── config.yaml
+│   └── rules/
+│       ├── architecture.md
+│       ├── security.md
+│       ├── testing.md
+│       └── documentation.md
+├── .cursor/
+│   └── rules/  ← Auto-generated from rules/
+└── AGENTS.md  ← Auto-generated from rules/
+```
+
+**Setup:**
+
+```bash
+mkdir -p .aligntrue/rules
+# Create individual rule files for each concern
+aligntrue sync
+```
+
+**Benefits:**
+
+- Clear ownership (assign CODEOWNERS per file)
+- Reduced merge conflicts
+- Easier to review changes
+- Better for code reviews (smaller diffs)
+
+**Monorepo scopes (context-specific rules)**
+
+Use scopes to apply different rules to different directories:
+
+```yaml
+# .aligntrue/config.yaml
+sources:
+  - type: local
+    path: .aligntrue/rules
+
+scopes:
+  - path: "apps/web"
+    inherit: true # Includes root rules
+  - path: "apps/api"
+    inherit: true
+  - path: "packages/shared"
+    inherit: false # Isolated: no parent rules
+```
+
+Each scope gets its own `AGENTS.md` or `.cursor/rules/` with:
+
+- Root rules (from `.`)
+- Scope-specific rules (from `apps/web/`, etc.)
+
+**When to use:** Monorepos with multiple apps/services that need context-specific rules.
+
+**CODEOWNERS for approval:**
+
+```
+# .github/CODEOWNERS
+.aligntrue/rules/architecture.md @architects
+.aligntrue/rules/security.md @security-team
+.aligntrue/rules/testing.md @qa-team
+```
+
+This ensures the right team approves rule changes.
+
+---
 
 ## Team setup workflow
 
@@ -56,9 +134,9 @@ aligntrue team enable
 **What it does:**
 
 - Creates `.aligntrue.lock.json` (lockfile)
-- Creates `.aligntrue.allow` (allow list)
 - Sets mode to `team` in config
 - Enables lockfile validation (soft by default)
+- Source approval happens via git PR workflow
 
 **Lockfile modes:**
 
@@ -81,20 +159,6 @@ sources:
 ```
 
 **Note:** Source approval happens via git PR review workflow.
-
-**Allow list format:**
-
-```yaml
-# .aligntrue.allow
-allowed_sources:
-  - type: git
-    value: https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
-
-  - type: git
-    value: https://github.com/org/standards/typescript-standards.yaml
-    profile: org/standards
-    version: v2.0.0
-```
 
 ### Step 3: Generate lockfile
 
@@ -135,7 +199,6 @@ git push
 
 - `.aligntrue/rules` - Internal IR (auto-generated)
 - `.aligntrue/config.yaml` - Team configuration
-- `.aligntrue.allow` - Approved sources
 - `.aligntrue.lock.json` - Lockfile with pinned hashes
 - `.cursor/rules/` - Exported Cursor rules (optional)
 - `AGENTS.md` - Universal agent format (optional)
@@ -523,21 +586,21 @@ aligntrue drift
 #     Upstream align has been updated (base_hash differs)
 #     Lockfile: sha256:abc123...
 #     Allowed: sha256:def456...
-#     Suggestion: Run: aligntrue update apply
+#     Suggestion: Pull latest from source and sync
 ```
 
 **How to resolve:**
 
 ```bash
-# Check what changed
-aligntrue update check
+# Pull latest from approved sources
+git pull
 
-# Apply update
-aligntrue update apply
+# Sync to regenerate lockfile
+aligntrue sync
 
 # Commit changes (approval via PR)
 git add .aligntrue.lock.json
-git commit -m "chore: Apply upstream updates"
+git commit -m "chore: Update lockfile after upstream changes"
 git push origin main
 ```
 
@@ -797,7 +860,6 @@ jobs:
 **What it validates:**
 
 - Lockfile exists and is valid
-- All sources are approved (allow list)
 - No drift from lockfile
 - All required plugs filled
 
@@ -857,10 +919,9 @@ jobs:
       - name: Install AlignTrue CLI
         run: npm install -g aligntrue
 
-      - name: Validate sources
+      - name: Validate configuration
         run: |
-          # Fail if unapproved sources
-          aligntrue team list-allowed
+          # Validate schema and lockfile
           aligntrue check --ci
 ```
 
@@ -871,7 +932,6 @@ jobs:
 **When reviewing AlignTrue changes:**
 
 - [ ] Lockfile updated if sources changed
-- [ ] Allow list updated if new sources added
 - [ ] Overlays documented with reason and owner
 - [ ] Plugs filled for required slots
 - [ ] Scopes validated with `aligntrue scopes`
@@ -890,7 +950,6 @@ jobs:
 ## AlignTrue checklist
 
 - [x] Lockfile updated
-- [x] Source approved in allow list
 - [x] Overlays documented
 - [x] Plugs filled
 - [x] CI passes
@@ -939,7 +998,6 @@ git commit -m "chore: Resolve AlignTrue conflict"
 
 - Production incident requires immediate rule change
 - Drift detection blocking critical deployment
-- Allow list validation failing in emergency
 
 **Workflow:**
 
@@ -997,25 +1055,9 @@ aligntrue override remove 'rule[id=...]'
 git commit -m "chore: Monthly overlay review - removed 3 stale overlays"
 ```
 
-### Keep allow list minimal
+### Review sources carefully
 
-Only approve sources you trust:
-
-```yaml
-# Good: Minimal allow list
-allowed_sources:
-  - type: git
-    value: https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
-
-  - type: git
-    value: https://github.com/org/team-standards.yaml
-    profile: org/team-standards
-    version: v2.0.0
-
-# Bad: Too permissive
-allowed_sources:
-  - id: "*"  # Allows anything (don't do this)
-```
+Only add sources you trust. Changes to `sources:` in config go through standard git PR review.
 
 ### Version control everything
 
@@ -1070,7 +1112,6 @@ Tested by: @dev1, @dev2, @dev3"
 **Key principles:**
 
 - Reproducible builds with lockfile
-- Approved sources only (allow list)
 - Drift detection for upstream changes
 - Document all customizations
 - Review changes in PRs
@@ -1078,6 +1119,6 @@ Tested by: @dev1, @dev2, @dev3"
 
 **Next steps:**
 
-- Set up [CI/CD integration](/docs/01-guides/10-ci-cd-integration)
+- Set up [CI/CD integration](/docs/01-guides/07-ci-cd-integration)
 - Configure [drift detection](/docs/03-concepts/drift-detection)
 - Review [team mode concepts](/docs/03-concepts/team-mode)

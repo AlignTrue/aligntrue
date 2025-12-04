@@ -153,7 +153,6 @@ export async function drift(args: string[]): Promise<void> {
     ...config,
     rootDir: process.cwd(),
     lockfilePath: ".aligntrue.lock.json",
-    allowListPath: ".aligntrue/allow.yaml",
   };
   const ignoreLockfileDrift = Boolean(parsedArgs.flags["post-sync"]);
   const driftResults = await detectDriftForConfig(

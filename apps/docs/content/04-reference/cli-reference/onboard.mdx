@@ -224,7 +224,7 @@ jobs:
         run: npm install -g @aligntrue/cli
 
       - name: Run checks (generate SARIF)
-        run: aln check --format sarif > checks.sarif
+        run: aln drift --sarif > checks.sarif
         continue-on-error: true
 
       - name: Generate onboarding checklist
@@ -253,7 +253,7 @@ onboard:
   stage: test
   script:
     - npm install -g @aligntrue/cli
-    - aln check --format sarif > checks.sarif || true
+    - aln drift --sarif > checks.sarif || true
     - aln onboard --ci checks.sarif
   artifacts:
     reports:
@@ -274,7 +274,7 @@ Any CI system with SARIF support:
 
 ```bash
 # Example CI script
-aln check --format sarif > checks.sarif
+aln drift --sarif > checks.sarif
 aln onboard --ci checks.sarif > onboard-checklist.txt
 ```
 

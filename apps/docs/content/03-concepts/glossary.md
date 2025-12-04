@@ -170,7 +170,7 @@ A deterministic snapshot of your complete rule set with cryptographic hashes (te
 - Pins exact versions for team collaboration
 - Includes canonical SHA-256 hashes for integrity verification
 
-Lockfiles are generated via `aligntrue sync` or `aligntrue lock` in team mode.
+Lockfiles are generated via `aligntrue sync` in team mode.
 
 **Related:** [Team mode](/docs/03-concepts/team-mode), [Drift detection](/docs/03-concepts/drift-detection)
 
@@ -185,7 +185,7 @@ Comparing your current rule state against a committed lockfile to detect when ru
 - A rule source is no longer accessible
 - A team member pushed different rules than the lockfile
 
-**Command:** `aligntrue check --drift` (in team mode)
+**Command:** `aligntrue drift` (in team mode)
 
 **Related:** [Drift detection](/docs/03-concepts/drift-detection)
 
@@ -216,22 +216,11 @@ Collaborative mode with reproducibility guarantees and approval workflows.
 
 - Lockfile generation for determinism
 - Bundle support for multi-source rules
-- Allow list validation for approved sources
 - Drift detection enabled
 
 **Enable with:** `aligntrue team enable`
 
 **Related:** [Team mode](/docs/03-concepts/team-mode), [Team guide](/docs/01-guides/02-team-guide)
-
-### Allow list
-
-In team mode, a list of approved sources (git repos, URLs) from which rules can be pulled. Prevents unauthorized rule additions and ensures security.
-
-**File:** `.aligntrue.allow`
-
-**Use:** Ensures only vetted, team-approved rule sources are used
-
-**Related:** [Team mode](/docs/03-concepts/team-mode)
 
 ### Configuration file
 

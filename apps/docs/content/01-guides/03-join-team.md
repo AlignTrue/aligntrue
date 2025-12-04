@@ -66,7 +66,7 @@ aligntrue add remote https://github.com/yourusername/personal-rules --personal
 
 Now rules with `scope: personal` will push to your personal repo on sync.
 
-See [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) for complete details on personal rule workflows.
+See [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for complete details on personal rule workflows.
 
 ## Step 3: Initial Sync
 
@@ -93,7 +93,7 @@ ls -la .cursor/rules/
 cat AGENTS.md
 
 # Check configuration
-aligntrue config
+aligntrue config show
 ```
 
 ## Understanding team mode
@@ -120,10 +120,11 @@ Personal rules are:
 
 Agent files (`.cursor/rules/*.mdc`, `AGENTS.md`) are:
 
-- Generated from team + personal rules
+- Generated exports from team + personal rules
 - Git-ignored by default (recommended)
 - Regenerated on each sync
-- Safe to edit locally (changes sync back to IR)
+- Read-only - changes are backed up but overwritten on sync
+- Always edit `.aligntrue/rules/` instead to make changes
 
 ## Making changes
 
@@ -158,7 +159,7 @@ Your team may use different approval modes:
 - CI validates lockfile integrity
 - Most common for internal teams
 
-### Strict (allowlist)
+### Strict (lockfile validation)
 
 - Changes must be explicitly approved via git PR
 - `aligntrue drift --gates` fails in CI if unapproved
@@ -266,7 +267,7 @@ cat .aligntrue/config.yaml
 # Look for remotes.personal section
 ```
 
-See [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing) for setup instructions.
+See [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for setup instructions.
 
 ### Agent files Not Generated
 

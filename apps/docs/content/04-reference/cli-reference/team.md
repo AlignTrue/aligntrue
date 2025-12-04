@@ -34,7 +34,7 @@ aligntrue drift --json
 
 **Drift categories:**
 
-- **upstream** - Rule content differs from allowed version
+- **upstream** - Rule content differs from lockfile (deprecated)
 - **vendorized** - Vendored align differs from source
 - **severity_remap** - Policy changes
 
@@ -303,16 +303,10 @@ AlignTrue automatically detects:
 
 **Team mode integration:**
 
-In team mode, link warns if source is not in allow list:
-
-```
-⚠️  Not in allow list
-
-This source is not in your team's allow list.
-To approve this source:
-  aligntrue team approve "https://github.com/org/rules"
+In team mode, link vendors sources and documents them in the lockfile. No separate approval is needed - the PR review serves as the approval gate.
 
 This is non-blocking but recommended for team workflows.
+
 ```
 
 Approve before or after linking - both work.
@@ -320,6 +314,7 @@ Approve before or after linking - both work.
 **Output example:**
 
 ```
+
 ✅ Successfully linked https://github.com/org/rules
 
 Vendor path: vendor/org-rules
@@ -327,10 +322,12 @@ Vendor type: submodule
 Profile: org/typescript-rules
 
 Next steps:
+
 1. Commit vendor changes: git add vendor/org-rules .aligntrue/config.yaml
 2. Run sync: aligntrue sync
 3. Update lockfile (if team mode): git add .aligntrue.lock.json
-```
+
+````
 
 **Update workflows:**
 
@@ -342,7 +339,7 @@ git pull origin main
 cd ../..
 git add vendor/org-rules
 git commit -m "chore: Update vendored rules"
-```
+````
 
 **Subtree:**
 

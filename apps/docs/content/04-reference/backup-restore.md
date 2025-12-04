@@ -55,7 +55,7 @@ Restore entire backup:
 aligntrue backup restore
 
 # Restore specific backup
-aligntrue backup restore --to 2025-11-18T14-30-00-000
+aligntrue backup restore --timestamp 2025-11-18T14-30-00-000
 ```
 
 ## Configuration
@@ -110,7 +110,7 @@ $ aligntrue sync
 To restore:
 
 ```bash
-aligntrue backup restore --to 2025-11-18T14-30-00-000
+aligntrue backup restore --timestamp 2025-11-18T14-30-00-000
 ```
 
 ### `aligntrue backup create`
@@ -212,7 +212,7 @@ Restore entire backup atomically:
 aligntrue backup restore
 
 # Restore specific backup by timestamp
-aligntrue backup restore --to 2025-11-18T14-30-00-000
+aligntrue backup restore --timestamp 2025-11-18T14-30-00-000
 ```
 
 **Behavior:**
@@ -493,7 +493,7 @@ aligntrue sync
 
 # If something breaks
 aligntrue backup list
-aligntrue backup restore --to <timestamp-before-refactor>
+aligntrue backup restore --timestamp <timestamp-before-refactor>
 ```
 
 ## Troubleshooting
@@ -594,7 +594,7 @@ Backup considerations:
 
 ## See also
 
-- [Safety Best Practices](/docs/01-guides/11-safety-best-practices) - Comprehensive safety guide
+- [Safety best practices](/docs/01-guides/08-safety-best-practices) - Comprehensive safety guide
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How sync operations work
 - [Commands reference](/docs/04-reference/cli-reference) - All CLI commands
 - [Configuration](/docs/00-getting-started/00-quickstart#configuration) - Config file format

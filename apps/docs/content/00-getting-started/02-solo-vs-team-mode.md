@@ -21,7 +21,6 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 | ------------------------ | --------------------- | --------------------------------------- |
 | **Organization**         | Simple or organized   | Organized or complex                    |
 | **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default) |
-| **Allow lists**          | ❌ Not required       | ✅ Required (approved sources)          |
 | **Drift detection**      | ❌ Not available      | ✅ Available (aligntrue drift)          |
 | **Bundle generation**    | ❌ Disabled           | ✅ Enabled (dependency merging)         |
 | **Backup/restore**       | ✅ Available          | ✅ Available                            |
@@ -31,7 +30,7 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 | **Maintenance overhead** | Minimal               | Low to medium                           |
 | **Best for**             | Individual developers | Teams and organizations                 |
 
-**Note:** For guidance on choosing between simple, organized, or complex rule organization, see [Choosing your organization structure](/docs/01-guides/06-rule-structure).
+**Note:** For guidance on organizing rules, see the rule organization sections in the [Solo developer guide](/docs/01-guides/01-solo-developer-guide#organizing-your-rules) or [Team guide](/docs/01-guides/02-team-guide#organizing-rules-for-teams).
 
 ### Architecture comparison
 
@@ -117,7 +116,6 @@ git commit -m "Enable AlignTrue team mode"
 - Reproducible builds across team members
 - Drift detection for upstream changes
 - Soft lockfile warns on drift (doesn't block)
-- Allow lists for approved sources
 
 **Example use case:** Small startup team wants consistent AI agent behavior without strict enforcement.
 
@@ -125,13 +123,12 @@ git commit -m "Enable AlignTrue team mode"
 # Repository owner
 aligntrue team enable
 aligntrue sync
-aligntrue team approve --current
-git add .aligntrue/ .aligntrue.lock.json .aligntrue.allow
+git add .aligntrue/ .aligntrue.lock.json
 git commit -m "Enable team mode (soft)"
 
 # Team members
 git pull
-aligntrue sync  # Validated against allow list
+aligntrue sync
 ```
 
 ### 10+ person team
@@ -151,7 +148,6 @@ aligntrue sync  # Validated against allow list
 # Repository owner
 aligntrue team enable
 # Edit config: lockfile.mode: strict
-aligntrue team approve git:https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml
 aligntrue sync
 git add .aligntrue/ .aligntrue.lock.json
 git commit -m "Enable team mode (strict)"
@@ -163,11 +159,10 @@ aligntrue sync  # Fails if lockfile doesn't match
 
 ### Enterprise with compliance requirements
 
-**Recommended:** Team mode (strict) + allow lists
+**Recommended:** Team mode (strict) with lockfiles
 
 **Why:**
 
-- Approved sources only (security)
 - Strict lockfile enforcement (compliance)
 - Audit trail (governance)
 - Drift detection (monitoring)
@@ -175,12 +170,8 @@ aligntrue sync  # Fails if lockfile doesn't match
 **Example use case:** Enterprise team needs to ensure all AI agent rules come from approved sources and are consistently applied.
 
 ```bash
-# Security team approves sources
-aligntrue team approve sha256:abc123...  # Vendored align
-aligntrue team approve internal-standards@org/rules@v2.0.0
-
 # Development teams
-aligntrue sync  # Only approved sources allowed
+aligntrue sync
 aligntrue drift --gates  # Fail CI if drift detected
 ```
 
@@ -204,27 +195,14 @@ aligntrue team enable
 # Generate lockfile
 aligntrue sync
 
-# Approve current bundle
-aligntrue team approve --current
-
 # Commit team files
-git add .aligntrue/config.yaml .aligntrue.allow .aligntrue.lock.json
+git add .aligntrue/config.yaml .aligntrue.lock.json
 git commit -m "Switch to team mode"
 ```
 
-### Allow list quick start
+**Why use team mode:**
 
-```bash
-# After enabling team mode and first sync
-aligntrue team approve --current
-
-# This approves your current bundle hash
-# Team members can now sync with confidence
-```
-
-**Why use allow lists:**
-
-- Security: Only approved rule sources can be used
+- Determinism: Lockfiles pin exact versions
 - Compliance: Audit trail of approved changes
 - Collaboration: Team lead approves, members sync
 
@@ -243,7 +221,7 @@ Switch to solo mode when:
 # Change: mode: team → mode: solo
 
 # Remove team files (optional)
-rm .aligntrue.lock.json .aligntrue.allow
+rm .aligntrue.lock.json
 
 # Sync
 aligntrue sync
@@ -253,29 +231,29 @@ aligntrue sync
 
 ### Solo → Team changes
 
-| What changes     | Before (solo) | After (team)                               |
-| ---------------- | ------------- | ------------------------------------------ |
-| **Config**       | `mode: solo`  | `mode: team`                               |
-| **New files**    | None          | `.aligntrue.lock.json`, `.aligntrue.allow` |
-| **Validation**   | Basic schema  | Schema + allow list + lockfile             |
-| **Sync speed**   | Fast          | Slightly slower (validation)               |
-| **Git workflow** | Optional      | Recommended (commit lockfile)              |
+| What changes     | Before (solo) | After (team)                  |
+| ---------------- | ------------- | ----------------------------- |
+| **Config**       | `mode: solo`  | `mode: team`                  |
+| **New files**    | None          | `.aligntrue.lock.json`        |
+| **Validation**   | Basic schema  | Schema + lockfile             |
+| **Sync speed**   | Fast          | Slightly slower (validation)  |
+| **Git workflow** | Optional      | Recommended (commit lockfile) |
 
 ### Team → Solo changes
 
-| What changes      | Before (team)            | After (solo)          |
-| ----------------- | ------------------------ | --------------------- |
-| **Config**        | `mode: team`             | `mode: solo`          |
-| **Files removed** | Keep lockfile/allow list | Can delete (optional) |
-| **Validation**    | Full validation          | Basic schema only     |
-| **Sync speed**    | Validation overhead      | Fast                  |
-| **Git workflow**  | Lockfile required        | Optional              |
+| What changes      | Before (team)       | After (solo)          |
+| ----------------- | ------------------- | --------------------- |
+| **Config**        | `mode: team`        | `mode: solo`          |
+| **Files removed** | Keep lockfile       | Can delete (optional) |
+| **Validation**    | Full validation     | Basic schema only     |
+| **Sync speed**    | Validation overhead | Fast                  |
+| **Git workflow**  | Lockfile required   | Optional              |
 
 ## Rule visibility
 
 In solo mode, you can configure where rules are stored and whether they're committed to git.
 
-For detailed information on git visibility, approval scopes, and storage options, see [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing).
+For detailed information on git visibility, approval scopes, and storage options, see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
 
 ## Frequently asked questions
 
@@ -301,7 +279,7 @@ No. All team members must use the same mode (team mode) for consistent behavior.
 
 ### What's the performance difference?
 
-Solo mode is slightly faster because it skips lockfile and allow list validation. The difference is typically <1 second per sync.
+Solo mode is slightly faster because it skips lockfile validation. The difference is typically <1 second per sync.
 
 ### Can I use team mode without git?
 
@@ -314,7 +292,8 @@ Start with solo mode. It's simpler and you can always upgrade later. The switch 
 ## Related documentation
 
 - [Quickstart Guide](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
-- [Choosing your organization structure](/docs/01-guides/06-rule-structure) - Select the right rule organization for your project
+- [Solo developer guide](/docs/01-guides/01-solo-developer-guide) - Rule organization for solo developers
+- [Team guide](/docs/01-guides/02-team-guide) - Rule organization for teams
 - [Solo Developer Guide](/docs/01-guides/01-solo-developer-guide) - Complete solo mode workflows
 - [Team Guide](/docs/01-guides/02-team-guide) - Complete team mode workflows
 - [Team Mode Concepts](/docs/03-concepts/team-mode) - Technical details of team mode

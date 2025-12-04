@@ -19,11 +19,6 @@ vi.mock("fs", () => ({
   readFileSync: vi.fn(),
 }));
 
-// Mock allow list parser
-vi.mock("../../src/team/allow.js", () => ({
-  parseAllowList: vi.fn(),
-}));
-
 describe("validateTeamConfig", () => {
   it("returns empty array for solo mode", () => {
     const config: AlignTrueConfig = {

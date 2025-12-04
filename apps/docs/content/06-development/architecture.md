@@ -50,7 +50,7 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 
 **Only canonicalize when determinism is required:**
 
-- **Lockfile generation** (`aligntrue lock` in team mode) - Produce canonical hash for drift detection
+- **Lockfile generation** (`aligntrue sync` in team mode) - Produce canonical hash for drift detection
 - **Catalog publishing** (`aligntrue publish` - removed from roadmap) - Produce integrity hash for distribution
 - **NOT during:** init, sync, export, import, normal file operations
 
@@ -149,7 +149,7 @@ Rules merge with precedence from most specific to least specific.
 ### Lockfiles
 
 - Enable with `mode: team` in config
-- Generated with `aligntrue lock`
+- Generated with `aligntrue sync`
 - Pin exact versions and hashes
 - Detect drift in CI with `aligntrue check`
 
@@ -262,7 +262,6 @@ aligntrue/
 ├── apps/
 │   └── docs/             # Nextra documentation site
 ├── examples/             # Example configurations
-├── catalog/              # Curated rule aligns
 └── scripts/              # Build and setup scripts
 ```
 

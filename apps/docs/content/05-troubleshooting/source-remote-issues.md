@@ -1,13 +1,169 @@
 ---
-title: Remote access issues
-description: Solutions for common remote repository access issues
+title: Source and remote issues
+description: Solutions for common issues with remote git sources and backup destinations
 ---
 
-# Remote access issues
+# Source and remote issues
 
-This guide helps you resolve common issues when using remote repositories for sources and remotes in AlignTrue.
+This guide helps you resolve common issues when using remote repositories for sources (pulling rules) and remotes (pushing backups) in AlignTrue.
 
-For conceptual guidance, see [Rule Privacy and Sharing](/docs/01-guides/09-rule-privacy-sharing).
+For conceptual guidance, see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
+
+## Git source issues
+
+### Repository not found
+
+**Error:**
+
+```
+fatal: repository 'https://github.com/user/repo.git' not found
+```
+
+**Causes:**
+
+1. Repository doesn't exist
+2. Wrong URL
+3. No access to private repository
+4. Using HTTPS without credentials
+
+**Solutions:**
+
+1. Verify the repository exists on your git host
+
+2. Check the URL in your config:
+
+   ```yaml
+   sources:
+     - type: git
+       url: https://github.com/user/repo.git
+       ref: main
+   ```
+
+3. For private repos, use SSH instead of HTTPS:
+
+   ```yaml
+   sources:
+     - type: git
+       url: git@github.com:user/repo.git
+       ref: main
+   ```
+
+4. Verify you have access:
+   ```bash
+   git ls-remote git@github.com:user/repo.git
+   ```
+
+### Branch not found
+
+**Error:**
+
+```
+fatal: couldn't find remote ref main
+```
+
+**Cause:** Repository uses `master` instead of `main` (or vice versa).
+
+**Solution:**
+
+1. Check the default branch on your git host
+
+2. Update the branch in your config:
+
+   ```yaml
+   sources:
+     - type: git
+       url: git@github.com:user/repo.git
+       ref: master # Changed from main
+   ```
+
+3. Sync again:
+   ```bash
+   aligntrue sync
+   ```
+
+### Clone failure in cache
+
+**Error:**
+
+```
+fatal: unable to clone from .aligntrue/.cache/remotes/...
+```
+
+**Cause:** Previous clone attempt failed or cache is corrupted.
+
+**Solution:**
+
+1. Clear the remote cache:
+
+   ```bash
+   rm -rf .aligntrue/.cache/remotes
+   ```
+
+2. Sync again:
+   ```bash
+   aligntrue sync
+   ```
+
+## Remote backup configuration
+
+### Setting up remotes
+
+Remotes route your rules to backup git repositories. Configure in `.aligntrue/config.yaml`:
+
+```yaml
+remotes:
+  personal: git@github.com:youruser/personal-rules.git
+  # or with options:
+  shared:
+    url: git@github.com:company/shared-rules.git
+    branch: main
+```
+
+**Scopes:**
+
+- `personal` - Rules with `scope: personal` push here
+- `shared` - Rules with `scope: shared` push here
+
+### Invalid remotes configuration
+
+**Error:**
+
+```
+Error: Invalid remotes configuration
+```
+
+**Solution:**
+
+Ensure remotes are properly formatted:
+
+```yaml
+remotes:
+  personal: git@github.com:user/repo.git # Simple string format
+  shared: # Or object format
+    url: git@github.com:company/repo.git
+    branch: main # Optional, defaults to "main"
+```
+
+### Missing remotes.personal
+
+**Error:**
+
+```
+personal-scope file(s) have no remote configured. Add remotes.personal to route them.
+```
+
+**Cause:** Rules marked `scope: personal` but no personal remote configured.
+
+**Solution:**
+
+Add personal remote to config:
+
+```yaml
+remotes:
+  personal: git@github.com:youruser/personal-rules.git
+```
+
+Or remove `scope: personal` from rules if you don't need remote backup.
 
 ## SSH issues
 
@@ -131,68 +287,7 @@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!
    ssh -T git@github.com
    ```
 
-## Clone issues
-
-### Repository not found
-
-**Error:**
-
-```
-fatal: repository 'https://github.com/user/repo.git' not found
-```
-
-**Causes:**
-
-1. Repository doesn't exist
-2. Wrong URL
-3. No access to private repository
-4. Using HTTPS without credentials
-
-**Solutions:**
-
-1. Verify the repository exists on your git host
-
-2. Check the URL in your config (sources or remote_backup)
-
-3. For private repos, use SSH instead of HTTPS:
-
-   ```yaml
-   # Change from:
-   url: https://github.com/user/repo.git
-
-   # To:
-   url: git@github.com:user/repo.git
-   ```
-
-4. Verify you have access:
-   ```bash
-   git ls-remote git@github.com:user/repo.git
-   ```
-
-### Already Exists
-
-**Error:**
-
-```
-fatal: destination path '.aligntrue/.remotes/personal' already exists
-```
-
-**Cause:** Previous clone attempt failed or directory exists.
-
-**Solution:**
-
-1. Remove the directory:
-
-   ```bash
-   rm -rf .aligntrue/.remotes/personal
-   ```
-
-2. Sync again:
-   ```bash
-   aligntrue sync
-   ```
-
-## Push/Pull Issues
+## Push/Pull issues
 
 ### Push Rejected
 
@@ -207,19 +302,13 @@ error: failed to push some refs
 
 **Solution:**
 
-1. Navigate to the remote directory:
-
-   ```bash
-   cd .aligntrue/.remotes/personal
-   ```
-
-2. Pull changes:
+1. Pull changes first:
 
    ```bash
    git pull origin main
    ```
 
-3. If there are conflicts, resolve them:
+2. If there are conflicts, resolve them:
 
    ```bash
    git status
@@ -228,9 +317,8 @@ error: failed to push some refs
    git commit -m "Resolve conflicts"
    ```
 
-4. Return to project root and sync:
+3. Push again:
    ```bash
-   cd ../../../
    aligntrue sync
    ```
 
@@ -245,37 +333,26 @@ Automatic merge failed
 
 **Solution:**
 
-1. Navigate to the remote:
+1. Pull and inspect the conflict:
 
    ```bash
-   cd .aligntrue/.remotes/personal
-   ```
-
-2. Check status:
-
-   ```bash
+   git pull origin main
    git status
    ```
 
-3. Edit conflicting files:
+2. Edit conflicting files:
 
    ```bash
-   # Open rules.md and resolve conflicts
+   # Open conflicting files and resolve
    # Remove conflict markers: <<<<<<<, =======, >>>>>>>
    ```
 
-4. Complete the merge:
+3. Complete the merge:
 
    ```bash
-   git add rules.md
+   git add .
    git commit -m "Resolve merge conflict"
    git push origin main
-   ```
-
-5. Return and sync:
-   ```bash
-   cd ../../../
-   aligntrue sync
    ```
 
 ### Diverged Branches
@@ -293,7 +370,6 @@ Your branch and 'origin/main' have diverged
 1. Pull with rebase:
 
    ```bash
-   cd .aligntrue/.remotes/personal
    git pull --rebase origin main
    ```
 
@@ -323,16 +399,13 @@ fatal: Authentication failed for 'https://github.com/user/repo.git'
 **Option 1: Use SSH (Recommended)**
 
 ```yaml
-# In .aligntrue/config.yaml - for sources
 sources:
   - type: git
-    url: git@github.com:user/repo.git # SSH URL
-    personal: true
+    url: git@github.com:user/repo.git
+    ref: main
 
-# Or for remote_backup
-remote_backup:
-  default:
-    url: git@github.com:user/repo.git # SSH URL
+remotes:
+  personal: git@github.com:user/repo.git
 ```
 
 **Option 2: Use Personal Access Token**
@@ -451,56 +524,6 @@ git config --global http.sslVerify false
 
 SSH doesn't use SSL certificates, so this avoids the issue entirely.
 
-## Branch issues
-
-### Branch not found
-
-**Error:**
-
-```
-fatal: couldn't find remote ref main
-```
-
-**Cause:** Repository uses `master` instead of `main` (or vice versa).
-
-**Solution:**
-
-1. Check the default branch on your git host
-
-2. Update the branch in your config:
-
-   ```yaml
-   # For sources
-   sources:
-     - type: git
-       url: git@github.com:user/repo.git
-       ref: master # Changed from main
-
-   # Or for remote_backup
-   remote_backup:
-     default:
-       url: git@github.com:user/repo.git
-       branch: master # Changed from main
-   ```
-
-3. Sync again:
-   ```bash
-   aligntrue sync
-   ```
-
-### Detached HEAD
-
-**Problem:** Remote repository is in detached HEAD state.
-
-**Solution:**
-
-```bash
-cd .aligntrue/.remotes/personal
-git checkout main
-cd ../../../
-aligntrue sync
-```
-
 ## Permission issues
 
 ### Permission Denied (Repository)
@@ -527,7 +550,7 @@ remote: Permission to user/repo.git denied
    # On GitHub
    gh repo create aligntrue-personal-rules --private
 
-   # Update config with new URL
+   # Update remotes config with new URL
    ```
 
 ### File permission errors
@@ -544,57 +567,14 @@ error: unable to create file rules.md: Permission denied
 
 ```bash
 # Check ownership
-ls -la .aligntrue/.remotes/personal
+ls -la .aligntrue/.cache/remotes/
 
 # Fix ownership (replace USER with your username)
-sudo chown -R USER:USER .aligntrue/.remotes/personal
+sudo chown -R USER:USER .aligntrue/.cache/
 
-# Or remove and re-clone
-rm -rf .aligntrue/.remotes/personal
+# Or clear cache and retry
+rm -rf .aligntrue/.cache/remotes
 aligntrue sync
-```
-
-## Configuration issues
-
-### Invalid URL Format
-
-**Error:**
-
-```
-fatal: invalid URL 'user/repo.git'
-```
-
-**Cause:** URL is not complete.
-
-**Solution:**
-
-Use full URL format:
-
-```yaml
-# SSH (Recommended)
-url: git@github.com:user/repo.git
-
-# HTTPS
-url: https://github.com/user/repo.git
-```
-
-### Missing URL
-
-**Error:**
-
-```
-Error: Remote backup requires a 'url'
-```
-
-**Solution:**
-
-Add URL to your config:
-
-```yaml
-remote_backup:
-  default:
-    url: git@github.com:yourusername/aligntrue-personal-rules.git
-    branch: main
 ```
 
 ## Getting more help
@@ -616,7 +596,6 @@ If you're still stuck:
 3. **Test git access directly:**
 
    ```bash
-   cd .aligntrue/.remotes/personal
    git remote -v
    git fetch origin
    ```

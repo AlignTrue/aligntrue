@@ -53,7 +53,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 **Team:**
 
-- `team` — Team mode management (enable, status, approve, list-allowed, remove)
+- `team` — Team mode management (enable, disable, status)
 - `drift` — Detect drift between lockfile and allowed sources
 - `link` — Vendor rule aligns from git repositories
 - `onboard` — Interactive onboarding wizard
@@ -117,9 +117,9 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 - **Lockfile validation** - Three modes: off, soft (warn), strict (block)
 - **Drift detection** - Compare lockfile vs allowed sources, multiple output formats (human, JSON, SARIF)
 - **Bundle merging** - Combine multiple sources with conflict resolution
-- **Team commands** - `team enable`, `team status`, `team approve`, `team list-allowed`, `team remove`
+- **Team commands** - `team enable`, `team disable`, `team status`
 - **Scope & Storage Model** - Semantic scopes (team, personal, custom) with storage backends (local, repo, remote)
-- **Git-native approval** - Uses PR approval for internal changes, allowlist for external dependencies
+- **Git-native approval** - Uses PR approval for reviewing rule changes
 - **Migration wizards** - Interactive flows for solo→team, team→solo, and mode detection on restore
 - **Personal remote repositories** - Version-controlled personal rules in private git repositories
 - **Enhanced backups** - Auto-backup with action tracking, scope-specific backups, mode detection

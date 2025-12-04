@@ -17,7 +17,7 @@ These are the high-leverage ideas that matter most for AI-native teams.
 
 ### Treat agent behavior as code
 
-Store AI rules, aligns, and config in git. Review changes through PRs. Validate rules in CI with `aligntrue check --ci`. Use lockfiles and allow lists in [team mode](/docs/03-concepts/team-mode) for reproducible agent behavior.
+Store AI rules, aligns, and config in git. Review changes through PRs. Validate rules in CI with `aligntrue check --ci`. Use lockfiles in [team mode](/docs/03-concepts/team-mode) for reproducible agent behavior.
 
 **Workflow:**
 
@@ -32,7 +32,7 @@ aligntrue check
 aligntrue check --ci
 ```
 
-See [CI/CD integration](/docs/01-guides/10-ci-cd-integration) for setup details.
+See [CI/CD integration](/docs/01-guides/07-ci-cd-integration) for setup details.
 
 ### One source of truth, many agents
 
@@ -159,7 +159,7 @@ end
 %% -------------------------------
 subgraph Repo["Repo with AlignTrue"]
   ATCfg["AlignTrue aligns & rules\n(.aligntrue/*.md,\nconfigs)"]
-  ATLock["Lockfile & allow list\n(.aligntrue.lock.json,\n.aligntrue.allow)"]
+  ATLock["Lockfile\n(.aligntrue.lock.json)"]
 
   Dev -->|"Author & refine\nrules / aligns"| ATCfg
   ATCfg -->|"aligntrue check --ci\nvalidate & enforce"| ATLock
@@ -327,4 +327,4 @@ See [Team guide](/docs/01-guides/02-team-guide) for complete workflows.
 - [Sync behavior](/docs/03-concepts/sync-behavior) - Understand how rules sync to agents
 - [Multi-agent workflows](/docs/01-guides/05-multi-agent-workflows) - Use multiple agents simultaneously
 - [Customization](/docs/02-customization) - Plugs, overlays, and scopes
-- [Rule structure](/docs/01-guides/06-rule-structure) - Organize rules for your project size
+- [Solo developer guide](/docs/01-guides/01-solo-developer-guide#organizing-your-rules) - Organize rules for your project size

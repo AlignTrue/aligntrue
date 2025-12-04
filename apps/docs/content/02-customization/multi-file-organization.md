@@ -477,7 +477,8 @@ aligntrue sources split
 
 ## Related documentation
 
-- [Choosing your organization structure](/docs/01-guides/06-rule-structure) - Decision guide for simple, organized, or complex structures
+- [Solo developer guide](/docs/01-guides/01-solo-developer-guide#organizing-your-rules) - Rule organization for solo developers
+- [Team guide](/docs/01-guides/02-team-guide#organizing-rules-for-teams) - Rule organization for teams
 - [Agent support](/docs/04-reference/agent-support) - Which agents support multi-file natively
 - [Per-rule targeting](/docs/02-customization/per-rule-targeting) - Control which agents receive specific rules
 - [Sync behavior](/docs/03-concepts/sync-behavior) - How rules sync to agents

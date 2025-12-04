@@ -12,7 +12,7 @@ AlignTrue uses a docs-first architecture where the documentation site is the can
 ```
 apps/docs/content/ (canonical source - edit here)
   ↓
-scripts/generate-repo-files.ts (transformation)
+scripts/generate-repo-files.mjs (transformation)
   ↓
 README.md, CONTRIBUTING.md, DEVELOPMENT.md (generated - don't edit)
 ```
@@ -21,12 +21,12 @@ This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Represent
 
 ## File mapping
 
-| Docs Source                                            | Generated File    | Purpose                          |
-| ------------------------------------------------------ | ----------------- | -------------------------------- |
-| `apps/docs/content/index.mdx`                          | `README.md`       | GitHub landing page              |
-| `apps/docs/content/07-contributing/creating-aligns.md` | `CONTRIBUTING.md` | Contribution guide               |
-| `apps/docs/content/06-development/*.md`                | `DEVELOPMENT.md`  | Development guide (concatenated) |
-| `apps/docs/content/security.md`                        | `SECURITY.md`     | Security policy                  |
+| Docs Source                                  | Generated File    | Purpose                          |
+| -------------------------------------------- | ----------------- | -------------------------------- |
+| `apps/docs/content/index.mdx`                | `README.md`       | GitHub landing page              |
+| `apps/docs/content/07-contributing/index.md` | `CONTRIBUTING.md` | Contribution guide               |
+| `apps/docs/content/06-development/*.md`      | `DEVELOPMENT.md`  | Development guide (concatenated) |
+| `apps/docs/content/security.md`              | `SECURITY.md`     | Security policy                  |
 
 ## Editing workflow
 
@@ -39,7 +39,7 @@ Edit files in `apps/docs/content/`:
 apps/docs/content/index.mdx
 
 # Edit contribution guide (becomes CONTRIBUTING.md)
-apps/docs/content/07-contributing/creating-aligns.md
+apps/docs/content/07-contributing/index.md
 
 # Edit development pages (become DEVELOPMENT.md)
 apps/docs/content/06-development/setup.mdx

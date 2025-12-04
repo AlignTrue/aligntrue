@@ -271,18 +271,18 @@ See the [agent verification guide](/docs/04-reference/agent-verification) for ag
 
    If the file is empty or has no headings, AlignTrue won't detect sections.
 
-3. **For watch mode**, new files are logged but not auto-synced:
+3. **For watch mode**, new files are logged but may require a manual sync:
 
-   ```bash
-   # Stop watch
-   Ctrl+C
+```bash
+# Stop watch
+Ctrl+C
 
-   # Run sync to pick up new files
-   aligntrue sync
+# Run sync to pick up new files
+aligntrue sync
 
-   # Restart watch
-   aligntrue watch
-   ```
+# Restart watch
+aligntrue watch
+```
 
 **Example:**
 
@@ -418,37 +418,16 @@ cat AGENTS.md | grep -A 5 "Testing rules"
 
 **Expected behavior:** Watch mode logs new files but doesn't auto-import them by default.
 
-**What you see:**
-
-```
-[Watch] New file detected: CLAUDE.md (5 sections)
-  ℹ Run 'aligntrue sync' to review and import
-```
-
 **Fix:**
 
-1. **Stop watch and run sync:**
+Stop watch and run sync manually:
 
-   ```bash
-   # In watch terminal: Ctrl+C
-   aligntrue sync
-   # Choose import strategy
-   aligntrue watch  # Restart
-   ```
-
-2. **Or enable auto-import (opt-in):**
-
-   ```yaml
-   # .aligntrue/config.yaml
-   watch:
-     on_new_files: "auto_import"
-   ```
-
-   Then restart watch:
-
-   ```bash
-   aligntrue watch
-   ```
+```bash
+# In watch terminal: Ctrl+C
+aligntrue sync
+# Review import changes
+aligntrue watch  # Restart
+```
 
 ## Formatting issues in exported files
 
@@ -527,7 +506,7 @@ If you're still stuck:
 2. **Check debug logs:**
 
    ```bash
-   DEBUG_SYNC=1 aligntrue sync
+   DEBUG_SYNC=true aligntrue sync
    ```
 
 3. **Review backup:**
