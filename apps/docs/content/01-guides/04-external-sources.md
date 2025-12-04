@@ -46,6 +46,8 @@ aligntrue add source https://github.com/org/rules
 - Your personal rules stored in a separate repo
 - Community rule packs you want to track
 
+> **Team mode:** `aligntrue add source` and `aligntrue add remote` prompt for which config to update (personal vs. team). In non-interactive mode, pass `--personal` or `--shared`; otherwise the command errors.
+
 ### Quick reference
 
 | Scenario                                | Command                             |
@@ -219,47 +221,10 @@ After `aligntrue add https://github.com/company/rules`:
 
 ### Selective import when adding rules
 
-When importing rules via `aligntrue init`, `aligntrue add`, or `aligntrue sources detect --import`, AlignTrue shows an intelligent selection interface:
+When importing rules via `aligntrue init`, `aligntrue add`, or `aligntrue sources detect --import`, AlignTrue uses one selection flow:
 
-**Single file**
-
-Auto-imported without prompts:
-
-```
-Importing 1 rule from .cursor/rules/testing.mdc
-```
-
-**Small folder (2-10 files)**
-
-Shows the file list with a quick confirm:
-
-```
-Found 4 files in .cursor/rules/:
-  testing.mdc
-  debugging.mdc
-  typescript.mdc
-  security.mdc
-
-Import all? (Y/n) _
-```
-
-Press `Y` to import all, or `n` to select individually.
-
-**Large or multiple folders**
-
-Shows a summary, then offers folder-level selection if you say no:
-
-```
-Found 28 files in 3 folders
-
-Import all? (Y/n) _
-```
-
-If you select no, you can toggle which folders to import using the space bar.
-
-**Non-interactive mode**
-
-In CI or with `--yes`, all detected files are imported automatically for consistency.
+- Interactive: shows a checkbox list of detected files (all selected by default). You can deselect and proceed; conflicts prompt you to replace, keep both, or skip.
+- Non-interactive (`--yes` or running without a TTY): imports everything it found and resolves filename conflicts by keeping both.
 
 ### Single vs. multiple files per source
 
@@ -363,27 +328,11 @@ Only .md files are processed. Rename to .md if you want them included.
 
 When importing rules that have the same filename as existing rules:
 
-**Interactive mode:**
+- Replace – overwrite and back up the existing file to `.aligntrue/.backups/files/` with a timestamped `.bak`
+- Keep both – save the incoming rule under a unique name (for example, `typescript-1.md`)
+- Skip – do not import the incoming rule
 
-```
-⚠ Rule conflict: typescript.md already exists
-
-  Existing: .aligntrue/rules/typescript.md (local, modified 2 days ago)
-  Incoming: typescript.md from https://github.com/org/rules
-
-Options:
-  1. Replace - Overwrite existing (backup saved)
-  2. Keep both - Save incoming as typescript-1.md
-  3. Skip - Don't import this rule
-
-Choose [1/2/3]:
-```
-
-**Non-interactive mode (`--yes`):**
-Defaults to "keep both" to avoid data loss.
-
-**Backups:**
-When you choose "Replace", the existing rule is backed up to `.aligntrue/.backups/files/` with a timestamp.
+In non-interactive mode (`--yes`), conflicts automatically choose "keep both."
 
 ### Removing imported rules
 
@@ -449,21 +398,10 @@ aligntrue sources detect
 aligntrue sources detect --import
 ```
 
-**Output:**
+**What you see:**
 
-```
-Found 3 agent file(s):
-
-  CURSOR (2 files)
-    - .cursor/rules/new-rule.mdc
-    - .cursor/rules/another.mdc
-
-  AGENTS (1 file)
-    - AGENTS.md
-
-To import these files, run:
-  aligntrue sources detect --import
-```
+- Interactive: grouped list of detected agent files (Cursor, AGENTS, etc.). With `--import`, a selection UI lets you choose which files to import; conflicts still offer replace/keep both/skip.
+- Non-interactive (`--yes`): `--import` imports everything it finds and defaults conflicts to keep both. Without `--import`, the command only lists files and exits.
 
 ## Workflow examples
 

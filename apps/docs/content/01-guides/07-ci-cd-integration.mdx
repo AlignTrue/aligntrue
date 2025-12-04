@@ -173,8 +173,8 @@ aligntrue drift
 
 **Exit codes:**
 
-- `0` - No drift detected
-- `1` - Drift detected (informational)
+- `0` - Completed (drift reported but does not fail)
+- `1` - Team mode required but not enabled
 
 ### Fail CI on drift
 
@@ -203,16 +203,33 @@ Output:
 
 ```json
 {
-  "drift_detected": true,
-  "categories": {
-    "lockfile": [
-      {
-        "rule_id": "_bundle",
-        "message": "Rules have changed since last lockfile generation"
-      }
-    ],
-    "agent_file": [],
-    "severity_remap": []
+  "mode": "team",
+  "has_drift": true,
+  "lockfile_path": ".aligntrue/lock.json",
+  "findings": [
+    {
+      "category": "lockfile",
+      "ruleId": "_bundle",
+      "description": "Rules have changed since last lockfile generation"
+    },
+    {
+      "category": "upstream",
+      "ruleId": "shared/security",
+      "description": "Upstream source has new commits",
+      "lockfile_hash": "sha256:...",
+      "expected_hash": "sha256:..."
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "by_category": {
+      "lockfile": 1,
+      "agent_file": 0,
+      "upstream": 1,
+      "overlay": 0,
+      "result": 0,
+      "severity_remap": 0
+    }
   }
 }
 ```
@@ -347,8 +364,8 @@ jobs:
       - name: Check for updates
         id: drift
         run: |
-          aligntrue drift --format json > drift.json
-          if [ $(jq -r '.drift_detected' drift.json) == "true" ]; then
+          aligntrue drift --json > drift.json
+          if [ $(jq -r '.has_drift' drift.json) == "true" ]; then
             echo "drift=true" >> $GITHUB_OUTPUT
           fi
 
@@ -361,7 +378,7 @@ jobs:
             Drift detected in rules.
 
             Detected drift in:
-            $(cat drift.json | jq -r '.categories | keys[]')
+            $(jq -r '.summary.by_category | to_entries[] | select(.value>0) | "\(.key): \(.value)"' drift.json)
 
             Approve this PR to accept the drift or make corrections.
           branch: aligntrue-drift-review
@@ -475,10 +492,9 @@ jobs:
 
 AlignTrue uses standard exit codes:
 
-- `0` - Success
-- `1` - Validation error (schema, lockfile)
-- `2` - Drift detected with `--gates`
-- `3` - System error (permissions, network)
+- `0` - Success (includes drift checks without `--gates`)
+- `1` - Validation error (schema/lockfile) or drift run outside team mode
+- `2` - System error for `aligntrue check`; drift detected when using `--gates`
 
 **CI configuration:**
 
@@ -601,7 +617,7 @@ git commit -m "Add AlignTrue config"
 
 ```bash
 # Regenerate locally
-aligntrue lock
+aligntrue sync
 
 # Commit updated lockfile
 git add .aligntrue/lock.json

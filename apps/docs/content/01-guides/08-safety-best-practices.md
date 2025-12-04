@@ -10,7 +10,7 @@ AlignTrue follows a safety-first design with automatic backups, dry-run previews
 ## Core safety principles
 
 1. **Preview before applying**: Always use `--dry-run` first
-2. **Automatic protection**: Backups created before every sync (mandatory)
+2. **Automatic protection**: Backups are attempted before every sync (skipped on `--dry-run`; sync proceeds with a warning if backup creation fails)
 3. **Easy recovery**: `aligntrue revert` for quick rollback with preview
 4. **Retention control**: Keep 10-100 backups based on your workflow
 
@@ -65,9 +65,9 @@ But when in doubt, dry-run.
 
 ## Understanding automatic backups
 
-### Backups are mandatory
+### Backups are attempted before sync
 
-AlignTrue **always** creates backups before destructive operations:
+AlignTrue creates a safety backup before sync (unless `--dry-run`). If backup creation fails, the sync continues with a warning so you can address the issue:
 
 ```bash
 $ aligntrue sync
@@ -78,39 +78,35 @@ $ aligntrue sync
 ✔ Wrote 3 files
 ```
 
-You cannot disable this. It's a core safety feature.
+You cannot disable the attempt, but sync will continue if backup creation fails—fix the warning before relying on the backup.
 
 ### What gets backed up
 
 **Every sync backs up:**
 
-- `.aligntrue/` directory (config, rules, etc.)
-- Agent files you can edit (AGENTS.md, .cursor/, etc.)
-- All metadata and settings
+- `.aligntrue/` directory (config, rules, metadata, caches/tracking) except `.aligntrue/.backups/`
+- Agent files whose exporters declare outputs (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`)
 
-**Not backed up:**
+**Not always backed up:**
 
-- Cache files
-- Telemetry data
-- Files that can be regenerated
+- Agent files for exporters that do not declare `outputs`
+- Anything already under `.aligntrue/.backups/`
 
 ### Individual file backup (file-level)
 
-Before any file is overwritten, AlignTrue automatically backs up manually edited content:
+When an agent export file already exists (or was manually edited since the last AlignTrue write), AlignTrue backs it up before overwriting:
 
 - **Location**: `.aligntrue/.backups/files/` directory
 - **Format**: Timestamped copies with `.bak` suffix preserving original path structure
 - **Example**: `.cursor/rules/rule1.mdc` → `.aligntrue/.backups/files/cursor/rules/rule1.2025-01-15T14-30-00.mdc.bak`
-- **When**: Before overwriting files that were manually edited since last sync
+- **When**: Exporters detect an existing file with content or checksum drift and back it up before writing
+- **Scope**: Applies to agent exports written by AlignTrue; not a universal backup for all files
 - **Review**: You can review and delete backups anytime
 
-**Three-layer safety:**
+**Two layers you can rely on today:**
 
-1. Auto-backup (entire workspace before sync)
-2. Individual file backup (before overwriting files)
-3. Section-level backup (for conflicting sections during merge)
-
-Multiple layers ensure you never lose work.
+1. Auto-backup attempt before sync (skipped on `--dry-run`; sync continues on failure with warning)
+2. Individual file backup for agent exports before overwriting existing content
 
 ### Backup retention
 
@@ -125,7 +121,9 @@ backup:
 
 **Automatic cleanup:**
 
-After each successful sync, AlignTrue automatically removes backups older than `retention_days`, while respecting the `minimum_keep` safety floor.
+- Defaults: `retention_days: 30`, `minimum_keep: 3`
+- `retention_days: 0` disables auto-cleanup (manual only)
+- Cleanup removes backups older than `retention_days` while keeping at least `minimum_keep` most recent
 
 ### Checking your backups
 
