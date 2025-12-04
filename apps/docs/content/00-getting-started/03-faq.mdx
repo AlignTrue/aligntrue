@@ -9,7 +9,7 @@ description: Frequently asked questions
 
 ### What is AlignTrue?
 
-AlignTrue is a tool that syncs AI coding rules across multiple agents. Write rules once in `AGENTS.md` or any agent file, and AlignTrue keeps them synced across Cursor, GitHub Copilot, Claude Code, and 25+ other agents.
+AlignTrue syncs AI coding rules across multiple agents. Write rules once in `.aligntrue/rules/*.md`, and AlignTrue exports them to Cursor, GitHub Copilot, Claude Code, Windsurf, and 28+ other agents.
 
 ### Why do I need AlignTrue?
 
@@ -21,7 +21,7 @@ Yes! AlignTrue is MIT-licensed open source. The CLI and all core features are fr
 
 ### What agents does AlignTrue support?
 
-28+ agents through 43 specialized exporters:
+28+ agents through 50 exporters:
 
 - Cursor, GitHub Copilot, Claude Code, Aider, Windsurf
 - VS Code MCP, Amazon Q, Firebase Studio, OpenHands, Zed
@@ -214,9 +214,9 @@ You'll be prompted for consent before any network operation.
 ### Where does AlignTrue store data?
 
 - **Config:** `.aligntrue/config.yaml`
-- **Rules (internal):** `.aligntrue/rules` (auto-generated)
-- **Rules (user-editable):** `AGENTS.md` or agent files
-- **Lockfile:** `.aligntrue/lock.json` (team mode)
+- **Rules (user-editable):** `.aligntrue/rules/*.md`
+- **Agent exports (read-only):** `.cursor/rules/*.mdc`, `AGENTS.md`, and other agent files
+- **Lockfile:** `.aligntrue/lock.json` (auto-migrates legacy `.aligntrue.lock.json` if found)
 - **Cache:** `.aligntrue/.cache/` (git sources)
 
 ### Can I use AlignTrue in CI?
@@ -232,7 +232,7 @@ See [CI/CD integration guide](/docs/01-guides/07-ci-cd-integration).
 
 ### What's the IR (Intermediate Representation)?
 
-The IR is AlignTrue's internal format stored in `.aligntrue/rules`. When you write rules in `AGENTS.md` or agent files, they're converted to IR, then synced to all other agents. The IR file is auto-generated - you don't need to edit it directly.
+AlignTrue parses `.aligntrue/rules/*.md` into an internal IR in memory, then renders agent exports and the lockfile from that source. You never edit AGENTS.md or other agent files directly; they are generated outputs.
 
 ### How does AlignTrue handle agent-specific features?
 
