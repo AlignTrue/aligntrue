@@ -1,9 +1,15 @@
+version: "1"
+mode: solo
+
+sources:
+  - type: local
+    path: rules
+
 exporters:
   - cursor
   - agents
 
 sync:
-  source_files: "rules/*.md"
   source_order:
     - architecture.md
     - security.md

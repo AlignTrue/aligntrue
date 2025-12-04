@@ -1,33 +1,32 @@
 # Overlays demo
 
-This example demonstrates fork-safe customization of upstream rule aligns using overlays. Customize severity, inputs, and behavior without forking.
+This example demonstrates fork-safe customization of rules using overlays. Customize severity, inputs, and behavior without forking.
 
 ## What's inside
 
-- **`.aligntrue/config.yaml`** - Solo mode configuration with local source
-- **`AGENTS.md`** - Primary user-editable file with base rules and overlays applied
-- **`upstream-align.yaml`** - Simulated upstream align (3 rules)
+- **`.aligntrue/config.yaml`** - Solo mode configuration with overlays
+- **`.aligntrue/rules/`** - Source rules (3 markdown files)
 - **`SCENARIOS.md`** - Detailed scenarios with expected outputs
 - **`test-overlays.sh`** - Validation script
 
 ## Quick start
 
-### 1. View upstream align
+### 1. View source rules
 
 ```bash
-cat upstream-align.yaml
+ls .aligntrue/rules/
 ```
 
-You'll see 3 rules from a simulated upstream align:
+You'll see 3 rules:
 
-- `no-console-log` (severity: warn)
-- `max-complexity` (threshold: 10)
-- `prefer-const` (with autofix enabled)
+- `no-console-log.md` (severity: warn)
+- `max-complexity.md` (threshold: 10)
+- `prefer-const.md` (with autofix enabled)
 
-### 2. View overlays
+### 2. View overlay configuration
 
 ```bash
-cat AGENTS.md
+cat .aligntrue/config.yaml
 ```
 
 The overlays section shows customizations:
@@ -36,11 +35,17 @@ The overlays section shows customizations:
 - Increase `max-complexity` threshold from 10 → 15
 - Remove autofix from `prefer-const`
 
-### 3. Sync with overlays applied
+### 3. Check overlay status
 
 ```bash
 # From aligntrue repo root
 cd examples/overlays-demo
+node ../../packages/cli/dist/index.js override status
+```
+
+### 4. Sync with overlays applied
+
+```bash
 node ../../packages/cli/dist/index.js sync
 ```
 
@@ -49,12 +54,9 @@ Expected output:
 ```
 ✓ Sync complete
 ✓ Applied 3 overlays
-Wrote 5 files:
-  - .cursor/rules/*.mdc (multiple files)
-  - AGENTS.md
 ```
 
-### 4. Inspect overlay effects
+### 5. Inspect overlay effects
 
 The generated files show the modified rules with overlays applied.
 
@@ -112,14 +114,14 @@ overlays:
 
 **Without overlays (forking):**
 
-- Fork upstream align
+- Fork upstream rules
 - Make changes
 - Lose upstream updates
 - Maintain your fork forever
 
 **With overlays (fork-safe):**
 
-- Pull upstream align
+- Pull upstream rules
 - Apply overlays for customization
 - Get upstream updates automatically
 - Overlays reapply on top of updates
@@ -169,7 +171,7 @@ Run the test script to verify everything works:
 This checks:
 
 - Config file exists and is valid
-- Rules file exists with overlays
+- Rules files exist
 - Sync succeeds
 - Output files are created
 - Overlays are applied correctly
@@ -178,4 +180,4 @@ This checks:
 
 - [Overlays guide](../../apps/docs/content/02-customization/overlays.md) - Complete overlay documentation
 - [SCENARIOS.md](./SCENARIOS.md) - Detailed scenarios with outputs
-- [Team repo example](../team-repo/) - Team workflows with overlays
+- [Golden repo example](../golden-repo/) - Basic example with overlays scenarios
