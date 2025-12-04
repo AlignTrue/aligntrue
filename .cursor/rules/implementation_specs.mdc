@@ -274,13 +274,14 @@ IR is canonical. Vendor bags enable lossless multi agent support.
 - Vendor bags:
   - Use `vendor.<agent>` namespaces
 - Volatile fields:
-  - `vendor.*.volatile` excluded from hashing
+  - Stored in `vendor._meta.volatile` array (list of dot-notation paths to exclude from hashing)
+  - Example: `vendor._meta.volatile: ["cursor.session_id", "claude.temp_token"]`
 - Round trip:
   - IR → agent → IR keeps semantics
 
 ### Hashing
 
-- Compute hash on IR with volatile fields removed
+- Compute hash on IR with volatile fields removed (via `filterVolatileVendorFields`)
 - Use `canonicalJson` then `stableHash`
 
 ### Acceptance
@@ -436,12 +437,11 @@ Zero build ESM package must work across apps without special loaders.
 Before merging a feature that touches determinism, sync, or exports:
 
 - Uses `canonicalJson` and `stableHash` where required (Section 1)
-- IR first: IR remains the canonical source (Section 10)
-- Vendor bags used and volatile fields excluded correctly (Section 10)
-- Unidirectional sync follows precedence and atomicity rules (Section 11)
+- IR first: IR remains the canonical source (Section 8)
+- Vendor bags used and volatile fields excluded correctly (Section 8)
+- Unidirectional sync follows precedence and atomicity rules (Section 9)
 - Merge order and precedence follow Section 2 in team mode
-- Scope behavior matches Sections 3 and 12
-- Export bytes are stable and include required footer (Section 7)
-- CLI exit codes and messages follow Section 9
-- Telemetry is opt in and PII free (Section 4)
+- Scope behavior matches Sections 3 and 10
+- Export bytes are stable and do NOT include content hash or fidelity footers in files (Section 5)
+- CLI exit codes and messages follow Section 7
 - `@aligntrue/ui` obeys zero build rules if touched (Section 12)

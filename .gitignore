@@ -92,8 +92,6 @@ apps/docs/public/_pagefind
 
 # START AlignTrue Generated Files
 .aligntrue/.backups/
-AGENTS.md
-CLAUDE.md
 .cursor/rules/ci_troubleshooting.mdc
 .cursor/rules/cli_testing_playbook.mdc
 .cursor/rules/debugging.mdc

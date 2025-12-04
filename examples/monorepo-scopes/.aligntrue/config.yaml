@@ -3,7 +3,7 @@ mode: solo
 
 sources:
   - type: local
-    path: .aligntrue/rules.md
+    path: .aligntrue/rules
 
 exporters:
   - cursor
