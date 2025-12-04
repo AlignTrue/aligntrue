@@ -88,16 +88,41 @@ export async function pushToRemote(
 
     const git: SimpleGit = simpleGit();
 
+    // Track if this is an empty remote (no branches yet)
+    let isEmptyRemote = false;
+
     // Clone or fetch the repository
     if (!existsSync(cacheDir)) {
       progress(`Cloning ${config.url}...`);
-      await git.clone(config.url, cacheDir, [
-        "--branch",
-        branch,
-        "--single-branch",
-        "--depth",
-        "1",
-      ]);
+      try {
+        await git.clone(config.url, cacheDir, [
+          "--branch",
+          branch,
+          "--single-branch",
+          "--depth",
+          "1",
+        ]);
+      } catch (cloneErr) {
+        const errMsg =
+          cloneErr instanceof Error ? cloneErr.message : String(cloneErr);
+        // Check if this is an empty repository (no branches)
+        if (
+          errMsg.includes("Remote branch") &&
+          errMsg.includes("not found in upstream")
+        ) {
+          progress(`Remote repository is empty, initializing...`);
+          isEmptyRemote = true;
+          // Initialize a new repo and set up remote
+          mkdirSync(cacheDir, { recursive: true });
+          const initGit = simpleGit(cacheDir);
+          await initGit.init();
+          await initGit.addRemote("origin", config.url);
+          // Create initial branch
+          await initGit.checkout(["-b", branch]);
+        } else {
+          throw cloneErr;
+        }
+      }
     } else {
       progress(`Fetching updates...`);
       const repoGit = simpleGit(cacheDir);
@@ -108,13 +133,33 @@ export async function pushToRemote(
         // If fetch fails, try re-cloning
         progress(`Re-cloning repository...`);
         rmSync(cacheDir, { recursive: true, force: true });
-        await git.clone(config.url, cacheDir, [
-          "--branch",
-          branch,
-          "--single-branch",
-          "--depth",
-          "1",
-        ]);
+        try {
+          await git.clone(config.url, cacheDir, [
+            "--branch",
+            branch,
+            "--single-branch",
+            "--depth",
+            "1",
+          ]);
+        } catch (cloneErr) {
+          const errMsg =
+            cloneErr instanceof Error ? cloneErr.message : String(cloneErr);
+          // Check if this is an empty repository (no branches)
+          if (
+            errMsg.includes("Remote branch") &&
+            errMsg.includes("not found in upstream")
+          ) {
+            progress(`Remote repository is empty, initializing...`);
+            isEmptyRemote = true;
+            mkdirSync(cacheDir, { recursive: true });
+            const initGit = simpleGit(cacheDir);
+            await initGit.init();
+            await initGit.addRemote("origin", config.url);
+            await initGit.checkout(["-b", branch]);
+          } else {
+            throw cloneErr;
+          }
+        }
       }
     }
 
@@ -187,9 +232,13 @@ export async function pushToRemote(
     const log = await repoGit.log({ maxCount: 1 });
     const commitSha = log.latest?.hash;
 
-    // Push
+    // Push (use --set-upstream for empty remotes)
     progress(`Pushing to ${branch}...`);
-    await repoGit.push("origin", branch);
+    if (isEmptyRemote) {
+      await repoGit.push(["--set-upstream", "origin", branch]);
+    } else {
+      await repoGit.push("origin", branch);
+    }
 
     progress(`Successfully pushed ${files.length} files`);
     return {

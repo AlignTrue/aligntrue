@@ -247,15 +247,18 @@ export async function executeSyncWorkflow(
           ...(perExporterOverrides && { perExporterOverrides }),
         });
 
-        if (options.verbose && gitResult.branchCreated) {
+        // Log branch/commit mode results at info level (not just verbose)
+        // since users explicitly configured this mode
+        if (gitResult.branchCreated && !options.quiet) {
           clack.log.info(`Created branch: ${gitResult.branchCreated}`);
         }
-        if (options.verbose && gitResult.action) {
+        if (gitResult.action && !options.quiet) {
           clack.log.info(`Git: ${gitResult.action}`);
         }
       } catch (_error) {
-        // Silent failure on git integration - not critical for sync success
-        if (options.verbose) {
+        // Log failures for explicitly configured git modes (not silent)
+        // This helps users understand why their configured git mode didn't work
+        if (!options.quiet) {
           clack.log.warn(
             `Git integration failed: ${_error instanceof Error ? _error.message : String(_error)}`,
           );

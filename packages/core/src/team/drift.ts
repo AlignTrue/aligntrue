@@ -201,6 +201,14 @@ export function detectLockfileDrift(
 ): DriftFinding[] {
   const findings: DriftFinding[] = [];
 
+  // Skip drift detection for initial lockfiles (created during team enable)
+  // These are placeholder lockfiles that should be populated on first sync
+  if (lockfile.is_initial) {
+    // Don't report drift for initial lockfiles - this is expected
+    // The user needs to run 'aligntrue sync' to populate the lockfile
+    return findings;
+  }
+
   // Compare lockfile bundle hash with current bundle hash
   if (lockfile.bundle_hash !== currentBundleHash) {
     findings.push({

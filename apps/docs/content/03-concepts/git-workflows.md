@@ -6,7 +6,7 @@ Ad-hoc rule discovery and team sharing with git sources.
 
 AlignTrue supports intelligent git source management with automatic update checking:
 
-- **Smart caching** - Branches check daily, tags weekly, commits never
+- **Smart caching** - Checks for updates on a TTL (default 24 hours), commits never
 - **Solo mode** - Auto-updates on sync (stay current automatically)
 - **Team mode** - Approval required for updates (controlled governance)
 - **Offline support** - Works without network, falls back to cache
@@ -21,7 +21,7 @@ Git sources automatically check for updates based on ref type:
 sources:
   - type: git
     url: https://github.com/company/rules
-    ref: main # Checks daily for updates
+    ref: main # Checks for updates based on TTL (default 24 hours)
 ```
 
 **Solo mode**: Automatically pulls updates on `aligntrue sync`  
@@ -33,10 +33,10 @@ sources:
 sources:
   - type: git
     url: https://github.com/company/rules
-    ref: v1.2.0 # Checks weekly (catches force-pushes)
+    ref: v1.2.0 # Checks for updates based on same TTL (default 24 hours)
 ```
 
-Tags are treated as stable but checked occasionally to detect force-pushes.
+Tags use the same check interval as branches to detect force-pushes.
 
 ### Commit SHAs (pinned)
 
@@ -55,9 +55,7 @@ Commit SHAs are immutable and never check for updates.
 
 ```yaml
 git:
-  branch_check_interval: 86400 # 24 hours (default)
-  tag_check_interval: 604800 # 7 days (default)
-  offline_fallback: true # Use cache if network fails
+  offline_fallback: true # Use cache if network fails (default: true)
 ```
 
 ### Per-source override
@@ -103,9 +101,9 @@ sources:
 
 **Ref types:**
 
-- **Branches** (`ref: main`) - Auto-updates daily
-- **Tags** (`ref: v1.2.0`) - Stable, checks weekly
-- **Commits** (`ref: abc1234`) - Pinned, never updates
+- **Branches** (`ref: main`) - Auto-updates based on TTL (default 24 hours)
+- **Tags** (`ref: v1.2.0`) - Stable, checks based on same TTL (default 24 hours)
+- **Commits** (`ref: abc1234`) - Pinned, never checks for updates
 
 See [Git Sources Reference](/docs/04-reference/git-sources) for complete documentation.
 
@@ -258,7 +256,7 @@ sources:
     ref: main
 ```
 
-**Behavior**: Automatically pulls updates on sync (checks daily)
+**Behavior**: Automatically pulls updates on sync (checks based on TTL, default 24 hours)
 
 ### Team with Approval
 
