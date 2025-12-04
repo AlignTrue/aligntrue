@@ -196,7 +196,7 @@ Use documentation for real user workflows only.
 - **AlignTrue** (no space)
 - `.aligntrue/config.yaml` for config
 - `.aligntrue/rules` for internal IR
-- `.aligntrue/lock.json` and `.aligntrue.bundle.yaml` for team mode
+- `.aligntrue/lock.json` and `.aligntrue/bundle.yaml` for team mode
 - `.cursor/*.mdc` for Cursor exports
 - `.aligntrue/rules/*.md` is the single source of truth (edit here, sync flows to agents)
 
