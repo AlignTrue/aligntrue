@@ -46,7 +46,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   {
     flag: "--gates",
     hasValue: false,
-    description: "Enable strict mode (exit non-zero on drift detection)",
+    description: "Fail with exit code 2 when drift is detected (CI gate)",
   },
   {
     flag: "--post-sync",
@@ -84,7 +84,7 @@ USAGE
   aligntrue drift [options]
 
 OPTIONS
-  --gates          Enable strict mode (exit non-zero on drift detection)
+  --gates          Exit with code 2 when drift is detected (CI gate)
   --json           Output results in JSON format
   --sarif          Output results in SARIF format for CI tools
   --config <path>  Path to config file (default: .aligntrue/config.yaml)

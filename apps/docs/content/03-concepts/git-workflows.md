@@ -8,7 +8,7 @@ AlignTrue supports intelligent git source management with automatic update check
 
 - **Smart caching** - Branches and tags check every 24 hours; commits never check
 - **Solo mode** - Auto-updates on sync (stay current automatically)
-- **Team mode** - Approval required for updates (controlled governance)
+- **Team mode** - Updates warn and continue with cache; use `--strict-sources` to block until approved
 - **Offline support** - Works without network, falls back to cache
 
 ## Automatic updates
@@ -25,7 +25,8 @@ sources:
 ```
 
 **Solo mode**: Automatically pulls updates on `aligntrue sync`  
-**Team mode**: Source changes documented in lockfile; approval via git PR
+**Team mode (default)**: Warns and continues with cached version; lockfile captures approved state  
+**Team mode (strict)**: Use `aligntrue sync --strict-sources` to block until updates are approved
 
 ### Tag references (stable)
 

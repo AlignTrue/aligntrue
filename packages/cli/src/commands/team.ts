@@ -63,8 +63,7 @@ export async function team(args: string[]): Promise<void> {
       notes: [
         "Team mode features:",
         "  - Lockfile generation for reproducibility",
-        "  - Bundle generation for multi-source merging",
-        "  - Drift detection with soft/strict validation",
+        "  - Drift detection (enforce in CI with `aligntrue drift --gates`)",
         "  - Git-based collaboration workflows (PR approval)",
       ],
     });

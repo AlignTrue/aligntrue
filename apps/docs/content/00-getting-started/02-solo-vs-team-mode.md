@@ -20,7 +20,7 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 | Feature                  | Solo mode             | Team mode                                      |
 | ------------------------ | --------------------- | ---------------------------------------------- |
 | **Organization**         | Simple or organized   | Organized or complex                           |
-| **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default)        |
+| **Lockfile**             | ❌ Disabled           | ✅ Enabled (bundle hash)                       |
 | **Drift detection**      | ❌ Not available      | ✅ Available (lockfile bundle hash comparison) |
 | **Backup/restore**       | ✅ Available          | ✅ Available                                   |
 | **Git integration**      | ✅ Optional           | ✅ Recommended                                 |
@@ -106,13 +106,13 @@ git commit -m "Enable AlignTrue team mode"
 
 ### 2-5 person team
 
-**Recommended:** Team mode (soft lockfile)
+**Recommended:** Team mode (lockfile + drift gates)
 
 **Why:**
 
 - Reproducible builds across team members
-- Drift detection for upstream changes
-- Soft lockfile warns on drift (doesn't block)
+- Drift detection for upstream changes (`aligntrue drift --gates` in CI)
+- Git-based approval via PRs
 
 **Example use case:** Small startup team wants consistent AI agent behavior without strict enforcement.
 
@@ -130,11 +130,11 @@ aligntrue sync
 
 ### 10+ person team
 
-**Recommended:** Team mode (strict lockfile)
+**Recommended:** Team mode (lockfile + CI drift enforcement)
 
 **Why:**
 
-- Strict enforcement prevents drift
+- Drift gates in CI prevent unapproved changes
 - All changes reviewed before merging
 - Audit trail for compliance
 - Consistent builds across large team
@@ -144,14 +144,15 @@ aligntrue sync
 ```bash
 # Repository owner
 aligntrue team enable
-# Edit config: lockfile.mode: strict
 aligntrue sync
 git add .aligntrue/ .aligntrue/lock.json
-git commit -m "Enable team mode (strict)"
+git commit -m "Enable team mode (lockfile)"
 
 # Team members
 git pull
-aligntrue sync  # Fails if lockfile doesn't match
+aligntrue sync
+# Enforce drift in CI:
+#   aligntrue drift --gates
 ```
 
 ### Enterprise with compliance requirements
@@ -201,7 +202,7 @@ git commit -m "Switch to team mode"
 
 **Configuration after switching:**
 
-- `.aligntrue/config.team.yaml` (committed) - Team settings, lockfile mode, exporters
+- `.aligntrue/config.team.yaml` (committed) - Team settings, lockfile enable, exporters
 - `.aligntrue/config.yaml` (gitignored) - Your personal settings and overrides
 - `.aligntrue/lock.json` (committed) - Lockfile v2 with bundle hash of team rules + team config
 

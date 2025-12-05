@@ -4,7 +4,7 @@ Commands for managing team mode features (hidden until team mode enabled).
 
 ## `aligntrue drift`
 
-Detect drift between lockfile and approved sources. Monitors upstream changes and policy compliance.
+Detect drift between lockfile and current state. Team mode uses the lockfile bundle hash as the single drift signal.
 
 **Usage:**
 
@@ -34,10 +34,7 @@ aligntrue drift --json
 
 **Drift categories:**
 
-- **lockfile** - Rules changed since last lockfile generation
-- **agent_file** - Agent files modified after last sync
-- **upstream** - Rule content differs from lockfile
-- **severity_remap** - Policy changes
+- **lockfile** - Rules/config changed since last lockfile generation
 
 **Exit codes:** `0` (no drift), `2` (drift with --gates)
 
@@ -117,7 +114,7 @@ Actionable next steps:
 
 ## `aligntrue team enable`
 
-Upgrade project to team mode with lockfile validation.
+Upgrade project to team mode with lockfile enabled.
 
 **Usage:**
 
@@ -128,7 +125,7 @@ aligntrue team enable
 **What it does:**
 
 1. Creates `.aligntrue/config.team.yaml` with team settings
-2. Enables lockfile and bundle modules automatically
+2. Enables lockfile module automatically
 3. Moves team-only settings from `config.yaml` to `config.team.yaml`
 4. Creates an empty personal `config.yaml` for individual settings (added to `.gitignore`)
 5. Shows next steps for lockfile generation
@@ -140,11 +137,11 @@ aligntrue team enable
 
 **Configuration files after enable:**
 
-| File                   | Purpose                                | Git status |
-| ---------------------- | -------------------------------------- | ---------- |
-| `config.team.yaml`     | Team settings (mode, lockfile, bundle) | Committed  |
-| `config.yaml`          | Personal settings (overrides)          | Gitignored |
-| `.aligntrue/lock.json` | Lockfile (generated after sync)        | Committed  |
+| File                   | Purpose                         | Git status |
+| ---------------------- | ------------------------------- | ---------- |
+| `config.team.yaml`     | Team settings (mode, lockfile)  | Committed  |
+| `config.yaml`          | Personal settings (overrides)   | Gitignored |
+| `.aligntrue/lock.json` | Lockfile (generated after sync) | Committed  |
 
 **Examples:**
 
@@ -185,9 +182,6 @@ After (team mode):
 mode: team
 modules:
   lockfile: true
-  bundle: true
-lockfile:
-  mode: soft # Warn on drift, don't block
 sources:
   - type: local
     path: rules
@@ -200,7 +194,7 @@ exporters:
 
 **Personal vs team settings:**
 
-- **Team settings** (in `config.team.yaml`): `mode`, `lockfile`, `bundle`, shared `sources`, shared `exporters`
+- **Team settings** (in `config.team.yaml`): `mode`, `modules.lockfile`, shared `sources`, shared `exporters`
 - **Personal settings** (in `config.yaml`): Personal remotes, local overrides of shared settings
 
 **See also:** [Team Mode Guide](/docs/01-guides/02-team-guide), [Sync Behavior](/docs/03-concepts/sync-behavior#lockfile-behavior-team-mode)

@@ -9,12 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`aligntrue team join` subcommand** - Onboard new team members by creating their personal (gitignored) config without mutating team files. Replaces the previous auto-create behavior in sync
 - **`aligntrue add source` subcommand** - Add sources via CLI with `aligntrue add source <url>`. Replaces `--link` flag for the `add` command. Use `--personal` to mark source as personal scope
 - **`aligntrue add remote` subcommand** - Add push destinations via CLI with `aligntrue add remote <url>`. Use `--personal` or `--shared` to configure scope routing
 - **`aligntrue backup --yes` flag** - Skip confirmation prompts for restore and cleanup subcommands. Useful for CI/scripts
 
 ### Changed
 
+- **Team mode simplified** - Removed `lockfile.mode` soft/strict options; lockfile is now enabled via `modules.lockfile: true` and drift enforcement happens via `aligntrue drift --gates` in CI. Lockfile generation now runs once after exports and respects `--dry-run`
+- **Git sources in team mode warn instead of block** - Sync now continues with cached git sources when updates are available; add `--strict-sources` to block until updates are approved
 - **BREAKING: Team lockfile simplified to bundle hash only** - Lockfile v2 now contains only `version` and `bundle_hash` (hash of team rules + `config.team.yaml`). Per-rule sections, timestamps, mode fields, and provenance were removed. Drift detection compares only the bundle hash for reliability and easier Git-based review
 - **Drift command reduced to single `lockfile` category** - `aligntrue drift` and `--gates` now report only lockfile drift with clearer remediation (“run aligntrue sync” + git diff). JSON/SARIF outputs and help text updated accordingly
 - **Team sync uses unified backup flow** - Sync continues to back up agent exports before overwrite; lockfile generation/regeneration now always uses the simplified v2 format and includes team config in the hash
@@ -615,7 +618,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 - Config defaults: Cursor detected → `.cursor/rules/*.mdc`, else → `AGENTS.md`
 - Onboarding summaries at end of `aligntrue init` and `aligntrue team enable`
 - `aligntrue config summary` command to view current configuration
-- Lockfile mode prompt during `aligntrue team enable` (soft/strict)
+- Lockfile enabled automatically during `aligntrue team enable` (no mode prompt)
 - Team-managed sections guide in documentation
 - Support for `managed` field in config schema for team-managed sections
 - `managedSections` parameter in ExportOptions interface
@@ -729,7 +732,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
   - Fixed `--accept-agent` crash when value is missing (now throws clear error)
   - Fixed error messages referencing non-existent `aligntrue lock` command (now suggests `aligntrue sync`)
   - Removed "Session 6" debug artifact from team status output
-  - Allow list now enforced in both soft and strict modes (soft warns, strict blocks)
+  - Allow list now enforced consistently for lockfile regeneration
 
 - **Git source support in sync command:** Sync now supports git repositories as rule sources
   - Pull rules from remote git repositories with automatic caching
@@ -744,7 +747,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
         path: aligns/global.md
     ```
 
-- **Interactive approval workflow:** In strict mode with TTY, sync prompts to approve unapproved bundle hashes
+- **Lockfile regeneration workflow:** Sync regenerates lockfile automatically; enforce in CI with `aligntrue drift --gates`
   - Reduces workflow from 5 steps to 2 steps (approve during sync instead of separate command)
   - Auto-adds approved hash to allow list and reminds to commit
   - Non-interactive mode still shows error with manual approval instructions
@@ -761,7 +764,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 - **Improved error messages:** All lockfile validation errors now show correct approval workflow
   - Soft mode: warns about unapproved hash but allows sync to proceed
   - Strict mode: blocks sync and shows clear 3-step approval process
-- **Enhanced team status output:** Clarified lockfile mode descriptions (off/soft/strict)
+- **Enhanced team status output:** Simplified lockfile status (enabled/disabled) with drift CLI guidance
 
 ### Changed (Previously)
 
