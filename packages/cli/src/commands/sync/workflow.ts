@@ -343,9 +343,11 @@ export async function executeSyncWorkflow(
       const { createRemotesManager } = await import("@aligntrue/core");
       const rulesDir = join(cwd, ".aligntrue", "rules");
 
+      // Pass mode to enable mode-aware routing (solo pushes all, team uses scope)
       const remotesManager = createRemotesManager(config.remotes, {
         cwd,
         rulesDir,
+        mode: config.mode || "solo",
       });
 
       // Only push if auto is enabled
@@ -387,7 +389,42 @@ export async function executeSyncWorkflow(
           ) {
             spinner.stop("Remote sync skipped (no changes)");
           } else if (syncResult.results.length === 0) {
-            spinner.stop("Remote sync: no files to sync");
+            // Show actionable diagnostics when no files sync
+            spinner.stop("Remote sync: no files matched routing rules");
+
+            // Display diagnostics to help user understand why
+            if (syncResult.diagnostics) {
+              const { mode, totalFiles, unroutedFiles } =
+                syncResult.diagnostics;
+              clack.log.info(
+                `Found ${totalFiles} rule files, 0 routed to remotes`,
+              );
+
+              if (mode === "team") {
+                clack.log.info(
+                  `Team mode uses scope-based routing. Add 'scope: personal' to rule frontmatter.`,
+                );
+              } else if (totalFiles > 0) {
+                clack.log.info(
+                  `Check that remotes.personal is configured in .aligntrue/config.yaml`,
+                );
+              }
+
+              // Show sample unrouted files (up to 5)
+              if (unroutedFiles.length > 0 && unroutedFiles.length <= 5) {
+                for (const { path, scope, reason } of unroutedFiles) {
+                  clack.log.step(`  ${path} (${scope}: ${reason})`);
+                }
+              } else if (unroutedFiles.length > 5) {
+                for (const { path, scope, reason } of unroutedFiles.slice(
+                  0,
+                  3,
+                )) {
+                  clack.log.step(`  ${path} (${scope}: ${reason})`);
+                }
+                clack.log.step(`  ... and ${unroutedFiles.length - 3} more`);
+              }
+            }
           } else {
             spinner.stop("Remote sync completed");
           }

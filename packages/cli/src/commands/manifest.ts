@@ -27,6 +27,7 @@ import {
   add,
   remove,
   rules,
+  remotes,
   uninstall,
 } from "./index.js";
 
@@ -134,6 +135,12 @@ export const COMMANDS: CommandMeta[] = [
     summary: "List rules and view agent targeting",
     category: "source",
     handler: rules,
+  },
+  {
+    name: "remotes",
+    summary: "Manage remote destinations (status, push)",
+    category: "source",
+    handler: remotes,
   },
   {
     name: "scopes",

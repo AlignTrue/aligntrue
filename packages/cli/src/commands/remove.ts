@@ -10,9 +10,10 @@
  *   aligntrue remove https://example.com/my-align.yaml
  */
 
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import * as clack from "@clack/prompts";
 import { patchConfig, type AlignTrueConfig } from "@aligntrue/core";
+import { parse as parseYaml } from "yaml";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -88,7 +89,27 @@ export async function remove(args: string[]): Promise<void> {
 
   try {
     // Load config
-    const config: AlignTrueConfig = await loadConfigWithValidation(configPath);
+    let config: AlignTrueConfig | undefined;
+    try {
+      config = await loadConfigWithValidation(configPath);
+    } catch {
+      // Fall back to lenient parse so users can repair invalid configs
+      try {
+        const raw = readFileSync(configPath, "utf-8");
+        config = (parseYaml(raw) as AlignTrueConfig) || { sources: [] };
+        if (isTTY()) {
+          clack.log.warn(
+            "Config is invalid. Loaded raw YAML to allow removal of bad sources.",
+          );
+        }
+      } catch (rawError) {
+        throw rawError;
+      }
+    }
+
+    if (!config) {
+      throw new Error("Failed to load configuration");
+    }
 
     // Check if sources exist
     if (!config.sources || config.sources.length === 0) {

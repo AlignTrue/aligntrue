@@ -554,9 +554,10 @@ export async function buildSyncContext(
     // For git sources, use a temporary bundle file instead of .aligntrue/rules
     // to preserve the git source as the canonical source
     const isGitSource = config.sources?.[0]?.type === "git";
+    const multipleSources = bundleResult.sources.length > 1;
     let targetPath: string;
 
-    if (isGitSource) {
+    if (isGitSource || multipleSources) {
       // Use a temporary bundle file for git sources
       targetPath = resolve(cwd, ".aligntrue/.temp/bundle.yaml");
       const tempDir = dirname(targetPath);
@@ -569,7 +570,7 @@ export async function buildSyncContext(
           : resolve(cwd, paths.rules);
     }
 
-    // Write merged bundle to file (skip if target is a directory - new format)
+    // Write merged bundle to file (skip only when directory target and single source)
     // Uses EAFP pattern to avoid TOCTOU race condition
     try {
       const yaml = await import("yaml");
@@ -578,12 +579,23 @@ export async function buildSyncContext(
       absoluteSourcePath = targetPath;
     } catch (err) {
       // EISDIR means target is a directory (new format - rules already in place)
-      // This is expected and OK - skip writing, rules are already in place
+      // For multiple sources, directory targets are invalid; use temp bundle instead
       const isDirectoryError =
         err instanceof Error &&
         "code" in err &&
         (err as NodeJS.ErrnoException).code === "EISDIR";
-      if (!isDirectoryError) {
+      if (isDirectoryError && !multipleSources) {
+        // For single-source directory, keep absoluteSourcePath as existing directory
+      } else if (isDirectoryError && multipleSources) {
+        // Fallback: write merged bundle to temp file
+        const fallbackPath = resolve(cwd, ".aligntrue/.temp/bundle.yaml");
+        const tempDir = dirname(fallbackPath);
+        ensureDirectoryExists(tempDir);
+        const yaml = await import("yaml");
+        const bundleYaml = yaml.stringify(bundleResult.align);
+        writeFileSync(fallbackPath, bundleYaml, "utf-8");
+        absoluteSourcePath = fallbackPath;
+      } else {
         throw ErrorFactory.fileWriteFailed(
           "merged bundle",
           err instanceof Error ? err.message : String(err),
@@ -725,7 +737,12 @@ async function checkAgentsWithCache(
       }
     }
 
-    if (detection.notFound.length > 0 && !options.skipNotFoundWarning) {
+    const isFirstDetection = !cache;
+    if (
+      detection.notFound.length > 0 &&
+      !options.skipNotFoundWarning &&
+      !isFirstDetection
+    ) {
       clack.log.info(
         `Configured exporters not detected: ${detection.notFound.join(", ")}\n` +
           "  (These agents may not be installed)",

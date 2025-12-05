@@ -7,7 +7,11 @@
 
 export { RemotesManager, createRemotesManager } from "./manager.js";
 
-export { resolveFileAssignments, getRemotesStatus } from "./file-resolver.js";
+export {
+  resolveFileAssignments,
+  getRemotesStatus,
+  type FileResolutionOptions,
+} from "./file-resolver.js";
 
 export {
   pushToRemote,
@@ -25,6 +29,8 @@ export type {
   FileAssignment,
   ResolutionWarning,
   FileResolutionResult,
+  FileResolutionDiagnostics,
+  UnroutedFile,
   RemotePushResult,
   RemotesSyncResult,
   RemotesOptions,
