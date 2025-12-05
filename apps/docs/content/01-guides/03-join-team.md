@@ -38,10 +38,10 @@ That's it for most team members. The sections below cover optional personal conf
 
 Your project has two configuration files:
 
-| File                          | Purpose                                    | Git status |
-| ----------------------------- | ------------------------------------------ | ---------- |
-| `.aligntrue/config.team.yaml` | Team settings (rules, exporters, lockfile) | Committed  |
-| `.aligntrue/config.yaml`      | Your personal settings (optional)          | Gitignored |
+| File                          | Purpose                                         | Git status |
+| ----------------------------- | ----------------------------------------------- | ---------- |
+| `.aligntrue/config.team.yaml` | Team settings (rules, exporters, lockfile mode) | Committed  |
+| `.aligntrue/config.yaml`      | Your personal settings (optional)               | Gitignored |
 
 When you first sync in a team repo, AlignTrue creates an empty `.aligntrue/config.yaml` for your personal settings and keeps it gitignored. You can ignore it or use it to:
 
@@ -145,7 +145,7 @@ Agent files (`.cursor/rules/*.mdc`, `AGENTS.md`) are:
 
 - Generated exports from team + personal rules
 - Git-ignored by default (recommended)
-- Regenerated on each sync
+- Regenerated on each sync (backups taken before overwrite)
 - Read-only - changes are backed up but overwritten on sync
 - Always edit `.aligntrue/rules/` instead to make changes
 

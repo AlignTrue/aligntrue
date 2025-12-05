@@ -10,7 +10,7 @@ Key architectural concepts and design principles for AlignTrue.
 ## Core principles
 
 1. **Maintainability** – Prefer explicit modules and shallow trees so AI can reason about the code
-2. **Determinism** – YAML → Type-safe model → JCS canonical JSON → SHA-256 hashes
+2. **Determinism** – YAML → Type-safe model → JCS canonical JSON → SHA-256 hashes (lockfile v2 uses a single bundle hash)
 3. **Simplicity** – Small, predictable modules; no registries, no plugin magic
 4. **Local-first** – All useful flows run offline; cloud augments later
 5. **Agent parity** – Exporters preserve semantics and emit fidelity notes when they cannot
@@ -53,7 +53,7 @@ same checksum:
 
 - Rule and section hashing via `computeContentHash` during rule load, sync, and
   exporter content hashing
-- Lockfile generation hashes sections, overlays, and plugs for drift detection
+- Lockfile generation computes a single bundle hash (team rules + team config) for drift detection
 - MCP config generation hashes the server map
 - Catalog publishing (removed from roadmap) would reuse the same hashing path
 
@@ -80,8 +80,7 @@ Keep these modules consolidated and deterministic:
 - `packages/schema/src/validator.ts` – IR validation with Ajv strict mode
 - `packages/core/src/config/` – Config parsing and validation
 - `packages/core/src/sync/` – Sync engine (rules → IR → agents)
-- `packages/core/src/bundle.ts` – Dependency merge + precedence (team mode)
-- `packages/core/src/lockfile/` – Lockfile generation with canonical hashing
+- `packages/core/src/lockfile/` – Lockfile v2 generation with a single bundle hash (team rules + team config)
 - `packages/core/src/scope.ts` – Hierarchical scope resolution
 
 ### Adaptation layers (agent-specific)
@@ -155,15 +154,8 @@ Rules merge with precedence from most specific to least specific.
 
 - Enable with `mode: team` in config
 - Generated with `aligntrue sync`
-- Pin exact versions and hashes
-- Detect drift in CI with `aligntrue check`
-
-### Bundles
-
-- Merge dependencies and rules
-- Resolve conflicts with precedence rules
-- Generate once, track in git
-- Enable reproducible builds
+- Lockfile v2 stores only `version` and `bundle_hash` (team rules + team config)
+- Detect drift in CI with `aligntrue drift --gates` or `aligntrue check --ci`
 
 ### Drift detection
 

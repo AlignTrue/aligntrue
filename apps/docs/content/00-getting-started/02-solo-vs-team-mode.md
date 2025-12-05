@@ -17,18 +17,17 @@ AlignTrue has two modes optimized for different workflows. This guide helps you 
 
 ## Feature comparison
 
-| Feature                  | Solo mode             | Team mode                               |
-| ------------------------ | --------------------- | --------------------------------------- |
-| **Organization**         | Simple or organized   | Organized or complex                    |
-| **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default) |
-| **Drift detection**      | ❌ Not available      | ✅ Available (aligntrue drift)          |
-| **Bundle generation**    | ❌ Disabled           | ✅ Enabled (dependency merging)         |
-| **Backup/restore**       | ✅ Available          | ✅ Available                            |
-| **Git integration**      | ✅ Optional           | ✅ Recommended                          |
-| **CI/CD validation**     | ✅ Basic checks       | ✅ Full validation + drift gates        |
-| **Setup complexity**     | Low (60 seconds)      | Medium (5 minutes)                      |
-| **Maintenance overhead** | Minimal               | Low to medium                           |
-| **Best for**             | Individual developers | Teams and organizations                 |
+| Feature                  | Solo mode             | Team mode                                      |
+| ------------------------ | --------------------- | ---------------------------------------------- |
+| **Organization**         | Simple or organized   | Organized or complex                           |
+| **Lockfile**             | ❌ Disabled           | ✅ Enabled (soft validation by default)        |
+| **Drift detection**      | ❌ Not available      | ✅ Available (lockfile bundle hash comparison) |
+| **Backup/restore**       | ✅ Available          | ✅ Available                                   |
+| **Git integration**      | ✅ Optional           | ✅ Recommended                                 |
+| **CI/CD validation**     | ✅ Basic checks       | ✅ Full validation + drift gates               |
+| **Setup complexity**     | Low (60 seconds)      | Medium (5 minutes)                             |
+| **Maintenance overhead** | Minimal               | Low to medium                                  |
+| **Best for**             | Individual developers | Teams and organizations                        |
 
 **Note:** For guidance on organizing rules, see the rule organization sections in the [Solo developer guide](/docs/01-guides/01-solo-developer-guide#organizing-your-rules) or [Team guide](/docs/01-guides/02-team-guide#organizing-rules-for-teams).
 
@@ -202,9 +201,9 @@ git commit -m "Switch to team mode"
 
 **Configuration after switching:**
 
-- `.aligntrue/config.team.yaml` (committed) - Team settings, lockfile, bundle
+- `.aligntrue/config.team.yaml` (committed) - Team settings, lockfile mode, exporters
 - `.aligntrue/config.yaml` (gitignored) - Your personal settings and overrides
-- `.aligntrue/lock.json` (committed) - Lockfile for reproducibility
+- `.aligntrue/lock.json` (committed) - Lockfile v2 with bundle hash of team rules + team config
 
 **Why use team mode:**
 

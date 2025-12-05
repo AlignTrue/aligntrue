@@ -409,24 +409,15 @@ aligntrue sync --dry-run
 
 **Why:** Catch issues before overwriting agent files.
 
-### 4. Commit agent files to git (optional)
+### 4. Handle agent exports in git
 
-Decide whether to commit generated agent files.
+- Exports are generated artifacts. Default git mode for solo/team is `ignore`, so keep them gitignored and regenerate with `aligntrue sync` (dev + CI).
+- Commit exports only when required (compliance snapshot, downstream handoff without AlignTrue, or a specific exporter that must be reviewed). Use per-exporter overrides if needed.
+- Ignoring exports does **not** break agents; they load whatever is on disk after sync.
 
-**Commit agent files if:**
-
-- Team members use different agents
-- You want to see diffs in PRs
-- You want backup of agent configs
-
-**Don't commit if:**
-
-- All team members regenerate on sync
-- You want minimal git noise
-- Agent files are large
+Recommended `.gitignore` when not committing:
 
 ```bash
-# .gitignore (if not committing)
 .cursor/rules/
 AGENTS.md
 WINDSURF.md

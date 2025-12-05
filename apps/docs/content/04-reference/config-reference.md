@@ -413,6 +413,12 @@ git:
   auto_gitignore: auto # auto | always | never
 ```
 
+**Behavior:**
+
+- Applies to generated agent exports (`.cursor/rules`, `AGENTS.md`, etc.). Solo/team default to `ignore` to avoid PR noise; enterprise defaults to `commit` for auditability.
+- Agents still work when exports are gitignored as long as `aligntrue sync` runs (locally or in CI).
+- Use `per_exporter` overrides when a specific export must be tracked (e.g., commit `AGENTS.md`, ignore `.cursor/rules/`).
+
 ### export
 
 **Type:** `object`
