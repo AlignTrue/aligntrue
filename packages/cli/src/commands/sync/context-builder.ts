@@ -417,7 +417,7 @@ version: "1"
       if (config.mode === "team") {
         throw new TeamModeError(
           `Git source has updates available:\n${details}`,
-          "Team mode requires approval before updating git sources.",
+          "Team mode requires approval before updating git sources.\nApprove by merging the source update PR, then run 'aligntrue sync'.",
         ).withNextSteps(nextSteps);
       }
 

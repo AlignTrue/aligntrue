@@ -14,7 +14,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "fs";
-import { join } from "path";
+import { join, relative, isAbsolute } from "path";
 import { execFileSync } from "child_process";
 
 export type GitMode = "ignore" | "commit" | "branch";
@@ -444,7 +444,6 @@ export class GitIntegration {
     workspaceRoot: string,
     files: string[],
   ): string[] {
-    const { relative, isAbsolute } = require("path");
     return files.map((f) => {
       // Only convert absolute paths; relative paths just need slash normalization
       if (isAbsolute(f)) {

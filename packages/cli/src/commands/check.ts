@@ -257,6 +257,9 @@ export async function check(args: string[]): Promise<void> {
       spinner.stop("Validation failed");
       console.error("✗ Lockfile validation failed\n");
       console.error(`  ${lockfileResult.error}\n`);
+      console.error(
+        `  Try: rm ${lockfileResult.lockfilePath} && aligntrue sync\n`,
+      );
       process.exitCode = 2;
       return;
     }
@@ -416,8 +419,12 @@ export async function check(args: string[]): Promise<void> {
         ),
       );
     } else {
-      console.error("✗ System error\n");
+      console.error("✗ Unexpected error\n");
       console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
+      console.error(
+        "  Try: aligntrue check --json for machine-readable output",
+      );
+      console.error("  If this persists, report with: aligntrue --version\n");
     }
     process.exitCode = 2;
   }
