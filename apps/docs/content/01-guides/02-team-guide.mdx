@@ -34,7 +34,7 @@ When you enable team mode, AlignTrue creates two config files:
 
 | File               | Purpose                                              | Git status |
 | ------------------ | ---------------------------------------------------- | ---------- |
-| `config.team.yaml` | Team settings (exporters, sources, lockfile mode)    | Committed  |
+| `config.team.yaml` | Team settings (exporters, sources, lockfile on)      | Committed  |
 | `config.yaml`      | Personal settings (personal remote, local overrides) | Gitignored |
 
 This separation means:
@@ -44,7 +44,7 @@ This separation means:
 - **Personal rules** route to personal remote automatically
 - **Team settings** are shared and reviewed via PR
 
-Team members joining will have `config.yaml` auto-created on first sync.
+New team members: run `aligntrue team join` to create your personal (gitignored) `config.yaml`.
 
 ## Team mode features
 
@@ -57,8 +57,8 @@ Team members joining will have `config.yaml` auto-created on first sync.
 
 **What changes from solo mode:**
 
-- Lockfile enabled (off/soft/strict validation)
-- Drift detection available (lockfile-only)
+- Lockfile enabled (deterministic bundle hash)
+- Drift detection via `aligntrue drift` (CI gates with `--gates`)
 - Source approval via git PR workflow
 
 ## Organizing rules for teams
@@ -152,14 +152,8 @@ aligntrue team enable
 
 - Creates `.aligntrue/lock.json` (lockfile)
 - Sets mode to `team` in config
-- Enables lockfile validation (soft by default)
+- Enables lockfile (deterministic bundle hash)
 - Source approval happens via git PR workflow
-
-**Lockfile modes:**
-
-- `off` - No validation (like solo mode)
-- `soft` - Warn on drift, don't block
-- `strict` - Block on drift, require exact match
 
 ### Step 2: Configure sources
 

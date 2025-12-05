@@ -14,12 +14,12 @@ AlignTrue uses **unidirectional sync**: edit files in `.aligntrue/rules/`, run s
 **When you run `aligntrue sync`:**
 
 1. **Load config** from `.aligntrue/config.yaml`
-2. **Check for team mode** - if enabled, validate lockfile
-3. **Load rules** from `.aligntrue/rules/*.md` (your source of truth)
-4. **Detect edits** by checking modification times (mtime)
-5. **Create safety backup** (always, unless `--dry-run`) - backs up rules and agent files
-6. **Merge to IR** - rules load into an in-memory IR (no separate IR file on disk)
-7. **Export to all agents** - IR syncs to Cursor, AGENTS.md, VS Code, etc. (read-only exports)
+2. **Load rules** from `.aligntrue/rules/*.md` (your source of truth)
+3. **Detect edits** by checking modification times (mtime)
+4. **Create safety backup** (always, unless `--dry-run`) - backs up rules and agent files
+5. **Merge to IR** - rules load into an in-memory IR (no separate IR file on disk)
+6. **Export to all agents** - IR syncs to Cursor, AGENTS.md, VS Code, etc. (read-only exports)
+7. **Regenerate lockfile** in team mode after exports (skipped on `--dry-run`)
 8. **Done** - no interaction required
 
 **Key facts:**
@@ -76,18 +76,17 @@ Edit `.aligntrue/rules/global.md`, run `aligntrue sync`, changes export to all a
 ```yaml
 # .aligntrue/config.yaml
 mode: team
+modules:
+  lockfile: true
 sources:
   - type: local
     path: .aligntrue/rules
 exporters:
   - cursor
   - agents
-
-lockfile:
-  mode: soft # Warn on unapproved changes (default)
 ```
 
-Edit `.aligntrue/rules/` → changes validated against lockfile.
+Edit `.aligntrue/rules/` → lockfile is regenerated on sync; enforce drift in CI with `aligntrue drift --gates`.
 
 ## Common sync scenarios
 
