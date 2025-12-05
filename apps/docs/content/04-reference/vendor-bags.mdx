@@ -271,7 +271,7 @@ vendor:
 1. Add exact paths under `vendor._meta.volatile`.
 2. Run `aligntrue sync`.
 3. Change only the volatile field (e.g., update a timestamp) and rerun `aligntrue sync`.
-4. Confirm `.aligntrue.lock.json` is unchanged (`git diff` locally or `pnpm aligntrue drift --gates` in CI).
+4. Confirm `.aligntrue/lock.json` is unchanged (`git diff` locally or `pnpm aligntrue drift --gates` in CI).
 
 ## Round-trip preservation
 

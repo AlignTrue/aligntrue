@@ -93,7 +93,7 @@ aligntrue check --json
 Exit code: 1
 ```
 
-**Cause:** CI is using `lockfile.mode: strict` and rules changed since the last lockfile update. Current lockfile path is `.aligntrue/lock.json` (AlignTrue will migrate legacy `.aligntrue.lock.json` when you run sync).
+**Cause:** CI is using `lockfile.mode: strict` and rules changed since the last lockfile update. Current lockfile path is `.aligntrue/lock.json` (AlignTrue will migrate legacy `.aligntrue/lock.json` when you run sync).
 
 **Fix:**
 

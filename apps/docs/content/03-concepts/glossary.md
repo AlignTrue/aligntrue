@@ -163,7 +163,7 @@ Merging rules from multiple aligns/sources into a single coherent rule set (team
 
 ### Lockfile
 
-A deterministic snapshot of your complete rule set with cryptographic hashes (team mode only). File: `.aligntrue.lock.json`
+A deterministic snapshot of your complete rule set with cryptographic hashes (team mode only). File: `.aligntrue/lock.json`
 
 **Purpose:**
 

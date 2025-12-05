@@ -146,7 +146,7 @@ Aborting sync. Fix lockfile drift or use --force.
 aligntrue sync --force
 
 # Or in two steps:
-rm .aligntrue.lock.json
+rm .aligntrue/lock.json
 aligntrue sync
 ```
 

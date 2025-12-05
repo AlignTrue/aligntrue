@@ -593,7 +593,7 @@ Mark each command as tested:
 
 After completing all areas:
 
-1. **Commands tested:** X / 22
+1. **Commands test report:** X / 22
 2. **Issues found:** X critical, X medium, X low
 3. **Tests that failed:** (List any)
 4. **Doc mismatches:** (List any)
