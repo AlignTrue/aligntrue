@@ -337,6 +337,39 @@ const noHardcodedSecrets = {
   },
 };
 
+// Custom rule to prevent process.exit() in CLI command files
+// Commands should throw AlignTrueError instead; exit is handled by top-level catch
+const noProcessExitInCommands = {
+  meta: {
+    type: "problem",
+    fixable: false,
+    messages: {
+      noExit:
+        "Throw AlignTrueError instead of calling process.exit(). See COMMAND-FRAMEWORK.md#error-handling",
+    },
+  },
+  create(context) {
+    return {
+      CallExpression(node) {
+        // Check for process.exit()
+        if (
+          node.callee &&
+          node.callee.type === "MemberExpression" &&
+          node.callee.object &&
+          node.callee.object.name === "process" &&
+          node.callee.property &&
+          node.callee.property.name === "exit"
+        ) {
+          context.report({
+            node,
+            messageId: "noExit",
+          });
+        }
+      },
+    };
+  },
+};
+
 export default [
   {
     ignores: [
@@ -383,6 +416,7 @@ export default [
           "no-math-random": noMathRandom,
           "no-env-var-in-output": noEnvVarInOutput,
           "no-hardcoded-secrets": noHardcodedSecrets,
+          "no-process-exit-in-commands": noProcessExitInCommands,
         },
       },
     },
@@ -432,6 +466,14 @@ export default [
     files: ["packages/ui/src/**/*.{ts,tsx}"],
     rules: {
       "custom-rules/no-asset-imports-in-ui": "error",
+    },
+  },
+  {
+    // Enforce throwing AlignTrueError instead of process.exit() in CLI commands
+    // See packages/cli/COMMAND-FRAMEWORK.md#error-handling
+    files: ["packages/cli/src/commands/**/*.ts"],
+    rules: {
+      "custom-rules/no-process-exit-in-commands": "warn",
     },
   },
   {
