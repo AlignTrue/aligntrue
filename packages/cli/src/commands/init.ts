@@ -801,7 +801,6 @@ export async function init(args: string[] = []): Promise<void> {
     config.mode = "team";
     config.modules = {
       lockfile: true,
-      bundle: true,
     };
   }
 

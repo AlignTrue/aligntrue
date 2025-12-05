@@ -1,6 +1,6 @@
 /**
  * Sync tracking and hash management
- * Centralized source of truth for sync detection, drift detection, and change tracking.
+ * Centralized source of truth for sync detection and change tracking.
  */
 
 import {
@@ -11,83 +11,6 @@ import {
   statSync,
 } from "fs";
 import { join, dirname } from "path";
-import { computeHash } from "@aligntrue/schema";
-
-/**
- * Interface for stored agent export hashes
- */
-export interface AgentExportHashes {
-  version: "1";
-  exports: Record<string, string>; // path -> SHA-256 hash
-  updated_at: number; // For human debugging only
-}
-
-/**
- * Get stored agent export hashes
- * @param cwd - Workspace root directory
- */
-export function getAgentExportHashes(cwd: string): AgentExportHashes | null {
-  const hashFile = join(cwd, ".aligntrue", ".agent-export-hashes.json");
-
-  if (!existsSync(hashFile)) {
-    return null;
-  }
-
-  try {
-    const content = readFileSync(hashFile, "utf-8");
-    return JSON.parse(content) as AgentExportHashes;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Store an agent export hash
- * @param cwd - Workspace root directory
- * @param agentPath - Relative path to agent file (e.g., "AGENTS.md")
- * @param content - Content to hash
- */
-export function storeAgentExportHash(
-  cwd: string,
-  agentPath: string,
-  content: string,
-): void {
-  const hashFile = join(cwd, ".aligntrue", ".agent-export-hashes.json");
-
-  // Load existing hashes or create new
-  const existing = getAgentExportHashes(cwd);
-  const hashes: AgentExportHashes = existing || {
-    version: "1",
-    exports: {},
-    updated_at: Date.now(),
-  };
-
-  // Compute SHA-256 hash
-  const hash = computeHash(content);
-
-  // Update hash for this file
-  hashes.exports[agentPath] = hash;
-  hashes.updated_at = Date.now();
-
-  // Save back to file
-  try {
-    const dir = dirname(hashFile);
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(hashFile, JSON.stringify(hashes, null, 2), "utf-8");
-  } catch (err) {
-    console.warn(`Failed to save agent export hashes: ${err}`);
-  }
-}
-
-/**
- * Get stored hash for a specific agent file
- * @param cwd - Workspace root directory
- * @param agentPath - Relative path to agent file
- */
-export function getStoredHash(cwd: string, agentPath: string): string | null {
-  const hashes = getAgentExportHashes(cwd);
-  return hashes?.exports[agentPath] || null;
-}
 
 /**
  * Get the timestamp of the last successful sync operation
@@ -125,8 +48,6 @@ export function updateLastSyncTimestamp(cwd: string): void {
   try {
     const dir = dirname(lastSyncFile);
     mkdirSync(dir, { recursive: true });
-    // Simple write is sufficient as this is only used for "last synced X ago" messages
-    // Drift detection now uses content hashes, so precise timestamp ordering is not critical
     writeFileSync(lastSyncFile, timestamp.toString(), "utf-8");
   } catch (err) {
     // Log error for debugging but don't fail the sync
@@ -197,7 +118,6 @@ export function getFileModificationTime(filePath: string): number | null {
 /**
  * Interface for stored source rule hashes
  * Used to detect changes in .aligntrue/rules/*.md files
- * Follows same pattern as agent export hashes for consistency
  */
 export interface SourceRuleHashes {
   version: "1";
@@ -278,9 +198,7 @@ export function detectSourceRuleChanges(
 ): boolean {
   const stored = getSourceRuleHashes(cwd);
 
-  // No stored hashes = first sync or backward compatibility (timestamps used before)
-  // In backward compatibility mode, we can't reliably detect changes, so assume sync needed
-  // This ensures users get correct behavior even without prior hash tracking
+  // No stored hashes = first sync or backward compatibility
   if (!stored) {
     return true;
   }

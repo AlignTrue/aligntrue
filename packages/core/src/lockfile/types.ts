@@ -1,80 +1,71 @@
 /**
- * Lockfile types for hash-based drift detection
+ * Lockfile types for hash-based drift detection (v2)
+ *
+ * Simplified to just bundle_hash - no per-rule tracking needed.
+ * Git handles diffing, we just need to know if state changed.
  */
 
-export interface LockfileEntry {
-  rule_id: string;
-  content_hash: string; // SHA-256 of canonical IR (vendor.volatile excluded) - alias to result_hash
-  // Full provenance tracking
-  owner?: string;
-  source?: string;
-  source_sha?: string;
-  // Triple-hash format for overlay tracking (Overlays system)
-  // base_hash: Hash of upstream align (before overlays)
-  // overlay_hash: Hash of overlay configuration (when overlays applied)
-  // result_hash: Hash of final result (after overlays applied)
-  base_hash?: string;
-  overlay_hash?: string;
-  result_hash?: string;
-  // Plugs tracking (Plugs system)
-  pre_resolution_hash?: string; // Hash before plug resolution (template)
-  post_resolution_hash?: string; // Hash after plug resolution (with fills)
-  unresolved_plugs_count?: number; // Count of unresolved required plugs
+/**
+ * Lockfile v2 - minimal format
+ *
+ * bundle_hash covers:
+ * - All .aligntrue/rules/*.md file hashes (excluding scope: personal)
+ * - .aligntrue/config.team.yaml hash
+ */
+export interface Lockfile {
+  version: "1" | "2"; // Support both during migration
+  bundle_hash: string; // SHA-256 of all team-managed content
 }
 
-export interface Lockfile {
+/**
+ * Legacy v1 lockfile format (for migration detection)
+ */
+export interface LockfileV1 {
   version: "1";
-  generated_at: string; // ISO 8601 timestamp
+  generated_at: string;
   mode: "team" | "enterprise";
-  rules: LockfileEntry[];
-  bundle_hash: string; // hash of all rule hashes combined
-  /**
-   * SHA-256 of .aligntrue.team.yaml at lockfile generation time
-   * Used for detecting severity remapping drift (Team mode)
-   */
+  rules: Array<{
+    rule_id: string;
+    content_hash: string;
+    owner?: string;
+    source?: string;
+    source_sha?: string;
+    base_hash?: string;
+    overlay_hash?: string;
+    result_hash?: string;
+    pre_resolution_hash?: string;
+    post_resolution_hash?: string;
+    unresolved_plugs_count?: number;
+  }>;
+  bundle_hash: string;
   team_yaml_hash?: string;
-  /**
-   * Total count of unresolved required plugs across all aligns (Plugs system)
-   */
   total_unresolved_plugs?: number;
-  /**
-   * Count of personal-scoped sections excluded from lockfile validation
-   * Personal sections can change freely without triggering drift detection
-   */
   personal_rules_count?: number;
-  /**
-   * Indicates this is an initial/empty lockfile created during team enable
-   * Drift detection should not report false positives for initial lockfiles
-   */
   is_initial?: boolean;
 }
 
 export type LockfileMode = "off" | "soft" | "strict";
 
-export interface Mismatch {
-  rule_id: string;
-  expected_hash: string;
-  actual_hash: string;
-  // Full provenance for context in errors
-  owner?: string;
-  source?: string;
-  source_sha?: string;
-  // Triple-hash comparison details (Overlays system)
-  hash_type?: "base" | "overlay" | "result"; // Which hash mismatched
-  base_hash?: string;
-  overlay_hash?: string;
-  result_hash?: string;
-}
-
+/**
+ * Simplified validation result - just checks bundle_hash
+ */
 export interface LockfileValidationResult {
   valid: boolean;
-  mismatches: Mismatch[];
-  newRules: string[];
-  deletedRules: string[];
+  expectedHash: string;
+  actualHash: string;
 }
 
 export interface EnforcementResult {
   success: boolean;
   message?: string;
   exitCode: number; // 0 = success, 1 = failure
+}
+
+/**
+ * Check if a lockfile is v1 format (needs migration)
+ */
+export function isV1Lockfile(
+  lockfile: Lockfile | LockfileV1,
+): lockfile is LockfileV1 {
+  return "rules" in lockfile || "generated_at" in lockfile;
 }

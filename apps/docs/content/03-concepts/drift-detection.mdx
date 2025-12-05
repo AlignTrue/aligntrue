@@ -1,6 +1,6 @@
 ---
-title: "Drift detection (lockfile)"
-description: "Detect and report drift between the lockfile and approved sources, with output formats and review workflows."
+title: "Drift detection"
+description: "Detect and report drift between the lockfile and current state."
 ---
 
 # Drift detection
@@ -10,67 +10,22 @@ description: "Detect and report drift between the lockfile and approved sources,
   lockfiles and team mode.
 </Callout>
 
-Drift detection helps teams keep `.aligntrue/lock.json` and exported agent files in sync with the rules they represent. It reports when rules changed after the lockfile was written, when agent exports were edited manually, or when severity remapping policies were modified.
+Drift detection helps teams keep `.aligntrue/lock.json` in sync with the rules and config it represents. It reports when rules or team config changed after the lockfile was generated.
 
 ## Overview
 
-Drift detection checks:
+Drift detection checks if the current `bundle_hash` matches the lockfile. The bundle hash covers:
 
-- **Lockfile drift** - Rules changed since the lockfile bundle hash was written
-- **Agent file drift** - Agent exports (e.g., `AGENTS.md`, `.cursor/rules/*.mdc`) edited after `aligntrue sync`
-- **Severity remap drift** - `.aligntrue.team.yaml` changed or removed
+- All team-scoped rules (`.aligntrue/rules/*.md` excluding `scope: personal`)
+- Team config (`.aligntrue/config.team.yaml`)
+
+If the hash differs, drift has occurred.
 
 **Key benefits:**
 
 - Catch rule changes before they silently diverge from the lockfile
-- Detect manual edits to exported agent files
-- Monitor severity policy compliance
 - CI/CD integration with `--gates` flag
-
-## Drift categories
-
-### Lockfile drift
-
-**What it detects:** Rules changed since the lockfile bundle hash was generated.
-
-**Common causes:**
-
-- `.aligntrue/rules` changed without regenerating the lockfile
-- Another branch or machine synced different rules
-
-**How to fix:**
-
-```bash
-# Regenerate the lockfile
-aligntrue sync
-```
-
-### Agent file drift
-
-**What it detects:** Manual edits to agent files (`AGENTS.md`, `.cursor/rules/*.mdc`, etc.) after the last sync. Uses hashes from `.aligntrue/.agent-export-hashes.json` written by `aligntrue sync`; the first run after enabling team mode populates it.
-
-**Common causes:**
-
-- Developer edited agent files directly
-- Copy/paste changes into agent exports instead of `.aligntrue/rules`
-
-**How to fix:**
-
-```bash
-# Overwrite agent files from the IR
-aligntrue sync
-```
-
-**Mechanism:** Uses content hashing (SHA-256); timestamps are not used.
-
-### Severity remap drift
-
-**What it detects:** Changes to `.aligntrue.team.yaml` severity remapping rules, or the file missing since the lockfile was written.
-
-**Common causes:**
-
-- Policy downgraded without approval
-- Severity remap rules modified or deleted
+- Simple: one hash, one check
 
 ## Usage
 
@@ -87,16 +42,11 @@ aligntrue drift
 #
 # LOCKFILE DRIFT:
 #   _bundle
-#     Rules have changed since last lockfile generation
+#     Rules or team config have changed since last lockfile generation
 #     Suggestion: Run: aligntrue sync (to regenerate lockfile)
 #
-# AGENT FILE DRIFT:
-#   _agent_cursor
-#     .cursor/rules/base.mdc modified after last sync
-#     Suggestion: Run 'aligntrue sync' to overwrite or move changes to .aligntrue/rules/
-#
 # Lockfile: .aligntrue/lock.json
-# Findings: 2
+# Findings: 1
 ```
 
 ### CI integration
@@ -106,9 +56,9 @@ aligntrue drift
 aligntrue drift --gates
 
 # Exit codes:
-# 0 = Success (no drift, or drift without --gates)
+# 0 = No drift (or drift without --gates)
 # 1 = Not in team mode
-# 2 = Drift detected when --gates is set (or config load error)
+# 2 = Drift detected when --gates is set
 ```
 
 ### JSON output
@@ -126,27 +76,16 @@ aligntrue drift --json
 #     {
 #       "category": "lockfile",
 #       "ruleId": "_bundle",
-#       "description": "Rules have changed since last lockfile generation",
+#       "description": "Rules or team config have changed since last lockfile generation",
 #       "suggestion": "Run: aligntrue sync (to regenerate lockfile)",
 #       "lockfile_hash": "sha256:...",
 #       "expected_hash": "sha256:..."
-#     },
-#     {
-#       "category": "agent_file",
-#       "ruleId": "_agent_cursor",
-#       "description": ".cursor/rules/base.mdc modified after last sync",
-#       "suggestion": "Run 'aligntrue sync' to overwrite or move changes to .aligntrue/rules/"
 #     }
 #   ],
 #   "summary": {
-#     "total": 2,
+#     "total": 1,
 #     "by_category": {
-#       "lockfile": 1,
-#       "agent_file": 1,
-#       "upstream": 0,
-#       "overlay": 0,
-#       "result": 0,
-#       "severity_remap": 0
+#       "lockfile": 1
 #     }
 #   }
 # }
@@ -155,28 +94,18 @@ aligntrue drift --json
 ### SARIF output
 
 ```bash
-# For GitHub/GitLab CI integration
-aligntrue drift --sarif > drift-report.sarif
-
-# Upload to GitHub code scanning
-# (GitHub Actions example in CI workflows section)
+# For CI tools that support SARIF
+aligntrue drift --sarif
 ```
 
-## CI workflows
-
-<Tabs items={["GitHub Actions", "GitLab CI"]}>
-
-<Tabs.Tab>
+## CI/CD examples
 
 ### GitHub Actions
 
 ```yaml
-name: Drift Detection
+name: Drift Check
 
-on:
-  schedule:
-    - cron: "0 0 * * *" # Daily at midnight
-  workflow_dispatch:
+on: [pull_request]
 
 jobs:
   drift:
@@ -190,181 +119,71 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install -g @aligntrue/cli
+        run: npm ci
 
       - name: Check for drift
-        run: aligntrue drift --sarif > drift.sarif
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: drift.sarif
+        run: npx aligntrue drift --gates
 ```
-
-</Tabs.Tab>
-
-<Tabs.Tab>
 
 ### GitLab CI
 
 ```yaml
-drift-detection:
+drift-check:
   stage: test
   script:
-    - npm install -g @aligntrue/cli
-    - aligntrue drift --gates
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - npm ci
+    - npx aligntrue drift --gates
+  only:
+    - merge_requests
 ```
 
-</Tabs.Tab>
+## Common fixes
 
-</Tabs>
+### Lockfile drift detected
 
-### Pre-commit hook
+**Cause:** Rules or team config changed since lockfile was generated.
+
+**Fix:**
 
 ```bash
-#!/bin/sh
-# .git/hooks/pre-commit
+# Regenerate the lockfile
+aligntrue sync
 
-# Check for drift before committing lockfile changes
-if git diff --cached --name-only | grep -q ".aligntrue/lock.json"; then
-  echo "Lockfile changed, checking for drift..."
-  aligntrue drift --gates
-fi
+# Commit the updated lockfile
+git add .aligntrue/lock.json
+git commit -m "chore: Update lockfile"
 ```
 
-## Troubleshooting
+### No lockfile found
 
-### "Drift detection requires team mode"
+**Cause:** Team mode enabled but lockfile not generated yet.
 
-**Cause:** Running `aligntrue drift` in solo mode.
-
-**Solution:**
-
-```bash
-# Enable team mode
-aligntrue team enable
-
-# Or set in config
-echo "mode: team" >> .aligntrue/config.yaml
-```
-
-### "Lockfile not found"
-
-**Cause:** No lockfile generated yet.
-
-**Solution:**
+**Fix:**
 
 ```bash
 # Generate lockfile
 aligntrue sync
-```
 
-### Resolving lockfile drift
-
-**Scenario:** Rules were updated and need approval.
-
-**Solution:** Commit lockfile changes via git PR for team review:
-
-```bash
-# After syncing with rule changes
+# Commit
 git add .aligntrue/lock.json
-git commit -m "chore: Update rules (team approval via PR)"
-git push
+git commit -m "chore: Add lockfile"
 ```
 
-### Noisy lockfile drift right after sync
+## How it works
 
-**Scenario:** You just ran `aligntrue sync` and want to skip the expected lockfile difference.
+1. **Load lockfile** - Read `.aligntrue/lock.json` and extract `bundle_hash`
+2. **Compute current hash** - Hash all team rules + team config
+3. **Compare** - If hashes differ, report drift
+4. **Exit code** - With `--gates`, exit 2 if drift detected
 
-**Solution:** Use `--post-sync` to suppress the lockfile drift check for that run:
+The hash is deterministic: identical inputs always produce identical hashes. This relies on:
 
-```bash
-aligntrue drift --post-sync
-```
-
-### Agent file drift keeps appearing
-
-**Scenario:** Agent files were edited manually or hashes were never recorded.
-
-**Solution:**
-
-```bash
-# Recreate agent files and refresh export hashes
-aligntrue sync
-```
-
-## Configuration
-
-Drift detection uses your existing AlignTrue configuration:
-
-```yaml
-# .aligntrue/config.yaml
-mode: team # Required for drift detection
-
-# Lockfile settings
-modules:
-  lockfile: true # Required
-
-lockfile:
-  mode: soft # or strict
-
-# Performance settings (optional)
-performance:
-  max_file_size_kb: 1024
-  respect_gitignore: true
-```
-
-## Best practices
-
-### Regular monitoring
-
-- Run `aligntrue drift` in CI daily or on schedule
-- Use `--gates` flag in PR checks to block on drift
-- Review drift reports during team sync meetings
-
-### When to use --gates
-
-**Use `--gates` flag when:**
-
-- Enforcing strict version control
-- Blocking PRs with unauthorized changes
-- Maintaining compliance requirements
-
-**Don't use `--gates` when:**
-
-- Exploring drift informally
-- Learning about upstream changes
-- Testing new rule versions
-
-### Handling drift findings
-
-**Lockfile drift:**
-
-1. Review rule changes in `.aligntrue/rules`
-2. Run `aligntrue sync` to regenerate the lockfile
-3. Commit `.aligntrue/lock.json` for review
-
-**Agent file drift:**
-
-1. Avoid editing exported agent files directly
-2. Move changes into `.aligntrue/rules`
-3. Run `aligntrue sync` to rewrite exports
-
-**Severity remap drift:**
-
-1. Review `.aligntrue.team.yaml` changes
-2. Restore or update as intended
-3. Run `aligntrue sync` if rules also changed
-
-## Related documentation
-
-- [Team mode](/docs/03-concepts/team-mode) - Team collaboration features
-- [Git workflows](/docs/03-concepts/git-workflows) - Git sources and vendoring workflows
-- [Commands](/docs/04-reference/cli-reference) - All CLI commands reference
+- Sorted file processing
+- Canonical JSON serialization
+- Excluding personal-scoped rules
 
 ## See also
 
-- **Lockfile**: `.aligntrue/lock.json` generation and validation
-- **Team mode**: Enabling and configuring team collaboration
+- **[Team Mode](/docs/03-concepts/team-mode)** - Complete team mode reference
+- **[Team Guide](/docs/01-guides/02-team-guide)** - Step-by-step setup
+- **[CLI Reference](/docs/04-reference/cli-reference)** - All commands

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { enforceLockfile } from "../../src/lockfile/enforcer.js";
-import type { ValidationResult } from "../../src/lockfile/types.js";
+import type { LockfileValidationResult } from "../../src/lockfile/types.js";
 
 describe("lockfile enforcer", () => {
   // Mock console methods
@@ -17,24 +17,16 @@ describe("lockfile enforcer", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  const validResult: ValidationResult = {
+  const validResult: LockfileValidationResult = {
     valid: true,
-    mismatches: [],
-    newRules: [],
-    deletedRules: [],
+    expectedHash: "sha256:abc123",
+    actualHash: "sha256:abc123",
   };
 
-  const invalidResult: ValidationResult = {
+  const invalidResult: LockfileValidationResult = {
     valid: false,
-    mismatches: [
-      {
-        rule_id: "test.rule.one",
-        expected_hash: "abc123",
-        actual_hash: "def456",
-      },
-    ],
-    newRules: ["test.rule.new"],
-    deletedRules: ["test.rule.deleted"],
+    expectedHash: "sha256:abc123def456789012345678901234567890",
+    actualHash: "sha256:xyz789uvw0123456789012345678901234567",
   };
 
   describe("off mode", () => {
@@ -79,16 +71,13 @@ describe("lockfile enforcer", () => {
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Lockfile drift detected"),
       );
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Modified rules"),
-      );
     });
 
     it("suggests creating PR for team approval", () => {
       enforceLockfile("soft", invalidResult);
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("PR for team"),
+        expect.stringContaining("PR"),
       );
     });
 
@@ -123,9 +112,6 @@ describe("lockfile enforcer", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("Lockfile validation failed"),
       );
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Modified rules"),
-      );
     });
 
     it("aborts sync on failure", () => {
@@ -140,7 +126,7 @@ describe("lockfile enforcer", () => {
       enforceLockfile("strict", invalidResult);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("PR for team"),
+        expect.stringContaining("PR"),
       );
     });
 
@@ -174,12 +160,11 @@ describe("lockfile enforcer", () => {
   });
 
   describe("message content", () => {
-    it("includes validation details in message", () => {
+    it("includes hash comparison in message", () => {
       const result = enforceLockfile("soft", invalidResult);
 
-      expect(result.message).toContain("test.rule.one");
-      expect(result.message).toContain("test.rule.new");
-      expect(result.message).toContain("test.rule.deleted");
+      expect(result.message).toContain("Expected:");
+      expect(result.message).toContain("Actual:");
     });
   });
 });

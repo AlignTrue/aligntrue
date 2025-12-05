@@ -102,7 +102,7 @@ sources:
     expect(output).toContain("LOCKFILE DRIFT");
     expect(output).toContain("_bundle");
     expect(output).toContain(
-      "Rules have changed since last lockfile generation",
+      "Rules or team config have changed since last lockfile generation",
     );
   });
 
@@ -389,9 +389,8 @@ sources:
     // Parse JSON output
     const jsonOutput = JSON.parse(output);
 
-    // Verify structure includes new categories
+    // Verify structure includes lockfile category (only drift category now)
     expect(jsonOutput.summary.by_category).toHaveProperty("lockfile");
-    expect(jsonOutput.summary.by_category).toHaveProperty("agent_file");
     expect(jsonOutput.summary.by_category.lockfile).toBeGreaterThan(0);
   });
 });

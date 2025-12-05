@@ -1,30 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { readLockfile, writeLockfile } from "../../src/lockfile/io.js";
-import { generateLockfile } from "../../src/lockfile/generator.js";
-import { existsSync, mkdirSync, rmSync, readFileSync } from "fs";
+import type { Lockfile } from "../../src/lockfile/types.js";
+import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import type { Align } from "@aligntrue/schema";
 
 describe("lockfile I/O", () => {
   const testDir = join(process.cwd(), "packages/core/tests/lockfile/temp");
   const lockfilePath = join(testDir, ".aligntrue/lock.json");
 
-  const mockAlign: Align = {
-    id: "test.align",
-    version: "1.0.0",
-    spec_version: "1",
-    summary: "Test align",
-    owner: "test-org",
-    source: "https://github.com/test-org/aligns",
-    source_sha: "abc123",
-    sections: [
-      {
-        heading: "Test Rule",
-        level: 2,
-        content: "Test rule guidance",
-        fingerprint: "test-rule-one",
-      },
-    ],
+  const mockLockfile: Lockfile = {
+    version: "2",
+    bundle_hash: "sha256:abc123def456",
   };
 
   beforeEach(() => {
@@ -44,47 +30,40 @@ describe("lockfile I/O", () => {
 
   describe("writeLockfile", () => {
     it("writes lockfile to disk", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-
-      writeLockfile(lockfilePath, lockfile);
+      writeLockfile(lockfilePath, mockLockfile);
 
       expect(existsSync(lockfilePath)).toBe(true);
     });
 
     it("creates parent directory if missing", () => {
       const nestedPath = join(testDir, "nested/dir/.aligntrue/lock.json");
-      const lockfile = generateLockfile(mockAlign, "team");
 
-      writeLockfile(nestedPath, lockfile);
+      writeLockfile(nestedPath, mockLockfile);
 
       expect(existsSync(nestedPath)).toBe(true);
     });
 
     it("formats JSON with 2-space indent", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-
-      writeLockfile(lockfilePath, lockfile);
+      writeLockfile(lockfilePath, mockLockfile);
 
       const content = readFileSync(lockfilePath, "utf8");
       const lines = content.split("\n");
 
       // Check indentation
-      expect(lines.some((line) => line.startsWith('  "version"'))).toBe(true);
+      expect(lines.some((line) => line.startsWith('  "bundle_hash"'))).toBe(
+        true,
+      );
     });
 
     it("adds trailing newline", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-
-      writeLockfile(lockfilePath, lockfile);
+      writeLockfile(lockfilePath, mockLockfile);
 
       const content = readFileSync(lockfilePath, "utf8");
       expect(content.endsWith("\n")).toBe(true);
     });
 
     it("sorts JSON keys", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-
-      writeLockfile(lockfilePath, lockfile);
+      writeLockfile(lockfilePath, mockLockfile);
 
       const content = readFileSync(lockfilePath, "utf8");
       const lines = content.split("\n");
@@ -93,98 +72,28 @@ describe("lockfile I/O", () => {
       const bundleHashLine = lines.findIndex((l) =>
         l.includes('"bundle_hash"'),
       );
-      const generatedAtLine = lines.findIndex((l) =>
-        l.includes('"generated_at"'),
-      );
-      const modeLine = lines.findIndex((l) => l.includes('"mode"'));
-      const rulesLine = lines.findIndex((l) => l.includes('"rules"'));
       const versionLine = lines.findIndex((l) => l.includes('"version"'));
 
-      // Keys should be alphabetically sorted
-      expect(bundleHashLine).toBeLessThan(generatedAtLine);
-      expect(generatedAtLine).toBeLessThan(modeLine);
-      expect(modeLine).toBeLessThan(rulesLine);
-      expect(rulesLine).toBeLessThan(versionLine);
+      // Keys should be alphabetically sorted (bundle_hash before version)
+      expect(bundleHashLine).toBeLessThan(versionLine);
     });
 
     it("overwrites existing file", () => {
-      const lockfile1 = generateLockfile(mockAlign, "team");
-      const lockfile2 = generateLockfile(
-        {
-          ...mockAlign,
-          sections: [{ ...mockAlign.sections[0], guidance: "Modified" }],
-        },
-        "team",
-      );
-
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const lockfile1: Lockfile = { version: "2", bundle_hash: "sha256:first" };
+      const lockfile2: Lockfile = {
+        version: "2",
+        bundle_hash: "sha256:second",
+      };
 
       writeLockfile(lockfilePath, lockfile1);
       writeLockfile(lockfilePath, lockfile2);
-
-      warnSpy.mockRestore();
 
       const read = readLockfile(lockfilePath);
-      expect(read?.bundle_hash).toBe(lockfile2.bundle_hash);
-    });
-
-    it("only shows migration warning once and writes marker", () => {
-      const lockfile1 = generateLockfile(mockAlign, "team");
-      const lockfile2 = generateLockfile(
-        {
-          ...mockAlign,
-          sections: [
-            {
-              ...mockAlign.sections[0],
-              fingerprint: "second-rule",
-              heading: "Second Rule",
-            },
-          ],
-        },
-        "team",
-      );
-
-      // Seed lockfile with first version
-      writeLockfile(lockfilePath, lockfile1);
-
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-      // First migration should warn and create marker
-      writeLockfile(lockfilePath, lockfile2);
-      expect(
-        warnSpy.mock.calls.some((call) =>
-          call[0]?.includes(
-            "Lockfile regenerated with corrected hash computation",
-          ),
-        ),
-      ).toBe(true);
-      const markerPath = join(
-        testDir,
-        ".aligntrue",
-        ".cache",
-        "lockfile-hash-migration.json",
-      );
-      expect(existsSync(markerPath)).toBe(true);
-
-      warnSpy.mockClear();
-
-      // Subsequent differences should not warn again
-      writeLockfile(lockfilePath, lockfile1);
-      expect(
-        warnSpy.mock.calls.some((call) =>
-          call[0]?.includes(
-            "Lockfile regenerated with corrected hash computation",
-          ),
-        ),
-      ).toBe(false);
-
-      warnSpy.mockRestore();
+      expect(read?.bundle_hash).toBe("sha256:second");
     });
 
     it("uses atomic write (temp+rename)", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-
-      writeLockfile(lockfilePath, lockfile);
+      writeLockfile(lockfilePath, mockLockfile);
 
       // After successful write, temp file should not exist
       const tempPath = `${lockfilePath}.tmp`;
@@ -192,32 +101,27 @@ describe("lockfile I/O", () => {
     });
 
     it("throws on write errors", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
       // Use a path that will definitely fail on all platforms
-      // On Windows: invalid drive letter, On Unix: root with no permissions
       const invalidPath =
         process.platform === "win32"
           ? "Z:\\nonexistent\\path\\.aligntrue/lock.json"
           : "/root/nonexistent/.aligntrue/lock.json";
 
       expect(() => {
-        writeLockfile(invalidPath, lockfile);
-      }).toThrow(); // Will throw ENOENT, EACCES, or similar error
+        writeLockfile(invalidPath, mockLockfile);
+      }).toThrow();
     });
   });
 
   describe("readLockfile", () => {
     it("reads lockfile from disk", () => {
-      const original = generateLockfile(mockAlign, "team");
-      writeLockfile(lockfilePath, original);
+      writeLockfile(lockfilePath, mockLockfile);
 
       const read = readLockfile(lockfilePath);
 
       expect(read).not.toBeNull();
-      expect(read?.version).toBe("1");
-      expect(read?.mode).toBe("team");
-      expect(read?.rules).toHaveLength(1);
-      expect(read?.bundle_hash).toBe(original.bundle_hash);
+      expect(read?.version).toBe("2");
+      expect(read?.bundle_hash).toBe(mockLockfile.bundle_hash);
     });
 
     it("returns null for missing file", () => {
@@ -229,7 +133,7 @@ describe("lockfile I/O", () => {
     it("throws on invalid JSON", () => {
       const invalidJsonPath = join(testDir, "invalid.lock.json");
       mkdirSync(testDir, { recursive: true });
-      require("fs").writeFileSync(invalidJsonPath, "{ invalid json }", "utf8");
+      writeFileSync(invalidJsonPath, "{ invalid json }", "utf8");
 
       expect(() => {
         readLockfile(invalidJsonPath);
@@ -239,7 +143,7 @@ describe("lockfile I/O", () => {
     it("throws on invalid structure", () => {
       const invalidStructurePath = join(testDir, "invalid-structure.lock.json");
       mkdirSync(testDir, { recursive: true });
-      require("fs").writeFileSync(
+      writeFileSync(
         invalidStructurePath,
         JSON.stringify({ foo: "bar" }),
         "utf8",
@@ -250,54 +154,42 @@ describe("lockfile I/O", () => {
       }).toThrow(/Invalid lockfile structure/);
     });
 
-    it("preserves all lockfile fields", () => {
-      const original = generateLockfile(mockAlign, "team");
-      writeLockfile(lockfilePath, original);
+    it("reads v1 lockfile and returns simplified format", () => {
+      // Write a v1 format lockfile
+      const v1Lockfile = {
+        version: "1",
+        generated_at: "2024-01-01T00:00:00.000Z",
+        mode: "team",
+        rules: [{ rule_id: "test", content_hash: "sha256:abc" }],
+        bundle_hash: "sha256:v1bundlehash",
+      };
+      mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
+      writeFileSync(lockfilePath, JSON.stringify(v1Lockfile), "utf8");
 
       const read = readLockfile(lockfilePath);
 
-      expect(read?.version).toBe(original.version);
-      expect(read?.mode).toBe(original.mode);
-      expect(read?.generated_at).toBe(original.generated_at);
-      expect(read?.bundle_hash).toBe(original.bundle_hash);
-      expect(read?.rules).toEqual(original.rules);
+      // Should extract just the essential fields
+      expect(read).not.toBeNull();
+      expect(read?.version).toBe("1");
+      expect(read?.bundle_hash).toBe("sha256:v1bundlehash");
+    });
+
+    it("preserves all lockfile fields", () => {
+      writeLockfile(lockfilePath, mockLockfile);
+
+      const read = readLockfile(lockfilePath);
+
+      expect(read?.version).toBe(mockLockfile.version);
+      expect(read?.bundle_hash).toBe(mockLockfile.bundle_hash);
     });
   });
 
   describe("round-trip", () => {
     it("maintains data integrity", () => {
-      const original = generateLockfile(mockAlign, "team");
-
-      writeLockfile(lockfilePath, original);
+      writeLockfile(lockfilePath, mockLockfile);
       const read = readLockfile(lockfilePath);
 
-      expect(read).toEqual(original);
-    });
-
-    it("handles multiple rules", () => {
-      const alignWithMultipleRules: Align = {
-        ...mockAlign,
-        sections: [
-          mockAlign.sections[0],
-          {
-            ...mockAlign.sections[0],
-            id: "test.rule.two",
-            fingerprint: "test.rule.two",
-          },
-          {
-            ...mockAlign.sections[0],
-            id: "test.rule.three",
-            fingerprint: "test.rule.three",
-          },
-        ],
-      };
-      const original = generateLockfile(alignWithMultipleRules, "team");
-
-      writeLockfile(lockfilePath, original);
-      const read = readLockfile(lockfilePath);
-
-      expect(read?.rules).toHaveLength(3);
-      expect(read?.rules).toEqual(original.rules);
+      expect(read).toEqual(mockLockfile);
     });
   });
 });

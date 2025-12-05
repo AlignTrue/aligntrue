@@ -197,19 +197,6 @@ async function runDoctor(
     });
   }
 
-  // Bundle
-  if (config?.modules?.bundle) {
-    const bundleExists = existsSync(paths.bundle);
-    checks.push({
-      id: "bundle.exists",
-      label: `Bundle (.aligntrue.bundle.yaml)`,
-      status: bundleExists ? "ok" : "warn",
-      ...(bundleExists
-        ? {}
-        : { hint: "Run 'aligntrue sync' to regenerate bundle" }),
-    });
-  }
-
   // Exporter outputs
   const exporterNames = config ? getExporterNames(config.exporters) : [];
   if (exporterNames.length > 0) {

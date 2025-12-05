@@ -309,8 +309,8 @@ describe("drift command", () => {
 
       const output = consoleLogSpy.mock.calls[0][0];
       const parsed = JSON.parse(output);
+      // Only lockfile drift category exists now
       expect(parsed.summary.by_category.lockfile).toBeGreaterThan(0);
-      expect(parsed.summary.by_category.upstream).toBe(0);
     });
 
     it("outputs SARIF format with --sarif", async () => {

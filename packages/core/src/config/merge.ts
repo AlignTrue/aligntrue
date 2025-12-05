@@ -39,7 +39,6 @@ export const FIELD_OWNERSHIP: Record<string, FieldOwnership> = {
   // Team-only: These fields only make sense in team config
   mode: "team-only",
   "modules.lockfile": "team-only",
-  "modules.bundle": "team-only",
   "lockfile.mode": "team-only",
 
   // Personal-only: These fields should only be in personal config
@@ -383,9 +382,6 @@ export function mergeConfigs(
   const mergedModules: NonNullable<AlignTrueConfig["modules"]> = {};
   if (team.modules?.lockfile !== undefined) {
     mergedModules.lockfile = team.modules.lockfile;
-  }
-  if (team.modules?.bundle !== undefined) {
-    mergedModules.bundle = team.modules.bundle;
   }
   const mergedChecks = mergeScalar(
     personal.modules?.checks,

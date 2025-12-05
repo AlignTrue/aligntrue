@@ -73,7 +73,6 @@ mode: team
     const config = await loadConfig(configPath);
     expect(config.mode).toBe("team");
     expect(config.modules?.lockfile).toBe(true); // team default
-    expect(config.modules?.bundle).toBe(true); // team default
   });
 
   it("loads minimal config (only version + mode)", async () => {
@@ -102,7 +101,6 @@ mode: solo
 
     const config = await loadConfig(configPath);
     expect(config.modules?.lockfile).toBe(false);
-    expect(config.modules?.bundle).toBe(false);
     expect(config.modules?.checks).toBe(true);
     expect(config.modules?.mcp).toBe(false);
     expect(config.git?.mode).toBe("ignore");
@@ -122,7 +120,6 @@ mode: team
 
     const config = await loadConfig(configPath);
     expect(config.modules?.lockfile).toBe(true);
-    expect(config.modules?.bundle).toBe(true);
     expect(config.modules?.checks).toBe(true);
     expect(config.git?.mode).toBe("ignore");
   });
@@ -138,7 +135,6 @@ mode: enterprise
 
     const config = await loadConfig(configPath);
     expect(config.modules?.lockfile).toBe(true);
-    expect(config.modules?.bundle).toBe(true);
     expect(config.modules?.checks).toBe(true);
     expect(config.modules?.mcp).toBe(true);
     expect(config.git?.mode).toBe("commit");
@@ -355,7 +351,6 @@ describe("Default Application", () => {
 
     const withDefaults = applyDefaults(config);
     expect(withDefaults.modules?.lockfile).toBe(false);
-    expect(withDefaults.modules?.bundle).toBe(false);
     expect(withDefaults.modules?.checks).toBe(true);
     expect(withDefaults.git?.mode).toBe("ignore");
     expect(withDefaults.exporters).toEqual(["cursor", "agents"]);
@@ -369,7 +364,6 @@ describe("Default Application", () => {
 
     const withDefaults = applyDefaults(config);
     expect(withDefaults.modules?.lockfile).toBe(true);
-    expect(withDefaults.modules?.bundle).toBe(true);
   });
 
   it("user values override defaults", () => {
@@ -595,7 +589,6 @@ mode: team
 
     const config = await loadConfig(configPath);
     expect(config.modules?.lockfile).toBe(true);
-    expect(config.modules?.bundle).toBe(true);
   });
 });
 

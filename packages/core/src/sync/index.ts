@@ -23,8 +23,6 @@ export {
   updateLastSyncTimestamp,
   wasFileModifiedSince,
   getFileModificationTime,
-  storeAgentExportHash,
-  getAgentExportHashes,
   getSourceRuleHashes,
   storeSourceRuleHashes,
   detectSourceRuleChanges,

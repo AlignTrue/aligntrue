@@ -25,16 +25,9 @@ Team mode enables collaborative rule management with:
 
 | Feature             | Solo mode | Team mode |
 | ------------------- | --------- | --------- |
-| Lockfile generation | ❌        | ✅        |
-| Bundle generation   | ❌        | ✅        |
-| Drift detection     | ❌        | ✅        |
-
-<Callout type="warning" title=".aligntrue/bundle.yaml status">
-  `modules.bundle` enables multi-source merging in memory, but the CLI does
-  **not** write `.aligntrue/bundle.yaml` yet. Keep the flag enabled for forward
-  compatibility; expect to continue committing `.aligntrue/rules` and
-  `.aligntrue/lock.json` until the bundle writer ships.
-</Callout>
+| Lockfile generation | No        | Yes       |
+| Drift detection     | No        | Yes       |
+| Team config file    | No        | Yes       |
 
 ## Quick start
 
@@ -46,7 +39,7 @@ aligntrue team enable
 
 This creates two configuration files:
 
-- **`.aligntrue/config.team.yaml`** (new, committed) - Team settings: `mode: team`, lockfile, bundle, shared sources and exporters
+- **`.aligntrue/config.team.yaml`** (new, committed) - Team settings: `mode: team`, lockfile, shared sources and exporters
 - **`.aligntrue/config.yaml`** (updated, gitignored) - Personal settings: personal remotes, local overrides
 
 ### 2. Sync to generate lockfile
@@ -57,34 +50,23 @@ aligntrue sync
 
 This writes `.aligntrue/lock.json` with a deterministic bundle hash. Use `aligntrue sync --dry-run` to preview changes before updating the lockfile.
 
-### Lockfile with sections
+### Lockfile format (v2)
 
-Lockfiles track section fingerprints for natural markdown aligns:
+The lockfile is intentionally minimal:
 
 ```json
 {
-  "rules": [
-    {
-      "rule_id": "code-quality-a1b2c3",
-      "content_hash": "sha256:...",
-      "source": "..."
-    }
-  ]
+  "version": "2",
+  "bundle_hash": "sha256:abc123def456..."
 }
 ```
 
-For rule-based aligns, `rule_id` contains the explicit rule ID. For section-based aligns, it contains the section fingerprint (e.g., `code-quality-a1b2c3`).
+The `bundle_hash` is computed from:
 
-Section fingerprints are stable identifiers generated from the heading and content, allowing lockfiles to track changes to natural markdown sections without requiring explicit IDs.
+- All team-scoped rules (`.aligntrue/rules/*.md` excluding `scope: personal`)
+- Team config (`.aligntrue/config.team.yaml`)
 
-### Lockfile hashing expectations
-
-Lockfile entries intentionally capture vendor metadata so they describe the exact IR state that produced your exports. Two important consequences:
-
-- Non-volatile vendor fields such as `vendor.aligntrue.last_modified` are hashed. Accepting agent edits updates these timestamps, so a new sync normally produces a new lockfile hash even if the prose looks identical.
-- Fields under `vendor.*.volatile` are ignored during hashing. You can stash diagnostics (e.g., last detection run) there without tripping lockfile drift.
-
-Use `aligntrue sync --dry-run` to preview the impact of a change. Otherwise commit the regenerated lockfile whenever hashes change—this is the expected signal that your IR evolved.
+If the current state matches the lockfile, team rules haven't changed since approval.
 
 ### 3. Commit lockfile
 
@@ -131,7 +113,7 @@ Settings are split between two configuration files:
 **Team-only settings** (`.aligntrue/config.team.yaml`, committed):
 
 - `mode: team`
-- `modules.lockfile`, `modules.bundle`
+- `modules.lockfile`
 - `lockfile.*` configuration
 - Shared `sources` and `exporters`
 
@@ -202,8 +184,8 @@ git push
 ### Reviewing approved sources
 
 ```bash
-# Check lockfile for actual sources in use
-cat .aligntrue/lock.json | jq '.sources'
+# Check config for sources in use
+cat .aligntrue/config.team.yaml
 ```
 
 ### Removing sources
@@ -221,40 +203,6 @@ git commit -m "Remove old rule source"
 git push
 ```
 
-### Handling unapproved source errors
-
-**Error:**
-
-```
-✗ Unapproved sources in team mode:
-  - custom-align@example/org@v1.0.0
-
-To approve sources:
-  Add to .aligntrue/config.team.yaml and commit via PR
-
-Or bypass this check (not recommended):
-  aligntrue sync --force
-```
-
-**Resolution:**
-
-1. **Intended source:** Add to config and commit via PR
-
-   ```bash
-   # Edit .aligntrue/config.team.yaml to add source
-   aligntrue sync
-   git add .aligntrue/lock.json
-   git commit -m "chore: Add approved source"
-   ```
-
-2. **Testing/emergency:** Use --force (logs warning)
-
-   ```bash
-   aligntrue sync --force
-   ```
-
-3. **Unknown source:** Review config, remove or replace
-
 ## Troubleshooting
 
 ### Source not found errors
@@ -271,54 +219,6 @@ cat .aligntrue/config.yaml
 git clone <repo-url>
 
 # Update config if URL changed
-```
-
-## ID@version vs hash tradeoffs
-
-### When to use ID@version
-
-✅ **Use for:**
-
-- Shared git repositories
-- Public/well-known sources
-- When you want semantic versioning
-
-❌ **Avoid for:**
-
-- Offline environments
-- Vendored/submoduled sources
-- When immutability is critical
-
-**Example:**
-
-```yaml
-sources:
-  - type: git
-    url: https://github.com/AlignTrue/aligntrue
-    path: examples/aligns/global.yaml
-```
-
-### When to use hash
-
-✅ **Use for:**
-
-- Vendored aligns (git submodule/subtree)
-- Offline workflows
-- Maximum immutability
-- When provenance is already known
-
-❌ **Avoid for:**
-
-- External sources (hard to audit)
-- When you need version updates
-
-**Example:**
-
-```yaml
-sources:
-  - type: git
-    url: https://github.com/org/rules
-    hash: sha256:abc123def456...
 ```
 
 ## Personal rules
@@ -351,10 +251,10 @@ scope: team
 Team coding standards and guidelines...
 ```
 
-Personal sections are excluded from lockfile generation and validation:
+Personal rules are excluded from lockfile generation and validation:
 
-- **Team sections** (default): Validated against lockfile (triggers drift on changes)
-- **Personal sections**: Not validated (can change freely)
+- **Team rules** (default): Included in bundle_hash (triggers drift on changes)
+- **Personal rules**: Not included (can change freely)
 
 **Use cases:**
 

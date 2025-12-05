@@ -15,6 +15,8 @@ import { validateAlignSchema } from "@aligntrue/schema";
 import {
   readLockfile,
   validateLockfile,
+  generateLockfile,
+  loadRulesDirectory,
   validateOverlays,
   formatOverlayValidationResult,
   type OverlayDefinition,
@@ -256,36 +258,27 @@ export async function check(args: string[]): Promise<void> {
           console.error("  Failed to read lockfile\n");
           process.exit(2);
         }
-        const validation = validateLockfile(lockfile, align);
+
+        // Compute current bundle hash from rules
+        const rulesPath = resolve(".aligntrue", "rules");
+        const cwd = process.cwd();
+        const rules = await loadRulesDirectory(rulesPath, cwd);
+        const currentLockfile = generateLockfile(rules, cwd);
+        const validation = validateLockfile(
+          lockfile,
+          currentLockfile.bundle_hash,
+        );
 
         if (!validation.valid) {
           spinner.stop("Validation failed");
           console.error("✗ Lockfile drift detected\n");
-
-          // Show mismatches
-          if (validation.mismatches && validation.mismatches.length > 0) {
-            console.error("  Hash mismatches:");
-            for (const mismatch of validation.mismatches) {
-              console.error(`    - ${mismatch.rule_id}`);
-              console.error(`      Expected: ${mismatch.expected_hash}`);
-              console.error(`      Actual:   ${mismatch.actual_hash}`);
-            }
-          }
-
-          // Show new rules
-          if (validation.newRules && validation.newRules.length > 0) {
-            console.error(
-              `\n  New rules not in lockfile: ${validation.newRules.join(", ")}`,
-            );
-          }
-
-          // Show deleted rules
-          if (validation.deletedRules && validation.deletedRules.length > 0) {
-            console.error(
-              `\n  Rules in lockfile but not in IR: ${validation.deletedRules.join(", ")}`,
-            );
-          }
-
+          console.error("  Bundle hash mismatch:");
+          console.error(
+            `    Expected: ${validation.expectedHash.slice(0, 16)}...`,
+          );
+          console.error(
+            `    Actual:   ${validation.actualHash.slice(0, 16)}...`,
+          );
           console.error(`\n  Run 'aligntrue sync' to update the lockfile.\n`);
           process.exit(1);
         }
