@@ -10,7 +10,15 @@
  *   node scripts/check-dependabot-status.mjs --merge-all   # Merge all passing PRs
  */
 
-import { execSync } from "child_process";
+import {
+  COLORS,
+  runCommand,
+  print,
+  checkAuth,
+  checkRateLimit,
+  getRepoUrl,
+  getPRUrl,
+} from "./lib/github-helpers.mjs";
 
 // Configuration
 const CONFIG = {
@@ -18,53 +26,6 @@ const CONFIG = {
   MIN_RATE_LIMIT: 30, // Minimum API calls remaining to proceed
   MIN_RATE_LIMIT_MERGE: 50, // Higher threshold for merge operations
 };
-
-// ANSI Colors
-const COLORS = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  cyan: "\x1b[36m",
-  magenta: "\x1b[35m",
-  bold: "\x1b[1m",
-};
-
-// Helpers
-function runCommand(cmd, ignoreError = false) {
-  try {
-    return execSync(cmd, {
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    if (ignoreError) return null;
-    throw error;
-  }
-}
-
-function print(msg = "", color = "") {
-  console.log(`${color}${msg}${COLORS.reset}`);
-}
-
-function getRateLimit() {
-  try {
-    const json = runCommand("gh api rate_limit");
-    const data = JSON.parse(json);
-    return data.resources.core;
-  } catch {
-    return null;
-  }
-}
-
-function getRepoUrl() {
-  return `https://github.com/${CONFIG.REPO}`;
-}
-
-function getPRUrl(number) {
-  return `${getRepoUrl()}/pull/${number}`;
-}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -100,49 +61,6 @@ function showHelp() {
   print("  - Only merges if CI checks pass");
   print("  - Skips PRs with merge conflicts");
   print("  - Uses squash merge for clean history");
-}
-
-function checkAuth() {
-  try {
-    runCommand("gh auth status");
-    return true;
-  } catch {
-    print("Error: GitHub CLI not authenticated.", COLORS.red);
-    print("   Run 'gh auth login' to authenticate.", COLORS.yellow);
-    return false;
-  }
-}
-
-function checkRateLimit(minRequired) {
-  const rateLimit = getRateLimit();
-  if (rateLimit) {
-    const { remaining, limit, reset } = rateLimit;
-    const resetDate = new Date(reset * 1000).toLocaleTimeString();
-
-    print(
-      `   API Rate Limit: ${remaining}/${limit} remaining (Resets at ${resetDate})`,
-      COLORS.cyan,
-    );
-
-    if (remaining < minRequired) {
-      print("\nWarning: Rate limit too low to proceed safely.", COLORS.yellow);
-      print(
-        "   To avoid blocking other tools, please check PRs in the browser:",
-        COLORS.yellow,
-      );
-      print(
-        `   ${getRepoUrl()}/pulls?q=author%3Aapp%2Fdependabot`,
-        COLORS.blue,
-      );
-      return false;
-    }
-  } else {
-    print(
-      "Warning: Could not fetch rate limit info. Proceeding with caution...",
-      COLORS.yellow,
-    );
-  }
-  return true;
 }
 
 function fetchDependabotPRs() {
@@ -219,10 +137,13 @@ async function listPRs() {
   print("Checking Dependabot PRs...", COLORS.bold);
 
   if (!checkAuth()) {
+    print("Error: GitHub CLI not authenticated.", COLORS.red);
+    print("   Run 'gh auth login' to authenticate.", COLORS.yellow);
     process.exit(1);
   }
 
-  if (!checkRateLimit(CONFIG.MIN_RATE_LIMIT)) {
+  const fallbackUrl = `${getRepoUrl(CONFIG.REPO)}/pulls?q=author%3Aapp%2Fdependabot`;
+  if (!checkRateLimit(CONFIG.MIN_RATE_LIMIT, fallbackUrl)) {
     process.exit(2);
   }
 
@@ -299,10 +220,13 @@ async function mergePR(prNumber) {
   print(`Merging Dependabot PR #${prNumber}...`, COLORS.bold);
 
   if (!checkAuth()) {
+    print("Error: GitHub CLI not authenticated.", COLORS.red);
+    print("   Run 'gh auth login' to authenticate.", COLORS.yellow);
     process.exit(1);
   }
 
-  if (!checkRateLimit(CONFIG.MIN_RATE_LIMIT_MERGE)) {
+  const fallbackUrl = `${getRepoUrl(CONFIG.REPO)}/pulls?q=author%3Aapp%2Fdependabot`;
+  if (!checkRateLimit(CONFIG.MIN_RATE_LIMIT_MERGE, fallbackUrl)) {
     process.exit(2);
   }
 
@@ -336,7 +260,7 @@ async function mergePR(prNumber) {
       "   Resolve conflicts manually or close and let Dependabot recreate.",
       COLORS.yellow,
     );
-    print(`   ${getPRUrl(prNumber)}`, COLORS.blue);
+    print(`   ${getPRUrl(prNumber, CONFIG.REPO)}`, COLORS.blue);
     process.exit(1);
   }
 
@@ -345,14 +269,14 @@ async function mergePR(prNumber) {
   if (checkStatus === "failure") {
     print(`\nError: PR #${prNumber} has failing CI checks.`, COLORS.red);
     print("   Review the failures before merging.", COLORS.yellow);
-    print(`   ${getPRUrl(prNumber)}/checks`, COLORS.blue);
+    print(`   ${getPRUrl(prNumber, CONFIG.REPO)}/checks`, COLORS.blue);
     process.exit(1);
   }
 
   if (checkStatus === "pending") {
     print(`\nError: PR #${prNumber} has pending CI checks.`, COLORS.yellow);
     print("   Wait for CI to complete before merging.", COLORS.yellow);
-    print(`   ${getPRUrl(prNumber)}/checks`, COLORS.blue);
+    print(`   ${getPRUrl(prNumber, CONFIG.REPO)}/checks`, COLORS.blue);
     process.exit(1);
   }
 
@@ -374,10 +298,13 @@ async function mergeAll() {
   print("Merging all passing Dependabot PRs...", COLORS.bold);
 
   if (!checkAuth()) {
+    print("Error: GitHub CLI not authenticated.", COLORS.red);
+    print("   Run 'gh auth login' to authenticate.", COLORS.yellow);
     process.exit(1);
   }
 
-  if (!checkRateLimit(CONFIG.MIN_RATE_LIMIT_MERGE)) {
+  const fallbackUrl = `${getRepoUrl(CONFIG.REPO)}/pulls?q=author%3Aapp%2Fdependabot`;
+  if (!checkRateLimit(CONFIG.MIN_RATE_LIMIT_MERGE, fallbackUrl)) {
     process.exit(2);
   }
 
