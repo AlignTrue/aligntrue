@@ -22,7 +22,6 @@ import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import {
   AlignTrueError,
   ErrorFactory,
-  SyncError,
   TeamModeError,
 } from "../../utils/error-types.js";
 import { discoverExporterManifests } from "../../utils/exporter-validation.js";
@@ -413,15 +412,27 @@ export async function buildSyncContext(
             ? resolve(cwd, sourcePath)
             : sourcePath;
       } else {
-        // Solo mode: also just warn and continue
-        throw new SyncError(
-          `Git source has updates available:\n${details}`,
-          "Rerun with --skip-update-check or --offline to proceed with cached version.",
-        ).withNextSteps([
-          "Review and merge changes to the source repository",
-          "Or rerun with --skip-update-check to bypass temporarily",
-          "Or run with --offline to work without updates",
-        ]);
+        // Solo mode: warn and continue with cached version (auto-update best effort)
+        if (!options.quiet) {
+          clack.log.warn(
+            `Git source has updates available:\n${details}\n\n` +
+              `Continuing with cached version. Solo mode auto-updates when possible.\n` +
+              `Use --skip-update-check to suppress this warning or --offline to stay on cache.`,
+          );
+        }
+
+        // Retry with offline mode to use cached version instead of blocking
+        const offlineOpts = { ...resolveOpts, offlineMode: true };
+        bundleResult = await resolveAndMergeSources(config, offlineOpts);
+
+        sourcePath =
+          config.sources?.[0]?.type === "local"
+            ? config.sources[0].path || paths.rules
+            : bundleResult.sources[0]?.sourcePath || ".aligntrue/rules";
+        absoluteSourcePath =
+          config.sources?.[0]?.type === "local"
+            ? resolve(cwd, sourcePath)
+            : sourcePath;
       }
     } else {
       // Other errors
