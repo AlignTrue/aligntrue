@@ -189,7 +189,7 @@ describeSkipWindows("Init Command Integration", () => {
         mode: "team",
         sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor", "agents"],
-        modules: { lockfile: true, bundle: true },
+        modules: { lockfile: true },
       };
       writeFileSync(
         join(aligntrueDir, "config.yaml"),
@@ -199,10 +199,8 @@ describeSkipWindows("Init Command Integration", () => {
 
       // Create a lockfile (indicates team mode)
       const lockfile = {
+        version: "2",
         bundle_hash: "test-hash",
-        generated_at: new Date().toISOString(),
-        mode: "team",
-        rules: [],
       };
       writeFileSync(
         join(TEST_DIR, ".aligntrue/lock.json"),

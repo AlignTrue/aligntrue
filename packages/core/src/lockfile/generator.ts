@@ -42,11 +42,9 @@ export function generateLockfile(rules: RuleFile[], cwd: string): Lockfile {
     hashes.push(rule.hash);
   }
 
-  // Include team config hash if it exists
-  const teamConfigHash = computeFileHash(paths.teamConfig);
-  if (teamConfigHash) {
-    hashes.push(teamConfigHash);
-  }
+  // Include team config hash (use empty-string hash when missing for determinism)
+  const teamConfigHash = computeFileHash(paths.teamConfig) ?? computeHash("");
+  hashes.push(teamConfigHash);
 
   // Compute bundle hash from all hashes
   const bundleHash = computeBundleHash(hashes);

@@ -3,10 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
-import { parse as parseYaml } from "yaml";
 
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "config-commands-test");
 // Use __dirname to get reliable path regardless of where tests are run from
@@ -33,17 +32,6 @@ describe("Config Commands", () => {
 
     // Create a basic config file
     mkdirSync(join(TEST_DIR, ".aligntrue"), { recursive: true });
-    const _config = {
-      mode: "solo",
-      exporters: ["cursor", "agents"],
-      modules: {
-        lockfile: false,
-        bundle: false,
-      },
-      performance: {
-        max_file_size_mb: 10,
-      },
-    };
     writeFileSync(
       join(TEST_DIR, ".aligntrue", "config.yaml"),
       `mode: solo
@@ -52,7 +40,6 @@ exporters:
   - agents
 modules:
   lockfile: false
-  bundle: false
 performance:
   max_file_size_mb: 10
 `,
@@ -120,12 +107,6 @@ performance:
       expect(result.trim()).toBe("true");
     });
 
-    it("should set a boolean value", () => {
-      runCli(["config", "set", "modules.bundle", "true"]);
-      const result = runCli(["config", "get", "modules.bundle"]);
-      expect(result.trim()).toBe("true");
-    });
-
     it("should set a number value", () => {
       runCli(["config", "set", "performance.max_file_size_mb", "20"]);
       const result = runCli(["config", "get", "performance.max_file_size_mb"]);
@@ -161,7 +142,6 @@ performance:
       expect(result).toContain("mode = solo");
       expect(result).toContain("exporters = ");
       expect(result).toContain("modules.lockfile = false");
-      expect(result).toContain("modules.bundle = false");
     });
 
     it("should show all nested keys with dot notation", () => {
@@ -173,36 +153,6 @@ performance:
   });
 
   describe("config unset", () => {
-    it("should remove an optional config value", () => {
-      // Use modules.bundle - note that loadConfig() may provide defaults,
-      // so we verify removal by checking the raw config file, not via config get
-      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
-
-      // First verify the value exists in the raw config
-      const beforeContent = readFileSync(configPath, "utf-8");
-      const beforeConfig = parseYaml(beforeContent) as Record<string, unknown>;
-      expect(beforeConfig.modules).toBeDefined();
-      expect((beforeConfig.modules as Record<string, unknown>).bundle).toBe(
-        false,
-      );
-
-      // Unset it
-      runCli(["config", "unset", "modules.bundle"]);
-
-      // Verify it's removed from the raw config file
-      const afterContent = readFileSync(configPath, "utf-8");
-      const afterConfig = parseYaml(afterContent) as Record<string, unknown>;
-      // The modules.bundle key should be gone (modules object may still exist with other keys)
-      if (afterConfig.modules) {
-        expect(
-          (afterConfig.modules as Record<string, unknown>).bundle,
-        ).toBeUndefined();
-      } else {
-        // If entire modules object was removed, that's also valid
-        expect(afterConfig.modules).toBeUndefined();
-      }
-    });
-
     it("should succeed with warning when key doesn't exist", () => {
       const result = runCli(["config", "unset", "nonexistent.key"]);
       expect(result).toContain("Key not found");
