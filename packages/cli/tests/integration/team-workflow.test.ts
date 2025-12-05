@@ -20,6 +20,7 @@ import {
   existsSync,
   writeFileSync,
   cpSync,
+  mkdtempSync,
 } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -43,9 +44,8 @@ describeSkipWindows("Team Mode Workflow", () => {
     vi.clearAllMocks();
     originalCwd = process.cwd();
 
-    const timestamp = Date.now();
-    env1 = join(tmpdir(), `team-env1-${timestamp}`);
-    env2 = join(tmpdir(), `team-env2-${timestamp}`);
+    env1 = mkdtempSync(join(tmpdir(), "aligntrue-team-env1-"));
+    env2 = mkdtempSync(join(tmpdir(), "aligntrue-team-env2-"));
     mkdirSync(env1, { recursive: true });
     mkdirSync(env2, { recursive: true });
 
