@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 
 const DOCS_ROOT = path.join(__dirname, "../content");
 const REDIRECTS_PATH = path.join(__dirname, "../vercel.json");
-const ALIGNTRUE_ORIGIN = "https://aligntrue.ai";
+
 
 const MARKDOWN_LINK_PATTERN =
   /\[([^\]]+)\]\(((?:https?:\/\/aligntrue\.ai\/[^\s)]+)|(?:\/docs\/[^\s)]+))\)/g;
