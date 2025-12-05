@@ -166,6 +166,106 @@ await executeWithLifecycle(
 
 **Note:** This is optional. Most commands handle their own intro/outro for fine-grained control.
 
+## Error Handling
+
+Commands must throw errors, not call `process.exit()` directly.
+
+### Pattern
+
+The top-level handler in `packages/cli/src/index.ts` catches all errors and:
+
+- Formats `AlignTrueError` with hints and next steps
+- Calls `process.exit(err.exitCode)` in one place
+
+This keeps error handling centralized and testable.
+
+### Usage
+
+```typescript
+import { ErrorFactory, ConfigError } from "@aligntrue/core";
+
+// Use factory for common cases
+throw ErrorFactory.configNotFound(configPath);
+
+// Or throw directly with hints
+throw new ConfigError("Invalid format", "Check YAML syntax");
+
+// With next steps for complex errors
+throw new ConfigError("Multiple issues found").withNextSteps([
+  "Run: aligntrue check --ci",
+  "Fix the reported errors",
+]);
+```
+
+### Available Error Types
+
+Import from `@aligntrue/core`:
+
+| Error Type        | Exit Code | Use Case                   |
+| ----------------- | --------- | -------------------------- |
+| `ConfigError`     | 2         | Config file issues         |
+| `ValidationError` | 1         | Validation failures        |
+| `SyncError`       | 1         | Sync operation failures    |
+| `TeamModeError`   | 1         | Team mode requirements     |
+| `FileSystemError` | 2         | File read/write operations |
+| `NetworkError`    | 1         | Network/remote issues      |
+
+### ErrorFactory Shortcuts
+
+`ErrorFactory` provides pre-configured errors for common cases:
+
+```typescript
+ErrorFactory.configNotFound(path); // Config file missing
+ErrorFactory.invalidConfig(reason); // Invalid config format
+ErrorFactory.syncFailed(reason); // Sync operation failed
+ErrorFactory.validationFailed(reason); // Validation errors
+ErrorFactory.teamModeRequired(feature); // Feature needs team mode
+ErrorFactory.fileNotFound(path); // File missing
+ErrorFactory.fileWriteFailed(path); // Write operation failed
+```
+
+### Do NOT
+
+```typescript
+// Bad: direct process.exit in command code
+console.error("Config not found");
+process.exit(1);
+
+// Bad: generic Error without context
+throw new Error("Something went wrong");
+
+// Good: throw structured error with hints
+throw ErrorFactory.configNotFound(path);
+
+// Good: custom error with actionable guidance
+throw new ConfigError(
+  "Invalid exporter configuration",
+  "Each exporter must have a 'name' field",
+);
+```
+
+### Why This Matters
+
+1. **Testability** - Commands can be tested without mocking `process.exit`
+2. **Consistency** - All errors formatted the same way with hints
+3. **Debugging** - Error codes and next steps help users self-serve
+4. **Reusability** - Command logic can be called programmatically
+
+### Allowed Exceptions
+
+`process.exit(0)` is allowed for successful early returns like `--help` and `--version`:
+
+```typescript
+if (parsed.help) {
+  showStandardHelp({
+    /* ... */
+  });
+  process.exit(0); // OK: successful completion
+}
+```
+
+For errors, always throw instead.
+
 ## Test Utilities
 
 Optional test helpers in `tests/utils/command-test-helpers.ts`:
