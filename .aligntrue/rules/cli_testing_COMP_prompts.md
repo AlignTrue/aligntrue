@@ -3,6 +3,8 @@ description: Test prompts for the COMP plan
 enabled: false
 ---
 
+Put together a plan to systematically, thoroughly and manually execute this test plan:
+
 DO NOT edit any code, except in your own test env for testing purposes. DO NOT try to fix any code. Your job is just to test thoroughly and report issues you find with recommendations.
 
 ## Kick-Off Prompts
