@@ -17,6 +17,7 @@ import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 
@@ -77,7 +78,10 @@ export async function overrideStatus(args: string[]): Promise<void> {
         `Error: Failed to get overlay status: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to get overlay status: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 }
 

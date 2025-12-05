@@ -10,6 +10,24 @@ import { join } from "path";
 import { drift } from "../src/commands/drift.js";
 import { computeHash } from "@aligntrue/schema";
 
+async function runDriftAndCaptureExit(args: string[]): Promise<number> {
+  const originalExitCode = process.exitCode;
+  process.exitCode = undefined;
+
+  try {
+    await drift(args);
+    return process.exitCode ?? 0;
+  } catch (err) {
+    const exitCode = (err as { exitCode?: number })?.exitCode;
+    if (exitCode !== undefined) {
+      return exitCode;
+    }
+    throw err;
+  } finally {
+    process.exitCode = originalExitCode;
+  }
+}
+
 describe("drift command", () => {
   let testDir: string;
   let originalCwd: string;
@@ -289,28 +307,7 @@ sources:
 `,
     );
 
-    // Mock process.exit
-    let exitCode = 0;
-    const originalExit = process.exit;
-    process.exit = ((code?: number) => {
-      exitCode = code || 0;
-      throw new Error(`process.exit(${code})`);
-    }) as never;
-
-    try {
-      await drift(["--gates"]);
-    } catch (err) {
-      // Expected to throw due to process.exit
-      if (err instanceof Error && err.message.includes("process.exit")) {
-        // Expected
-      } else {
-        throw err;
-      }
-    } finally {
-      process.exit = originalExit;
-    }
-
-    // Should exit with code 2
+    const exitCode = await runDriftAndCaptureExit(["--gates"]);
     expect(exitCode).toBe(2);
   });
 

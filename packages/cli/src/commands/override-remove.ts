@@ -70,8 +70,13 @@ export async function overrideRemove(args: string[]): Promise<void> {
 
   if (removeAll && selectorArg) {
     console.error("Error: --all cannot be combined with a specific selector.");
-    process.exit(1);
-    return;
+    exitWithError(
+      {
+        title: "Invalid arguments",
+        message: "--all cannot be combined with a specific selector.",
+      },
+      1,
+    );
   }
 
   try {
@@ -89,7 +94,13 @@ export async function overrideRemove(args: string[]): Promise<void> {
         `Error: Failed to remove overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Failed to remove overlay",
+        message: _error instanceof Error ? _error.message : String(_error),
+      },
+      1,
+    );
   }
 }
 
@@ -130,8 +141,14 @@ async function runOverrideRemove(
       console.error(
         "Provide a selector (aligntrue override remove 'sections[0]') or use --all --force to remove every overlay.",
       );
-      process.exit(1);
-      return;
+      exitWithError(
+        {
+          title: "Selector required",
+          message:
+            "Provide a selector or use --all --force in non-interactive mode.",
+        },
+        1,
+      );
     }
 
     // Show interactive list
@@ -179,7 +196,13 @@ async function runOverrideRemove(
         `Error: No overlay found with selector: ${selectorToRemove}`,
       );
     }
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Overlay not found",
+        message: `No overlay found with selector: ${selectorToRemove}`,
+      },
+      1,
+    );
   }
 
   const overlayToRemove = overlays[matchIndex];

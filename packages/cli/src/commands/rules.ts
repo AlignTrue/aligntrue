@@ -11,6 +11,7 @@ import {
   getExporterNames,
 } from "@aligntrue/core";
 import type { RuleFile } from "@aligntrue/schema";
+import { exitWithError } from "../utils/command-utilities.js";
 
 /**
  * Main rules command handler
@@ -31,7 +32,7 @@ export async function rules(args: string[]): Promise<void> {
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       showHelp();
-      process.exit(1);
+      exitWithError(1, `Unknown subcommand: ${subcommand}`);
   }
 }
 
@@ -241,7 +242,10 @@ async function listRules(flags: RulesFlags): Promise<void> {
         `Failed to list rules: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to list rules: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

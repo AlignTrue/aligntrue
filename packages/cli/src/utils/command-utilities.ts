@@ -6,6 +6,7 @@
  */
 
 import * as clack from "@clack/prompts";
+import { AlignTrueError } from "./error-types.js";
 
 /**
  * Common argument definitions for CLI commands
@@ -65,6 +66,44 @@ export interface LifecycleOptions {
   introMessage?: string;
   /** Success outro message */
   successMessage?: string;
+}
+
+/**
+ * Options for command error handling
+ */
+export interface CommandErrorOptions {
+  /** Optional hint shown after the error message */
+  hint?: string;
+  /** Custom error code for diagnostics (default: CLI_COMMAND_ERROR/CLI_USAGE_ERROR) */
+  code?: string;
+  /** Suggested follow-up actions */
+  nextSteps?: string[];
+}
+
+/**
+ * Throw a standardized AlignTrueError instead of calling process.exit
+ */
+export function exitWithError(
+  exitCode: number,
+  message?: string,
+  options: CommandErrorOptions = {},
+): never {
+  const resolvedMessage =
+    message || (exitCode === 2 ? "Invalid command usage" : "Command failed");
+
+  const error = new AlignTrueError(
+    resolvedMessage,
+    options.code || (exitCode === 2 ? "CLI_USAGE_ERROR" : "CLI_COMMAND_ERROR"),
+    exitCode,
+    options.hint,
+    options.nextSteps,
+  );
+
+  if (options.nextSteps) {
+    error.nextSteps = options.nextSteps;
+  }
+
+  throw error;
 }
 
 /**
@@ -298,19 +337,16 @@ export async function executeWithLifecycle(
     }
   } catch (error) {
     // Handle execution errors
-    if (error instanceof Error) {
-      // Check if this is a process.exit error (from tests or explicit exits)
-      if (error.message.includes("process.exit")) {
-        throw error;
-      }
-
-      clack.log.error(`Command failed: ${error.message}`);
-    } else {
-      clack.log.error(`Command failed: ${String(error)}`);
+    if (error instanceof Error && error.message.includes("process.exit")) {
+      throw error;
     }
 
+    const message =
+      error instanceof Error ? error.message : String(error ?? "Unknown error");
+
+    clack.log.error(`Command failed: ${message}`);
     clack.outro("✗ Operation failed");
-    process.exit(1);
+    exitWithError(1, message);
   }
 }
 

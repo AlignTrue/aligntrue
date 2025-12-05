@@ -178,10 +178,6 @@ describe("executeWithLifecycle", () => {
   });
 
   it("should catch and handle errors", async () => {
-    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {
-      throw new Error("process.exit called");
-    });
-
     await expect(
       executeWithLifecycle(
         async () => {
@@ -189,9 +185,10 @@ describe("executeWithLifecycle", () => {
         },
         { commandName: "test" },
       ),
-    ).rejects.toThrow("process.exit called");
-
-    mockExit.mockRestore();
+    ).rejects.toMatchObject({
+      exitCode: 1,
+      message: expect.stringContaining("Test error"),
+    });
   });
 
   it("should handle intro/outro if requested", async () => {

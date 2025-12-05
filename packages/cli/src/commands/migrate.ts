@@ -13,6 +13,7 @@ import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { addToGitignore } from "../utils/gitignore-helpers.js";
@@ -72,7 +73,9 @@ export async function migrate(args: string[]): Promise<void> {
     default:
       clack.log.error(`Unknown subcommand: ${subcommand}`);
       clack.log.info("Run 'aligntrue migrate --help' for usage");
-      process.exit(1);
+      exitWithError(1, `Unknown subcommand: ${subcommand}`, {
+        hint: "Run 'aligntrue migrate --help' for usage",
+      });
   }
 }
 
@@ -280,7 +283,9 @@ async function migrateRuler(cwd: string, flags: MigrationFlags): Promise<void> {
     clack.log.info(
       "The .ruler/ directory should contain your Ruler configuration.",
     );
-    process.exit(1);
+    exitWithError(1, "No .ruler directory found. Is this a Ruler project?", {
+      hint: "Ensure .ruler/ exists and contains your Ruler configuration",
+    });
   }
 
   clack.intro("Migrating from Ruler to AlignTrue");

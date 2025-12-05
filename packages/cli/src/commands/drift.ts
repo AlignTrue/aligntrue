@@ -13,6 +13,7 @@
 
 import {
   parseCommonArgs,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { loadMergedConfig } from "@aligntrue/core";
@@ -117,6 +118,7 @@ EXIT CODES
 export async function drift(args: string[]): Promise<void> {
   // Parse arguments
   const parsedArgs = parseCommonArgs(args, ARG_DEFINITIONS);
+  const gatesFlagPresent = args.includes("--gates");
 
   // Show help if requested
   if (parsedArgs.help) {
@@ -142,7 +144,9 @@ export async function drift(args: string[]): Promise<void> {
     const message =
       error instanceof Error ? error.message : "Failed to load config";
     console.error(message);
-    process.exit(2);
+    exitWithError(2, message, {
+      hint: "Verify .aligntrue/config.yaml is valid and reachable",
+    });
   }
 
   // Must be in team mode
@@ -150,7 +154,7 @@ export async function drift(args: string[]): Promise<void> {
     console.error(
       "Drift detection requires team mode. Run: aligntrue team enable",
     );
-    process.exit(1);
+    exitWithError(1, "Drift detection requires team mode");
   }
 
   // Detect drift (add path properties for drift detection)
@@ -166,7 +170,7 @@ export async function drift(args: string[]): Promise<void> {
   );
 
   // Output results based on format
-  const gatesEnabled = Boolean(parsedArgs.flags["gates"]);
+  const gatesEnabled = gatesFlagPresent;
   if (parsedArgs.flags["json"]) {
     outputJson(driftResults);
   } else if (parsedArgs.flags["sarif"]) {
@@ -176,8 +180,13 @@ export async function drift(args: string[]): Promise<void> {
   }
 
   // Exit with error code if --gates flag used and drift detected
-  if (gatesEnabled && driftResults.driftDetected) {
-    process.exit(2);
+  const strictModeEnabled = gatesFlagPresent && !parsedArgs.flags["json"];
+
+  if (strictModeEnabled && driftResults.driftDetected) {
+    process.exitCode = 2;
+    exitWithError(2, "Drift detected with --gates enabled", {
+      hint: "Review drift report above or use --post-sync after sync",
+    });
   }
 }
 

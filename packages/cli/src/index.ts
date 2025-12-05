@@ -8,6 +8,7 @@ import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { buildCommandRegistry, generateHelpText } from "./commands/manifest.js";
+import { exitWithError } from "./utils/command-utilities.js";
 import { AlignTrueError } from "./utils/error-types.js";
 
 // Get version from package.json
@@ -24,13 +25,13 @@ async function main() {
   // Handle version flag
   if (args[0] === "--version" || args[0] === "-v") {
     console.log(VERSION);
-    process.exit(0);
+    return;
   }
 
   // Handle help flag or no args
   if (args.length === 0 || args[0] === "--help") {
     console.log(generateHelpText());
-    process.exit(0);
+    return;
   }
 
   const command = args[0];
@@ -41,11 +42,9 @@ async function main() {
 
   // Check if user provided a flag-like argument as command
   if (command && (command.startsWith("--") || command.startsWith("-"))) {
-    console.error(`Unknown flag: ${command}`);
-    console.error(
-      `\nRun 'aligntrue --help' to see available commands and options`,
-    );
-    process.exit(1);
+    exitWithError(2, `Unknown flag: ${command}`, {
+      hint: "Run 'aligntrue --help' to see available commands and options",
+    });
   }
 
   if (command) {
@@ -56,11 +55,9 @@ async function main() {
     }
   }
 
-  console.error(`Command not implemented: ${command || "(none)"}`);
-  console.error(
-    `\nRun 'aligntrue --help' to see available commands and options`,
-  );
-  process.exit(1);
+  exitWithError(1, `Command not implemented: ${command || "(none)"}`, {
+    hint: "Run 'aligntrue --help' to see available commands and options",
+  });
 }
 
 main().catch((err) => {

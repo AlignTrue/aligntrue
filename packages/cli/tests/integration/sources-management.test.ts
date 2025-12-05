@@ -19,6 +19,7 @@ import {
 } from "fs";
 import { join } from "path";
 import { sources } from "../../src/commands/sources.js";
+import { AlignTrueError } from "../../src/utils/error-types.js";
 import * as yaml from "yaml";
 import * as clack from "@clack/prompts";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
@@ -47,12 +48,6 @@ beforeEach(async () => {
 
   // Change to test directory
   process.chdir(TEST_DIR);
-
-  // Mock process.exit to capture exit code
-  vi.spyOn(process, "exit").mockImplementation((code?: number) => {
-    exitCode = code ?? 0;
-    throw new Error(`process.exit(${code})`);
-  });
 
   // Capture console output
   vi.spyOn(console, "log").mockImplementation((...args) => {
@@ -146,8 +141,19 @@ function createAgentsMd(sections: Array<{ heading: string; content: string }>) {
 async function executeSources(args: string[] = []) {
   try {
     await sources(args);
-  } catch {
-    // Expected - command exits via process.exit
+    if (exitCode === undefined) {
+      exitCode = 0;
+    }
+  } catch (error) {
+    if (error instanceof AlignTrueError) {
+      exitCode = error.exitCode;
+      consoleOutput.push(error.message);
+      if (error.hint) {
+        consoleOutput.push(error.hint);
+      }
+    } else {
+      throw error;
+    }
   }
 }
 

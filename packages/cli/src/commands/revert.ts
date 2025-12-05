@@ -90,7 +90,10 @@ export async function revert(args: string[]): Promise<void> {
       const newest = backups[0];
       if (!newest) {
         console.error("Error: No backups found to restore");
-        process.exit(1);
+        exitWithError(
+          { title: "No backups found", message: "Nothing to restore" },
+          1,
+        );
       }
       selectedTimestamp = newest.timestamp;
     } else if (timestamp) {
@@ -110,7 +113,13 @@ export async function revert(args: string[]): Promise<void> {
             console.log(`  ${b.timestamp} - ${b.manifest.created_by}`);
           });
         }
-        process.exit(1);
+        exitWithError(
+          {
+            title: "Backup not found",
+            message: `Backup not found: ${timestamp}`,
+          },
+          1,
+        );
       }
       selectedTimestamp = timestamp;
     } else {
@@ -124,7 +133,14 @@ export async function revert(args: string[]): Promise<void> {
         backups.forEach((b) => {
           console.log(`  ${b.timestamp} - ${b.manifest.created_by}`);
         });
-        process.exit(1);
+        exitWithError(
+          {
+            title: "Timestamp required",
+            message:
+              "--timestamp or --latest is required in non-interactive mode",
+          },
+          1,
+        );
       }
 
       // Interactive backup selection
@@ -150,7 +166,13 @@ export async function revert(args: string[]): Promise<void> {
     const backup = backups.find((b) => b.timestamp === selectedTimestamp);
     if (!backup) {
       clack.log.error("Internal error: selected backup not found");
-      process.exit(1);
+      exitWithError(
+        {
+          title: "Backup missing",
+          message: "Selected backup was not found",
+        },
+        1,
+      );
     }
 
     // Check for mode mismatch
@@ -194,7 +216,13 @@ export async function revert(args: string[]): Promise<void> {
       if (!backupContent) {
         clack.log.error(`File not found in backup: ${targetFile}`);
         clack.outro("Revert cancelled");
-        process.exit(1);
+        exitWithError(
+          {
+            title: "File not found in backup",
+            message: `File not found in backup: ${targetFile}`,
+          },
+          1,
+        );
       }
 
       // Calculate diff
@@ -294,7 +322,13 @@ export async function revert(args: string[]): Promise<void> {
         `Error: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Restore failed",
+        message: err instanceof Error ? err.message : String(err),
+      },
+      1,
+    );
   }
 }
 

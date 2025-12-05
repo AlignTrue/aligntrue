@@ -20,6 +20,7 @@ import {
   showStandardHelp,
   formatCreatedFiles,
   formatDiscoveredFiles,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { shouldUseInteractive } from "../utils/tty-helper.js";
@@ -470,7 +471,7 @@ export async function init(args: string[] = []): Promise<void> {
   // Validate mode if provided
   if (mode && mode !== "solo" && mode !== "team") {
     console.error(`Error: Invalid mode "${mode}". Must be "solo" or "team".`);
-    process.exit(2);
+    exitWithError(2, `Invalid mode "${mode}". Must be "solo" or "team".`);
   }
 
   if (!nonInteractive) {
@@ -536,7 +537,7 @@ export async function init(args: string[] = []): Promise<void> {
         code: "ERR_IMPORT_FAILED",
       };
       formatError(error);
-      process.exit(1);
+      exitWithError(1, `Import failed: ${result.error}`);
     }
 
     // Handle conflicts

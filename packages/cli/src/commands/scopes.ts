@@ -13,6 +13,7 @@ import * as clack from "@clack/prompts";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { DOCS_SCOPES } from "../constants.js";
@@ -77,7 +78,9 @@ async function listScopes(): Promise<void> {
   if (!existsSync(configPath)) {
     console.error("✗ Config file not found: .aligntrue/config.yaml");
     console.error("  Run: aligntrue init");
-    process.exit(1);
+    exitWithError(1, "Config file not found: .aligntrue/config.yaml", {
+      hint: "Run: aligntrue init",
+    });
   }
 
   try {
@@ -132,7 +135,10 @@ async function listScopes(): Promise<void> {
     }
     console.error("✗ Failed to load scopes");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to load scopes: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 

@@ -16,6 +16,7 @@ import { tryLoadConfig } from "../utils/config-loader.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { isTTY } from "../utils/tty-helper.js";
@@ -104,7 +105,9 @@ export async function team(args: string[]): Promise<void> {
       });
       console.error(`\nError: Unknown subcommand: ${subcommand}`);
       console.error("Run: aligntrue team --help");
-      process.exit(1);
+      exitWithError(1, `Unknown subcommand: ${subcommand}`, {
+        hint: "Run: aligntrue team --help",
+      });
   }
 }
 
@@ -120,7 +123,9 @@ async function teamStatus(): Promise<void> {
   if (!existsSync(configPath) && !existsSync(teamConfigPath)) {
     console.error("✗ Config file not found: .aligntrue/config.yaml");
     console.error("  Run: aligntrue init");
-    process.exit(1);
+    exitWithError(1, "Config file not found: .aligntrue/config.yaml", {
+      hint: "Run: aligntrue init",
+    });
   }
 
   try {
@@ -245,7 +250,10 @@ async function teamStatus(): Promise<void> {
     }
     console.error("✗ Failed to get team status");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to get team status: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 
@@ -268,7 +276,9 @@ async function teamEnable(
   if (!existsSync(configPath)) {
     console.error("✗ Config file not found: .aligntrue/config.yaml");
     console.error("  Run: aligntrue init");
-    process.exit(1);
+    exitWithError(1, "Config file not found: .aligntrue/config.yaml", {
+      hint: "Run: aligntrue init",
+    });
   }
 
   try {
@@ -494,7 +504,10 @@ async function teamEnable(
     }
     console.error("✗ Failed to enable team mode");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to enable team mode: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 
@@ -605,7 +618,10 @@ async function teamDisable(
     }
     console.error("✗ Failed to disable team mode");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to disable team mode: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 

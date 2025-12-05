@@ -7,6 +7,7 @@
 
 import { loadConfig, type AlignTrueConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
+import { exitWithError } from "./command-utilities.js";
 
 /**
  * Load and validate AlignTrue configuration with standardized error handling
@@ -34,7 +35,9 @@ export async function loadConfigWithValidation(
       `Error: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
     console.error(`\nHint: Run 'aligntrue init' to create a valid config`);
-    process.exit(2);
+    exitWithError(2, "Failed to load configuration", {
+      hint: "Run 'aligntrue init' to create a valid config",
+    });
   }
 }
 

@@ -16,6 +16,7 @@ import { tryLoadConfig } from "../utils/config-loader.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { detectNewAgents } from "../utils/detect-agents.js";
@@ -120,7 +121,9 @@ export async function exporters(args: string[]): Promise<void> {
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       console.error("Run: aligntrue exporters --help");
-      process.exit(1);
+      exitWithError(1, `Unknown subcommand: ${subcommand}`, {
+        hint: "Run: aligntrue exporters --help",
+      });
   }
 }
 
@@ -141,7 +144,9 @@ async function discoverAndCategorize(): Promise<{
   if (!existsSync(CONFIG_PATH)) {
     console.error("✗ Config file not found: .aligntrue/config.yaml");
     console.error("  Run: aligntrue init");
-    process.exit(1);
+    exitWithError(1, "Config file not found: .aligntrue/config.yaml", {
+      hint: "Run: aligntrue init",
+    });
   }
 
   // Load config (using utility for consistent error handling)
@@ -161,7 +166,10 @@ async function discoverAndCategorize(): Promise<{
     console.error(
       `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to discover exporters: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 
   // Load all manifests
@@ -313,7 +321,9 @@ async function enableExporters(
         "  Usage: aligntrue exporters enable <exporter> [exporter2 ...]",
       );
       console.error("  Or: aligntrue exporters enable --interactive");
-      process.exit(1);
+      exitWithError(1, "Missing exporter name", {
+        hint: "Usage: aligntrue exporters enable <exporter>",
+      });
     }
 
     const exporterNames = args;
@@ -351,7 +361,9 @@ async function enableExporters(
       console.error(
         "  Don't see yours? https://aligntrue.ai/docs/07-contributing/adding-exporters",
       );
-      process.exit(1);
+      exitWithError(1, `Exporter(s) not found: ${notFound.join(", ")}`, {
+        hint: "Run: aligntrue exporters list",
+      });
     }
 
     if (invalid.length > 0) {
@@ -359,7 +371,7 @@ async function enableExporters(
       console.error(
         "  These exporters are not available in the installed exporters package",
       );
-      process.exit(1);
+      exitWithError(1, `Invalid exporter(s): ${invalid.join(", ")}`);
     }
 
     // If all are already enabled, exit early
@@ -406,7 +418,10 @@ async function enableExporters(
     console.error(
       `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to save config: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 
   if (exportersToEnable.length === 1) {
@@ -435,7 +450,9 @@ async function disableExporter(args: string[]): Promise<void> {
   if (!exporterName) {
     console.error("✗ Missing exporter name");
     console.error("  Usage: aligntrue exporters disable <exporter>");
-    process.exit(1);
+    exitWithError(1, "Missing exporter name", {
+      hint: "Usage: aligntrue exporters disable <exporter>",
+    });
   }
 
   const { config } = await discoverAndCategorize();
@@ -445,7 +462,9 @@ async function disableExporter(args: string[]): Promise<void> {
   if (!currentExporters.includes(exporterName)) {
     console.error(`✗ Exporter not enabled: ${exporterName}`);
     console.error("  Run: aligntrue exporters list");
-    process.exit(1);
+    exitWithError(1, `Exporter not enabled: ${exporterName}`, {
+      hint: "Run: aligntrue exporters list",
+    });
   }
 
   // Prevent disabling last exporter
@@ -455,7 +474,9 @@ async function disableExporter(args: string[]): Promise<void> {
     console.error(
       "  Enable another exporter first: aligntrue exporters enable <exporter>",
     );
-    process.exit(1);
+    exitWithError(1, "Cannot disable last exporter", {
+      hint: "Enable another exporter first: aligntrue exporters enable <exporter>",
+    });
   }
 
   // Remove exporter and always use array format for simplicity
@@ -471,7 +492,10 @@ async function disableExporter(args: string[]): Promise<void> {
     console.error(
       `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to save config: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 
   console.log(`✓ Disabled exporter: ${exporterName}`);
@@ -518,7 +542,9 @@ async function ignoreAgent(args: string[]): Promise<void> {
   if (!agentName) {
     console.error("✗ Missing agent name");
     console.error("  Usage: aligntrue exporters ignore <agent>");
-    process.exit(1);
+    exitWithError(1, "Missing agent name", {
+      hint: "Usage: aligntrue exporters ignore <agent>",
+    });
   }
 
   const { config } = await discoverAndCategorize();
@@ -547,7 +573,10 @@ async function ignoreAgent(args: string[]): Promise<void> {
     console.error(
       `  ${_error instanceof Error ? _error.message : String(_error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to save config: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 
   console.log(`✓ Added to ignored list: ${agentName}`);

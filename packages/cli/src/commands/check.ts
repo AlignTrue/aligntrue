@@ -113,7 +113,21 @@ export async function check(args: string[]): Promise<void> {
 
   try {
     // Step 1: Load config (with standardized error handling)
-    const config: AlignTrueConfig = await tryLoadConfig(configPath);
+    let config: AlignTrueConfig;
+    try {
+      config = await tryLoadConfig(configPath);
+    } catch (_error) {
+      const message =
+        _error instanceof Error ? _error.message : String(_error ?? "");
+
+      spinner.stop("Validation failed");
+
+      if (message.toLowerCase().includes("config file not found")) {
+        exitWithError(Errors.configNotFound(configPath), 2);
+      }
+
+      exitWithError(Errors.operationFailed("Load config", message), 2);
+    }
 
     let invalidExporters;
     try {
@@ -439,7 +453,11 @@ export async function check(args: string[]): Promise<void> {
     }
   } catch (err) {
     spinner.stop("Validation failed");
-    if (err instanceof Error && err.name === "ProcessExitError") {
+    if (
+      err instanceof Error &&
+      (err.name === "ProcessExitError" ||
+        err.message.toLowerCase().includes("process.exit"))
+    ) {
       throw err;
     }
     // Unexpected system error

@@ -20,6 +20,7 @@ import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 
@@ -136,8 +137,10 @@ export async function overrideAdd(args: string[]): Promise<void> {
         `Error: Failed to add overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
-    process.exit(1);
-    return;
+    exitWithError(
+      1,
+      `Failed to add overlay: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 }
 
@@ -168,16 +171,16 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
       "\nTip: Run 'aligntrue override selectors' to list available selectors from your rules file.",
     );
     console.log("\nFor more help: aligntrue override add --help");
-    process.exit(1);
-    return;
+    exitWithError(1, `Invalid selector: ${validation.error}`, {
+      hint: "Run 'aligntrue override selectors' to view valid options",
+    });
   }
 
   // Parse selector to verify it's well-formed
   const parsed = parseSelector(options.selector);
   if (!parsed) {
     clack.log.error(`Could not parse selector: ${options.selector}`);
-    process.exit(1);
-    return;
+    exitWithError(1, `Could not parse selector: ${options.selector}`);
   }
 
   // At least one operation required
@@ -187,8 +190,7 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
     console.log("  --set severity=error");
     console.log("  --remove autofix");
     console.log("  --set severity=warn --remove autofix");
-    process.exit(1);
-    return;
+    exitWithError(1, "At least one of --set or --remove is required");
   }
 
   // Parse set operations
@@ -202,15 +204,16 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
         console.log("Examples:");
         console.log("  --set severity=error");
         console.log("  --set check.inputs.threshold=15");
-        process.exit(1);
-        return;
+        exitWithError(1, `Invalid --set format: ${item}`, {
+          hint: "Expected format: key=value",
+        });
       }
       const [, key, value] = match;
 
       // TypeScript strict mode: ensure key and value are defined
       if (!key || !value) {
         clack.log.error(`Invalid --set format: ${item}`);
-        process.exit(1);
+        exitWithError(1, `Invalid --set format: ${item}`);
       }
 
       // Try to parse value as JSON, fallback to string
@@ -237,8 +240,13 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
       "Could not load rules. The rules directory (.aligntrue/rules/) is missing or invalid.",
     );
     clack.log.info("To fix this, run: aligntrue sync");
-    process.exit(1);
-    return;
+    exitWithError(
+      1,
+      "Could not load rules. The rules directory is missing or invalid.",
+      {
+        hint: "Run: aligntrue sync",
+      },
+    );
   }
 
   const selectorResult = evaluateSelector(options.selector, ir);
@@ -249,8 +257,13 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
     console.log(
       "\nTip: Use 'aligntrue override selectors' to list valid selectors for your current rules, or verify the ID/index in .aligntrue/rules/.",
     );
-    process.exit(1);
-    return;
+    exitWithError(
+      1,
+      `Selector did not match the current rules: ${selectorResult.error ?? "unknown error"}`,
+      {
+        hint: "Run: aligntrue override selectors to view available selectors",
+      },
+    );
   }
 
   // Ensure overlays.overrides array exists

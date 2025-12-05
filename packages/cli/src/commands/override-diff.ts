@@ -17,6 +17,7 @@ import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 
@@ -64,7 +65,10 @@ export async function overrideDiff(args: string[]): Promise<void> {
         `Error: Failed to generate overlay diff: ${_error instanceof Error ? _error.message : String(_error)}`,
       );
     }
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to generate overlay diff: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 }
 
@@ -93,7 +97,7 @@ async function runOverrideDiff(
 
   if (filteredOverlays.length === 0) {
     clack.log.warn(`No overlays match selector: ${selectorFilter}`);
-    process.exit(1);
+    exitWithError(1, `No overlays match selector: ${selectorFilter}`);
   }
 
   // Load IR
@@ -106,7 +110,9 @@ async function runOverrideDiff(
   } catch {
     clack.log.error("Could not load IR");
     clack.log.info("Run 'aligntrue sync' to generate IR");
-    process.exit(1);
+    exitWithError(1, "Could not load IR", {
+      hint: "Run 'aligntrue sync' to generate IR",
+    });
   }
 
   // Apply overlays (TypeScript: cast to Align after IR load validation)
@@ -122,7 +128,7 @@ async function runOverrideDiff(
         console.log(`  ${err}`);
       }
     }
-    process.exit(1);
+    exitWithError(1, "Failed to apply overlays");
   }
 
   // Show diff for each overlay

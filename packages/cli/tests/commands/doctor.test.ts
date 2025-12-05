@@ -4,6 +4,19 @@ import { join } from "path";
 import { doctor } from "../../src/commands/doctor.js";
 import { mockCommandArgs } from "../utils/command-test-helpers.js";
 
+const expectAlignTrueExit = async (
+  fn: () => Promise<unknown>,
+  exitCode: number,
+  messageIncludes?: string,
+) => {
+  await expect(fn()).rejects.toMatchObject({
+    exitCode,
+    ...(messageIncludes
+      ? { message: expect.stringContaining(messageIncludes) }
+      : {}),
+  });
+};
+
 // Mock clack to keep output quiet
 vi.mock("@clack/prompts", () => ({
   intro: vi.fn(),
@@ -96,8 +109,8 @@ describe("doctor command", () => {
   });
 
   it("fails when config is missing", async () => {
-    await expect(doctor([])).rejects.toThrow("process.exit: 1");
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    await expectAlignTrueExit(() => doctor([]), 1, "Doctor checks failed");
+    expect(exitSpy).not.toHaveBeenCalled();
   });
 
   it("warns when exporter outputs are missing", async () => {
