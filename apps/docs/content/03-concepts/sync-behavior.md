@@ -170,7 +170,7 @@ The sync engine maintains consistency with one-way flow from rules directory to 
 
 ## Sync directions
 
-### Rules Directory → IR → Agents (default)
+### Rules directory → IR → agents (default)
 
 **When:** Every `aligntrue sync` command (default direction)
 

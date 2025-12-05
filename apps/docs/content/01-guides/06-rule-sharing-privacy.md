@@ -556,7 +556,7 @@ exporters:
 title: My Shortcuts
 scope: personal
 ---
-## VS Code Shortcuts
+## VS Code shortcuts
 
 - Cmd+Shift+L: Format document
 - Cmd+Shift+U: Convert to uppercase
