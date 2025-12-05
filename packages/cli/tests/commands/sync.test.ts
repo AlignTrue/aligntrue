@@ -84,8 +84,13 @@ describe("sync command - detection scenarios", () => {
   beforeEach(() => {
     const ctx = setupTestProject({
       customConfig: "exporters:\n  - cursor\n",
-      customRules:
-        "id: test\nversion: 1.0.0\nspec_version: '1'\nsections: []\n",
+      rules: [
+        {
+          filename: "test-rule.md",
+          title: "Test Rule",
+          content: "## Section\n\nTest rule guidance",
+        },
+      ],
     });
     testDir = ctx.projectDir;
     cleanup = ctx.cleanup;
