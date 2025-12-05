@@ -492,7 +492,8 @@ export async function init(args: string[] = []): Promise<void> {
   if (contextResult.context === "already-initialized") {
     const message =
       "AlignTrue already initialized in this project.\n" +
-      "Your rules are in .aligntrue/rules/ - run 'aligntrue sync' to update agents.";
+      "Your rules are in .aligntrue/rules/ - run 'aligntrue sync' to update agents.\n" +
+      "To switch modes: 'aligntrue team enable' or 'aligntrue team disable'";
 
     if (nonInteractive) {
       console.log(message);

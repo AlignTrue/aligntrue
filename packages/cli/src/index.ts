@@ -55,12 +55,23 @@ async function main() {
     }
   }
 
-  exitWithError(1, `Command not implemented: ${command || "(none)"}`, {
+  exitWithError(2, `Command not implemented: ${command || "(none)"}`, {
     hint: "Run 'aligntrue --help' to see available commands and options",
   });
 }
 
 main().catch((err) => {
+  const systemErrorCodes = new Set([
+    "EACCES",
+    "EPERM",
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "EHOSTUNREACH",
+    "ENOTFOUND",
+    "EPIPE",
+    "ETIMEDOUT",
+  ]);
+
   // Handle AlignTrue errors with proper formatting
   if (err instanceof AlignTrueError) {
     console.error(`\n✗ ${err.message}`);
@@ -76,6 +87,25 @@ main().catch((err) => {
   }
 
   // Handle unknown errors - only show stack trace in debug mode
+  const errno = err as NodeJS.ErrnoException;
+  const code = errno?.code;
+
+  let exitCode = 1;
+  let hint: string | undefined;
+
+  if (code && systemErrorCodes.has(code)) {
+    exitCode = 3;
+
+    if (code === "EACCES" || code === "EPERM") {
+      const targetPath = (errno as NodeJS.ErrnoException)?.path;
+      hint = targetPath
+        ? `Ensure you have write permission to ${targetPath} or run from a writable directory.`
+        : "Ensure you have write permission to this location or run from a writable directory.";
+    } else if (code === "ECONNREFUSED" || code === "EHOSTUNREACH") {
+      hint = "Check network connectivity or remote availability, then retry.";
+    }
+  }
+
   console.error("\n✗ Fatal error:", err.message);
 
   // Show stack trace only if DEBUG or VERBOSE env var is set
@@ -89,6 +119,11 @@ main().catch((err) => {
   } else if (err.stack) {
     console.error("\nRun with DEBUG=1 for full stack trace");
   }
+
+  if (hint) {
+    console.error(`\nHint: ${hint}`);
+  }
+
   console.error("");
-  process.exit(1);
+  process.exit(exitCode);
 });

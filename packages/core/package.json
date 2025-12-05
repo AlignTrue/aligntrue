@@ -39,6 +39,7 @@
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
     "ignore": "^7.0.5",
+    "js-yaml": ">=4.1.1",
     "micromatch": "^4.0.8",
     "simple-git": "^3.30.0",
     "yaml": "^2.8.2"
@@ -52,6 +53,7 @@
     }
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/micromatch": "^4.0.9"
   },
   "license": "MIT",

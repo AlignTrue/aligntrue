@@ -13,7 +13,11 @@ import type {
   RemoteStatus,
   RemotePushResult,
 } from "./types.js";
-import { resolveFileAssignments, getRemotesStatus } from "./file-resolver.js";
+import {
+  resolveFileAssignments,
+  getRemotesStatus,
+  type FileResolutionOptions,
+} from "./file-resolver.js";
 import { pushToRemote, getLastRemoteInfo } from "./git-pusher.js";
 
 /**
@@ -23,14 +27,27 @@ export class RemotesManager {
   private config: RemotesConfig;
   private cwd: string;
   private rulesDir: string;
+  private mode: "solo" | "team" | "enterprise";
 
   constructor(
     config: RemotesConfig,
-    options: { cwd?: string; rulesDir?: string } = {},
+    options: {
+      cwd?: string;
+      rulesDir?: string;
+      mode?: "solo" | "team" | "enterprise";
+    } = {},
   ) {
     this.config = config;
     this.cwd = options.cwd || process.cwd();
     this.rulesDir = options.rulesDir || join(this.cwd, ".aligntrue", "rules");
+    this.mode = options.mode || "solo";
+  }
+
+  /**
+   * Get file resolution options including mode
+   */
+  private getResolutionOptions(): FileResolutionOptions {
+    return { mode: this.mode };
   }
 
   /**
@@ -83,11 +100,12 @@ export class RemotesManager {
     const sourceUrls = options.sourceUrls || [];
     const onProgress = options.onProgress;
 
-    // Resolve file assignments
-    const { assignments, warnings } = resolveFileAssignments(
+    // Resolve file assignments with mode-aware routing
+    const { assignments, warnings, diagnostics } = resolveFileAssignments(
       this.config,
       this.rulesDir,
       sourceUrls,
+      this.getResolutionOptions(),
     );
 
     const results: RemotePushResult[] = [];
@@ -119,12 +137,18 @@ export class RemotesManager {
     // Determine overall success
     const success = results.every((r) => r.success);
 
-    return {
+    const result: RemotesSyncResult = {
       results,
       success,
       totalFiles,
       warnings,
     };
+
+    if (diagnostics !== undefined) {
+      result.diagnostics = diagnostics;
+    }
+
+    return result;
   }
 
   /**
@@ -135,11 +159,12 @@ export class RemotesManager {
     const sourceUrls = options.sourceUrls || [];
     const onProgress = options.onProgress;
 
-    // Resolve file assignments
-    const { assignments, warnings } = resolveFileAssignments(
+    // Resolve file assignments with mode-aware routing
+    const { assignments, warnings, diagnostics } = resolveFileAssignments(
       this.config,
       this.rulesDir,
       sourceUrls,
+      this.getResolutionOptions(),
     );
 
     const results: RemotePushResult[] = [];
@@ -185,12 +210,18 @@ export class RemotesManager {
     // Determine overall success
     const success = results.every((r) => r.success);
 
-    return {
+    const result: RemotesSyncResult = {
       results,
       success,
       totalFiles,
       warnings,
     };
+
+    if (diagnostics !== undefined) {
+      result.diagnostics = diagnostics;
+    }
+
+    return result;
   }
 
   /**
@@ -229,6 +260,7 @@ export class RemotesManager {
       this.config,
       this.rulesDir,
       sourceUrls,
+      this.getResolutionOptions(),
     );
 
     const statuses: RemoteStatus[] = [];
@@ -319,7 +351,11 @@ function formatTimeAgo(date: Date): string {
  */
 export function createRemotesManager(
   config: RemotesConfig,
-  options: { cwd?: string; rulesDir?: string } = {},
+  options: {
+    cwd?: string;
+    rulesDir?: string;
+    mode?: "solo" | "team" | "enterprise";
+  } = {},
 ): RemotesManager {
   return new RemotesManager(config, options);
 }

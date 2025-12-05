@@ -241,6 +241,7 @@ Catch errors early.
 - `0` success
 - `1` validation error (validation failures, sync errors, etc.)
 - `2` user error (missing files, bad flags, config errors)
+- `3` system error (permissions, network, filesystem)
 
 ### Error format
 
@@ -253,7 +254,7 @@ Each error must state:
 ### Acceptance
 
 - Contract tests cover `validate`, `bundle`, `export`, `align` exit codes and messages
-- Exit codes follow the two-tier system (1 for data/logic errors, 2 for input/config errors)
+- Exit codes follow the four-tier system (0 success, 1 validation, 2 user error, 3 system error)
 
 ---
 

@@ -8,7 +8,7 @@
 import { join } from "path";
 import { existsSync, readdirSync, readFileSync } from "fs";
 import micromatch from "micromatch";
-import matter from "gray-matter";
+import yaml from "js-yaml";
 import type { RemotesConfig, RemoteDestination } from "../config/types.js";
 import type {
   ScopedFile,
@@ -16,6 +16,8 @@ import type {
   FileAssignment,
   FileResolutionResult,
   ResolutionWarning,
+  UnroutedFile,
+  FileResolutionDiagnostics,
 } from "./types.js";
 
 /**
@@ -49,13 +51,31 @@ function collectScopedFiles(rulesDir: string): ScopedFile[] {
 }
 
 /**
+ * Parse YAML frontmatter from markdown content
+ * Uses js-yaml directly to avoid gray-matter compatibility issues with js-yaml 4.x
+ */
+function parseFrontmatter(
+  content: string,
+): Record<string, unknown> | undefined {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match || !match[1]) {
+    return undefined;
+  }
+  try {
+    return yaml.load(match[1]) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Get scope from a rule file's frontmatter
  */
 function getScopeFromFile(filePath: string): RuleScope {
   try {
     const content = readFileSync(filePath, "utf-8");
-    const { data } = matter(content);
-    const scope = data["scope"];
+    const data = parseFrontmatter(content);
+    const scope = data?.["scope"];
     if (scope === "personal" || scope === "shared") {
       return scope;
     }
@@ -89,19 +109,30 @@ function normalizeDestination(
 }
 
 /**
+ * Options for file resolution
+ */
+export interface FileResolutionOptions {
+  /** Mode affects routing behavior: solo pushes all to personal, team uses scope routing */
+  mode?: "solo" | "team" | "enterprise";
+}
+
+/**
  * Resolve file assignments for remotes using scope-based and pattern-based routing
  *
  * Rules (ADDITIVE model):
- * 1. Scope-based routing: personal/shared scope rules go to their configured remotes
- * 2. Pattern-based routing: ADDS destinations (files can go to multiple places)
- * 3. Team-scope rules stay in main repo unless matched by custom patterns
- * 4. Same file can go to multiple destinations
+ * 1. Solo mode: ALL files route to personal remote (unless explicitly scoped to shared)
+ * 2. Team/enterprise mode: Scope-based routing (personal/shared scope rules go to their remotes)
+ * 3. Pattern-based routing: ADDS destinations (files can go to multiple places)
+ * 4. Team-scope rules stay in main repo unless matched by custom patterns
+ * 5. Same file can go to multiple destinations
  */
 export function resolveFileAssignments(
   config: RemotesConfig,
   rulesDir: string,
   sourceUrls: string[] = [],
+  options?: FileResolutionOptions,
 ): FileResolutionResult {
+  const mode = options?.mode || "solo";
   const warnings: ResolutionWarning[] = [];
   const assignments = new Map<
     string,
@@ -112,7 +143,16 @@ export function resolveFileAssignments(
   const scopedFiles = collectScopedFiles(rulesDir);
 
   if (scopedFiles.length === 0) {
-    return { assignments: [], warnings: [] };
+    return {
+      assignments: [],
+      warnings: [],
+      diagnostics: {
+        mode,
+        totalFiles: 0,
+        routedFiles: 0,
+        unroutedFiles: [],
+      },
+    };
   }
 
   // Normalize source URLs for conflict detection
@@ -141,20 +181,35 @@ export function resolveFileAssignments(
     assignments.get(remoteId)!.files.add(file);
   };
 
-  // 1. Scope-based routing
+  // Get normalized destinations
   const personalDest = normalizeDestination(config.personal);
   const sharedDest = normalizeDestination(config.shared);
 
-  for (const { path, scope } of scopedFiles) {
-    if (scope === "personal" && personalDest) {
-      addAssignment("personal", path, personalDest);
-    } else if (scope === "shared" && sharedDest) {
-      addAssignment("shared", path, sharedDest);
+  // 1. Mode-aware routing
+  if (mode === "solo" && personalDest) {
+    // Solo mode: route ALL files to personal (unless explicitly scoped to shared)
+    for (const { path, scope } of scopedFiles) {
+      if (scope === "shared" && sharedDest) {
+        // Explicitly shared files go to shared remote if configured
+        addAssignment("shared", path, sharedDest);
+      } else {
+        // Everything else (personal, team, or no scope) goes to personal
+        addAssignment("personal", path, personalDest);
+      }
     }
-    // team scope stays in main repo (no remote assignment)
+  } else {
+    // Team/enterprise mode: use scope-based routing
+    for (const { path, scope } of scopedFiles) {
+      if (scope === "personal" && personalDest) {
+        addAssignment("personal", path, personalDest);
+      } else if (scope === "shared" && sharedDest) {
+        addAssignment("shared", path, sharedDest);
+      }
+      // team scope stays in main repo (no remote assignment)
+    }
   }
 
-  // 2. Pattern-based routing (ADDITIVE)
+  // 2. Pattern-based routing (ADDITIVE - applies in all modes)
   if (config.custom) {
     for (const custom of config.custom) {
       for (const { path, scope } of scopedFiles) {
@@ -187,46 +242,79 @@ export function resolveFileAssignments(
     }
   }
 
-  // Warn about files with no remote (only if some remotes are configured)
-  const hasAnyRemote =
-    personalDest || sharedDest || (config.custom && config.custom.length > 0);
-  if (hasAnyRemote) {
-    const allAssignedFiles = new Set<string>();
-    for (const { files } of result) {
-      for (const file of files) {
-        allAssignedFiles.add(file);
-      }
-    }
-
-    // Don't warn about team files - they're supposed to stay in main repo
-    // Only warn if personal/shared files have no destination
-    const personalWithoutDest = scopedFiles.filter(
-      ({ path, scope }) =>
-        scope === "personal" && !personalDest && !allAssignedFiles.has(path),
-    );
-    const sharedWithoutDest = scopedFiles.filter(
-      ({ path, scope }) =>
-        scope === "shared" && !sharedDest && !allAssignedFiles.has(path),
-    );
-
-    if (personalWithoutDest.length > 0) {
-      warnings.push({
-        type: "no-remote",
-        message: `${personalWithoutDest.length} personal-scope file(s) have no remote configured. Add remotes.personal to route them.`,
-        files: personalWithoutDest.map(({ path }) => path).slice(0, 5),
-      });
-    }
-
-    if (sharedWithoutDest.length > 0) {
-      warnings.push({
-        type: "no-remote",
-        message: `${sharedWithoutDest.length} shared-scope file(s) have no remote configured. Add remotes.shared to route them.`,
-        files: sharedWithoutDest.map(({ path }) => path).slice(0, 5),
-      });
+  // Build diagnostics
+  const allAssignedFiles = new Set<string>();
+  for (const { files } of result) {
+    for (const file of files) {
+      allAssignedFiles.add(file);
     }
   }
 
-  return { assignments: result, warnings };
+  const unroutedFiles: UnroutedFile[] = [];
+  const hasAnyRemote =
+    personalDest || sharedDest || (config.custom && config.custom.length > 0);
+
+  if (hasAnyRemote) {
+    for (const { path, scope } of scopedFiles) {
+      if (!allAssignedFiles.has(path)) {
+        let reason: string;
+        if (mode === "team" || mode === "enterprise") {
+          if (scope === "team") {
+            reason = "scope: team stays in main repo";
+          } else if (scope === "personal" && !personalDest) {
+            reason = "no remotes.personal configured";
+          } else if (scope === "shared" && !sharedDest) {
+            reason = "no remotes.shared configured";
+          } else {
+            reason = "no matching remote";
+          }
+        } else {
+          // Solo mode - shouldn't happen if personalDest is configured
+          reason = personalDest
+            ? "filtered by pattern"
+            : "no remotes.personal configured";
+        }
+        unroutedFiles.push({ path, scope, reason });
+      }
+    }
+
+    // Generate warnings for personal/shared files without destinations (team mode)
+    if (mode === "team" || mode === "enterprise") {
+      const personalWithoutDest = scopedFiles.filter(
+        ({ path, scope }) =>
+          scope === "personal" && !personalDest && !allAssignedFiles.has(path),
+      );
+      const sharedWithoutDest = scopedFiles.filter(
+        ({ path, scope }) =>
+          scope === "shared" && !sharedDest && !allAssignedFiles.has(path),
+      );
+
+      if (personalWithoutDest.length > 0) {
+        warnings.push({
+          type: "no-remote",
+          message: `${personalWithoutDest.length} personal-scope file(s) have no remote configured. Add remotes.personal to route them.`,
+          files: personalWithoutDest.map(({ path }) => path).slice(0, 5),
+        });
+      }
+
+      if (sharedWithoutDest.length > 0) {
+        warnings.push({
+          type: "no-remote",
+          message: `${sharedWithoutDest.length} shared-scope file(s) have no remote configured. Add remotes.shared to route them.`,
+          files: sharedWithoutDest.map(({ path }) => path).slice(0, 5),
+        });
+      }
+    }
+  }
+
+  const diagnostics: FileResolutionDiagnostics = {
+    mode,
+    totalFiles: scopedFiles.length,
+    routedFiles: allAssignedFiles.size,
+    unroutedFiles,
+  };
+
+  return { assignments: result, warnings, diagnostics };
 }
 
 /**
@@ -236,6 +324,7 @@ export function getRemotesStatus(
   config: RemotesConfig,
   rulesDir: string,
   sourceUrls: string[] = [],
+  options?: FileResolutionOptions,
 ): {
   remotes: Array<{
     id: string;
@@ -246,11 +335,13 @@ export function getRemotesStatus(
     skipReason?: string;
   }>;
   warnings: ResolutionWarning[];
+  diagnostics?: FileResolutionDiagnostics;
 } {
-  const { assignments, warnings } = resolveFileAssignments(
+  const { assignments, warnings, diagnostics } = resolveFileAssignments(
     config,
     rulesDir,
     sourceUrls,
+    options,
   );
 
   const normalizedSourceUrls = new Set(sourceUrls.map(normalizeUrl));
@@ -308,5 +399,9 @@ export function getRemotesStatus(
     }
   }
 
-  return { remotes, warnings };
+  return {
+    remotes,
+    warnings,
+    ...(diagnostics !== undefined && { diagnostics }),
+  };
 }

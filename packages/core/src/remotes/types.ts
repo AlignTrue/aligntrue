@@ -51,6 +51,32 @@ export interface ResolutionWarning {
 }
 
 /**
+ * Unrouted file information for diagnostics
+ */
+export interface UnroutedFile {
+  /** Relative path to rule file */
+  path: string;
+  /** Rule scope from frontmatter */
+  scope: RuleScope;
+  /** Reason file was not routed */
+  reason: string;
+}
+
+/**
+ * Diagnostics for file resolution (helps debug "no files to sync")
+ */
+export interface FileResolutionDiagnostics {
+  /** Mode that was used for routing */
+  mode: "solo" | "team" | "enterprise";
+  /** Total rule files found */
+  totalFiles: number;
+  /** Number of files routed to remotes */
+  routedFiles: number;
+  /** Files that were not routed with reasons */
+  unroutedFiles: UnroutedFile[];
+}
+
+/**
  * Result of file resolution
  */
 export interface FileResolutionResult {
@@ -58,6 +84,8 @@ export interface FileResolutionResult {
   assignments: FileAssignment[];
   /** Warnings generated during resolution */
   warnings: ResolutionWarning[];
+  /** Diagnostics for debugging (why files weren't routed) */
+  diagnostics?: FileResolutionDiagnostics;
 }
 
 /**
@@ -92,6 +120,8 @@ export interface RemotesSyncResult {
   totalFiles: number;
   /** Warnings generated */
   warnings: ResolutionWarning[];
+  /** Diagnostics for debugging (why files weren't routed) */
+  diagnostics?: FileResolutionDiagnostics | undefined;
 }
 
 /**

@@ -457,9 +457,24 @@ export class BackupManager {
       return 0;
     }
 
-    // If retentionDays is 0, skip cleanup (manual only)
+    // If retentionDays is 0, keep only the minimumKeep most recent backups
     if (retentionDays === 0) {
-      return 0;
+      const excess = Math.max(0, backups.length - minimumKeep);
+      if (excess === 0) {
+        return 0;
+      }
+
+      const toDelete = backups.slice(minimumKeep);
+      let removed = 0;
+      for (const backup of toDelete) {
+        try {
+          rmSync(backup.path, { recursive: true, force: true });
+          removed++;
+        } catch {
+          // Continue on error
+        }
+      }
+      return removed;
     }
 
     const now = Date.now();

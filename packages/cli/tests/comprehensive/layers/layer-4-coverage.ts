@@ -83,6 +83,41 @@ const commands: CommandTest[] = [
     expectedExitCode: 0,
   },
   {
+    command: "aligntrue sources --help",
+    description: "Sources help",
+    expectedExitCode: 0,
+  },
+  {
+    command: "aligntrue status --help",
+    description: "Status help",
+    expectedExitCode: 0,
+  },
+  {
+    command: "aligntrue doctor --help",
+    description: "Doctor help",
+    expectedExitCode: 0,
+  },
+  {
+    command: "aligntrue add --help",
+    description: "Add help",
+    expectedExitCode: 0,
+  },
+  {
+    command: "aligntrue remove --help",
+    description: "Remove help",
+    expectedExitCode: 0,
+  },
+  {
+    command: "aligntrue rules --help",
+    description: "Rules help",
+    expectedExitCode: 0,
+  },
+  {
+    command: "aligntrue uninstall --help",
+    description: "Uninstall help",
+    expectedExitCode: 0,
+  },
+  {
     command: "aligntrue override --help",
     description: "Override help",
     expectedExitCode: 0,

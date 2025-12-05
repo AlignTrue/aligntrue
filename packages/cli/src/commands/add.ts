@@ -21,6 +21,7 @@ import {
   writeRuleFile,
   resolveConflict,
   isTeamModeActive,
+  validateRelativePath,
   type AlignTrueConfig,
 } from "@aligntrue/core";
 import { importRules } from "../utils/source-resolver.js";
@@ -205,6 +206,7 @@ export async function add(args: string[]): Promise<void> {
     if (subcommand) {
       exitWithError(
         Errors.missingArgument("url", `aligntrue add ${subcommand} <url>`),
+        2,
       );
     } else {
       exitWithError(
@@ -212,6 +214,7 @@ export async function add(args: string[]): Promise<void> {
           "url",
           "aligntrue add <url> or aligntrue add source/remote <url>",
         ),
+        2,
       );
     }
   }
@@ -443,6 +446,28 @@ async function addSource(options: {
         console.log(`\nWarning: This source already exists: ${baseUrl}`);
       }
       return;
+    }
+
+    if (sourceType === "local") {
+      const validation = validateRelativePath(baseUrl, "Source path");
+      if (!validation.valid) {
+        const firstError = validation.errors?.[0];
+        const pathPrefix =
+          firstError?.path && firstError.path !== "(root)"
+            ? `${firstError.path}: `
+            : "";
+
+        exitWithError({
+          title: "Invalid source path",
+          message: firstError?.message
+            ? `${pathPrefix}${firstError.message}`
+            : "Source path is invalid",
+          hint:
+            firstError?.hint ||
+            "Use a relative path like .aligntrue/rules or ./my-rules",
+          code: "INVALID_SOURCE_PATH",
+        });
+      }
     }
 
     // Build source configuration

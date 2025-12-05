@@ -27,6 +27,9 @@ export {
   storeSourceRuleHashes,
   detectSourceRuleChanges,
   type SourceRuleHashes,
+  getExportFileHashes,
+  storeExportFileHashes,
+  type ExportFileHashes,
 } from "./tracking.js";
 export {
   loadDriftLog,
