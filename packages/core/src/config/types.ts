@@ -37,42 +37,6 @@ export interface LocalBackupConfig {
   minimum_keep?: number; // Safety floor: always keep N most recent (default: 3)
 }
 
-/**
- * Remote backup destination configuration
- */
-export interface RemoteBackupDestination {
-  url: string; // Git repository URL
-  branch?: string; // Branch to push to (default: main)
-  path?: string; // Path prefix in backup repo (default: preserves structure)
-  auto?: boolean; // Push on sync (default: true)
-}
-
-/**
- * Additional backup destination with explicit file includes
- */
-export interface AdditionalBackupDestination extends RemoteBackupDestination {
-  id: string; // Unique identifier for this backup
-  include: string[]; // Glob patterns for files to include
-}
-
-/**
- * Remote backup configuration for pushing rules to git repositories
- * @deprecated Use `remotes` instead. Will be removed in next major version.
- */
-export interface RemoteBackupConfig {
-  /**
-   * Default backup destination - gets all files not assigned to additional backups
-   */
-  default?: RemoteBackupDestination;
-  /**
-   * Additional backup destinations with explicit file assignments
-   */
-  additional?: AdditionalBackupDestination[];
-}
-
-/**
- * Remote destination configuration
- */
 export interface RemoteDestination {
   url: string; // Git repository URL
   branch?: string; // Branch to push to (default: main)
@@ -80,10 +44,6 @@ export interface RemoteDestination {
   auto?: boolean; // Push on sync (default: true)
 }
 
-/**
- * Custom remote destination with pattern-based file selection
- * These are ADDITIVE - files can go to multiple custom destinations
- */
 export interface CustomRemoteDestination extends RemoteDestination {
   id: string; // Unique identifier for this remote
   include: string[]; // Glob patterns for files to include
@@ -92,7 +52,6 @@ export interface CustomRemoteDestination extends RemoteDestination {
 
 /**
  * Remotes configuration for scope-based and pattern-based rule routing
- * Replaces the deprecated remote_backup config
  */
 export interface RemotesConfig {
   /**
@@ -185,12 +144,6 @@ export interface AlignTrueConfig {
   performance?: PerformanceConfig;
   export?: ExportConfig;
   backup?: LocalBackupConfig;
-  /**
-   * Remote backup configuration for pushing rules to git repositories
-   * @deprecated Use `remotes` instead
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  remote_backup?: RemoteBackupConfig;
   /**
    * Remotes configuration for scope-based and pattern-based rule routing
    * Routes rules to remote git repositories based on their scope and/or file patterns

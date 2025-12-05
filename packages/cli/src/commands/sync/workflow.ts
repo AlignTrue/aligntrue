@@ -301,23 +301,12 @@ export async function executeSyncWorkflow(
   }
 
   // Step 7: Push to remotes if configured and auto-enabled
-  if (
-    !options.dryRun &&
-    result.success &&
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    (config.remotes || config.remote_backup)
-  ) {
+  if (!options.dryRun && result.success && config.remotes) {
     try {
-      const { createRemotesManager, convertLegacyConfig } = await import(
-        "@aligntrue/core"
-      );
+      const { createRemotesManager } = await import("@aligntrue/core");
       const rulesDir = join(cwd, ".aligntrue", "rules");
 
-      // Use new config if available, otherwise convert legacy
-      const remotesConfig =
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        config.remotes || convertLegacyConfig(config.remote_backup!);
-      const remotesManager = createRemotesManager(remotesConfig, {
+      const remotesManager = createRemotesManager(config.remotes, {
         cwd,
         rulesDir,
       });

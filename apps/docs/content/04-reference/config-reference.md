@@ -442,20 +442,20 @@ export:
   max_hint_tokens: 1600
 ```
 
-### remotes / remote_backup
+### remotes
 
 **Type:** `object`
 
-Configure remote backups of `.aligntrue/rules/` to git repositories.
+Configure pushing `.aligntrue/rules/` to git repositories by scope and pattern.
 
 ```yaml
-remote_backup:
-  default:
-    url: git@github.com:org/rules-backup.git
+remotes:
+  personal: git@github.com:user/personal-rules.git
+  shared:
+    url: git@github.com:org/shared-rules.git
     branch: main
-    path: rules/
     auto: true
-  additional:
+  custom:
     - id: security
       url: git@github.com:org/security-rules.git
       include:

@@ -208,16 +208,16 @@ backup:
   minimum_keep: 3 # Safety floor
 ```
 
-### Remote backup config
+### Remote config
 
 ```yaml
-remote_backup:
-  default:
+remotes:
+  personal:
     url: git@github.com:user/rules.git
     branch: main
     auto: true # Push on sync
-
-  additional:
+  shared: git@github.com:user/rules.git
+  custom:
     - id: public
       url: git@github.com:user/public-rules.git
       include:

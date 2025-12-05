@@ -7,11 +7,7 @@
 
 export { RemotesManager, createRemotesManager } from "./manager.js";
 
-export {
-  resolveFileAssignments,
-  getRemotesStatus,
-  convertLegacyConfig,
-} from "./file-resolver.js";
+export { resolveFileAssignments, getRemotesStatus } from "./file-resolver.js";
 
 export {
   pushToRemote,

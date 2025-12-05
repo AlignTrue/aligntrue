@@ -36,7 +36,6 @@ export {
   createRemotesManager,
   resolveFileAssignments,
   getRemotesStatus,
-  convertLegacyConfig,
   pushToRemote,
   getLastRemoteInfo,
   cleanRemoteCache,

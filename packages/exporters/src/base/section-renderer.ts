@@ -3,6 +3,7 @@
  * Consolidates markdown rendering, normalization, and marker generation
  */
 
+import type { AlignTrueConfig } from "@aligntrue/core";
 import type { AlignSection } from "@aligntrue/schema";
 
 /**
@@ -62,11 +63,10 @@ export function computeSectionFidelityNotes(
 export function generateSourceMarker(
   section: AlignSection,
   config?: unknown,
+  sections?: AlignSection[],
 ): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const alignConfig = config as any; // Type assertion for config
-  const mode = alignConfig?.sync?.source_markers || "auto";
-
+  const alignConfig = config as Partial<AlignTrueConfig> | undefined;
+  const mode = alignConfig?.sync?.source_markers ?? "auto";
   if (mode === "never") return "";
 
   const sourceFile = section.vendor?.aligntrue?.source_file;
@@ -74,10 +74,20 @@ export function generateSourceMarker(
 
   // For "auto" mode, only show if multiple source files configured
   if (mode === "auto") {
-    const sourceFiles = alignConfig?.sync?.source_files;
-    const hasMultipleSources = Array.isArray(sourceFiles)
-      ? sourceFiles.length > 1
-      : typeof sourceFiles === "string" && sourceFiles.includes("*");
+    let hasMultipleSources = false;
+
+    if (sections && sections.length > 0) {
+      const uniqueSources = new Set<string>();
+      sections.forEach((item) => {
+        const itemSource = item.vendor?.aligntrue?.source_file;
+        if (itemSource) {
+          uniqueSources.add(itemSource);
+        }
+      });
+      hasMultipleSources = uniqueSources.size > 1;
+    } else if (Array.isArray(alignConfig?.sources)) {
+      hasMultipleSources = alignConfig.sources.length > 1;
+    }
 
     if (!hasMultipleSources) return "";
   }

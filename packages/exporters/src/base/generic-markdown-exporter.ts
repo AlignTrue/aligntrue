@@ -14,6 +14,7 @@ import type {
 import type { RuleFile, RuleFrontmatter } from "@aligntrue/schema";
 import { join } from "path";
 import { ExporterBase } from "./index.js";
+import { getContentMode } from "../utils/config-access.js";
 
 /**
  * Generic configurable markdown exporter with link-based output
@@ -76,25 +77,10 @@ export class GenericMarkdownExporter extends ExporterBase {
     const warnings: string[] = [];
 
     // Determine content mode from CLI option or config
-    let contentMode: "auto" | "inline" | "links" =
-      (options.contentMode as "auto" | "inline" | "links" | undefined) ||
-      "auto";
-
-    // Get config for accessing sync.content_mode
-    const alignConfig = options.config as Record<string, unknown> | undefined;
-    if (alignConfig && !options.contentMode) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const syncConfig = (alignConfig as any)["sync"] as
-        | Record<string, unknown>
-        | undefined;
-      const configContentMode = syncConfig?.["content_mode"] as
-        | string
-        | undefined;
-      if (configContentMode) {
-        // Config takes precedence only if CLI option not provided
-        contentMode = configContentMode as "auto" | "inline" | "links";
-      }
-    }
+    const contentMode = getContentMode(
+      options.config,
+      options.contentMode as string | undefined,
+    );
 
     for (const [location, locationRules] of rulesByLocation.entries()) {
       // Determine output path

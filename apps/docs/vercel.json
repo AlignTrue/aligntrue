@@ -28,7 +28,7 @@
       "permanent": true
     },
     {
-      "source": "/dup-rules",
+      "source": "/dupe-rules",
       "destination": "/docs/03-concepts/preventing-duplicate-rules",
       "permanent": true
     },
@@ -80,6 +80,16 @@
     {
       "source": "/remote-issues",
       "destination": "/docs/05-troubleshooting/source-remote-issues",
+      "permanent": true
+    },
+    {
+      "source": "/team",
+      "destination": "/docs/03-concepts/team-mode",
+      "permanent": true
+    },
+    {
+      "source": "/join-team",
+      "destination": "/docs/01-guides/03-join-team",
       "permanent": true
     }
   ],

@@ -122,7 +122,7 @@ export async function runRemoteSetupWizard(
       `${scope === "personal" ? "Personal" : "Team"} rules will stay local.`,
     );
     console.log(
-      "\nTo add a remote backup later, configure remote_backup in .aligntrue/config.yaml",
+      "\nTo add a remote later, configure remotes in .aligntrue/config.yaml (for example: remotes: { shared: <url> })",
     );
     return { success: true, skipped: true };
   }
@@ -255,7 +255,7 @@ export async function runRemoteSetupWizard(
   }
 
   clack.outro(
-    `Repository verified!\n\nAdd to your .aligntrue/config.yaml:\n\nremote_backup:\n  default:\n    url: ${url}\n    branch: ${branch || "main"}`,
+    `Repository verified!\n\nAdd to your .aligntrue/config.yaml:\n\nremotes:\n  shared:\n    url: ${url}\n    branch: ${branch || "main"}\n  personal:\n    url: ${url}\n    branch: ${branch || "main"}`,
   );
 
   return {

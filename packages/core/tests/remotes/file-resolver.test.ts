@@ -1,7 +1,7 @@
 /**
  * Tests for remotes file resolver
  *
- * Tests pattern-based routing and legacy config conversion.
+ * Tests pattern-based routing.
  * Note: Scope-based routing tests require full frontmatter parsing
  * which is tested via integration tests.
  */
@@ -12,7 +12,6 @@ import { join } from "path";
 import {
   resolveFileAssignments,
   getRemotesStatus,
-  convertLegacyConfig,
 } from "../../src/remotes/file-resolver.js";
 import type { RemotesConfig } from "../../src/config/types.js";
 
@@ -114,33 +113,5 @@ describe("getRemotesStatus", () => {
     expect(remotes.find((r) => r.id === "personal")).toBeDefined();
     expect(remotes.find((r) => r.id === "shared")).toBeDefined();
     expect(warnings).toHaveLength(0);
-  });
-});
-
-describe("convertLegacyConfig", () => {
-  it("should convert legacy remote_backup config to remotes format", () => {
-    const legacyConfig = {
-      default: {
-        url: "git@github.com:user/all-rules.git",
-        branch: "main",
-      },
-      additional: [
-        {
-          id: "public",
-          url: "git@github.com:org/public.git",
-          include: ["typescript.md", "testing.md"],
-        },
-      ],
-    };
-
-    const result = convertLegacyConfig(legacyConfig);
-
-    expect(result.custom).toHaveLength(2);
-    // Default becomes a custom with **/*.md pattern
-    expect(result.custom![0]!.id).toBe("default");
-    expect(result.custom![0]!.include).toEqual(["**/*.md"]);
-    // Additional preserved
-    expect(result.custom![1]!.id).toBe("public");
-    expect(result.custom![1]!.include).toEqual(["typescript.md", "testing.md"]);
   });
 });

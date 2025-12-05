@@ -3,3 +3,4 @@
  */
 
 export * from "./section-parser.js";
+export * from "./config-access.js";

@@ -256,7 +256,7 @@ aligntrue backup status
 Notes:
 
 - Remote backup pushes the `.aligntrue/rules/` source of truth (agent exports are not pushed).
-- Supports `remotes` or legacy `remote_backup` config blocks.
+- Uses the `remotes` config block.
 - `--dry-run` shows what would be pushed; `--force` pushes even when no changes are detected.
 
 ## What gets backed up

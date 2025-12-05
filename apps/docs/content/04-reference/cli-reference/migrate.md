@@ -170,16 +170,17 @@ Migration complete!
 
 ---
 
-## Remote backup
+## Remote sync
 
-To backup your local rules to a remote git repository, configure `remote_backup` in your config:
+To push your local rules to a remote git repository, configure `remotes` in your config:
 
 ```yaml
 # .aligntrue/config.yaml
-remote_backup:
-  default:
+remotes:
+  shared:
     url: git@github.com:yourusername/rules-backup.git
     branch: main
+  personal: git@github.com:yourusername/rules-backup.git
 ```
 
 See [Personal Repository Setup](/docs/04-reference/personal-repo-setup) for details.
