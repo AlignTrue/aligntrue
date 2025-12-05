@@ -4,7 +4,7 @@ import {
   writeLockfile,
   generateLockfile,
   validateLockfile,
-  enforceLockfile,
+  checkLockfileValidation,
 } from "../../src/lockfile/index.js";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
@@ -76,14 +76,13 @@ describe("lockfile integration", () => {
         lockfile,
         currentLockfile.bundle_hash,
       );
-      const enforcement = enforceLockfile("soft", validation);
+      const enforcement = checkLockfileValidation(validation);
 
       expect(validation.valid).toBe(true);
       expect(enforcement.success).toBe(true);
-      expect(enforcement.exitCode).toBe(0);
     });
 
-    it("detects drift and enforces based on mode", () => {
+    it("detects drift", () => {
       const rules: RuleFile[] = [
         createMockRule("test", "# Test Rule\n\nOriginal content"),
       ];
@@ -104,15 +103,10 @@ describe("lockfile integration", () => {
       );
       expect(validation.valid).toBe(false);
 
-      // Soft mode allows continuation
-      const softEnforcement = enforceLockfile("soft", validation);
-      expect(softEnforcement.success).toBe(true);
-      expect(softEnforcement.exitCode).toBe(0);
-
-      // Strict mode blocks
-      const strictEnforcement = enforceLockfile("strict", validation);
-      expect(strictEnforcement.success).toBe(false);
-      expect(strictEnforcement.exitCode).toBe(1);
+      // checkLockfileValidation returns failure for drift
+      const enforcement = checkLockfileValidation(validation);
+      expect(enforcement.success).toBe(false);
+      expect(enforcement.message).toBeDefined();
     });
 
     it("handles new rules", () => {

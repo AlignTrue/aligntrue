@@ -53,6 +53,12 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Offline mode: use cache, no network calls",
   },
   {
+    flag: "--strict-sources",
+    hasValue: false,
+    description:
+      "Block sync when git sources have updates (team mode only, default: warn)",
+  },
+  {
     flag: "--verbose",
     hasValue: false,
     description:
@@ -145,6 +151,8 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     skipUpdateCheck:
       (parsed.flags["skip-update-check"] as boolean | undefined) || false,
     offline: (parsed.flags["offline"] as boolean | undefined) || false,
+    strictSources:
+      (parsed.flags["strict-sources"] as boolean | undefined) || false,
     verbose:
       (parsed.flags["verbose"] as boolean | undefined) || verboseCount >= 1,
     verboseFull,

@@ -63,30 +63,11 @@ describe("validateTeamConfig", () => {
     expect(errors).toEqual([]);
   });
 
-  it("warns when lockfile mode is off", () => {
+  it("passes when lockfile is enabled", () => {
     const config: AlignTrueConfig = {
       version: "1",
       mode: "team",
       modules: { lockfile: true },
-      lockfile: { mode: "off" },
-      exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/rules" }],
-    };
-
-    const errors = validateTeamConfig(config);
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.type).toBe("warning");
-    expect(errors[0]?.message).toContain("mode is off");
-    expect(errors[0]?.suggestion).toContain("soft");
-    expect(errors[0]?.suggestion).toContain("strict");
-  });
-
-  it("passes when lockfile mode is soft", () => {
-    const config: AlignTrueConfig = {
-      version: "1",
-      mode: "team",
-      modules: { lockfile: true },
-      lockfile: { mode: "soft" },
       exporters: ["cursor"],
       sources: [{ type: "local", path: ".aligntrue/rules" }],
     };
@@ -95,15 +76,16 @@ describe("validateTeamConfig", () => {
     expect(errors).toEqual([]);
   });
 
-  it("passes when lockfile mode is strict", () => {
-    const config: AlignTrueConfig = {
+  it("passes when lockfile is enabled (even with deprecated lockfile object)", () => {
+    const config = {
       version: "1",
-      mode: "team",
+      mode: "team" as const,
       modules: { lockfile: true },
-      lockfile: { mode: "strict" },
+      // lockfile.mode is deprecated but should not cause validation errors
+      lockfile: {},
       exporters: ["cursor"],
-      sources: [{ type: "local", path: ".aligntrue/rules" }],
-    };
+      sources: [{ type: "local" as const, path: ".aligntrue/rules" }],
+    } as AlignTrueConfig;
 
     const errors = validateTeamConfig(config);
     expect(errors).toEqual([]);

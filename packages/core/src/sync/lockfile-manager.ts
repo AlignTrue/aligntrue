@@ -1,6 +1,6 @@
 /**
  * Lockfile management logic for SyncEngine (v2)
- * Handles validation, enforcement, and generation of lockfiles
+ * Handles generation of lockfiles. Validation is done via `aligntrue drift`.
  */
 
 import { resolve } from "path";
@@ -10,7 +10,6 @@ import {
   readLockfile,
   writeLockfile,
   validateLockfile,
-  enforceLockfile,
   generateLockfile,
 } from "../lockfile/index.js";
 import type { RuleFile } from "../rules/file-io.js";
@@ -35,7 +34,10 @@ export interface LockfileWriteResult extends Partial<OperationResult> {
 }
 
 /**
- * Validate and enforce lockfile state
+ * Check lockfile state (non-blocking, for audit trail)
+ *
+ * Note: This no longer enforces or blocks sync. Enforcement happens via
+ * `aligntrue drift --gates` in CI. Sync always regenerates the lockfile.
  */
 export function validateAndEnforceLockfile(
   rules: RuleFile[],
@@ -45,7 +47,6 @@ export function validateAndEnforceLockfile(
   const auditTrail: AuditEntry[] = [];
   const warnings: string[] = [];
   const lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
-  const lockfileMode = config.lockfile?.mode || "off";
   const isTeamMode = config.mode === "team" || config.mode === "enterprise";
 
   if (!isTeamMode || !config.modules?.lockfile) {
@@ -61,27 +62,17 @@ export function validateAndEnforceLockfile(
       existingLockfile,
       currentLockfile.bundle_hash,
     );
-    const enforcement = enforceLockfile(lockfileMode, validation);
 
-    // Audit trail: Lockfile validation
+    // Audit trail: Lockfile validation (informational only)
     auditTrail.push({
       action: validation.valid ? "update" : "conflict",
       target: lockfilePath,
       source: "lockfile",
       timestamp: new Date().toISOString(),
-      details: enforcement.message || "Lockfile validation completed",
+      details: validation.valid
+        ? "Lockfile is up to date"
+        : "Lockfile drift detected (will be updated)",
     });
-
-    // Abort sync if strict mode failed
-    if (!enforcement.success) {
-      return {
-        success: false,
-        auditTrail,
-        warnings: [
-          enforcement.message || "Lockfile validation failed in strict mode",
-        ],
-      };
-    }
   } else {
     // No lockfile exists - will be generated after sync
     auditTrail.push({
@@ -93,6 +84,7 @@ export function validateAndEnforceLockfile(
     });
   }
 
+  // Always succeed - sync never blocks on lockfile drift anymore
   return { success: true, auditTrail, warnings };
 }
 

@@ -44,6 +44,10 @@ export interface LockfileV1 {
   is_initial?: boolean;
 }
 
+/**
+ * @deprecated Lockfile modes removed. Use modules.lockfile: true/false instead.
+ * Drift enforcement happens in CI via `aligntrue drift --gates`.
+ */
 export type LockfileMode = "off" | "soft" | "strict";
 
 /**
@@ -58,7 +62,6 @@ export interface LockfileValidationResult {
 export interface EnforcementResult {
   success: boolean;
   message?: string;
-  exitCode: number; // 0 = success, 1 = failure
 }
 
 /**

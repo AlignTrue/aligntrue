@@ -1,8 +1,8 @@
 /**
  * Configuration merging for AlignTrue two-file config system
  *
- * Handles merging personal config (config.yaml) with team config (config.team.yaml)
- * using defined field ownership rules.
+ * Handles merging personal config (config.yaml) with team config (config.team.yaml).
+ * Simple merge strategy: personal overrides team for scalars, arrays are merged/unioned.
  */
 
 import { readFileSync, existsSync } from "fs";
@@ -25,67 +25,6 @@ import {
  */
 export const TEAM_MODE_OFF_MARKER =
   "# TEAM MODE OFF - This file is ignored. Re-enable with: aligntrue team enable";
-
-/**
- * Field ownership categories for configuration fields.
- * Determines which config file "owns" each field and how conflicts are resolved.
- */
-export type FieldOwnership = "team-only" | "personal-only" | "shared";
-
-/**
- * Field ownership rules for configuration fields
- */
-export const FIELD_OWNERSHIP: Record<string, FieldOwnership> = {
-  // Team-only: These fields only make sense in team config
-  mode: "team-only",
-  "modules.lockfile": "team-only",
-  "lockfile.mode": "team-only",
-
-  // Personal-only: These fields should only be in personal config
-  "remotes.personal": "personal-only",
-
-  // Shared: These fields can appear in both and are merged
-  version: "shared",
-  sources: "shared",
-  exporters: "shared",
-  "remotes.shared": "shared",
-  "remotes.custom": "shared",
-  git: "shared",
-  overlays: "shared",
-  scopes: "shared",
-  merge: "shared",
-  performance: "shared",
-  export: "shared",
-  backup: "shared",
-  detection: "shared",
-  plugs: "shared",
-  mcp: "shared",
-  sync: "shared",
-  "modules.checks": "shared",
-  "modules.mcp": "shared",
-};
-
-/**
- * Get field ownership for a given field path
- */
-export function getFieldOwnership(fieldPath: string): FieldOwnership {
-  // Check exact match first
-  if (fieldPath in FIELD_OWNERSHIP) {
-    return FIELD_OWNERSHIP[fieldPath] as FieldOwnership;
-  }
-
-  // Check if parent path has ownership defined
-  const parts = fieldPath.split(".");
-  for (let i = parts.length - 1; i > 0; i--) {
-    const parentPath = parts.slice(0, i).join(".");
-    if (parentPath in FIELD_OWNERSHIP) {
-      return FIELD_OWNERSHIP[parentPath] as FieldOwnership;
-    }
-  }
-
-  // Default to shared for unknown fields
-  return "shared";
-}
 
 /**
  * Result of config merge operation with source tracking
@@ -316,11 +255,16 @@ function mergeScalar<T>(
 }
 
 /**
- * Merge two configs following field ownership rules
+ * Merge two configs with simple override strategy
+ *
+ * Strategy:
+ * - Team-controlled fields (mode, modules.lockfile): always from team config
+ * - Arrays (sources, exporters): merged/unioned
+ * - Scalars: personal overrides team if set
  *
  * @param personal - Personal config (config.yaml)
  * @param team - Team config (config.team.yaml)
- * @returns Merged config with warnings
+ * @returns Merged config (warnings array kept for API compatibility)
  */
 export function mergeConfigs(
   personal: Partial<AlignTrueConfig> | undefined,
@@ -337,46 +281,6 @@ export function mergeConfigs(
     // No personal config, just return team
     return { config: team, warnings };
   }
-
-  // Check for field ownership violations
-  const checkFieldOwnership = (
-    obj: Record<string, unknown>,
-    source: "personal" | "team",
-    prefix = "",
-  ) => {
-    for (const [key, value] of Object.entries(obj)) {
-      if (value === undefined || value === null) continue;
-
-      const fieldPath = prefix ? `${prefix}.${key}` : key;
-      const ownership = getFieldOwnership(fieldPath);
-
-      if (source === "personal" && ownership === "team-only") {
-        warnings.push({
-          field: fieldPath,
-          message: `'${fieldPath}' is a team-only field in personal config (ignored)`,
-          level: "warn",
-        });
-      } else if (source === "team" && ownership === "personal-only") {
-        warnings.push({
-          field: fieldPath,
-          message: `'${fieldPath}' is a personal-only field in team config (ignored)`,
-          level: "warn",
-        });
-      }
-
-      // Recurse into nested objects (but not arrays)
-      if (typeof value === "object" && !Array.isArray(value)) {
-        checkFieldOwnership(
-          value as Record<string, unknown>,
-          source,
-          fieldPath,
-        );
-      }
-    }
-  };
-
-  checkFieldOwnership(personal as Record<string, unknown>, "personal");
-  checkFieldOwnership(team as Record<string, unknown>, "team");
 
   // Build modules object without undefined values
   const mergedModules: NonNullable<AlignTrueConfig["modules"]> = {};
@@ -405,10 +309,6 @@ export function mergeConfigs(
   if (Object.keys(mergedModules).length > 0) {
     merged["modules"] = mergedModules;
   }
-  if (team.lockfile !== undefined) {
-    merged["lockfile"] = team.lockfile;
-  }
-
   // Shared fields with merging
   const mergedVersion = mergeScalar(personal.version, team.version);
   if (mergedVersion !== undefined) {
@@ -572,6 +472,8 @@ export async function loadMergedConfig(
 
 /**
  * Get which config file a field value came from
+ *
+ * Simple logic: personal overrides team, so if personal has a value, it's from personal.
  */
 export function getConfigSource(
   fieldPath: string,
@@ -602,20 +504,7 @@ export function getConfigSource(
   const personalValue = getNestedValue(personalRaw, fieldPath);
   const teamValue = getNestedValue(teamRaw, fieldPath);
 
-  const ownership = getFieldOwnership(fieldPath);
-
-  // Determine source based on ownership and presence
-  if (ownership === "team-only") {
-    if (teamValue !== undefined) return "team";
-    return "default";
-  }
-
-  if (ownership === "personal-only") {
-    if (personalValue !== undefined) return "personal";
-    return "default";
-  }
-
-  // Shared fields: personal overrides team for scalars
+  // Simple: personal overrides team for all fields
   if (personalValue !== undefined) return "personal";
   if (teamValue !== undefined) return "team";
   return "default";

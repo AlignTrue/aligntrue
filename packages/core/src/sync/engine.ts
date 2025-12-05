@@ -16,14 +16,8 @@ import { loadIRAndResolvePlugs } from "./ir-loader.js";
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 import { resolve as resolvePath } from "path";
 import { applyOverlays } from "../overlays/index.js";
-import { loadRulesDirectory } from "../rules/file-io.js";
-import { getAlignTruePaths } from "../paths.js";
 
 // New helper modules
-import {
-  validateAndEnforceLockfile,
-  generateAndWriteLockfile,
-} from "./lockfile-manager.js";
 import { resolveSyncScopes } from "./scope-resolver.js";
 import { executeExporters } from "./exporter-executor.js";
 
@@ -300,27 +294,8 @@ export class SyncEngine {
         });
       }
 
-      // Lockfile validation (delegated)
-      // Load rules from .aligntrue/rules/ directory for validation
-      const cwd = process.cwd();
-      const paths = getAlignTruePaths(cwd);
-      const rules = await loadRulesDirectory(paths.rules, cwd);
-      const lockfileValidation = validateAndEnforceLockfile(
-        rules,
-        this.config,
-        cwd,
-      );
-      if (lockfileValidation.auditTrail) {
-        auditTrail.push(...lockfileValidation.auditTrail);
-      }
-      if (!lockfileValidation.success) {
-        return {
-          success: false,
-          written: [],
-          warnings: lockfileValidation.warnings || [],
-          auditTrail,
-        };
-      }
+      // Note: Lockfile validation removed from sync. Use 'aligntrue drift' to check for drift.
+      // Sync always regenerates the lockfile (handled by CLI workflow.ts)
 
       // Resolve scopes (delegated)
       const scopes = resolveSyncScopes(this.config, process.cwd());
@@ -392,20 +367,7 @@ export class SyncEngine {
       auditTrail.push(...executionResult.auditTrail);
       exportResults = executionResult.exportResults;
 
-      // Generate/update lockfile (delegated)
-      // Skip if caller has already handled lockfile generation (e.g., CLI with bundleResult.align)
-      if (!options.skipLockfileGeneration) {
-        // Use the same rules loaded for validation
-        const lockfileGeneration = generateAndWriteLockfile(
-          rules,
-          this.config,
-          cwd,
-          options.dryRun || false,
-        );
-        written.push(...lockfileGeneration.written);
-        warnings.push(...lockfileGeneration.warnings);
-        auditTrail.push(...lockfileGeneration.auditTrail);
-      }
+      // Note: Lockfile generation moved to CLI workflow.ts (after exports, respects dry-run)
 
       // Cleanup old backups
       if (!options.dryRun) {

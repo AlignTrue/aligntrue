@@ -78,16 +78,16 @@ describeSkipWindows("Team Mode Workflow", () => {
   });
 
   describe("Team Mode Initialization", () => {
-    it("team mode defaults to soft lockfile validation", async () => {
+    it("team mode enables lockfile by default", async () => {
       process.chdir(env1);
       await init(["--yes"]);
       await team(["enable", "--yes"]);
 
-      // Check team config has soft lockfile mode
+      // Check team config has lockfile module enabled
       const teamConfig = parseYaml(
         readFileSync(join(env1, ".aligntrue/config.team.yaml"), "utf-8"),
       );
-      expect(teamConfig.lockfile.mode).toBe("soft");
+      expect(teamConfig.modules.lockfile).toBe(true);
 
       // Check personal config was created
       expect(existsSync(join(env1, ".aligntrue/config.yaml"))).toBe(true);
