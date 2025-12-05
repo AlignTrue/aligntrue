@@ -3,28 +3,36 @@
  * Real integration tests are in tests/integration/override-status-command.test.ts
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { mkdtempSync, rmSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import { overrideStatus } from "../../src/commands/override-status.js";
 
 describe("override-status command - smoke tests", () => {
+  let originalCwd: string;
+  let tempDir: string;
+
+  beforeEach(() => {
+    originalCwd = process.cwd();
+    tempDir = mkdtempSync(join(tmpdir(), "aligntrue-override-status-smoke-"));
+    process.chdir(tempDir);
+    vi.spyOn(process, "exit").mockImplementation((() => {
+      throw new Error("process.exit called");
+    }) as never);
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    vi.restoreAllMocks();
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
   it("shows help with --help flag", async () => {
-    try {
-      await overrideStatus(["--help"]);
-    } catch {
-      // Expected - help calls process.exit(0)
-    }
+    await expect(overrideStatus(["--help"])).resolves.toBeUndefined();
   });
 
   it("requires config file", async () => {
-    const originalCwd = process.cwd();
-    try {
-      process.chdir("/tmp");
-      await overrideStatus([]);
-    } catch (e) {
-      // Expected to throw on error
-      expect(e).toBeDefined();
-    } finally {
-      process.chdir(originalCwd);
-    }
+    await expect(overrideStatus([])).rejects.toBeDefined();
   });
 });

@@ -3,27 +3,32 @@ import { revert } from "../../src/commands/revert.js";
 import * as ttyHelper from "../../src/utils/tty-helper.js";
 import { BackupManager } from "@aligntrue/core";
 import * as core from "@aligntrue/core";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "fs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
+import { cleanupDir } from "../helpers/fs-cleanup.js";
 
 describe("revert command", () => {
   let originalCwd: string;
+  let tempDirs: string[];
 
   beforeEach(() => {
     originalCwd = process.cwd();
+    tempDirs = [];
     vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("process.exit called");
     }) as never);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     process.chdir(originalCwd);
     vi.restoreAllMocks();
+    await Promise.all(tempDirs.map((dir) => cleanupDir(dir)));
   });
 
   it("restores the most recent backup when --latest is used in non-interactive mode", async () => {
     const tmpDir = mkdtempSync(path.join(tmpdir(), "aligntrue-revert-latest-"));
+    tempDirs.push(tmpDir);
     const alignDir = path.join(tmpDir, ".aligntrue");
     mkdirSync(path.join(alignDir, ".backups"), { recursive: true });
     writeFileSync(path.join(alignDir, "config.yaml"), "mode: solo\n");
@@ -65,14 +70,13 @@ describe("revert command", () => {
     expect(restoreSpy).toHaveBeenCalledWith(
       expect.objectContaining({ timestamp: latest.timestamp }),
     );
-
-    rmSync(tmpDir, { recursive: true, force: true });
   });
 
   it("skips interactive mode-mismatch prompt with --yes in non-interactive mode", async () => {
     const tmpDir = mkdtempSync(
       path.join(tmpdir(), "aligntrue-revert-mismatch-"),
     );
+    tempDirs.push(tmpDir);
     const alignDir = path.join(tmpDir, ".aligntrue");
     mkdirSync(path.join(alignDir, ".backups"), { recursive: true });
     writeFileSync(path.join(alignDir, "config.yaml"), "mode: solo\n");
@@ -103,6 +107,5 @@ describe("revert command", () => {
     expect(restoreSpy).toHaveBeenCalledWith(
       expect.objectContaining({ timestamp: backup.timestamp }),
     );
-    rmSync(tmpDir, { recursive: true, force: true });
   });
 });

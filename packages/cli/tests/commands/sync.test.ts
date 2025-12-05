@@ -10,6 +10,23 @@ import { join } from "path";
 import { setupTestProject } from "../helpers/test-setup.js";
 
 describe("sync command - smoke tests", () => {
+  let testDir: string;
+  let cleanup: () => Promise<void>;
+  let originalCwd: string;
+
+  beforeEach(() => {
+    const ctx = setupTestProject();
+    testDir = ctx.projectDir;
+    cleanup = ctx.cleanup;
+    originalCwd = process.cwd();
+    process.chdir(testDir);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await cleanup();
+  });
+
   it("shows help with --help flag", async () => {
     try {
       await sync(["--help"]);
