@@ -134,7 +134,8 @@ export async function check(args: string[]): Promise<void> {
             2,
           ),
         );
-        process.exit(2);
+        process.exitCode = 2;
+        return;
       }
 
       spinner.stop("Validation failed");
@@ -167,7 +168,8 @@ export async function check(args: string[]): Promise<void> {
             2,
           ),
         );
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       spinner.stop("Validation failed");
@@ -237,7 +239,8 @@ export async function check(args: string[]): Promise<void> {
       config.mode === "team" && config.modules?.lockfile === true;
 
     if (shouldCheckLockfile) {
-      const lockfilePath = resolve(".aligntrue", "lock.json");
+      const cwd = process.cwd();
+      const lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
 
       // Check if lockfile exists
       if (!existsSync(lockfilePath)) {
@@ -246,7 +249,8 @@ export async function check(args: string[]): Promise<void> {
         console.error("  Lockfile not found (required in team mode)");
         console.error(`  Expected: ${lockfilePath}\n`);
         console.error(`  Run 'aligntrue sync' to generate the lockfile.\n`);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       // Load and validate lockfile
@@ -256,11 +260,11 @@ export async function check(args: string[]): Promise<void> {
           spinner.stop("Validation failed");
           console.error("✗ Lockfile validation failed\n");
           console.error("  Failed to read lockfile\n");
-          process.exit(2);
+          process.exitCode = 2;
+          return;
         }
 
         // Compute current bundle hash from rules
-        const cwd = process.cwd();
         const rulesPath = resolve(cwd, ".aligntrue", "rules");
         const rules = await loadRulesDirectory(rulesPath, cwd);
         const currentLockfile = generateLockfile(rules, cwd);
@@ -280,7 +284,8 @@ export async function check(args: string[]): Promise<void> {
             `    Actual:   ${validation.actualHash.slice(0, 16)}...`,
           );
           console.error(`\n  Run 'aligntrue sync' to update the lockfile.\n`);
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         }
       } catch (_err) {
         spinner.stop("Validation failed");
@@ -288,7 +293,8 @@ export async function check(args: string[]): Promise<void> {
         console.error(
           `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
         );
-        process.exit(2);
+        process.exitCode = 2;
+        return;
       }
     }
 
@@ -336,7 +342,8 @@ export async function check(args: string[]): Promise<void> {
           console.error("");
         }
 
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
 
       if (overlayResult.warnings && overlayResult.warnings.length > 0) {
@@ -451,6 +458,6 @@ export async function check(args: string[]): Promise<void> {
       console.error("✗ System error\n");
       console.error(`  ${err instanceof Error ? err.message : String(err)}\n`);
     }
-    process.exit(2);
+    process.exitCode = 2;
   }
 }

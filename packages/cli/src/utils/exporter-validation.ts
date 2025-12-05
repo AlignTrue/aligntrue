@@ -79,7 +79,14 @@ export async function loadExporterManifests(): Promise<
   return manifests;
 }
 
-async function discoverExporterManifests(
+/**
+ * Discover exporter manifest paths from the exporters package.
+ * Tries import.meta.resolve first, then falls back to known paths.
+ *
+ * @param registry - ExporterRegistry instance to use for discovery
+ * @returns Array of manifest file paths
+ */
+export async function discoverExporterManifests(
   registry: ExporterRegistry,
 ): Promise<string[]> {
   const searchPaths: string[] = [];

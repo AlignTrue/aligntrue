@@ -7,30 +7,7 @@
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import {
-  init,
-  migrate,
-  sync,
-  team,
-  scopes,
-  check,
-  config,
-  exporters,
-  privacy,
-  backup,
-  revert,
-  drift,
-  plugs,
-  onboard,
-  override,
-  sources,
-  status,
-  doctor,
-  add,
-  remove,
-  rules,
-  uninstall,
-} from "./commands/index.js";
+import { buildCommandRegistry, generateHelpText } from "./commands/manifest.js";
 import { AlignTrueError } from "./utils/error-types.js";
 
 // Get version from package.json
@@ -50,101 +27,17 @@ async function main() {
     process.exit(0);
   }
 
+  // Handle help flag or no args
   if (args.length === 0 || args[0] === "--help") {
-    console.log("AlignTrue CLI - AI-native rules and alignment platform\n");
-    console.log("Usage: aligntrue <command> [options]\n");
-
-    console.log("Getting Started:");
-    console.log("  init           Initialize AlignTrue (start here)");
-    console.log("  sync           Sync rules to agents");
-    console.log("  status         Check current setup");
-    console.log("  doctor         Run health checks");
-    console.log("  onboard        Get personalized onboarding checklist\n");
-
-    console.log("Basic Commands:");
-    console.log("  init           Initialize AlignTrue in current directory");
-    console.log(
-      "  sync           Sync rules to agents (always backs up first)",
-    );
-    console.log("  check          Validate rules and configuration\n");
-    console.log("Diagnostics:");
-    console.log(
-      "  status         Show current status, exporters, and sync health",
-    );
-    console.log("  doctor         Run health checks and verification tests\n");
-
-    console.log("Basic Commands:");
-    console.log("  exporters      Manage exporters (list, enable, disable)\n");
-
-    console.log("Source Management:");
-    console.log("  add            Add an align from a URL");
-    console.log("  remove         Remove an align source");
-    console.log(
-      "  sources        Manage multi-file rule organization (list, split)",
-    );
-    console.log("  rules          List rules and view agent targeting");
-    console.log("  scopes         Manage scopes (list, discover)\n");
-
-    console.log("Team Commands:");
-    console.log(
-      "  team           Team mode management (enable, disable, status)",
-    );
-    console.log("  drift          Detect drift from allowed sources");
-    console.log("  onboard        Generate developer onboarding checklist");
-    console.log(
-      "  override       Manage overlays for fork-safe customization (add, status, diff, remove)\n",
-    );
-
-    console.log("Plugs Management:");
-    console.log(
-      "  plugs          Manage plug slots and fills (list, resolve, validate)\n",
-    );
-
-    console.log("Safety & Settings:");
-    console.log("  config         View or edit configuration (show, edit)");
-    console.log(
-      "  backup         Manage backups (create, list, restore, cleanup)",
-    );
-    console.log("  revert         Restore files from backup with preview");
-    console.log(
-      "  privacy        Privacy and consent management (audit, revoke)",
-    );
-    console.log("  migrate        Schema migration (run --help for policy)");
-    console.log("  uninstall      Remove AlignTrue from this project\n");
-
-    console.log("Run aligntrue <command> --help for command-specific options");
-    console.log("Run aligntrue --version for version information");
+    console.log(generateHelpText());
     process.exit(0);
   }
 
   const command = args[0];
   const commandArgs = args.slice(1);
 
-  // Command registry for clean dispatch
-  const COMMANDS = new Map<string, (args: string[]) => Promise<void>>([
-    ["init", init],
-    ["migrate", migrate],
-    ["sync", sync],
-    ["team", team],
-    ["scopes", scopes],
-    ["check", check],
-    ["config", config],
-    ["exporters", exporters],
-    ["privacy", privacy],
-    ["backup", backup],
-    ["revert", revert],
-    ["plugs", plugs],
-    ["drift", drift],
-    ["onboard", onboard],
-    ["override", override],
-    ["sources", sources],
-    ["status", status],
-    ["doctor", doctor],
-    ["add", add],
-    ["remove", remove],
-    ["rules", rules],
-    ["uninstall", uninstall],
-  ]);
+  // Build command registry from manifest
+  const COMMANDS = buildCommandRegistry();
 
   // Check if user provided a flag-like argument as command
   if (command && (command.startsWith("--") || command.startsWith("-"))) {

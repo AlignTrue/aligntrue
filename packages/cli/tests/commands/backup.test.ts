@@ -3,6 +3,7 @@ import { backupCommand } from "../../src/commands/backup";
 import { BackupManager } from "@aligntrue/core";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { ValidationError } from "../../src/utils/error-types.js";
 
 // Mock clack
 vi.mock("@clack/prompts", () => ({
@@ -124,25 +125,21 @@ describe("backup command", () => {
 
   describe("error handling", () => {
     it("should show help on missing subcommand", async () => {
-      const exitSpy = vi
-        .spyOn(process, "exit")
-        .mockImplementation(() => undefined as never);
+      const exitSpy = vi.spyOn(process, "exit").mockImplementation(((
+        code?: number,
+      ) => {
+        throw new Error(`exit ${code}`);
+      }) as never);
 
-      await backupCommand([]);
+      await expect(backupCommand([])).rejects.toThrow("exit 0");
 
-      expect(exitSpy).toHaveBeenCalledWith(0);
       exitSpy.mockRestore();
     });
 
     it("should error on unknown subcommand", async () => {
-      const exitSpy = vi
-        .spyOn(process, "exit")
-        .mockImplementation(() => undefined as never);
-
-      await backupCommand(["unknown"]);
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      exitSpy.mockRestore();
+      await expect(backupCommand(["unknown"])).rejects.toBeInstanceOf(
+        ValidationError,
+      );
     });
   });
 });

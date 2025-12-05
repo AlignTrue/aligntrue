@@ -18,20 +18,14 @@
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { COLORS } from "./lib/github-helpers.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 
-// ANSI color codes for output
-const colors = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  bold: "\x1b[1m",
-};
+// Use shared COLORS from lib (aliased for backward compatibility in this file)
+const colors = COLORS;
 
 const errors = [];
 

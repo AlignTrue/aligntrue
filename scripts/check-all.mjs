@@ -168,7 +168,7 @@ const checks = [
   },
   {
     name: "LINT ISSUES",
-    command: "pnpm lint:fix 2>&1",
+    command: "pnpm lint --max-warnings 0 2>&1",
     parseOutput: (output) => {
       // Extract error lines (lines with file paths and error codes)
       const lines = output.split("\n");
@@ -194,16 +194,7 @@ const results = {
 const output = [];
 let hasErrors = false;
 
-console.log(
-  "Running validation checks (formatting, security, typecheck, lint)...\n",
-);
-
-// Auto-fix formatting first (silently)
-try {
-  execSync("pnpm format", { encoding: "utf-8", stdio: "ignore" });
-} catch (error) {
-  // Format errors are non-critical, continue
-}
+console.log("Running validation checks (security, typecheck, lint)...\n");
 
 for (const check of checks) {
   try {

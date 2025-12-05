@@ -89,15 +89,6 @@ export function createIgnoreFilter(
   };
 }
 
-// Team mode development: Additional performance utilities
-export {
-  loadValidationState,
-  saveValidationState,
-  shouldUseIncremental,
-} from "./incremental.js";
-
-export type { ValidationState } from "./incremental.js";
-
 export { processInParallel, aggregateErrors } from "./parallel.js";
 
 export type { ParallelResult } from "./parallel.js";
