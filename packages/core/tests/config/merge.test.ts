@@ -185,7 +185,7 @@ describe("Config merging", () => {
     let testDir: string;
 
     beforeEach(() => {
-      testDir = join(tmpdir(), `merge-load-test-${Date.now()}`);
+      testDir = mkdtempSync(join(tmpdir(), "aligntrue-merge-load-"));
       mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
     });
 
