@@ -114,7 +114,7 @@ describe("Mode detection", () => {
 
 describe("Config merging", () => {
   describe("mergeConfigs", () => {
-    it("merges sources additively", () => {
+    it("merges sources additively (team first, then personal)", () => {
       const personal = {
         sources: [{ type: "local" as const, path: "personal" }],
       };
@@ -127,6 +127,47 @@ describe("Config merging", () => {
         { type: "local", path: "team" },
         { type: "local", path: "personal" },
       ]);
+    });
+
+    it("deduplicates sources with same path/url", () => {
+      const personal = {
+        sources: [
+          { type: "local" as const, path: ".aligntrue/rules" },
+          { type: "git" as const, url: "https://example.com/repo" },
+        ],
+      };
+      const team = {
+        sources: [
+          { type: "local" as const, path: ".aligntrue/rules" }, // duplicate
+          { type: "local" as const, path: "team-rules" },
+        ],
+      };
+
+      const { config } = mergeConfigs(personal, team);
+      // Should have 3 sources, not 4 (deduplicated local .aligntrue/rules)
+      expect(config.sources).toHaveLength(3);
+      expect(config.sources).toEqual([
+        { type: "local", path: ".aligntrue/rules" }, // from team
+        { type: "local", path: "team-rules" }, // from team
+        { type: "git", url: "https://example.com/repo" }, // from personal
+      ]);
+    });
+
+    it("treats git sources with different refs as distinct", () => {
+      const personal = {
+        sources: [
+          { type: "git" as const, url: "https://example.com/repo", ref: "v2" },
+        ],
+      };
+      const team = {
+        sources: [
+          { type: "git" as const, url: "https://example.com/repo", ref: "v1" },
+        ],
+      };
+
+      const { config } = mergeConfigs(personal, team);
+      // Different refs = different sources
+      expect(config.sources).toHaveLength(2);
     });
 
     it("merges exporters additively", () => {

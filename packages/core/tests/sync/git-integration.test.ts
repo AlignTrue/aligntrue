@@ -233,7 +233,7 @@ describe("GitIntegration", () => {
       expect(result.mode).toBe("branch");
       expect(result.action).toBe("created branch and staged files");
       expect(result.branchCreated).toMatch(
-        /^aligntrue\/sync-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}$/,
+        /^aligntrue\/sync-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}$/,
       );
 
       // Verify branch was created
@@ -273,6 +273,64 @@ describe("GitIntegration", () => {
           generatedFiles: ["AGENTS.md"],
         }),
       ).rejects.toThrow(/git repository/);
+    });
+
+    it("reuses existing sync branch instead of creating a new one", async () => {
+      // Create files to stage
+      const cursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
+
+      // First sync - creates a branch
+      const result1 = await gitIntegration.apply({
+        mode: "branch",
+        workspaceRoot: TEST_DIR,
+        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+      });
+
+      expect(result1.branchCreated).toBeDefined();
+      expect(result1.action).toBe("created branch and staged files");
+      const firstBranch = result1.branchCreated;
+
+      // Update the file
+      writeFileSync(
+        join(cursorDir, "aligntrue.mdc"),
+        "# Updated Rule\n",
+        "utf-8",
+      );
+
+      // Second sync - should reuse the existing branch
+      const result2 = await gitIntegration.apply({
+        mode: "branch",
+        workspaceRoot: TEST_DIR,
+        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+      });
+
+      // Should not create a new branch
+      expect(result2.branchCreated).toBeUndefined();
+      expect(result2.action).toBe("staged files on existing branch");
+
+      // Should still be on the first branch
+      const currentBranch = execSync("git branch --show-current", {
+        cwd: TEST_DIR,
+        encoding: "utf-8",
+      }).trim();
+      expect(currentBranch).toBe(firstBranch);
+    }, 20000);
+
+    it("throws error when no initial commit exists", async () => {
+      // Create a fresh directory with git init but no commits
+      const freshGitDir = join(TEST_DIR, "fresh-git");
+      mkdirSync(freshGitDir, { recursive: true });
+      execSync("git init", { cwd: freshGitDir, stdio: "pipe" });
+
+      await expect(
+        gitIntegration.apply({
+          mode: "branch",
+          workspaceRoot: freshGitDir,
+          generatedFiles: ["AGENTS.md"],
+        }),
+      ).rejects.toThrow(/requires at least one commit/);
     });
   });
 
