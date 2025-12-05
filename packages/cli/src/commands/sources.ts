@@ -21,6 +21,7 @@ import {
 import {
   formatCreatedFiles,
   formatDiscoveredFiles,
+  exitWithError,
 } from "../utils/command-utilities.js";
 
 /**
@@ -48,7 +49,9 @@ export async function sources(args: string[]): Promise<void> {
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       showHelp();
-      process.exit(1);
+      exitWithError(1, `Unknown subcommand: ${subcommand}`, {
+        hint: "Run: aligntrue sources --help",
+      });
   }
 }
 
@@ -149,7 +152,10 @@ async function listSources(_flags: Record<string, unknown>): Promise<void> {
     clack.log.error(
       `Failed to list sources: ${error instanceof Error ? error.message : String(error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to list sources: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
@@ -169,7 +175,7 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     const agentsMdPath = join(cwd, "AGENTS.md");
     if (!existsSync(agentsMdPath)) {
       clack.log.error("AGENTS.md not found in current directory");
-      process.exit(1);
+      exitWithError(1, "AGENTS.md not found in current directory");
     }
 
     // Parse AGENTS.md
@@ -398,7 +404,10 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     clack.log.error(
       `Failed to split sources: ${error instanceof Error ? error.message : String(error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to split sources: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
@@ -511,7 +520,10 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
     clack.log.error(
       `Failed to detect sources: ${error instanceof Error ? error.message : String(error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to detect sources: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

@@ -3,7 +3,7 @@
  * Overlays system: Migrated to CLI framework (no Commander)
  */
 
-import { showStandardHelp } from "../utils/command-utilities.js";
+import { showStandardHelp, exitWithError } from "../utils/command-utilities.js";
 import { overrideAdd } from "./override-add.js";
 import { overrideStatus } from "./override-status.js";
 import { overrideDiff } from "./override-diff.js";
@@ -74,6 +74,8 @@ export async function overrideCommand(args: string[]): Promise<void> {
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       console.error("Run: aligntrue override --help");
-      process.exit(1);
+      exitWithError(1, `Unknown subcommand: ${subcommand}`, {
+        hint: "Run: aligntrue override --help",
+      });
   }
 }

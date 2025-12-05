@@ -21,6 +21,7 @@ import {
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 
@@ -116,7 +117,9 @@ export async function status(args: string[]): Promise<void> {
   if (!existsSync(configPath)) {
     clack.log.error(`Configuration file not found: ${configPath}`);
     clack.log.info("Run 'aligntrue init' to create a new configuration.");
-    process.exit(1);
+    exitWithError(1, `Configuration file not found: ${configPath}`, {
+      hint: "Run 'aligntrue init' to create a new configuration.",
+    });
   }
 
   let config: AlignTrueConfig;
@@ -125,7 +128,7 @@ export async function status(args: string[]): Promise<void> {
   } catch (_error) {
     const message = _error instanceof Error ? _error.message : String(_error);
     clack.log.error(`Failed to load configuration:\n  ${message}`);
-    process.exit(2);
+    exitWithError(2, `Failed to load configuration: ${message}`);
   }
 
   const summary = buildStatusSummary(config, configPath, cwd);

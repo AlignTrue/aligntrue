@@ -23,11 +23,22 @@ vi.mock("@clack/prompts", () => ({
   },
 }));
 
+const expectAlignTrueExit = async (
+  fn: () => Promise<unknown>,
+  exitCode: number,
+  messageIncludes?: string,
+) => {
+  await expect(fn()).rejects.toMatchObject({
+    exitCode,
+    ...(messageIncludes
+      ? { message: expect.stringContaining(messageIncludes) }
+      : {}),
+  });
+};
+
 describe("exporters command", () => {
   let tempDir: string;
   let originalCwd: string;
-  let originalExit: typeof process.exit;
-  let exitCode: number | undefined;
 
   beforeEach(() => {
     // Create temp directory
@@ -38,14 +49,6 @@ describe("exporters command", () => {
     originalCwd = process.cwd();
     process.chdir(tempDir);
 
-    // Mock process.exit
-    originalExit = process.exit;
-    exitCode = undefined;
-    process.exit = ((code?: number) => {
-      exitCode = code ?? 0;
-      throw new Error(`process.exit: ${code}`);
-    }) as unknown;
-
     // Mock console methods
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -54,7 +57,6 @@ describe("exporters command", () => {
   afterEach(() => {
     // Restore
     process.chdir(originalCwd);
-    process.exit = originalExit;
 
     // Cleanup
     if (existsSync(tempDir)) {
@@ -114,8 +116,11 @@ describe("exporters command", () => {
     });
 
     it("shows error if config missing", async () => {
-      await expect(exporters(["list"])).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["list"]),
+        1,
+        "Config file not found",
+      );
     });
 
     it("categorizes exporters correctly", async () => {
@@ -168,17 +173,21 @@ describe("exporters command", () => {
     it("shows error for invalid exporter", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["enable", "nonexistent"])).rejects.toThrow(
-        "process.exit: 1",
+      await expectAlignTrueExit(
+        () => exporters(["enable", "nonexistent"]),
+        1,
+        "Exporter(s) not found",
       );
-      expect(exitCode).toBe(1);
     });
 
     it("shows error with no exporter name", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["enable"])).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["enable"]),
+        1,
+        "Missing exporter name",
+      );
     });
 
     it("enables multiple exporters with multiple arguments", async () => {
@@ -219,10 +228,11 @@ describe("exporters command", () => {
     it("shows error for invalid exporters in multiple args", async () => {
       createConfig(["cursor"]);
 
-      await expect(
-        exporters(["enable", "agents", "nonexistent", "claude"]),
-      ).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["enable", "agents", "nonexistent", "claude"]),
+        1,
+        "Exporter(s) not found",
+      );
 
       // Should show error about nonexistent exporter
       expect(console.error).toHaveBeenCalledWith(
@@ -314,26 +324,31 @@ describe("exporters command", () => {
     it("shows error if exporter not enabled", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["disable", "agents"])).rejects.toThrow(
-        "process.exit: 1",
+      await expectAlignTrueExit(
+        () => exporters(["disable", "agents"]),
+        1,
+        "Exporter not enabled",
       );
-      expect(exitCode).toBe(1);
     });
 
     it("prevents disabling last exporter", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["disable", "cursor"])).rejects.toThrow(
-        "process.exit: 1",
+      await expectAlignTrueExit(
+        () => exporters(["disable", "cursor"]),
+        1,
+        "Cannot disable last exporter",
       );
-      expect(exitCode).toBe(1);
     });
 
     it("shows error with no exporter name", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["disable"])).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["disable"]),
+        1,
+        "Missing exporter name",
+      );
     });
   });
 
@@ -385,8 +400,11 @@ describe("exporters command", () => {
     });
 
     it("handles missing config", async () => {
-      await expect(exporters(["detect"])).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["detect"]),
+        1,
+        "Config file not found",
+      );
     });
   });
 
@@ -428,38 +446,47 @@ describe("exporters command", () => {
     it("fails with helpful error when agent name missing", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["ignore"])).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["ignore"]),
+        1,
+        "Missing agent name",
+      );
     });
 
     it("handles missing config", async () => {
-      await expect(exporters(["ignore", "windsurf"])).rejects.toThrow(
-        "process.exit: 1",
+      await expectAlignTrueExit(
+        () => exporters(["ignore", "windsurf"]),
+        1,
+        "Config file not found",
       );
-      expect(exitCode).toBe(1);
     });
   });
 
   describe("error handling", () => {
     it("handles missing config for enable", async () => {
-      await expect(exporters(["enable", "cursor"])).rejects.toThrow(
-        "process.exit: 1",
+      await expectAlignTrueExit(
+        () => exporters(["enable", "cursor"]),
+        1,
+        "Config file not found",
       );
-      expect(exitCode).toBe(1);
     });
 
     it("handles missing config for disable", async () => {
-      await expect(exporters(["disable", "cursor"])).rejects.toThrow(
-        "process.exit: 1",
+      await expectAlignTrueExit(
+        () => exporters(["disable", "cursor"]),
+        1,
+        "Config file not found",
       );
-      expect(exitCode).toBe(1);
     });
 
     it("handles unknown subcommand", async () => {
       createConfig(["cursor"]);
 
-      await expect(exporters(["unknown"])).rejects.toThrow("process.exit: 1");
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => exporters(["unknown"]),
+        1,
+        "Unknown subcommand",
+      );
     });
   });
 });

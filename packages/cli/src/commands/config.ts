@@ -15,8 +15,10 @@ import type { AlignTrueConfig } from "@aligntrue/core";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { AlignTrueError } from "../utils/error-types.js";
 
 /**
  * Argument definitions for config command
@@ -94,7 +96,9 @@ export async function config(args: string[]): Promise<void> {
   if (!existsSync(configPath)) {
     clack.log.error(`Config file not found: ${configPath}`);
     clack.log.info(`Run 'aligntrue init' to create initial configuration`);
-    process.exit(1);
+    exitWithError(1, `Config file not found: ${configPath}`, {
+      hint: "Run 'aligntrue init' to create initial configuration",
+    });
   }
 
   if (subcommand === "show") {
@@ -109,7 +113,9 @@ export async function config(args: string[]): Promise<void> {
       clack.log.error("Missing key argument");
       clack.log.info("Usage: aligntrue config get <key>");
       clack.log.info("Example: aligntrue config get mode");
-      process.exit(2);
+      exitWithError(2, "Missing key argument", {
+        hint: "Usage: aligntrue config get <key> (e.g., mode)",
+      });
     }
     await configGet(configPath, key);
   } else if (subcommand === "set") {
@@ -119,7 +125,10 @@ export async function config(args: string[]): Promise<void> {
       clack.log.error("Missing key or value argument");
       clack.log.info("Usage: aligntrue config set <key> <value>");
       clack.log.info("Example: aligntrue config set mode team");
-      process.exit(2);
+      exitWithError(2, "Missing key or value argument", {
+        hint: "Usage: aligntrue config set <key> <value>",
+        nextSteps: ["Example: aligntrue config set mode team"],
+      });
     }
     await configSet(configPath, key, value);
   } else if (subcommand === "list") {
@@ -130,13 +139,18 @@ export async function config(args: string[]): Promise<void> {
       clack.log.error("Missing key argument");
       clack.log.info("Usage: aligntrue config unset <key>");
       clack.log.info("Example: aligntrue config unset sync.scope_prefixing");
-      process.exit(2);
+      exitWithError(2, "Missing key argument", {
+        hint: "Usage: aligntrue config unset <key>",
+        nextSteps: ["Example: aligntrue config unset sync.scope_prefixing"],
+      });
     }
     await configUnset(configPath, key);
   } else {
     clack.log.error(`Unknown subcommand: ${subcommand}`);
     clack.log.info("Run 'aligntrue config --help' for usage");
-    process.exit(2);
+    exitWithError(2, `Unknown subcommand: ${subcommand}`, {
+      hint: "Run 'aligntrue config --help' for usage",
+    });
   }
 }
 
@@ -202,7 +216,10 @@ async function showConfig(configPath: string): Promise<void> {
     clack.log.error(
       `Failed to load config: ${_error instanceof Error ? _error.message : String(_error)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to load config: ${_error instanceof Error ? _error.message : String(_error)}`,
+    );
   }
 }
 
@@ -269,7 +286,10 @@ async function showSummary(configPath: string): Promise<void> {
     clack.log.error(
       `Failed to load configuration: ${err instanceof Error ? err.message : String(err)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to load configuration: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 
@@ -306,7 +326,9 @@ async function configGet(configPath: string, key: string): Promise<void> {
         const rawConfig = parseYaml(content) as Record<string, unknown>;
         clack.log.info("\nAvailable stored config keys:");
         listAllKeys(rawConfig).forEach((k) => clack.log.info(`  ${k}`));
-        process.exit(1);
+        exitWithError(1, `Key not found: ${key}`, {
+          hint: "Use 'aligntrue config show' to see the active mode",
+        });
       }
 
       clack.log.error(`Key not found: ${key}`);
@@ -314,7 +336,9 @@ async function configGet(configPath: string, key: string): Promise<void> {
       const rawConfig = parseYaml(content) as Record<string, unknown>;
       clack.log.info("\nAvailable keys:");
       listAllKeys(rawConfig).forEach((k) => clack.log.info(`  ${k}`));
-      process.exit(1);
+      exitWithError(1, `Key not found: ${key}`, {
+        hint: "Run 'aligntrue config list' to see all current keys",
+      });
     }
 
     // Output the value (JSON for objects/arrays, plain for primitives)
@@ -324,10 +348,13 @@ async function configGet(configPath: string, key: string): Promise<void> {
       console.log(value);
     }
   } catch (err) {
-    clack.log.error(
-      `Failed to get config value: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    process.exit(1);
+    if (err instanceof AlignTrueError) {
+      throw err;
+    }
+    const message =
+      err instanceof Error ? err.message : String(err ?? "Unknown error");
+    clack.log.error(`Failed to get config value: ${message}`);
+    exitWithError(1, `Failed to get config value: ${message}`);
   }
 }
 
@@ -349,7 +376,9 @@ async function configSet(
       clack.log.info(
         "See: https://aligntrue.ai/docs/concepts/team-mode#personal-rules",
       );
-      process.exit(2);
+      exitWithError(2, `Invalid config key: ${key}`, {
+        hint: "Use storage.personal for personal remotes (see team mode docs for details)",
+      });
     }
 
     // Validate key before setting
@@ -364,7 +393,9 @@ async function configSet(
       clack.log.info(
         "\nRun 'aligntrue config list' to see all current config keys",
       );
-      process.exit(2);
+      exitWithError(2, `Invalid config key: ${key}`, {
+        hint: "Run 'aligntrue config list' to see all supported keys",
+      });
     }
 
     const content = readFileSync(configPath, "utf-8");
@@ -460,10 +491,13 @@ async function configSet(
       }
     }
   } catch (err) {
-    clack.log.error(
-      `Failed to set config value: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    process.exit(1);
+    if (err instanceof AlignTrueError) {
+      throw err;
+    }
+    const message =
+      err instanceof Error ? err.message : String(err ?? "Unknown error");
+    clack.log.error(`Failed to set config value: ${message}`);
+    exitWithError(1, `Failed to set config value: ${message}`);
   }
 }
 
@@ -490,7 +524,10 @@ async function configList(configPath: string): Promise<void> {
     clack.log.error(
       `Failed to list config: ${err instanceof Error ? err.message : String(err)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to list config: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 
@@ -525,7 +562,10 @@ async function configUnset(configPath: string, key: string): Promise<void> {
     clack.log.error(
       `Failed to unset config value: ${err instanceof Error ? err.message : String(err)}`,
     );
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to unset config value: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
 

@@ -14,6 +14,19 @@ import { overrideAdd } from "../../src/commands/override-add.js";
 import * as yaml from "yaml";
 import { cleanupDir } from "../helpers/fs-cleanup.js";
 
+const expectAlignTrueExit = async (
+  fn: () => Promise<unknown>,
+  exitCode: number,
+  messageIncludes?: string,
+) => {
+  await expect(fn()).rejects.toMatchObject({
+    exitCode,
+    ...(messageIncludes
+      ? { message: expect.stringContaining(messageIncludes) }
+      : {}),
+  });
+};
+
 let TEST_DIR: string;
 const DEFAULT_CONFIG = { exporters: ["cursor"] };
 
@@ -177,36 +190,27 @@ describeSkipWindows("Override Add Command Integration", () => {
     it("exits with error if no operations provided", async () => {
       setupWorkspace();
 
-      const originalExit = process.exit;
-      let exitCode: number | undefined;
-      process.exit = ((code?: number) => {
-        exitCode = code;
-      }) as never;
-
-      await overrideAdd(["--selector", "rule[id=test]"]);
-
-      process.exit = originalExit;
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () => overrideAdd(["--selector", "rule[id=test]"]),
+        1,
+        "At least one of --set or --remove is required",
+      );
     });
 
     it("fails when selector does not match IR", async () => {
       setupWorkspace();
 
-      const originalExit = process.exit;
-      let exitCode: number | undefined;
-      process.exit = ((code?: number) => {
-        exitCode = code;
-      }) as never;
-
-      await overrideAdd([
-        "--selector",
-        "rule[id=missing-rule]",
-        "--set",
-        "severity=error",
-      ]);
-
-      process.exit = originalExit;
-      expect(exitCode).toBe(1);
+      await expectAlignTrueExit(
+        () =>
+          overrideAdd([
+            "--selector",
+            "rule[id=missing-rule]",
+            "--set",
+            "severity=error",
+          ]),
+        1,
+        "Selector did not match the current rules",
+      );
     });
   });
 

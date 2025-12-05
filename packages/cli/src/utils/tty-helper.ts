@@ -1,3 +1,5 @@
+import { exitWithError } from "./command-utilities.js";
+
 /**
  * TTY detection and non-interactive mode helpers
  * Prevents shell spawning errors when running in non-TTY environments
@@ -53,7 +55,7 @@ export function requireTTY(commandName: string): void {
       "\nThis command needs TTY access for interactive prompts and live updates.",
     );
     console.error("Please run this command in an interactive shell.");
-    process.exit(1);
+    exitWithError(1, `${commandName} requires an interactive terminal`);
   }
 }
 

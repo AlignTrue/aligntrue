@@ -17,6 +17,7 @@ import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import type { SyncResult } from "./workflow.js";
+import { exitWithError } from "../../utils/command-utilities.js";
 
 /**
  * Handle and display sync results
@@ -39,7 +40,7 @@ export async function handleSyncResult(
     }
 
     clack.outro("✗ Sync failed");
-    process.exit(1);
+    exitWithError(1, "Sync failed");
   }
 
   // Show written files in verbose mode or if quiet is off
@@ -760,5 +761,10 @@ export function handleSyncError(error: Error): void {
   }
 
   clack.outro("✗ Sync failed");
-  process.exit(2);
+  const hint =
+    error instanceof Error && error.message
+      ? error.message
+      : "Check the sync output above for details";
+
+  exitWithError(2, "Sync failed", { hint });
 }

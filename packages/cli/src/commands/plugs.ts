@@ -84,7 +84,14 @@ export async function plugsCommand(args: string[]): Promise<void> {
   if (!subcommand) {
     console.error("Error: Subcommand required\n");
     showHelp();
-    process.exit(2);
+    exitWithError(
+      {
+        title: "Subcommand required",
+        message: "Provide one of: list, resolve, validate, set, unset",
+        hint: "Run 'aligntrue plugs --help' for usage",
+      },
+      2,
+    );
   }
 
   const validSubcommands = ["list", "resolve", "validate", "set", "unset"];
@@ -92,7 +99,14 @@ export async function plugsCommand(args: string[]): Promise<void> {
     console.error(`Error: Unknown subcommand "${subcommand}"\n`);
     console.error("Valid subcommands: list, resolve, validate, set, unset\n");
     console.error("Run 'aligntrue plugs --help' for more information\n");
-    process.exit(2);
+    exitWithError(
+      {
+        title: "Unknown subcommand",
+        message: `Unknown subcommand "${subcommand}"`,
+        hint: "Valid: list, resolve, validate, set, unset",
+      },
+      2,
+    );
   }
 
   const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
@@ -378,7 +392,13 @@ async function resolvePlugs(
         console.log("│");
       }
       console.log("└  ✗ Resolution incomplete\n");
-      process.exit(1);
+      exitWithError(
+        {
+          title: "Plug resolution failed",
+          message: "Review the errors above and fix unresolved plugs.",
+        },
+        1,
+      );
     }
 
     console.log("◆  Resolved Rules\n│");
@@ -418,7 +438,13 @@ async function resolvePlugs(
     console.error(
       `   ${error instanceof Error ? error.message : String(error)}\n`,
     );
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Failed to resolve plugs",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      1,
+    );
   }
 }
 
@@ -505,7 +531,13 @@ async function validatePlugs(
   console.log("└  ✓ Validation complete\n");
 
   if (errors.length > 0) {
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Plug validation failed",
+        message: "Resolve the errors above before continuing.",
+      },
+      1,
+    );
   }
 }
 
@@ -517,13 +549,26 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
     console.error("Error: 'plugs set' requires <slot> and <value> arguments\n");
     console.error("Usage: aligntrue plugs set <slot> <value>\n");
     console.error('Example: aligntrue plugs set test.cmd "pnpm test"\n');
-    process.exit(2);
+    exitWithError(
+      {
+        title: "Invalid arguments",
+        message: "'plugs set' requires <slot> and <value>",
+        hint: "Usage: aligntrue plugs set <slot> <value>",
+      },
+      2,
+    );
   }
 
   const [slotName, fillValue] = args;
   if (!slotName || !fillValue) {
     console.error("Error: Both slot name and fill value are required\n");
-    process.exit(2);
+    exitWithError(
+      {
+        title: "Slot and value required",
+        message: "Both slot name and fill value are required",
+      },
+      2,
+    );
   }
 
   try {
@@ -587,7 +632,14 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         if (slotDef.example) {
           console.error(`  Example: ${slotDef.example}\n`);
         }
-        process.exit(1);
+        exitWithError(
+          {
+            title: `Validation failed for slot "${slotName}"`,
+            message: validation.errors?.[0]?.message || "Invalid value",
+            hint: `Expected format: ${format}`,
+          },
+          1,
+        );
       }
     } else {
       // Even if slot is not declared, validate format based on slot name conventions
@@ -607,7 +659,14 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
           console.error(
             `  Tip: URLs must include protocol (e.g., https://example.com)\n`,
           );
-          process.exit(1);
+          exitWithError(
+            {
+              title: `Validation failed for slot "${slotName}"`,
+              message: validation.errors?.[0]?.message || "Invalid URL",
+              hint: "URLs must include protocol (e.g., https://example.com)",
+            },
+            1,
+          );
         }
       }
 
@@ -627,7 +686,14 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
           console.error(
             `  Tip: Commands must be relative paths (no absolute paths like /usr/bin/...)\n`,
           );
-          process.exit(1);
+          exitWithError(
+            {
+              title: `Validation failed for slot "${slotName}"`,
+              message: validation.errors?.[0]?.message || "Invalid command",
+              hint: "Commands must be relative paths (no absolute paths)",
+            },
+            1,
+          );
         }
       }
 
@@ -647,7 +713,14 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
           console.error(
             `  Tip: File paths must be relative (no absolute paths)\n`,
           );
-          process.exit(1);
+          exitWithError(
+            {
+              title: `Validation failed for slot "${slotName}"`,
+              message: validation.errors?.[0]?.message || "Invalid file path",
+              hint: "File paths must be relative (no absolute paths)",
+            },
+            1,
+          );
         }
       }
     }
@@ -674,7 +747,13 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
     console.error(
       `  ${error instanceof Error ? error.message : String(error)}\n`,
     );
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Failed to set plug fill",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      1,
+    );
   }
 }
 
@@ -689,13 +768,23 @@ async function unsetPlugFill(
     console.error("Error: 'plugs unset' requires <slot> argument\n");
     console.error("Usage: aligntrue plugs unset <slot>\n");
     console.error("Example: aligntrue plugs unset test.cmd\n");
-    process.exit(2);
+    exitWithError(
+      {
+        title: "Invalid arguments",
+        message: "'plugs unset' requires <slot>",
+        hint: "Usage: aligntrue plugs unset <slot>",
+      },
+      2,
+    );
   }
 
   const [slotName] = args;
   if (!slotName) {
     console.error("Error: Slot name is required\n");
-    process.exit(2);
+    exitWithError(
+      { title: "Slot name required", message: "Provide the slot to unset" },
+      2,
+    );
   }
 
   try {
@@ -706,7 +795,14 @@ async function unsetPlugFill(
     if (!config.plugs?.fills?.[slotName]) {
       console.error(`✗ No fill found for slot "${slotName}"\n`);
       console.error("  Run 'aligntrue plugs list' to see configured fills\n");
-      process.exit(1);
+      exitWithError(
+        {
+          title: "Fill not found",
+          message: `No fill found for slot "${slotName}"`,
+          hint: "Run 'aligntrue plugs list' to see configured fills",
+        },
+        1,
+      );
     }
 
     // Check if this is the last fill
@@ -743,6 +839,12 @@ async function unsetPlugFill(
     console.error(
       `  ${error instanceof Error ? error.message : String(error)}\n`,
     );
-    process.exit(1);
+    exitWithError(
+      {
+        title: "Failed to unset plug fill",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      1,
+    );
   }
 }

@@ -9,6 +9,7 @@ import type { Align } from "@aligntrue/schema";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 
@@ -61,7 +62,9 @@ export async function overrideSelectors(args: string[]): Promise<void> {
     console.error(
       "  Run 'aligntrue sync' to generate rules before listing selectors.",
     );
-    process.exit(1);
+    exitWithError(1, `Rules directory not found: ${rulesPath}`, {
+      hint: "Run 'aligntrue sync' to generate rules before listing selectors.",
+    });
   }
 
   let align: Align;
@@ -72,7 +75,10 @@ export async function overrideSelectors(args: string[]): Promise<void> {
   } catch (err) {
     console.error("✗ Failed to read rules");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    exitWithError(
+      1,
+      `Failed to read rules: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   const sections = align.sections || [];

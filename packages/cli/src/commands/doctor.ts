@@ -16,6 +16,7 @@ import { resolveConfigPath } from "../utils/path-resolvers.js";
 import {
   parseCommonArgs,
   showStandardHelp,
+  exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import {
@@ -108,7 +109,9 @@ export async function doctor(args: string[]): Promise<void> {
   }
 
   if (report.summary.error > 0) {
-    process.exit(1);
+    exitWithError(1, "Doctor checks failed", {
+      hint: "See above report for remediation steps",
+    });
   }
 }
 

@@ -235,7 +235,14 @@ async function revokeCommand(
       console.error(
         "Use --yes to skip confirmation, or run in an interactive terminal.",
       );
-      process.exit(1);
+      exitWithError(
+        {
+          title: "Confirmation required",
+          message:
+            "Use --yes to revoke all consents in non-interactive mode or run interactively.",
+        },
+        1,
+      );
     }
 
     manager.revokeAll();
