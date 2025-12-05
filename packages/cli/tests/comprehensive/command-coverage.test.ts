@@ -11,33 +11,33 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "child_process";
 import { join } from "path";
+import { readFileSync } from "fs";
 
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
-// List of all commands (derived from packages/cli/src/commands/)
-const ALL_COMMANDS = [
-  "init",
-  "sync",
-  "check",
-  "exporters",
-  "sources",
-  "scopes",
-  "team",
-  "drift",
-  "onboard",
-  "override",
-  "plugs",
-  "config",
-  "backup",
-  "revert",
-  "privacy",
-  "migrate",
-  "status",
-  "doctor",
-  "add",
-  "remove",
-  "rules",
-];
+function discoverCommands(): string[] {
+  const indexPath = join(__dirname, "../../src/commands/index.ts");
+  const contents = readFileSync(indexPath, "utf-8");
+
+  const exportsRegex = /export\s+\{\s*([^}]+?)\s*\}\s+from\s+["'][^"']+["']/g;
+  const commands: string[] = [];
+
+  let match;
+  while ((match = exportsRegex.exec(contents)) !== null) {
+    const clause = match[1];
+    const entries = clause.split(",").map((entry) => entry.trim());
+    for (const entry of entries) {
+      if (!entry) continue;
+      // Handle "foo as bar" alias form
+      const [original, alias] = entry.split(/\s+as\s+/);
+      commands.push((alias || original).trim());
+    }
+  }
+
+  return commands;
+}
+
+const ALL_COMMANDS = discoverCommands();
 
 describe("Command Coverage", () => {
   describe("Help text", () => {

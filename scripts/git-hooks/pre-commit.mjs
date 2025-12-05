@@ -297,6 +297,22 @@ async function main() {
     }
   }
 
+  // Link validation (docs + CLI messages)
+  s.start("Checking documentation links...");
+  try {
+    execSync("pnpm validate:docs-links", { stdio: "pipe" });
+    s.stop("✅ Documentation links validated.");
+  } catch (error) {
+    s.stop("❌ Link validation failed.", 1);
+    console.error("");
+    clack.log.error("Broken documentation links detected.");
+    console.error("");
+    console.error("🔍 Re-run: pnpm validate:docs-links");
+    console.error("");
+    clack.outro("Fix the links above and re-stage the files.");
+    process.exit(1);
+  }
+
   clack.outro("✅ Pre-commit checks passed");
   process.exit(0);
 }
