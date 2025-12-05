@@ -4,7 +4,6 @@
 
 import { existsSync, writeFileSync, statSync, readdirSync } from "fs";
 import { dirname, join, resolve } from "path";
-import { fileURLToPath } from "url";
 import { createHash } from "crypto";
 import * as clack from "@clack/prompts";
 import {
@@ -20,7 +19,13 @@ import {
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
-import { AlignTrueError, ErrorFactory } from "../../utils/error-types.js";
+import {
+  AlignTrueError,
+  ErrorFactory,
+  SyncError,
+  TeamModeError,
+} from "../../utils/error-types.js";
+import { discoverExporterManifests } from "../../utils/exporter-validation.js";
 
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 
@@ -59,10 +64,6 @@ import type { GitProgressUpdate } from "../../utils/git-progress.js";
 import { createManagedSpinner, type SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
-
-// Get the exporters package directory for exporter discovery
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Generate fingerprint for section (matching schema behavior)
@@ -386,38 +387,44 @@ version: "1"
       spinner.stop("Source resolution failed");
     }
 
+    if (err instanceof AlignTrueError) {
+      throw err;
+    }
+
     // Handle git source updates available in team mode
     if (err instanceof UpdatesAvailableError) {
       const updateErr = err as UpdatesAvailableError;
-      console.log("\n⚠️  Git source has updates available:\n");
-      console.log(`  Repository: ${updateErr.url}`);
-      console.log(`  Ref: ${updateErr.ref}`);
-      console.log(`  Current SHA: ${updateErr.currentSha.slice(0, 7)}`);
-      console.log(`  Latest SHA:  ${updateErr.latestSha.slice(0, 7)}`);
-      if (updateErr.commitsBehind > 0) {
-        console.log(
-          `  Behind by:   ${updateErr.commitsBehind} commit${updateErr.commitsBehind !== 1 ? "s" : ""}`,
-        );
-      }
-      console.log("\n");
+      const commitsBehind =
+        updateErr.commitsBehind > 0
+          ? `Behind by: ${updateErr.commitsBehind} commit${updateErr.commitsBehind !== 1 ? "s" : ""}`
+          : undefined;
+      const details = [
+        `Repository: ${updateErr.url}`,
+        `Ref: ${updateErr.ref}`,
+        `Current SHA: ${updateErr.currentSha.slice(0, 7)}`,
+        `Latest SHA: ${updateErr.latestSha.slice(0, 7)}`,
+        commitsBehind,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const nextSteps = [
+        "Review and merge changes to the source repository",
+        "Or rerun with --skip-update-check to bypass temporarily",
+        "Or run with --offline to work without updates",
+      ];
 
       if (config.mode === "team") {
-        console.log("Team mode requires approval before updating git sources.");
-        console.log("\nOptions:");
-        console.log(
-          `  1. Approve via git PR:  Review and merge changes to config`,
-        );
-        console.log(
-          `  2. Skip update check:   aligntrue sync --skip-update-check`,
-        );
-        console.log(`  3. Work offline:        aligntrue sync --offline`);
-        console.log("\n");
-        process.exit(1);
+        throw new TeamModeError(
+          `Git source has updates available:\n${details}`,
+          "Team mode requires approval before updating git sources.",
+        ).withNextSteps(nextSteps);
       }
 
-      // Solo mode should auto-update, so this shouldn't happen
-      console.error("Unexpected: UpdatesAvailableError in solo mode");
-      process.exit(1);
+      throw new SyncError(
+        `Git source has updates available:\n${details}`,
+        "Auto-update should handle solo mode; rerun with --skip-update-check or --offline to proceed.",
+      ).withNextSteps(nextSteps);
     }
 
     // Other errors
@@ -480,18 +487,8 @@ version: "1"
   const registry = new ExporterRegistry();
 
   try {
-    // Discover exporters from exporters package
-    let exportersDistPath: string;
-    try {
-      const exportersPackagePath = await import.meta.resolve(
-        "@aligntrue/exporters",
-      );
-      const exportersIndexPath = fileURLToPath(exportersPackagePath);
-      exportersDistPath = dirname(exportersIndexPath);
-    } catch {
-      exportersDistPath = resolve(__dirname, "../../../../exporters/dist");
-    }
-    const manifestPaths = registry.discoverExporters(exportersDistPath);
+    // Discover exporters using shared helper
+    const manifestPaths = await discoverExporterManifests(registry);
 
     // Load manifests and handlers for configured exporters
     const exporterNamesArray = getExporterNames(config.exporters) || [

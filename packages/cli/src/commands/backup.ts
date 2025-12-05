@@ -13,17 +13,18 @@ import {
   getExporterNames,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { join } from "path";
 import {
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { withSpinner } from "../utils/spinner.js";
-
-// Get the exporters package directory for exporter discovery
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { discoverExporterManifests } from "../utils/exporter-validation.js";
+import {
+  AlignTrueError,
+  SyncError,
+  ValidationError,
+} from "../utils/error-types.js";
 
 /**
  * Get agent file patterns from configured exporters for backup purposes
@@ -36,26 +37,12 @@ async function getAgentFilePatterns(cwd: string): Promise<string[]> {
     const config = await loadConfig(paths.config);
     const exporterNames = getExporterNames(config.exporters);
 
-    // Initialize registry and load exporters
+    // Use shared discovery helper
     const registry = new ExporterRegistry();
-    const exportersDir = join(__dirname, "../../../exporters/src");
+    const manifestPaths = await discoverExporterManifests(registry);
 
-    try {
-      const manifests = registry.discoverExporters(exportersDir);
-      for (const manifestPath of manifests) {
-        await registry.registerFromManifest(manifestPath);
-      }
-    } catch {
-      // Fallback: try dist directory
-      const distExportersDir = join(__dirname, "../../../exporters/dist");
-      try {
-        const manifests = registry.discoverExporters(distExportersDir);
-        for (const manifestPath of manifests) {
-          await registry.registerFromManifest(manifestPath);
-        }
-      } catch {
-        // Registry discovery failed, return empty patterns
-      }
+    for (const manifestPath of manifestPaths) {
+      await registry.registerFromManifest(manifestPath);
     }
 
     for (const exporterName of exporterNames) {
@@ -65,7 +52,7 @@ async function getAgentFilePatterns(cwd: string): Promise<string[]> {
       }
     }
   } catch {
-    // Config load failed, return empty patterns
+    // Config load or discovery failed, return empty patterns
   }
 
   return patterns;
@@ -227,12 +214,20 @@ export async function backupCommand(argv: string[]): Promise<void> {
 
       default:
         console.log(HELP_TEXT);
-        console.error(`Error: Unknown subcommand: ${subcommand}\n`);
-        process.exit(1);
+        throw new ValidationError(
+          `Unknown subcommand: ${subcommand}`,
+          "Run 'aligntrue backup --help' for usage",
+        );
     }
   } catch (error) {
-    clack.log.error(error instanceof Error ? error.message : String(error));
-    process.exit(1);
+    if (error instanceof AlignTrueError) {
+      throw error;
+    }
+
+    throw new SyncError(
+      error instanceof Error ? error.message : String(error),
+      "Backup command failed",
+    );
   }
 }
 
@@ -350,8 +345,10 @@ async function handleRestore(
   }
 
   if (!targetBackup) {
-    clack.log.error("No backups available to restore");
-    process.exit(1);
+    throw new ValidationError(
+      "No backups available to restore",
+      "Create a backup first: aligntrue backup create",
+    );
   }
 
   // Show what will be restored

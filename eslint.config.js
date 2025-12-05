@@ -345,7 +345,7 @@ const noProcessExitInCommands = {
     fixable: false,
     messages: {
       noExit:
-        "Throw AlignTrueError instead of calling process.exit(). See COMMAND-FRAMEWORK.md#error-handling",
+        "Throw AlignTrueError instead of process.exit(code). process.exit(0) is allowed for successful early returns (help/version). See COMMAND-FRAMEWORK.md#error-handling",
     },
   },
   create(context) {
@@ -360,6 +360,18 @@ const noProcessExitInCommands = {
           node.callee.property &&
           node.callee.property.name === "exit"
         ) {
+          const [codeArg] = node.arguments || [];
+          const isLiteralZero =
+            codeArg &&
+            codeArg.type === "Literal" &&
+            typeof codeArg.value === "number" &&
+            codeArg.value === 0;
+
+          if (isLiteralZero) {
+            // Allow explicit process.exit(0) for successful early returns
+            return;
+          }
+
           context.report({
             node,
             messageId: "noExit",
