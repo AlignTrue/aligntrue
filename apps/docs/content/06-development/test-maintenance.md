@@ -31,11 +31,14 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 ### Step 1: Identify affected tests
 
 ```bash
-# Find all references to old format/path
-grep -r "old-file-name\|old-extension" packages/*/tests/
+# Find references to old formats/paths across tests
+rg "old-file-name|old-extension" packages/*/tests
 
-# Example: searching for specific file references
-grep -r "\.rules\.yaml" packages/*/tests/
+# Example: locate deprecated rule file naming
+rg "\.rules\.yaml" packages/*/tests
+
+# Narrow to a package or file when the blast radius is known
+rg "legacy-marker" packages/cli/tests/integration
 ```
 
 ### Step 2: Update each test file
@@ -55,23 +58,28 @@ const rulesPath = join(testDir, ".aligntrue", "old-format.md");
 const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("legacy-marker");
 
-// After
-const rulesPath = join(testDir, ".aligntrue", "rules");
+// After: current `.aligntrue/rules/*.md`
+const rulesPath = join(testDir, ".aligntrue", "rules", "demo-rule.md");
 const content = readFileSync(rulesPath, "utf-8");
-expect(content).toContain("spec_version:");
-expect(content).toContain("id: test-rule");
+expect(content).toContain("---"); // frontmatter delimiter
+expect(content).toContain("spec_version: 1");
+expect(content).toContain("id: demo-rule");
 ```
 
 ### Step 3: Run tests to verify
 
 ```bash
-# Test single package
-pnpm --filter @aligntrue/cli test
+# Target one file to iterate quickly
+pnpm --filter @aligntrue/cli vitest run packages/cli/tests/commands/import.test.ts
 
-# Test all packages
+# Target a single test when fixing assertions
+pnpm --filter @aligntrue/cli vitest run packages/cli/tests/integration -- -t "init writes rule frontmatter"
+
+# Update snapshots/fixtures if formats changed
+pnpm --filter @aligntrue/core vitest -u
+
+# Full sweep before push
 pnpm test
-
-# Pre-push will run this anyway, but verify locally first
 ```
 
 ## Prevention: Atomic commits
@@ -89,6 +97,8 @@ feat: Switch from YAML-first to agent-format-first
 feat: Switch to agent-format-first
   (Note: tests failing, will fix separately)
 ```
+
+Also include any regenerated snapshots or updated fixtures in the same commit to keep history consistent and avoid flaky reviews.
 
 ## Why this matters
 

@@ -45,14 +45,14 @@ Extend AlignTrue's core platform and integrations.
 - Create a feature branch
 - Write tests alongside your changes
 - Follow the relevant guide ([aligns](/docs/07-contributing/creating-aligns), [docs](/docs/07-contributing/editing-docs), [exporters](/docs/07-contributing/adding-exporters))
-- Run `pnpm lint && pnpm test` to validate
+- Keep a fast loop running: `pnpm test:fast`
 
 ### Before submitting a PR
 
-1. Verify tests pass: `pnpm test`
-2. Check formatting: `pnpm lint`
+1. Run the workspace checks: `pnpm check`
+2. Mirror CI locally: `pnpm pre-ci`
 3. Update `CHANGELOG.md` if needed
-4. Write a clear PR description explaining what you changed and why
+4. Open a GitHub **Draft PR** with a clear description of what changed and why
 
 ## Code of conduct
 
@@ -75,8 +75,8 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 
 ### What if my work is incomplete?
 
-- Prefix draft PRs with `[WIP]` (work in progress) in the title
-- Push your branch and open a draft PR
+- Open a GitHub Draft PR (no `[WIP]` prefix needed)
+- Push your branch frequently so reviewers can follow along
 - Describe what's done and what's left
 - We're happy to provide feedback before completion
 
@@ -85,11 +85,12 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 - Small PRs (< 200 lines): 1-3 days
 - Medium PRs: 3-5 days
 - Large changes: We may request phased submission to keep reviews manageable
+- If you have not heard back in 3 business days, feel free to add a gentle ping
 
 ### Can I work on this issue?
 
-- Comment on the issue to let maintainers know you're interested
-- If no one has claimed it in 2 weeks, it's fair game
+- Comment on the issue to claim it; maintainers will confirm or suggest next steps
+- If an accepted, unassigned issue has no response after 3 business days, you can proceed and note that you're taking it
 - Some issues are reserved for maintainers — they'll be labeled
 
 ## Learning resources
@@ -110,8 +111,9 @@ We have zero tolerance for harassment, discrimination, or hostile behavior.
 
 ### Examples
 
-- [Example aligns](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
-- [Example exporters](https://github.com/AlignTrue/aligntrue/tree/main/packages/exporters/src)
+- [`examples/aligns/README.md`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns/README.md) — ready-to-use rule sets and authoring patterns
+- [`examples/golden-repo`](https://github.com/AlignTrue/aligntrue/tree/main/examples/golden-repo) — end-to-end baseline repo with overlays scenarios
+- [`examples/overlays-demo`](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo) — focused overlays walkthrough
 
 ## Getting help
 

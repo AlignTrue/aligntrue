@@ -79,21 +79,26 @@ pnpm lint
 # Run tests
 pnpm test
 
-# Build (for docs changes)
-pnpm --filter docs build
+# Build docs site (for docs changes)
+pnpm --filter @aligntrue/docs build
 ```
+
+- Pre-commit mirrors these checks and also builds affected packages when TypeScript files are staged (`pnpm build:packages`). Running them before committing avoids hook failures.
 
 ### 5. Write a good commit message
 
 Use clear, present-tense commit messages:
 
 ```bash
-git commit -m "feat(exporters): add Cursor exporter with content hash"
+git commit -m "feat(exporters): Add Cursor exporter with content hash"
 ```
 
 Format: `type(scope): description`
 
-Types: `feat`, `fix`, `docs`, `refactor`, `test`, `ci`
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+
+- Subject must be sentence case (start with a capital letter).
+- Keep scope small and accurate; omit it only when it adds no clarity.
 
 ### 6. Update CHANGELOG.md (for user-facing changes)
 
@@ -156,7 +161,8 @@ All contributions need tests. See [Testing workflow](/docs/07-contributing/testi
 
 1. Edit files in `apps/docs/content/`
 2. The pre-commit hook auto-regenerates protected files
-3. Just commit your source edits
+3. Build locally with `pnpm --filter @aligntrue/docs build` if you want to preview changes
+4. Just commit your source edits; regenerated repo files are handled by the hook when relevant
 
 See [Editing documentation](/docs/07-contributing/editing-docs) for details.
 

@@ -54,7 +54,7 @@ Jump directly to your issue:
 
 ```
 error @aligntrue/cli@0.1.0: The engine "node" is incompatible with this module.
-Expected version ">=22.0.0". Got "18.16.0"
+Expected version ">=20.0.0". Got "18.16.0"
 ```
 
 **Cause:** AlignTrue requires Node.js 20 or later.
@@ -67,8 +67,8 @@ node --version
 
 # Upgrade Node.js
 # Using nvm (recommended)
-nvm install 22
-nvm use 22
+nvm install 20
+nvm use 20
 
 # Or download from nodejs.org
 # https://nodejs.org/
@@ -88,17 +88,13 @@ bash: pnpm: command not found
 
 **Fix:**
 
-<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (no install)"]}>
+<Tabs items={["npm", "yarn", "bun"]}>
 
 <Tabs.Tab>```bash npm install -g pnpm ```</Tabs.Tab>
 
 <Tabs.Tab>```bash yarn global add pnpm ```</Tabs.Tab>
 
-<Tabs.Tab>```bash npm install -g pnpm # Bootstrap with npm ```</Tabs.Tab>
-
 <Tabs.Tab>```bash bun install -g pnpm ```</Tabs.Tab>
-
-<Tabs.Tab>```bash npx pnpm --version # Try without installing ```</Tabs.Tab>
 
 </Tabs>
 
@@ -108,21 +104,12 @@ bash: pnpm: command not found
 pnpm --version
 ```
 
-**Alternative:** Use npx to run commands without permanent installation:
+**Alternative:** Run once without installing:
 
-<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (one-off commands)"]}>
-
-<Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
-
-<Tabs.Tab>```bash yarn global add aligntrue ```</Tabs.Tab>
-
-<Tabs.Tab>```bash pnpm add -g aligntrue ```</Tabs.Tab>
-
-<Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
-
-<Tabs.Tab>```bash npx aligntrue init ```</Tabs.Tab>
-
-</Tabs>
+```bash
+npx pnpm --version
+npx aligntrue init
+```
 
 ---
 
@@ -183,7 +170,7 @@ aligntrue team enable
 
 **Fix:** Manually select agents you want to use:
 
-1. During init, choose from the multiselect list (28 agents available)
+1. During init, choose from the multiselect list (options vary by version)
 2. Or edit `.aligntrue/config.yaml` after init:
 
 ```yaml
@@ -257,13 +244,11 @@ cat package.json | grep aligntrue
 # Validate everything
 aligntrue check
 
-# Validate schema and lockfile
-aligntrue check
-
 # Preview sync without writing
 aligntrue sync --dry-run
 
-# List enabled exporters
+# Show configured/available exporters
+aligntrue exporters list
 cat .aligntrue/config.yaml | grep exporters -A 5
 ```
 

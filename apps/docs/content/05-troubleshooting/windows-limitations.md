@@ -9,7 +9,7 @@ AlignTrue is primarily developed and tested on Unix-like systems (macOS, Linux).
 
 ## CI/CD considerations
 
-When running AlignTrue in CI pipelines on Windows runners, be aware of the following:
+Windows runners execute the full CI pipeline, but many integration suites opt out on Windows (`process.platform === "win32" ? describe.skip : describe`) because of flaky file locking. macOS and Linux jobs run the same suites to preserve coverage. Prefer Ubuntu or macOS runners when you need end-to-end test signals.
 
 ### File locking (EBUSY errors)
 
@@ -19,7 +19,11 @@ Windows has stricter file locking semantics than Unix systems. This can cause `E
 - Files are still open when cleanup or deletion is attempted
 - Temporary directories are being removed while files are in use
 
-**Workaround:** Add small delays between file operations or use retry logic for file cleanup.
+**Workarounds**
+
+- Close file handles promptly and avoid keeping the repo open in Explorer while tests run.
+- Run tests single-threaded to reduce concurrent file access, e.g. `pnpm --filter @aligntrue/cli vitest run --runInBand`.
+- Clean leftovers with `pnpm cleanup:temps` (deletes `temp-*` artifacts created by tests).
 
 ### File permissions (chmod)
 
@@ -29,7 +33,10 @@ The `chmod` command and file permission bits behave differently on Windows:
 - Permission inheritance works differently than Unix
 - Some permission tests may produce different results
 
-**Workaround:** Skip permission-specific tests on Windows or use Windows-native permission APIs.
+**Workarounds**
+
+- Prefer Windows-native APIs when you truly need permission checks.
+- Skip or conditionally guard permission-sensitive tests on Windows to avoid false negatives.
 
 ### Path handling
 
@@ -37,35 +44,36 @@ Windows uses backslash (`\`) as the path separator while Unix uses forward slash
 
 - AlignTrue normalizes paths internally, but some edge cases may occur
 - UNC paths and drive letters require special handling
+- CRLF line endings can introduce noise in generated files and diffs
 
-**Workaround:** Use `path.join()` and `path.resolve()` consistently rather than string concatenation.
+**Workarounds**
+
+- Use `path.join()` and `path.resolve()` consistently rather than string concatenation.
+- Configure Git to avoid CRLF churn: `git config core.autocrlf input`, and ensure your editor writes LF line endings.
 
 ## Test coverage
 
-The following test categories are skipped on Windows CI due to file locking issues:
+The following suites are currently skipped on Windows due to file locking and temp directory reuse (see `packages/cli/tests/**` for `describe.skip` guards). They run on macOS and Linux:
 
-| Test category     | Reason for skip                    |
-| ----------------- | ---------------------------------- |
-| Sync workflow     | EBUSY during temp file cleanup     |
-| Init command      | File locking in directory creation |
-| Team mode         | Lockfile write conflicts           |
-| Override commands | Config file locking                |
-| Plugs CLI         | Multiple file access patterns      |
+| Area                     | Status on Windows | Reason                             |
+| ------------------------ | ----------------- | ---------------------------------- |
+| CLI integration & e2e    | Skipped           | Flaky `EBUSY` during temp cleanup  |
+| Permission-sensitive I/O | Partially skipped | Windows does not mirror Unix chmod |
 
-All skipped tests are covered by Unix CI runners. The core AlignTrue functionality (sync, export, validation) works correctly on Windows in production use.
+Unit and library tests continue to run; production usage (sync, export, validation) remains supported on Windows.
 
 ## Recommended practices
 
-1. **For CI/CD:** Prefer Unix-based runners (ubuntu-latest) for comprehensive test coverage
-2. **For local development:** Windows works well for day-to-day usage
-3. **For debugging:** If you encounter EBUSY errors, ensure all file handles are properly closed
+1. Prefer Ubuntu/macOS runners or WSL for full test signals; use Windows runners for smoke checks.
+2. Run heavy suites in-band when you must stay on Windows to reduce lock contention.
+3. After failures, run `pnpm cleanup:temps` before retrying to clear locked temp files.
 
 ## Reporting Windows-specific issues
 
 If you encounter a Windows-specific issue not covered here:
 
-1. Check if it's a known file locking issue
-2. Try running the command again (transient locking often resolves)
-3. Open an issue with the Windows version and error message
+1. Confirm it is not a known file locking issue and rerun after cleanup.
+2. Include Windows version, Node version, shell, exact command, and the stack trace (especially `EBUSY` codes).
+3. Note whether you ran under WSL or native Windows and whether `--runInBand` helped.
 
 We aim to maintain Windows compatibility for all user-facing functionality while acknowledging test infrastructure limitations.

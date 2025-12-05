@@ -7,20 +7,18 @@ description: Prerequisites and installation instructions for AlignTrue developme
 
 ## Prerequisites
 
-- **Node.js** 20 or later (`.node-version` file included for Volta/asdf/nvm)
-- **pnpm** 9 or later
+- **Node.js** 20 or later (`.node-version` pins 20.18.1 for Volta/asdf/nvm)
+- **pnpm** 10 (repo sets `packageManager: pnpm@10.0.0`; `engines.pnpm` is >=9)
 
 **Install pnpm:**
 
 <Tabs items={["npm", "yarn", "Homebrew (macOS)", "Direct"]}>
 
-<Tabs.Tab>```bash npm install -g pnpm@9 ```</Tabs.Tab>
+<Tabs.Tab>```bash npm install -g pnpm@10 ```</Tabs.Tab>
 
-<Tabs.Tab>```bash yarn global add pnpm@9 ```</Tabs.Tab>
+<Tabs.Tab>```bash yarn global add pnpm@10 ```</Tabs.Tab>
 
-<Tabs.Tab>
-  ```bash brew install pnpm pnpm env use --global 9 # Set version to 9+ ```
-</Tabs.Tab>
+<Tabs.Tab>```bash brew install pnpm pnpm env use --global 10 ```</Tabs.Tab>
 
 <Tabs.Tab>
   Visit [pnpm.io](https://pnpm.io/installation) for platform-specific
@@ -84,16 +82,21 @@ Hooks are installed automatically when you run `pnpm install`.
 
 ### Pre-commit hook
 
-Runs automatically before each commit:
+Runs automatically before each commit and enforces zero warnings:
 
-1. **Format staged files** (~1-2s) - Prettier auto-formats code
-2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed
-3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+1. Warns on large staged sets (>50 files)
+2. Blocks temp artifacts (`temp-*`)
+3. Regenerates repo root docs if `apps/docs/content/**` changed
+4. Validates `workspace:*` protocol in staged `package.json` files
+5. Formats + lints staged files via lint-staged (Prettier + ESLint)
+6. Builds all packages if any staged file is TypeScript (catches missing exports or module resolution issues)
+7. Validates Next.js `transpilePackages` config
+8. Validates docs accuracy when docs, CLI command list, exporter list, or perf thresholds change
 
-**Total time:**
+Typical time:
 
-- Without package changes: ~3-5 seconds
-- With package changes: ~4-8 seconds
+- No TypeScript changes: ~5-15s
+- With TypeScript changes (build step): ~15-60s depending on scope
 
 ### Commit message hook
 
@@ -117,14 +120,15 @@ Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
 
 ### Pre-push hook
 
-Runs automatically before pushing (takes ~30-60 seconds):
+Runs `pnpm pre-ci` before pushing:
 
-- Full typecheck across all packages
-- Full test suite (all packages)
-- Full build to catch build errors
-- Mirrors CI validation
+- Install dependencies with `--frozen-lockfile`
+- Full build for all packages
+- Full typecheck
+- Full test suite (all packages, `TURBO_CONCURRENCY=1`)
+- Validate bundle sizes
 
-This ensures you never push code that will fail CI.
+Expect several minutes on a fresh or large change; matches CI scope.
 
 ### Bypassing hooks (emergency only)
 
@@ -194,14 +198,6 @@ Cannot find module '@aligntrue/ui'
 1. Check your Next.js config has `transpilePackages`:
 
 ```typescript
-// apps/web/next.config.ts
-const nextConfig: NextConfig = {
-  transpilePackages: ["@aligntrue/ui"],
-  // ... rest of config
-};
-```
-
-```javascript
 // apps/docs/next.config.mjs
 export default withNextra({
   transpilePackages: ["@aligntrue/ui"],
@@ -212,20 +208,20 @@ export default withNextra({
 2. Clean stale build caches:
 
 ```bash
-rm -rf apps/web/.next apps/docs/.next
+rm -rf apps/docs/.next
 ```
 
 3. Restart dev servers:
 
 ```bash
-pnpm dev:web   # or pnpm dev:docs
+pnpm dev:docs
 ```
 
 **Prevention:**
 
 - CI validates `transpilePackages` config: `pnpm validate:transpile-packages`
-- Pre-commit hook automatically cleans `.next` directories before each commit
-- If you add a new workspace package that exports TypeScript source, add it to `transpilePackages` in both Next.js configs
+- Pre-commit hook validates `transpilePackages`
+- If you add a workspace package that exports TypeScript source, add it to `transpilePackages` in each Next.js app config
 
 **Workflow after editing docs:**
 
@@ -236,7 +232,7 @@ pnpm dev:docs  # View changes at localhost:3001
 # 2. When done, generate root files
 pnpm generate:repo-files
 
-# 3. Commit (pre-commit hook handles cache cleanup)
+# 3. Commit
 git add -A
 git commit -m "docs: Update documentation"
 ```

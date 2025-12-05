@@ -21,35 +21,31 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 
 **Flow:**
 
-1. **Format** staged files with Prettier (~5s)
-2. **Validate protected repo files** - Prevent direct edits to auto-generated files
-3. **Quick typecheck** changed packages only (~5-15s) ← **Fails fast**
-4. **Build** changed packages (~15-30s)
-5. **Full typecheck** changed packages (~10-20s)
+1. Warn if 50+ files are staged (commit may be slow; consider splitting).
+2. Block temp artifacts: fails if any staged path starts with `temp-`.
+3. Auto-regenerate protected docs (`README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`) when their sources change and stage the outputs.
+4. Validate workspace protocol on staged `package.json` files (`pnpm validate:workspace`).
+5. Format and lint staged files via `lint-staged` (Prettier + ESLint, zero warnings).
+6. If staged files include TypeScript, build affected packages (`pnpm build:packages`) to catch resolution/type errors.
+7. Validate Next.js `transpilePackages` configuration.
+8. Validate documentation accuracy when docs or related code change (docs content, `package.json`, CLI command registry, exporters, performance thresholds).
 
-**Total time:** 30-60s for typical commits (vs 2+ min previously)
-
-**Key improvements:**
-
-- Catches type errors BEFORE build (saves time)
-- Only checks/builds changed packages (faster)
-- Shows clear error messages with fix suggestions
-- **Prevents direct edits to auto-generated files** (new)
+**Total time:** ~45-90s for typical commits (faster with small staged sets)
 
 ### Protected repository files
 
 The following files are auto-generated from documentation source and cannot be directly edited:
 
 - `README.md` (generated from `apps/docs/content/index.mdx`)
-- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-aligns.md`)
-- `DEVELOPMENT.md` (generated from `apps/docs/content/07-development/*`)
+- `CONTRIBUTING.md` (generated from `apps/docs/content/07-contributing/creating-aligns.md`)
+- `DEVELOPMENT.md` (generated from `apps/docs/content/06-development/*`)
 
 **Why:** AlignTrue practices what it preaches - documentation is the IR (Intermediate Representation), and generated files are the exports. This enforces the docs-first architecture.
 
 **Correct workflow:**
 
 1. Edit the canonical source in `apps/docs/content/`
-2. Run `pnpm generate:repo-files` to regenerate root files
+2. Run `pnpm generate:repo-files` to regenerate root files (the pre-commit hook will also do this automatically when docs sources change)
 3. Commit both the doc changes AND the regenerated files
 
 **If you accidentally try to directly edit a protected file:**
@@ -84,12 +80,15 @@ Runs on every push to `main` or `develop`. Comprehensive validation of entire wo
 
 **What CI checks:**
 
-1. Lockfile sync validation
-2. Full workspace build
-3. Full workspace typecheck
-4. All tests (unit + integration)
-5. Conformance testkit
-6. Golden repository validation
+1. Workspace protocol validation (`pnpm validate:workspace`)
+2. Workspace link verification (`pnpm verify:workspace-links`)
+3. Build all packages (`pnpm build:packages`)
+4. Full validation suite (`pnpm validate:all`)
+5. Docs build (`pnpm --filter @aligntrue/docs build`)
+6. Full typecheck (`pnpm typecheck`)
+7. Tests with coverage (`pnpm test -- --coverage`)
+8. Conformance testkit (`pnpm verify`)
+9. Golden repository validation (`examples/golden-repo/test-golden-repo.sh`)
 
 **Time:** 3-5 minutes per platform
 
@@ -97,14 +96,9 @@ Runs on every push to `main` or `develop`. Comprehensive validation of entire wo
 
 CI runs on multiple platforms to catch platform-specific issues:
 
-- **Ubuntu (Linux)** - Primary platform, full test suite
-- **macOS** - Development platform, full test suite
-- **Windows** - Limited test coverage (see below)
-
-Additionally, CI tests multiple Node.js versions:
-
-- **Node 20** - LTS minimum (all platforms)
-- **Node 22** - Current LTS (all platforms)
+- **Ubuntu (Linux)** - Node 20 and Node 22
+- **macOS** - Node 22
+- **Windows** - Node 22 (limited coverage, see below)
 
 ### Windows test limitations
 

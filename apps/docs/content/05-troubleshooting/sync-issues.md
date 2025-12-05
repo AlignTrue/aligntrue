@@ -26,7 +26,7 @@ Run 'aligntrue init' to set up your project first.
 aligntrue init
 ```
 
-If you deleted config by accident, recreate it:
+If you deleted config by accident, recreate it and include at least one rule file:
 
 ```yaml
 # .aligntrue/config.yaml
@@ -36,7 +36,15 @@ exporters:
   - agents
 sources:
   - type: local
-    path: .aligntrue/rules
+    path: .aligntrue/rules/
+```
+
+```markdown
+# .aligntrue/rules/global.md
+
+## defaults
+
+- Keep project rules consistent
 ```
 
 ---
@@ -49,7 +57,7 @@ sources:
 ✖ Source file not found: .aligntrue/rules
 
 Check 'sources' in .aligntrue/config.yaml
-Hint: Create .rules.yaml or update source path
+Hint: Create `.aligntrue/rules/*.md` or update source path
 ```
 
 **Cause:** Rules file doesn't exist or path is wrong in config.
@@ -59,12 +67,12 @@ Hint: Create .rules.yaml or update source path
 **1. Create missing rules file:**
 
 ```bash
-# Re-run init to create starter template
-aligntrue init
-
-# Or create minimal file manually
 mkdir -p .aligntrue
-echo 'rules: []' > .aligntrue/rules
+# Create a minimal rule file (must be .md with headings)
+cat > .aligntrue/rules/global.md <<'EOF'
+## defaults
+- Keep project rules consistent
+EOF
 ```
 
 **2. Fix path in config:**
@@ -73,7 +81,7 @@ echo 'rules: []' > .aligntrue/rules
 # .aligntrue/config.yaml
 sources:
   - type: local
-    path: .aligntrue/rules # Check this path
+    path: .aligntrue/rules/ # Directory of .md rule files
 ```
 
 **3. Verify file exists:**
@@ -89,15 +97,15 @@ ls -la .aligntrue/rules
 **Symptoms:**
 
 - Added align appears in `aligntrue sync` output, but `AGENTS.md` and `.cursor/rules/*.mdc` files never show the new sections.
-- Running `aligntrue sync` repeatedly keeps overwriting the align content with the local `AGENTS.md`.
+- Running `aligntrue sync` repeatedly keeps overwriting align content with older exports.
 
-**Cause:** On first sync, AlignTrue imports edits from `AGENTS.md` (or agent exports) before writing to the internal IR. Without replaying configured `sources`, that import could overwrite align overlays.
+**Cause:** Aligns must be authored in `.aligntrue/rules/*.md` with `##` headings. Agent exports (`AGENTS.md`, `.cursor/rules/*.mdc`) are read-only; editing them or omitting the source file leaves nothing to re-export.
 
 **Fix:**
 
-1. Ensure the align file is listed under `sources` in `.aligntrue/config.yaml`.
-2. Re-run `aligntrue sync`. AlignTrue now re-merges all configured sources after agent edits so align sections persist.
-3. Verify the align headings start at `##` or deeper; level-1 (`#`) headings are treated as document titles and fail IR validation.
+1. Ensure the align file lives in `.aligntrue/rules/*.md` and the directory is listed under `sources` in `.aligntrue/config.yaml`.
+2. Use `##` or deeper headings; level-1 (`#`) is treated as the document title and is ignored for sections.
+3. Re-run `aligntrue sync` — exports are regenerated from the source rules and will include the align sections.
 
 Still not seeing the sections? Run `aligntrue sync --verbose` to confirm the align was merged and check the file listed under "Sources merged".
 
@@ -138,7 +146,7 @@ Aborting sync. Fix lockfile drift or use --force.
 aligntrue sync --force
 
 # Or in two steps:
-rm .aligntrue/lock.json
+rm .aligntrue.lock.json
 aligntrue sync
 ```
 
@@ -170,9 +178,9 @@ aligntrue sync
 ```yaml
 # .aligntrue/config.yaml
 lockfile:
-  mode: soft # Warn but continue (default for team mode)
-  # mode: strict  # Block on mismatch (for CI)
-  # mode: off     # Disable validation (solo mode)
+  mode: soft # Warn but continue (default in team mode)
+  # mode: strict # Block on mismatch (recommended for CI)
+  # mode: off    # Disable validation (solo mode)
 ```
 
 ---
@@ -330,15 +338,15 @@ See the [agent verification guide](/docs/04-reference/agent-verification) for ag
 1. **Identify duplicates:**
 
    ```bash
-   # Grep for duplicate headings
-   grep "^## " AGENTS.md | sort | uniq -c | grep -v "^ *1 "
+   # Check duplicate headings in source rules
+   rg "^## " .aligntrue/rules | sort | awk -F: '{print $3}' | sort | uniq -c | grep -v "^ *1 " || true
    ```
 
 2. **Remove duplicates from source files:**
 
    ```bash
-   nano AGENTS.md  # Remove duplicate sections
-   nano CLAUDE.md  # Remove duplicate sections
+   nano .aligntrue/rules/global.md  # Remove or rename duplicate sections
+   nano .aligntrue/rules/*.md
    ```
 
 3. **Sync again:**
@@ -410,8 +418,8 @@ Instead of:
 1. **Check source files for issues:**
 
    ```bash
-   # Look for horizontal rules without spacing
-   grep -n "^---[^-]" AGENTS.md CLAUDE.md
+   # Look for horizontal rules without spacing in sources
+   rg "^---[^-]" .aligntrue/rules
    ```
 
 2. **Fix manually or let AlignTrue normalize:**

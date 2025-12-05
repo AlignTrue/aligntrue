@@ -9,6 +9,12 @@ This guide helps you resolve common issues when using remote repositories for so
 
 For conceptual guidance, see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
 
+## Quick checks
+
+1. Validate config: `aligntrue check`
+2. Get verbose output: `aligntrue sync --verbose`
+3. Verify the ref exists: `git ls-remote --heads <url> <ref>`
+
 ## Git source issues
 
 ### Repository not found
@@ -61,22 +67,28 @@ fatal: repository 'https://github.com/user/repo.git' not found
 fatal: couldn't find remote ref main
 ```
 
-**Cause:** Repository uses `master` instead of `main` (or vice versa).
+**Cause:** Branch name mismatch (`main` vs `master`) or a typo in `ref`.
 
 **Solution:**
 
-1. Check the default branch on your git host
+1. List branches on the remote:
 
-2. Update the branch in your config:
+   ```bash
+   git ls-remote --heads git@github.com:user/repo.git
+   ```
+
+2. Confirm the branch you need exists (`main`, `master`, or a feature branch).
+
+3. Update the branch in your config:
 
    ```yaml
    sources:
      - type: git
        url: git@github.com:user/repo.git
-       ref: master # Changed from main
+       ref: master # Set to the actual branch name
    ```
 
-3. Sync again:
+4. Sync again:
    ```bash
    aligntrue sync
    ```
@@ -93,10 +105,10 @@ fatal: unable to clone from .aligntrue/.cache/remotes/...
 
 **Solution:**
 
-1. Clear the remote cache:
+1. Clear the cached clone for the affected remote (safe to delete; cache is transient):
 
    ```bash
-   rm -rf .aligntrue/.cache/remotes
+   rm -rf .aligntrue/.cache/remotes/<host>/<repo>
    ```
 
 2. Sync again:
@@ -116,13 +128,15 @@ remotes:
   # or with options:
   shared:
     url: git@github.com:company/shared-rules.git
-    branch: main
+    branch: main # Set if your backup repo uses a non-default branch
 ```
 
 **Scopes:**
 
-- `personal` - Rules with `scope: personal` push here
-- `shared` - Rules with `scope: shared` push here
+- Remote keys must match rule scopes:
+  - `personal` - Rules with `scope: personal` push here
+  - `shared` - Rules with `scope: shared` push here
+- `branch` defaults to `main`; set it if the backup repo uses another branch.
 
 ### Invalid remotes configuration
 
@@ -317,8 +331,10 @@ error: failed to push some refs
    git commit -m "Resolve conflicts"
    ```
 
-3. Push again:
+3. Verify clean state, then push:
    ```bash
+   git status
+   aligntrue check
    aligntrue sync
    ```
 
@@ -352,7 +368,10 @@ Automatic merge failed
    ```bash
    git add .
    git commit -m "Resolve merge conflict"
-   git push origin main
+   git status
+   aligntrue sync
+   # If you get stuck, you can abort the merge:
+   # git merge --abort
    ```
 
 ### Diverged Branches
@@ -410,22 +429,29 @@ remotes:
 
 **Option 2: Use Personal Access Token**
 
-1. Create a token:
+1. Create a token (minimum scopes: `repo` for private GitHub repos):
    - **GitHub:** Settings → Developer settings → Personal access tokens
    - **GitLab:** Profile → Access Tokens
    - **Bitbucket:** Personal settings → App passwords
 
-2. Configure git credential helper:
+2. Configure a secure credential helper:
 
    ```bash
-   git config --global credential.helper store
+   # macOS
+   git config --global credential.helper osxkeychain
+
+   # Windows
+   git config --global credential.helper manager-core
+
+   # Linux (temporary cache for 1 hour)
+   git config --global credential.helper 'cache --timeout=3600'
    ```
 
 3. On next push, enter:
    - Username: your username
    - Password: your token (not your actual password)
 
-**Option 3: Use SSH Credential Helper**
+**Option 3: Use temporary credential cache (short-lived)**
 
 ```bash
 git config --global credential.helper 'cache --timeout=3600'
@@ -516,8 +542,12 @@ sudo apt-get update && sudo apt-get install ca-certificates
 
 **Option 2: Disable SSL verification (Not Recommended)**
 
+> Warning: Disable only while diagnosing, and re-enable after fixing CA issues.
+
 ```bash
 git config --global http.sslVerify false
+# Re-enable once fixed
+git config --global --unset http.sslVerify
 ```
 
 **Option 3: Use SSH**
@@ -570,7 +600,7 @@ error: unable to create file rules.md: Permission denied
 ls -la .aligntrue/.cache/remotes/
 
 # Fix ownership (replace USER with your username)
-sudo chown -R USER:USER .aligntrue/.cache/
+chown -R "$USER":"$USER" .aligntrue/.cache/ # use sudo only if required
 
 # Or clear cache and retry
 rm -rf .aligntrue/.cache/remotes
@@ -581,16 +611,16 @@ aligntrue sync
 
 If you're still stuck:
 
-1. **Check AlignTrue logs:**
-
-   ```bash
-   aligntrue sync --verbose
-   ```
-
-2. **Validate configuration:**
+1. **Validate configuration:**
 
    ```bash
    aligntrue check
+   ```
+
+2. **Check AlignTrue logs:**
+
+   ```bash
+   aligntrue sync --verbose
    ```
 
 3. **Test git access directly:**

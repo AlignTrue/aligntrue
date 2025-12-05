@@ -73,6 +73,13 @@ aligntrue check
 aligntrue check --json
 ```
 
+**Quick fix checklist:**
+
+- Run `aligntrue check --json` to pinpoint failing fields.
+- Add missing frontmatter keys (`id`, `version`, `spec_version`) and valid severities (`error|warn|info`).
+- Normalize IDs to `namespace.category.name` (no slashes, no short IDs).
+- Re-run `aligntrue check` until it returns exit code 0.
+
 ---
 
 ## Lockfile strict mode failures
@@ -86,15 +93,15 @@ aligntrue check --json
 Exit code: 1
 ```
 
-**Cause:** CI is using `lockfile.mode: strict` and rules changed since last lockfile update.
+**Cause:** CI is using `lockfile.mode: strict` and rules changed since the last lockfile update. Current lockfile path is `.aligntrue/lock.json` (AlignTrue will migrate legacy `.aligntrue.lock.json` when you run sync).
 
 **Fix:**
 
-**1. Update lockfile in your branch:**
+**1. Refresh the lockfile in your branch:**
 
 ```bash
-# Regenerate lockfile
-aligntrue sync --force
+# Regenerate lockfile (accept prompts, auto-add detected agents)
+aligntrue sync --yes
 
 # Commit updated lockfile
 git add .aligntrue/lock.json
@@ -145,7 +152,7 @@ By default, `aligntrue sync` shows interactive prompts for agent detection and i
 
 **Option 1: Use `--yes` (recommended)**
 
-Automatically enables detected agents and manages ignore files without prompting:
+Automatically accepts prompts, enables detected agents, and manages ignore files using your configured defaults:
 
 ```bash
 aligntrue sync --yes
@@ -153,15 +160,16 @@ aligntrue sync --yes
 
 **Behavior with `--yes`:**
 
-- Auto-enables any newly detected agents
-- Auto-manages ignore files to prevent duplicate context
-- Skips all interactive prompts
+- Adds newly detected agents to `.aligntrue/config.yaml`
+- Applies ignore-file updates using `sync.auto_manage_ignore_files` defaults (on by default)
+- Overwrites conflicts using the default resolution strategy
+- Skips all interactive prompts (including overwrite confirmations)
 - Returns exit code 0 on success
 - Returns exit code 1 on validation errors
 
 **Option 2: Use `--non-interactive` (alias `-n`)**
 
-Skips all prompts but doesn't auto-enable agents (useful if you want to be explicit):
+Skips prompts and uses defaults (also auto-adds detected agents, but does not imply `--force`):
 
 ```bash
 aligntrue sync --non-interactive
@@ -171,11 +179,11 @@ aligntrue sync -n
 
 **Behavior with `--non-interactive`:**
 
-- Skips agent detection prompts
-- Skips ignore file management prompts
-- Does not auto-enable agents
-- Only syncs rules to already-configured exporters
-- Useful for validated CI pipelines
+- Adds newly detected agents to `.aligntrue/config.yaml`
+- Applies ignore-file updates using `sync.auto_manage_ignore_files` defaults (on by default)
+- Uses overwrite as the default resolution strategy for conflicts
+- Skips detection and ignore-file prompts
+- Useful for validated CI pipelines that need zero prompts
 
 ### Common CI patterns
 
@@ -218,3 +226,12 @@ This is useful for:
 - Checking for schema errors
 - Previewing exporter output
 - Pre-flight checks before deployment
+- Ensuring lockfile and agent updates are understood before writing files
+
+---
+
+## Quick CI tips
+
+- Always run `aligntrue check --ci` before `aligntrue sync` in pipelines.
+- Use `aligntrue sync --dry-run --yes` to preview, then `aligntrue sync --yes` to write files (lockfile included).
+- Commit `.aligntrue/lock.json` whenever rules change in team mode; CI strict mode will block drift.

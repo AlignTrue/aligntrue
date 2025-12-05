@@ -4,11 +4,11 @@ Guide for contributing new exporters and extending AlignTrue to support addition
 
 ## Overview
 
-AlignTrue supports 50+ AI coding agents through a hybrid manifest system. Adding support for a new agent typically takes 1-2 hours and requires:
+AlignTrue supports 50+ AI coding agents through a manifest + handler system. Adding support for a new agent typically takes 1-2 hours and requires:
 
-1. A JSON manifest describing the exporter
+1. A JSON manifest describing the exporter (validated against our schema)
 2. (Optional) A TypeScript handler for custom export logic
-3. Tests validating the output format
+3. Tests validating output format, fidelity notes, and dry-run behavior
 
 ### When to create a new exporter
 
@@ -25,7 +25,7 @@ AlignTrue supports 50+ AI coding agents through a hybrid manifest system. Adding
 
 ### Exporter types
 
-AlignTrue supports three main patterns:
+AlignTrue supports four main patterns:
 
 1. **Single file at root** - `AGENTS.md`, `CLAUDE.md`, `CRUSH.md`
 2. **Directory-based** - `.cursor/rules/*.mdc`, `.kilocode/rules/*.md`
@@ -43,46 +43,46 @@ Create `packages/exporters/src/<agent-name>/manifest.json`:
   "name": "my-agent",
   "version": "1.0.0",
   "description": "Export rules to My Agent format",
-  "author": "Your Name <your.email@example.com>",
-  "outputPaths": [".myagent/rules.md"],
-  "handlerPath": "./index.js",
-  "schema": {
-    "type": "object",
-    "properties": {
-      "enabled": { "type": "boolean", "default": true }
-    }
-  }
+  "outputs": [".myagent/rules.md"],
+  "handler": "./index.js",
+  "license": "MIT",
+  "supportedFormats": ["native"],
+  "defaultFormat": "native",
+  "fidelityNotes": [
+    "Describe any semantic gaps between AlignTrue IR and My Agent"
+  ]
 }
 ```
 
-**Required fields:**
+**Required fields (validated by `packages/exporters/schema/manifest.schema.json`):**
 
 - `name` - Exporter identifier (lowercase, alphanumeric, hyphens)
 - `version` - Semver version string
-- `outputPaths` - Array of file paths this exporter creates
-- `handlerPath` - Relative path to TypeScript handler (or `null` for declarative-only)
+- `description` - Human-readable description (min 10 characters)
+- `outputs` - Array of file paths/patterns this exporter creates
 
-**Optional fields:**
+**Common optional fields:**
 
-- `description` - Human-readable description
-- `author` - Your name and email
-- `schema` - JSON Schema for exporter-specific config
+- `handler` - Relative path to TypeScript handler (omit for declarative-only exporters)
+- `license` - Defaults to `MIT` (required for contributions)
+- `supportedFormats` / `defaultFormat` - Use when the exporter can emit multiple formats (e.g., `native`, `agents-md`)
+- `fidelityNotes` - Known semantic gaps to surface in CLI output
 
 ### 2. Implement handler
 
 Create `packages/exporters/src/<agent-name>/index.ts`:
 
 ```typescript
-import {
-  ExporterPlugin,
+import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
 } from "@aligntrue/plugin-contracts";
-import { AtomicFileWriter } from "@aligntrue/file-utils";
-import { computeHash, type AlignSection } from "@aligntrue/schema";
+import type { AlignSection, RuleFrontmatter } from "@aligntrue/schema";
+import { ExporterBase } from "../base/index.js";
+import { join } from "node:path";
 
-export class MyAgentExporter implements ExporterPlugin {
+export class MyAgentExporter extends ExporterBase {
   name = "my-agent";
   version = "1.0.0";
 
@@ -90,64 +90,50 @@ export class MyAgentExporter implements ExporterPlugin {
     request: ScopedExportRequest,
     options: ExportOptions,
   ): Promise<ExportResult> {
-    const { scope, align } = request;
-    const { dryRun } = options;
+    const { outputDir, dryRun = false } = options;
+    const sections = request.align.sections ?? [];
 
-    // Generate output content
-    const content = this.formatSections(align.sections);
+    // Render content for the agent
+    const content = this.renderContent(sections);
+    const contentHash = this.computeHash({ sections });
 
-    // Compute content hash
-    const hash = computeHash(content);
+    // Respect CLI outputDir, allow interactive/force flags to flow through
+    const outputPath = join(outputDir, ".myagent/rules.md");
+    const filesWritten = await this.writeFile(
+      outputPath,
+      content,
+      dryRun,
+      options,
+    );
 
-    // Write file (if not dry-run)
-    const outputPath = ".myagent/rules.md";
-    if (!dryRun) {
-      const writer = new AtomicFileWriter();
-      await writer.writeFile(outputPath, content);
-    }
+    // Surface any partial fidelity (e.g., unsupported metadata)
+    const fidelityNotes = this.computeSectionFidelityNotes(sections);
 
-    return {
-      success: true,
-      filesWritten: dryRun ? [] : [outputPath],
-      warnings: [],
-      fidelityNotes: this.computeFidelityNotes(align.sections),
-      contentHash: hash,
-    };
+    return this.buildResult(filesWritten, contentHash, fidelityNotes);
   }
 
-  private formatSections(sections: AlignSection[]): string {
-    // Convert sections to agent format
-    let output = "# My Agent Rules\n\n";
-
-    for (const section of sections) {
-      output += `## ${section.heading}\n\n`;
-      output += `${section.content}\n\n`;
-    }
-
-    return output;
+  override translateFrontmatter(frontmatter: RuleFrontmatter) {
+    // Optional: map AlignTrue frontmatter to agent-specific metadata
+    return { ...frontmatter };
   }
 
-  private computeFidelityNotes(sections: AlignSection[]): string[] {
-    const notes: string[] = [];
-
-    // Example: check for unsupported features
-    // Real exporters would check for agent-specific limitations
-
-    return notes;
+  private renderContent(sections: AlignSection[]): string {
+    // For many exporters, natural markdown is enough; customize as needed
+    return super.renderSections(sections);
   }
 }
 
-// Export factory function
-export default function createExporter(): ExporterPlugin {
+export default function createExporter() {
   return new MyAgentExporter();
 }
 ```
 
 **Key interfaces:**
 
-- `ExporterPlugin` - Main interface all exporters implement
-- `ScopedExportRequest` - Input containing scope, rules, config
-- `ExportResult` - Output with files written, warnings, fidelity notes
+- `ExporterPlugin` (`@aligntrue/plugin-contracts`) - contract exporters implement
+- `ScopedExportRequest` - provides `scope`, `align.sections`, and suggested `outputPath`
+- `ExportOptions` - includes `outputDir`, `dryRun`, `interactive`, `force`, `contentMode`
+- `ExporterBase` helpers - `writeFile`, `computeHash`, `computeSectionFidelityNotes`, `renderSectionsAsMarkdown`, optional `translateFrontmatter`, `resetState`
 
 ### 3. Add tests
 
@@ -155,23 +141,33 @@ Create `packages/exporters/tests/<agent-name>.test.ts`:
 
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { MyAgentExporter } from "../src/my-agent";
-import { unlinkSync, existsSync } from "fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { rmSync, readFileSync, existsSync } from "node:fs";
+import { MyAgentExporter } from "../src/my-agent/index.js";
+
+const defaultScope = { path: ".", normalizedPath: ".", isDefault: true };
 
 describe("MyAgentExporter", () => {
   const exporter = new MyAgentExporter();
+  let outputDir: string;
   const outputPath = ".myagent/rules.md";
 
-  afterEach(() => {
-    if (existsSync(outputPath)) {
-      unlinkSync(outputPath);
-    }
+  beforeEach(() => {
+    outputDir = join(
+      tmpdir(),
+      `my-agent-${Math.random().toString(16).slice(2)}`,
+    );
   });
 
-  it("exports single rule", async () => {
+  afterEach(() => {
+    rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it("exports a section", async () => {
     const result = await exporter.export(
       {
-        scope: { path: ".", normalizedPath: ".", isDefault: true },
+        scope: defaultScope,
         align: {
           sections: [
             {
@@ -181,65 +177,54 @@ describe("MyAgentExporter", () => {
             },
           ],
         },
-        outputPath: ".myagent/rules.md",
+        outputPath,
       },
-      {
-        outputDir: "/tmp",
-        dryRun: false,
-      },
+      { outputDir, dryRun: false },
     );
 
-    expect(result.filesWritten).toEqual([outputPath]);
-    expect(existsSync(outputPath)).toBe(true);
+    expect(result.filesWritten).toEqual([join(outputDir, outputPath)]);
+    expect(readFileSync(join(outputDir, outputPath), "utf-8")).toContain(
+      "Test rule",
+    );
   });
 
   it("respects dry-run", async () => {
     const result = await exporter.export(
       {
-        scope: { path: ".", normalizedPath: ".", isDefault: true },
+        scope: defaultScope,
         align: {
           sections: [
-            {
-              heading: "Test",
-              content: "Test content",
-              fingerprint: "test",
-            },
+            { heading: "Dry run", content: "noop", fingerprint: "dry" },
           ],
         },
-        outputPath: ".myagent/rules.md",
+        outputPath,
       },
-      {
-        outputDir: "/tmp",
-        dryRun: true,
-      },
+      { outputDir, dryRun: true },
     );
 
     expect(result.filesWritten).toEqual([]);
-    expect(existsSync(outputPath)).toBe(false);
+    expect(existsSync(join(outputDir, outputPath))).toBe(false);
   });
 
-  it("reports fidelity notes for unsupported fields", async () => {
+  it("reports fidelity notes for unsupported metadata", async () => {
     const result = await exporter.export(
       {
-        scope: { path: ".", normalizedPath: ".", isDefault: true },
+        scope: defaultScope,
         align: {
           sections: [
             {
-              heading: "Test",
+              heading: "With vendor data",
               content: "Ensure README.md exists in the project root.",
-              fingerprint: "test",
+              fingerprint: "vendor",
+              vendor: { cursor: { ai_hint: "unused here" } },
             },
           ],
         },
-        outputPath: ".myagent/rules.md",
+        outputPath,
       },
-      {
-        outputDir: "/tmp",
-        dryRun: true,
-      },
+      { outputDir, dryRun: true },
     );
 
-    // Check that export handles sections correctly
     expect(result.fidelityNotes).toBeDefined();
   });
 });
@@ -247,11 +232,11 @@ describe("MyAgentExporter", () => {
 
 **Test patterns:**
 
-- Basic export (single rule, multiple rules)
-- Dry-run mode (no files written)
-- Fidelity tracking (unsupported fields)
-- Vendor metadata extraction
-- Snapshot tests for format validation
+- Basic export (single section, multi-section, nested scopes)
+- Dry-run mode (no files written when `dryRun: true`)
+- Fidelity tracking (unsupported metadata noted)
+- Vendor metadata extraction (e.g., `vendor.<agent>` passthroughs)
+- Snapshot tests for format validation using the actual file output
 
 ## Exporter patterns
 
@@ -399,8 +384,8 @@ vendor:
 **Extract in your exporter:**
 
 ```typescript
-private extractVendorMetadata(rule: AlignRule): Record<string, unknown> {
-  return rule.vendor?.['my-agent'] || {};
+private extractVendorMetadata(section: AlignSection): Record<string, unknown> {
+  return section.vendor?.['my-agent'] || {};
 }
 ```
 
@@ -426,20 +411,23 @@ Don't rely on volatile fields for deterministic output.
 Report when you cannot fully represent a field:
 
 ```typescript
-private computeFidelityNotes(rules: AlignRule[]): string[] {
+private computeFidelityNotes(sections: AlignSection[]): string[] {
   const notes: string[] = [];
 
-  for (const rule of rules) {
+  for (const section of sections) {
     // Unsupported fields
-    if (rule.check) {
-      notes.push(`Rule '${rule.id}': machine checks not supported`);
+    if ((section as Record<string, unknown>).check) {
+      notes.push(`Section '${section.heading}': machine checks not supported`);
     }
 
     // Cross-agent vendor metadata
-    const otherVendors = Object.keys(rule.vendor || {})
-      .filter(k => k !== 'my-agent' && k !== '_meta');
+    const vendor = section.vendor || {};
+    const otherVendors = Object.keys(vendor)
+      .filter(k => k !== "my-agent" && k !== "_meta");
     if (otherVendors.length > 0) {
-      notes.push(`Rule '${rule.id}': vendor metadata for ${otherVendors.join(', ')}`);
+      notes.push(
+        `Section '${section.heading}': vendor metadata for ${otherVendors.join(", ")}`,
+      );
     }
   }
 
@@ -458,7 +446,7 @@ private computeFidelityNotes(rules: AlignRule[]): string[] {
 
 ### Minimum test coverage
 
-1. **Basic export** - Single rule, multiple rules
+1. **Basic export** - Single section, multiple sections, nested scopes
 2. **Dry-run mode** - No files written when `dryRun: true`
 3. **Vendor extraction** - Agent-specific metadata extracted correctly
 4. **Fidelity tracking** - Unsupported fields reported in notes
@@ -466,18 +454,12 @@ private computeFidelityNotes(rules: AlignRule[]): string[] {
 
 ### Snapshot tests
 
-Use Vitest snapshots to validate output format:
+Use Vitest snapshots to validate output format using the real file on disk:
 
 ```typescript
 it("generates expected format", async () => {
-  const result = await exporter.export({
-    scope: { name: "default", path: "." },
-    rules: [fixture.singleRule],
-    config: {},
-    dryRun: true,
-  });
-
-  const content = await fs.readFile(outputPath, "utf-8");
+  await exporter.export(request, { outputDir, dryRun: false });
+  const content = readFileSync(join(outputDir, outputPath), "utf-8");
   expect(content).toMatchSnapshot();
 });
 ```
@@ -486,15 +468,13 @@ First run generates snapshot, subsequent runs validate against it.
 
 ### Test fixtures
 
-Create reusable fixtures in `tests/fixtures/<agent-name>/`:
+Create reusable fixtures in `tests/fixtures/<agent-name>/` using Align sections:
 
 ```typescript
-// tests/fixtures/my-agent/single-rule.yaml
-export const singleRule: AlignRule = {
-  id: "test.single-rule",
-  summary: "Test rule",
-  severity: "error",
-  guidance: "Do the thing",
+export const singleSection = {
+  heading: "Test rule",
+  content: "Do the thing",
+  fingerprint: "test-rule",
 };
 ```
 
@@ -520,10 +500,9 @@ See `packages/exporters/CONTRIBUTING.md` for:
 
 **PR checklist:**
 
-- [ ] Manifest validates against schema
-- [ ] Handler implements `ExporterPlugin` interface
-- [ ] 5+ tests covering basic scenarios
-- [ ] Snapshot tests for format validation
+- [ ] Manifest validates against `packages/exporters/schema/manifest.schema.json` and matches exporter name/version
+- [ ] Handler implements `ExporterPlugin` interface (or declarative manifest if no handler)
+- [ ] Tests cover basic export, dry-run, fidelity notes, vendor metadata, snapshots
 - [ ] README updated (if needed)
 - [ ] Example output in PR description
 
@@ -559,6 +538,8 @@ Once merged, you'll be listed as the maintainer for that exporter. We'll ping yo
 - [Quickstart](/docs/00-getting-started/00-quickstart) - Get started with AlignTrue
 - [Sync Behavior](/docs/03-concepts/sync-behavior) - How exports are triggered
 - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and type definitions
+- [Exporter manifest schema](https://github.com/AlignTrue/aligntrue/blob/main/packages/exporters/schema/manifest.schema.json) - Required fields and validation
+- [Plugin contracts](https://github.com/AlignTrue/aligntrue/blob/main/packages/plugin-contracts/src/exporter.ts) - Exporter interfaces and options
 - [Technical CONTRIBUTING.md](https://github.com/AlignTrue/aligntrue/blob/main/packages/exporters/CONTRIBUTING.md) - Detailed requirements
 
 ### Community
