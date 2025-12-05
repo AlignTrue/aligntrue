@@ -10,7 +10,16 @@
  * from failed CI runs on the current branch.
  */
 
-import { execSync } from "child_process";
+import {
+  COLORS,
+  runCommand,
+  print,
+  getRateLimit,
+  checkAuth,
+  getRunUrl,
+  getCurrentBranch,
+  exitAuthError,
+} from "./lib/github-helpers.mjs";
 
 // Configuration
 const CONFIG = {
@@ -18,57 +27,6 @@ const CONFIG = {
   MIN_RATE_LIMIT: 50, // Minimum API calls remaining to proceed
   RUN_LIMIT: 5, // Number of runs to check for failures
 };
-
-// ANSI Colors
-const COLORS = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  cyan: "\x1b[36m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-};
-
-// Helpers
-function runCommand(cmd, ignoreError = false) {
-  try {
-    return execSync(cmd, {
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    if (ignoreError) return null;
-    throw error;
-  }
-}
-
-function print(msg = "", color = "") {
-  console.log(`${color}${msg}${COLORS.reset}`);
-}
-
-function getRateLimit() {
-  try {
-    const json = runCommand("gh api rate_limit");
-    const data = JSON.parse(json);
-    return data.resources.core;
-  } catch (e) {
-    return null;
-  }
-}
-
-function getCurrentBranch() {
-  return runCommand("git rev-parse --abbrev-ref HEAD", true) || "main";
-}
-
-function getRepoUrl() {
-  return `https://github.com/${CONFIG.REPO}`;
-}
-
-function getRunUrl(runId) {
-  return `${getRepoUrl()}/actions/runs/${runId}`;
-}
 
 /**
  * Extract relevant error lines from CI log output
@@ -145,12 +103,8 @@ async function main() {
   print("🔍 Checking CI errors...", COLORS.bold);
 
   // 1. Check Authentication
-  try {
-    runCommand("gh auth status");
-  } catch (e) {
-    print("❌ GitHub CLI not authenticated.", COLORS.red);
-    print("   Run 'gh auth login' to authenticate.", COLORS.yellow);
-    process.exit(1);
+  if (!checkAuth()) {
+    exitAuthError();
   }
 
   // 2. Check Rate Limits
@@ -232,7 +186,7 @@ async function main() {
 
     if (!logs) {
       print("⚠️  Could not fetch logs. View online:", COLORS.yellow);
-      print(`   ${getRunUrl(failedRun.databaseId)}`, COLORS.blue);
+      print(`   ${getRunUrl(failedRun.databaseId, CONFIG.REPO)}`, COLORS.blue);
       process.exit(1);
     }
 
@@ -242,7 +196,7 @@ async function main() {
     if (errors.length === 0) {
       print("⚠️  No structured errors found in logs.", COLORS.yellow);
       print("   Check the full logs online:", COLORS.yellow);
-      print(`   ${getRunUrl(failedRun.databaseId)}`, COLORS.blue);
+      print(`   ${getRunUrl(failedRun.databaseId, CONFIG.REPO)}`, COLORS.blue);
       process.exit(0);
     }
 
@@ -257,7 +211,7 @@ async function main() {
 
     // Summary
     print("View full logs:", COLORS.blue);
-    print(`   ${getRunUrl(failedRun.databaseId)}`, COLORS.blue);
+    print(`   ${getRunUrl(failedRun.databaseId, CONFIG.REPO)}`, COLORS.blue);
   } catch (e) {
     print("❌ Failed to fetch CI errors.", COLORS.red);
     print(`Error: ${e.message}`, COLORS.red);

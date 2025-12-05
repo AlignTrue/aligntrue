@@ -9,7 +9,16 @@
  * Respects API rate limits and provides actionable output.
  */
 
-import { execSync } from "child_process";
+import {
+  COLORS,
+  runCommand,
+  print,
+  getRateLimit,
+  checkAuth,
+  getRepoUrl,
+  getSecurityUrl,
+  exitAuthError,
+} from "./lib/github-helpers.mjs";
 
 // Configuration
 const CONFIG = {
@@ -17,64 +26,13 @@ const CONFIG = {
   MIN_RATE_LIMIT: 30, // Minimum API calls remaining to proceed
 };
 
-// ANSI Colors
-const COLORS = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  cyan: "\x1b[36m",
-  bold: "\x1b[1m",
-};
-
-// Helpers
-function runCommand(cmd, ignoreError = false) {
-  try {
-    return execSync(cmd, {
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    if (ignoreError) return null;
-    throw error;
-  }
-}
-
-function print(msg = "", color = "") {
-  console.log(`${color}${msg}${COLORS.reset}`);
-}
-
-function getRateLimit() {
-  try {
-    const json = runCommand("gh api rate_limit");
-    const data = JSON.parse(json);
-    return data.resources.core;
-  } catch (e) {
-    return null;
-  }
-}
-
-function getRepoUrl() {
-  return `https://github.com/${CONFIG.REPO}`;
-}
-
-function getSecurityUrl() {
-  return `${getRepoUrl()}/security/code-scanning`;
-}
-
 // Main logic
 async function main() {
   print("🔍 Checking CodeQL/code scanning status...", COLORS.bold);
 
   // 1. Check Authentication
-  try {
-    runCommand("gh auth status");
-  } catch (e) {
-    print("❌ GitHub CLI not authenticated.", COLORS.red);
-    print("   Run 'gh auth login' to authenticate.", COLORS.yellow);
-    print(`   Or view code scanning on web: ${getSecurityUrl()}`, COLORS.blue);
-    process.exit(1);
+  if (!checkAuth()) {
+    exitAuthError(getSecurityUrl(CONFIG.REPO));
   }
 
   // 2. Check Rate Limits
@@ -94,7 +52,7 @@ async function main() {
         "   To avoid blocking other tools, please check code scanning status in the browser:",
         COLORS.yellow,
       );
-      print(`   👉 ${getSecurityUrl()}`, COLORS.blue);
+      print(`   👉 ${getSecurityUrl(CONFIG.REPO)}`, COLORS.blue);
       process.exit(2);
     }
   } else {
@@ -201,7 +159,10 @@ async function main() {
       if (high > 0) {
         print(`   ${high} HIGH severity alert(s) should be addressed soon.`);
       }
-      print(`   Review all alerts here: ${getSecurityUrl()}`, COLORS.blue);
+      print(
+        `   Review all alerts here: ${getSecurityUrl(CONFIG.REPO)}`,
+        COLORS.blue,
+      );
     } else {
       print("✅ All alerts are dismissed or resolved.", COLORS.green);
     }
@@ -215,13 +176,16 @@ async function main() {
       e.message.includes("403")
     ) {
       print("❌ API rate limit exceeded or access denied.", COLORS.red);
-      print(`   Check status in browser: ${getSecurityUrl()}`, COLORS.blue);
+      print(
+        `   Check status in browser: ${getSecurityUrl(CONFIG.REPO)}`,
+        COLORS.blue,
+      );
     } else {
       print("❌ Failed to fetch code scanning alerts.", COLORS.red);
       print(`Error: ${e.message}`, COLORS.red);
     }
     print("");
-    print(`Please check manually: ${getSecurityUrl()}`, COLORS.blue);
+    print(`Please check manually: ${getSecurityUrl(CONFIG.REPO)}`, COLORS.blue);
     process.exit(1);
   }
 }
