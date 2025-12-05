@@ -1,3 +1,4 @@
+import type { ComponentType, ReactNode } from "react";
 import { generateStaticParamsFor, importPage } from "nextra/pages";
 import { useMDXComponents } from "../../../mdx-components";
 
@@ -21,10 +22,15 @@ export default async function Page(props: {
     metadata,
     sourceCode,
   } = await importPage(params.mdxPath);
-  const { wrapper: Wrapper } = useMDXComponents();
+  const { wrapper } = useMDXComponents();
+  const Wrapper = wrapper as ComponentType<{
+    children: ReactNode;
+    toc: unknown;
+    metadata: unknown;
+    sourceCode: string;
+  }>;
 
   return (
-    // @ts-expect-error Nextra 4.6.0 types don't fully support React 19 wrapper component signature
     <Wrapper toc={toc} metadata={metadata} sourceCode={sourceCode}>
       <MDXContent {...props} params={params} />
     </Wrapper>

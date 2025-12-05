@@ -3,24 +3,13 @@
  * Non-interactive validation for CI/CD pipelines and pre-commit hooks
  */
 
-import { existsSync } from "fs";
-import { resolve } from "path";
 import {
-  type AlignTrueConfig,
   ensureSectionsArray,
   getExporterNames,
-} from "@aligntrue/core";
-import type { Align } from "@aligntrue/schema";
-import { validateAlignSchema } from "@aligntrue/schema";
-import {
-  readLockfile,
-  validateLockfile,
-  generateLockfile,
-  loadRulesDirectory,
-  validateOverlays,
   formatOverlayValidationResult,
-  type OverlayDefinition,
 } from "@aligntrue/core";
+import type { AlignTrueConfig } from "@aligntrue/core";
+import type { Align } from "@aligntrue/schema";
 import { tryLoadConfig } from "../utils/config-loader.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { CommonErrors as Errors } from "../utils/common-errors.js";
@@ -32,6 +21,9 @@ import {
 import { resolveSource } from "../utils/source-resolver.js";
 import { getInvalidExporters } from "../utils/exporter-validation.js";
 import { createManagedSpinner } from "../utils/spinner.js";
+import { validateSchema } from "./check/schema-validator.js";
+import { validateLockfileForCheck } from "./check/lockfile-validator.js";
+import { validateOverlaysConfig } from "./check/overlay-validator.js";
 
 /**
  * Argument definitions for check command
@@ -226,16 +218,12 @@ export async function check(args: string[]): Promise<void> {
     // This must be done BEFORE validation since schema requires sections
     ensureSectionsArray(align);
 
-    // Validate against schema
-    const schemaResult = validateAlignSchema(align);
+    const schemaResult = validateSchema(align);
     if (!schemaResult.valid) {
-      const details = (schemaResult.errors || []).map(
-        (err) => `${err.path}: ${err.message}`,
-      );
       spinner.stop("Validation failed");
       exitWithError(
         {
-          ...Errors.validationFailed(details),
+          ...Errors.validationFailed(schemaResult.errors || []),
           message: `Errors in ${rulesPath}`,
           hint: "Open the file above, fix the invalid sections, then run 'aligntrue sync' followed by 'aligntrue check'",
         },
@@ -249,121 +237,76 @@ export async function check(args: string[]): Promise<void> {
     // No additional ID validation needed here
 
     // Step 3: Validate lockfile if team mode + lockfile enabled
-    const shouldCheckLockfile =
-      config.mode === "team" && config.modules?.lockfile === true;
+    const lockfileResult = await validateLockfileForCheck(
+      config,
+      process.cwd(),
+    );
+    const shouldCheckLockfile = lockfileResult.status !== "skipped";
 
-    if (shouldCheckLockfile) {
-      const cwd = process.cwd();
-      const lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
+    if (lockfileResult.status === "missing") {
+      spinner.stop("Validation failed");
+      console.error("✗ Lockfile validation failed\n");
+      console.error("  Lockfile not found (required in team mode)");
+      console.error(`  Expected: ${lockfileResult.lockfilePath}\n`);
+      console.error(`  Run 'aligntrue sync' to generate the lockfile.\n`);
+      process.exitCode = 1;
+      return;
+    }
 
-      // Check if lockfile exists
-      if (!existsSync(lockfilePath)) {
-        spinner.stop("Validation failed");
-        console.error("✗ Lockfile validation failed\n");
-        console.error("  Lockfile not found (required in team mode)");
-        console.error(`  Expected: ${lockfilePath}\n`);
-        console.error(`  Run 'aligntrue sync' to generate the lockfile.\n`);
-        process.exitCode = 1;
-        return;
-      }
+    if (lockfileResult.status === "read_error") {
+      spinner.stop("Validation failed");
+      console.error("✗ Lockfile validation failed\n");
+      console.error(`  ${lockfileResult.error}\n`);
+      process.exitCode = 2;
+      return;
+    }
 
-      // Load and validate lockfile
-      try {
-        const lockfile = readLockfile(lockfilePath);
-        if (!lockfile) {
-          spinner.stop("Validation failed");
-          console.error("✗ Lockfile validation failed\n");
-          console.error("  Failed to read lockfile\n");
-          process.exitCode = 2;
-          return;
-        }
-
-        // Compute current bundle hash from rules
-        const rulesPath = resolve(cwd, ".aligntrue", "rules");
-        const rules = await loadRulesDirectory(rulesPath, cwd);
-        const currentLockfile = generateLockfile(rules, cwd);
-        const validation = validateLockfile(
-          lockfile,
-          currentLockfile.bundle_hash,
-        );
-
-        if (!validation.valid) {
-          spinner.stop("Validation failed");
-          console.error("✗ Lockfile drift detected\n");
-          console.error("  Bundle hash mismatch:");
-          console.error(
-            `    Expected: ${validation.expectedHash.slice(0, 16)}...`,
-          );
-          console.error(
-            `    Actual:   ${validation.actualHash.slice(0, 16)}...`,
-          );
-          console.error(`\n  Run 'aligntrue sync' to update the lockfile.\n`);
-          process.exitCode = 1;
-          return;
-        }
-      } catch (_err) {
-        spinner.stop("Validation failed");
-        console.error("✗ Lockfile validation failed\n");
-        console.error(
-          `  ${_err instanceof Error ? _err.message : String(_err)}\n`,
-        );
-        process.exitCode = 2;
-        return;
-      }
+    if (lockfileResult.status === "mismatch") {
+      spinner.stop("Validation failed");
+      console.error("✗ Lockfile drift detected\n");
+      console.error("  Bundle hash mismatch:");
+      console.error(
+        `    Expected: ${lockfileResult.expectedHash?.slice(0, 16)}...`,
+      );
+      console.error(
+        `    Actual:   ${lockfileResult.actualHash?.slice(0, 16)}...`,
+      );
+      console.error(`\n  Run 'aligntrue sync' to update the lockfile.\n`);
+      process.exitCode = 1;
+      return;
     }
 
     // Step 4: Validate overlays if present
     let overlayWarnings: string[] = [];
+    const overlayResult = validateOverlaysConfig(config, align);
 
-    if (config.overlays?.overrides && config.overlays.overrides.length > 0) {
-      const overlays: OverlayDefinition[] = config.overlays.overrides;
-      // TypeScript strict mode: only pass defined values
-      const limits: {
-        maxOverrides?: number;
-        maxOperationsPerOverride?: number;
-      } = {};
-
-      if (config.overlays.limits?.max_overrides !== undefined) {
-        limits.maxOverrides = config.overlays.limits.max_overrides;
-      }
-      if (config.overlays.limits?.max_operations_per_override !== undefined) {
-        limits.maxOperationsPerOverride =
-          config.overlays.limits.max_operations_per_override;
-      }
-
-      const overlayResult = validateOverlays(overlays, align, limits);
-
-      if (!overlayResult.valid) {
-        if (jsonOutput) {
-          // JSON output mode
-          spinner.stop("Validation failed");
-          console.log(
-            JSON.stringify(
-              {
-                valid: false,
-                errors: overlayResult.errors,
-                warnings: overlayResult.warnings,
-              },
-              null,
-              2,
-            ),
-          );
-        } else {
-          // Human-readable output
-          spinner.stop("Validation failed");
-          console.error("✗ Overlay validation failed\n");
-          console.error(formatOverlayValidationResult(overlayResult));
-          console.error("");
-        }
-
-        process.exitCode = 1;
-        return;
+    if (!overlayResult.valid) {
+      if (jsonOutput) {
+        spinner.stop("Validation failed");
+        console.log(
+          JSON.stringify(
+            {
+              valid: false,
+              errors: overlayResult.errors,
+              warnings: overlayResult.warnings,
+            },
+            null,
+            2,
+          ),
+        );
+      } else {
+        spinner.stop("Validation failed");
+        console.error("✗ Overlay validation failed\n");
+        const formatted = overlayResult.raw;
+        console.error(formatOverlayValidationResult(formatted));
+        console.error("");
       }
 
-      if (overlayResult.warnings && overlayResult.warnings.length > 0) {
-        overlayWarnings = overlayResult.warnings.map((w) => w.message);
-      }
+      process.exitCode = 1;
+      return;
     }
+
+    overlayWarnings = overlayResult.warnings;
 
     // Step 5: Check file organization (warnings only, non-blocking)
     const { validateFileOrganization } = await import(

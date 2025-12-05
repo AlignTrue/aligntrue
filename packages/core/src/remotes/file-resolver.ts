@@ -9,12 +9,7 @@ import { join } from "path";
 import { existsSync, readdirSync, readFileSync } from "fs";
 import micromatch from "micromatch";
 import matter from "gray-matter";
-import type {
-  RemotesConfig,
-  RemoteDestination,
-  CustomRemoteDestination,
-  RemoteBackupConfig,
-} from "../config/types.js";
+import type { RemotesConfig, RemoteDestination } from "../config/types.js";
 import type {
   ScopedFile,
   RuleScope,
@@ -232,52 +227,6 @@ export function resolveFileAssignments(
   }
 
   return { assignments: result, warnings };
-}
-
-/**
- * Convert legacy remote_backup config to new remotes format
- */
-export function convertLegacyConfig(
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  legacyConfig: RemoteBackupConfig,
-): RemotesConfig {
-  const remotes: RemotesConfig = {};
-
-  // Convert additional backups to custom remotes
-  if (legacyConfig.additional && legacyConfig.additional.length > 0) {
-    remotes.custom = legacyConfig.additional.map((additional) => {
-      const custom: CustomRemoteDestination = {
-        id: additional.id,
-        url: additional.url,
-        include: additional.include,
-      };
-      if (additional.branch !== undefined) custom.branch = additional.branch;
-      if (additional.path !== undefined) custom.path = additional.path;
-      if (additional.auto !== undefined) custom.auto = additional.auto;
-      return custom;
-    });
-  }
-
-  // Convert default backup to a custom remote that matches all files
-  if (legacyConfig.default) {
-    if (!remotes.custom) {
-      remotes.custom = [];
-    }
-    const defaultCustom: CustomRemoteDestination = {
-      id: "default",
-      url: legacyConfig.default.url,
-      include: ["**/*.md"],
-    };
-    if (legacyConfig.default.branch !== undefined)
-      defaultCustom.branch = legacyConfig.default.branch;
-    if (legacyConfig.default.path !== undefined)
-      defaultCustom.path = legacyConfig.default.path;
-    if (legacyConfig.default.auto !== undefined)
-      defaultCustom.auto = legacyConfig.default.auto;
-    remotes.custom.unshift(defaultCustom);
-  }
-
-  return remotes;
 }
 
 /**

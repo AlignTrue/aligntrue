@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING: GitProvider default path changed** - Git source provider now defaults to `"."` (directory scan) instead of `.aligntrue.yaml`. Remote rule repos should contain markdown rules in directories, not single YAML files
 - **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
 - **Internal: ResolvedSource returns Align directly** - Source resolver no longer serializes to YAML and re-parses. Simpler data flow, fewer allocations
+- **Internal: `aligntrue check` modularized** - Schema, lockfile, and overlay validation now live in dedicated helpers with unit coverage for easier maintenance
 
 ### Removed
 
@@ -38,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`rules` field from ScopedExportRequest** - Exporters now use `align.sections` exclusively. The field was never populated
 - **Telemetry feature** - Removed local-only telemetry system that collected data with no transmission mechanism. Feature was not delivering value without collection infrastructure
 - **URL source provider** - Removed deprecated `type: "url"` source provider. The JSON schema already rejected this type, and the provider was never instantiated. Use git repositories instead for remote rule sources
-- **BREAKING: `remote-backup` module removed from `@aligntrue/core`** - Use the `remotes` module instead. Legacy aliases removed: `RemoteBackupManager` → `RemotesManager`, `createRemoteBackupManager` → `createRemotesManager`, `createRemotesManagerFromLegacy` (use `convertLegacyConfig` + `createRemotesManager`), `pushToBackup` → `pushToRemote`, `getLastBackupInfo` → `getLastRemoteInfo`, `cleanBackupCache` → `cleanRemoteCache`, `cleanAllBackupCaches` → `cleanAllRemoteCaches`. Deprecated types also removed: `RemoteBackupConfig`, `RemoteBackupDestination`, `AdditionalBackupDestination`
+- **BREAKING: `remote_backup` config removed** - Legacy config field and conversion helpers are gone. Use `remotes` exclusively; CLI backup/sync commands no longer fall back to `remote_backup`
 
 ### Fixed
 
@@ -48,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sources split non-interactive mode** - `aligntrue sources split --yes` now fully suppresses intro/outro messages for better CI/automation support
 - **Documentation examples updated** - Git source and solo guide documentation now uses markdown rule examples instead of obsolete YAML format
 - **Documentation accuracy for git sources and exporters** - Updated all reference docs to reflect new directory scan default (`.`) for git sources and `align.sections` usage in `ScopedExportRequest`. Removed references to `.aligntrue.yaml` file-based rules and deprecated `keep_count` backup config
+- **Exporter content mode typing** - Single-file exporters now read `sync.content_mode` via a typed helper instead of `any` casts
 
 ## [0.5.2] - 2025-12-01
 

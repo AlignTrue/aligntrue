@@ -271,6 +271,7 @@ export abstract class ExporterBase implements ExporterPlugin {
    *
    * @param section - Section to generate marker for
    * @param config - AlignTrue config (from options.config)
+   * @param sections - Optional list of all sections to detect multi-source inputs
    * @returns HTML comment marker or empty string
    *
    * @example
@@ -282,8 +283,9 @@ export abstract class ExporterBase implements ExporterPlugin {
   protected generateSourceMarker(
     section: AlignSection,
     config?: unknown,
+    sections?: AlignSection[],
   ): string {
-    return SectionRenderer.generateSourceMarker(section, config);
+    return SectionRenderer.generateSourceMarker(section, config, sections);
   }
 
   /**

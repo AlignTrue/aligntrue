@@ -495,17 +495,14 @@ async function handleRemotePush(
   _args: BackupArgs,
   argv: string[],
 ): Promise<void> {
-  const { loadConfig, createRemotesManager, convertLegacyConfig } =
-    await import("@aligntrue/core");
+  const { loadConfig, createRemotesManager } = await import("@aligntrue/core");
   const config = await loadConfig(undefined, cwd);
 
   // Parse flags
   const dryRun = argv.includes("--dry-run");
   const force = argv.includes("--force");
 
-  // Support both new remotes and legacy remote_backup config
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  if (!config.remotes && !config.remote_backup) {
+  if (!config.remotes) {
     clack.log.warn("No remotes configured");
     clack.log.info("Add remotes section to .aligntrue/config.yaml");
     return;
@@ -513,10 +510,7 @@ async function handleRemotePush(
 
   const rulesDir = join(cwd, ".aligntrue", "rules");
 
-  // Use new config if available, otherwise convert legacy
-  const remotesConfig =
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    config.remotes || convertLegacyConfig(config.remote_backup!);
+  const remotesConfig = config.remotes;
   const remotesManager = createRemotesManager(remotesConfig, { cwd, rulesDir });
 
   // Get source URLs for conflict detection
@@ -576,13 +570,10 @@ async function handleRemotePush(
 }
 
 async function handleRemoteStatus(cwd: string): Promise<void> {
-  const { loadConfig, createRemotesManager, convertLegacyConfig } =
-    await import("@aligntrue/core");
+  const { loadConfig, createRemotesManager } = await import("@aligntrue/core");
   const config = await loadConfig(undefined, cwd);
 
-  // Support both new remotes and legacy remote_backup config
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  if (!config.remotes && !config.remote_backup) {
+  if (!config.remotes) {
     clack.log.warn("No remotes configured");
     clack.log.info("Add remotes section to .aligntrue/config.yaml");
     return;
@@ -590,10 +581,7 @@ async function handleRemoteStatus(cwd: string): Promise<void> {
 
   const rulesDir = join(cwd, ".aligntrue", "rules");
 
-  // Use new config if available, otherwise convert legacy
-  const remotesConfig =
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    config.remotes || convertLegacyConfig(config.remote_backup!);
+  const remotesConfig = config.remotes;
   const remotesManager = createRemotesManager(remotesConfig, { cwd, rulesDir });
 
   // Get source URLs for conflict detection
@@ -614,16 +602,21 @@ async function handleRemoteSetup(cwd: string): Promise<void> {
   const paths = getAlignTruePaths(cwd);
   const config = await loadConfig(paths.config);
 
-  clack.intro("Remote Backup Setup");
+  clack.intro("Remote sync setup");
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  if (config.remote_backup?.default) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const current = config.remote_backup.default.url;
-    clack.log.info(`Current remote backup: ${current}`);
+  const existing =
+    typeof config.remotes?.shared === "string"
+      ? config.remotes.shared
+      : (config.remotes?.shared?.url ??
+        (typeof config.remotes?.personal === "string"
+          ? config.remotes.personal
+          : config.remotes?.personal?.url));
+
+  if (existing) {
+    clack.log.info(`Current remote: ${existing}`);
 
     const change = await clack.confirm({
-      message: "Do you want to change the remote backup configuration?",
+      message: "Do you want to change the remote configuration?",
       initialValue: false,
     });
 
@@ -674,28 +667,41 @@ async function handleRemoteSetup(cwd: string): Promise<void> {
     return;
   }
 
-  // Patch config - only update remote_backup, preserve everything else
-
+  // Patch config - set both shared and personal, plus a catch-all custom route
   await patchConfig(
     {
-      remote_backup: {
-        default: {
+      remotes: {
+        personal: {
           url: url as string,
           branch: (branch as string) || "main",
           auto: auto as boolean,
         },
+        shared: {
+          url: url as string,
+          branch: (branch as string) || "main",
+          auto: auto as boolean,
+        },
+        custom: [
+          {
+            id: "all-rules",
+            url: url as string,
+            include: ["**/*.md"],
+            branch: (branch as string) || "main",
+            auto: auto as boolean,
+          },
+        ],
       },
     },
     paths.config,
   );
 
-  clack.log.success("Remote backup configured");
+  clack.log.success("Remote sync configured");
   clack.log.info(`Repository: ${url}`);
   clack.log.info(`Branch: ${branch || "main"}`);
   clack.log.info(`Auto-push: ${auto ? "enabled" : "disabled"}`);
 
   const pushNow = await clack.confirm({
-    message: "Push to remote backup now?",
+    message: "Push to remote now?",
     initialValue: true,
   });
 
