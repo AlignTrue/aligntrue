@@ -158,12 +158,13 @@ Includes: `.mdc`, `AGENTS.md`, and other markdown based agent formats.
 - Exactly one trailing newline
 - No timestamps or UUIDs
 - No content hash or fidelity footers in exported files (see note below)
+- Include the standard read-only marker so users edit `.aligntrue/rules/`
 
 ### AGENTS.md exporter
 
 - Follows the `AGENTS.md` spec
-- Includes provenance section
-- Includes content hash footer
+- Uses read-only markers; no content hash or fidelity footers
+- Supports link-based or inline content (see content mode)
 
 ### Content mode for single-file exports
 
@@ -189,7 +190,7 @@ Single-file exporters (AGENTS.md, CLAUDE.md, etc.) support content mode control:
 
 - Content hash is returned in `ExportResult.contentHash` for programmatic use
 - Fidelity notes are returned in `ExportResult.fidelityNotes` and displayed by CLI
-- Agent files themselves remain clean, user-editable markdown/JSON without AlignTrue metadata
+- Agent files contain only the read-only marker; no hashes or fidelity notes
 
 See `packages/exporters/src/base/EXPORTER_POLICY.md` for complete policy.
 
@@ -204,7 +205,7 @@ See `packages/exporters/src/base/EXPORTER_POLICY.md` for complete policy.
 
 - Same IR yields identical bytes across runs and OSes
 - When mapping is partial, fidelity notes are returned in `ExportResult.fidelityNotes`
-- Exported files are clean and user-editable without AlignTrue metadata
+- Exported files include only the read-only marker as AlignTrue metadata; otherwise clean and user-editable
 
 ---
 

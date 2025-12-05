@@ -10,6 +10,7 @@ import {
   getAlignTruePaths,
   isValidConfigKey,
   getExporterNames,
+  isTeamModeActive,
 } from "@aligntrue/core";
 import type { AlignTrueConfig } from "@aligntrue/core";
 import {
@@ -735,14 +736,21 @@ function listAllKeys(obj: Record<string, unknown>, prefix = ""): string[] {
 
 /**
  * Validate config (basic validation)
+ * In team mode, personal config doesn't need mode (it's in config.team.yaml)
  */
-async function validateConfig(config: AlignTrueConfig): Promise<void> {
-  // Basic validation - ensure required fields exist
-  if (!config.mode) {
+async function validateConfig(
+  config: AlignTrueConfig,
+  cwd: string = process.cwd(),
+): Promise<void> {
+  // In team mode, personal config is an overlay - mode is in team config
+  const teamModeActive = isTeamModeActive(cwd);
+
+  // Basic validation - ensure required fields exist (unless team mode provides them)
+  if (!config.mode && !teamModeActive) {
     throw new Error("Missing required field: mode");
   }
 
-  if (!["solo", "team", "enterprise"].includes(config.mode)) {
+  if (config.mode && !["solo", "team", "enterprise"].includes(config.mode)) {
     throw new Error(
       `Invalid mode: ${config.mode}. Must be one of: solo, team, enterprise`,
     );

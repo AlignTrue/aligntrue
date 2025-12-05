@@ -334,17 +334,32 @@ export async function buildSyncContext(
 
     // Show merge info if multiple sources
     if (bundleResult.sources.length > 1 && !options.quiet) {
-      clack.log.info("Sources merged:");
-      bundleResult.sources.forEach((src, idx) => {
-        const prefix = idx === 0 ? "  Base:" : "  Overlay:";
+      // Deduplicate sources by path for cleaner output
+      const uniqueSources = bundleResult.sources.reduce(
+        (acc, src) => {
+          const key = src.sourcePath;
+          if (!acc.seen.has(key)) {
+            acc.seen.add(key);
+            acc.list.push(src);
+          }
+          return acc;
+        },
+        { seen: new Set<string>(), list: [] as typeof bundleResult.sources },
+      ).list;
+
+      clack.log.info("Sources merged (later sources override earlier):");
+      uniqueSources.forEach((src, idx) => {
+        const priority =
+          idx === 0 ? "base" : idx === uniqueSources.length - 1 ? "wins" : "";
+        const priorityLabel = priority ? ` [${priority}]` : "";
         clack.log.info(
-          `${prefix} ${src.sourcePath}${src.commitSha ? ` (${src.commitSha.slice(0, 7)})` : ""}`,
+          `  ${idx + 1}. ${src.sourcePath}${src.commitSha ? ` (${src.commitSha.slice(0, 7)})` : ""}${priorityLabel}`,
         );
       });
 
       if (bundleResult.conflicts && bundleResult.conflicts.length > 0) {
         clack.log.warn(
-          `⚠ ${bundleResult.conflicts.length} merge conflict${bundleResult.conflicts.length !== 1 ? "s" : ""} resolved`,
+          `${bundleResult.conflicts.length} merge conflict${bundleResult.conflicts.length !== 1 ? "s" : ""} resolved (last source wins)`,
         );
       }
     }

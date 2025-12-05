@@ -87,7 +87,7 @@ EXECUTION PROTOCOL:
    - Solo → team migration (user-a)
    - Git repository setup and team initialization (user-a pushes, user-b clones)
    - Remote backup setup (user-a)
-   - Joining existing team via git clone (user-b)
+   - Joining existing team via git clone (user-b) — run `aligntrue team join --yes` after cloning to create personal config and gitignore entries
    - Team rule changes with PR workflow (using git branch mode)
    - Personal rule changes (no approval)
    - Drift detection and resolution

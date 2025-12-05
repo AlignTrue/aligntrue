@@ -379,6 +379,50 @@ describe("GitIntegration", () => {
       expect(stagedFiles).toContain(".cursor/rules/global.mdc");
       expect(stagedFiles).toContain(".vscode/mcp.json");
     });
+
+    it("applies branch mode per-exporter while others use ignore mode", async () => {
+      // Need initial commit for branch mode
+      const readmePath = join(TEST_DIR, "README.md");
+      writeFileSync(readmePath, "# Test Repo\n", "utf-8");
+      execSync("git add README.md", { cwd: TEST_DIR, stdio: "pipe" });
+      execSync('git commit -m "Initial commit"', {
+        cwd: TEST_DIR,
+        stdio: "pipe",
+      });
+
+      // Create files
+      const cursorDir = join(TEST_DIR, ".cursor", "rules");
+      mkdirSync(cursorDir, { recursive: true });
+      writeFileSync(join(cursorDir, "global.mdc"), "# Cursor\n", "utf-8");
+      writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Agents\n", "utf-8");
+
+      const result = await gitIntegration.apply({
+        mode: "ignore", // default for most exporters
+        workspaceRoot: TEST_DIR,
+        generatedFiles: [".cursor/rules/global.mdc", "AGENTS.md"],
+        perExporterOverrides: {
+          cursor: "branch", // cursor files go to branch
+        },
+      });
+
+      // Should return branch mode result (or ignore, depending on order)
+      expect(["ignore", "branch"]).toContain(result.mode);
+
+      // AGENTS.md should be in .gitignore (default ignore mode)
+      const gitignorePath = join(TEST_DIR, ".gitignore");
+      const content = readFileSync(gitignorePath, "utf-8");
+      expect(content).toContain("AGENTS.md");
+
+      // Cursor should NOT be in .gitignore (branch mode)
+      expect(content).not.toContain(".cursor/");
+
+      // A branch should have been created for cursor files
+      const branches = execSync("git branch", {
+        cwd: TEST_DIR,
+        encoding: "utf-8",
+      });
+      expect(branches).toMatch(/aligntrue\/sync-/);
+    }, 20000);
   });
 
   describe("edge cases", () => {

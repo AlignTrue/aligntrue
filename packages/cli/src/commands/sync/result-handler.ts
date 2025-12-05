@@ -355,6 +355,10 @@ export async function handleSyncResult(
           recursive: true,
         });
         for (const rule of ruleFiles) {
+          // Skip disabled rules so their existing exports are treated as stale
+          if (rule.frontmatter.enabled === false) {
+            continue;
+          }
           // Use filename without extension as the rule name
           const name = rule.filename.replace(/\.md$/, "");
           const nestedLocation = rule.frontmatter.nested_location;

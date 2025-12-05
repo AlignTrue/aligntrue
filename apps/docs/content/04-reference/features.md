@@ -11,7 +11,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 
 - Natural markdown authoring in `.aligntrue/rules/` directory with optional enabled/disabled field in frontmatter
 - Unidirectional sync engine (rules → IR → agents) with first-wins merge precedence
-- 50 exporter formats across 28+ AI coding agents (see compatibility matrix)
+- Dozens of exporter formats across many AI coding agents (see compatibility matrix)
 - MCP server configuration propagation from centralized `config.mcp.servers`
 - Lockfiles for team mode (`.aligntrue/lock.json`) to keep builds reproducible
 - Drift detection for CI validation
@@ -23,7 +23,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - Structure-preserving import (recursive scanning of directories, preserves filenames and subdirectories)
 - Structure-preserving export (multi-file exporters mirror `.aligntrue/rules/` organization)
 
-## CLI (22 commands)
+## CLI
 
 **Getting started & sync:**
 
@@ -76,7 +76,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 **Testing & validation:**
 
-- 1700+ deterministic tests with fixed seeds and reproducible execution
+- Comprehensive deterministic test suite with fixed seeds and reproducible execution
 - Vitest + Playwright for CI/CD
 - JSON Schema 2020-12 validation with Ajv strict mode (all IR and config)
 - Canonical JSON (JCS) hashing for byte-identical reproducibility
@@ -96,12 +96,12 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 ## Documentation
 
 - Nextra docs site with quickstart, concepts, and reference
-- 11 curated example aligns
+- Curated example aligns
 - Agent compatibility matrix
 
 ## Core format & architecture
 
-- **Natural markdown sections** - Primary content format, all 50 exporters support it
+- **Natural markdown sections** - Primary content format, supported across all exporters
 - **Unidirectional sync** - Edit in `.aligntrue/rules/`, auto-export to all agent formats
 - **IR (`.aligntrue/rules`)** - Internal representation, auto-generated from your edits
 - **Schema validation** - JSON Schema 2020-12 with Ajv strict mode
@@ -110,19 +110,17 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 ## Team mode
 
 - **Lockfile generation** (`.aligntrue/lock.json`) - v2 stores `version` + bundle hash (team rules + team config)
-- **Lockfile validation** - Three modes: off, soft (warn), strict (block)
 - **Drift detection** - Single category (`lockfile`) comparing current bundle hash vs lockfile; human/JSON/SARIF outputs
 - **Team commands** - `team enable`, `team disable`, `team status`
 - **Exporter ownership** - Exporters are shared/merged; enabling team mode keeps personal exporters personal by default. Teams can add a shared baseline in `config.team.yaml`.
 - **Scope & Storage Model** - Semantic scopes (team, personal, custom) with storage backends (local, repo, remote)
 - **Git-native approval** - Uses PR approval for reviewing rule changes
-- **Migration wizards** - Interactive flows for solo→team, team→solo, and mode detection on restore
 - **Personal remote repositories** - Version-controlled personal rules in private git repositories
 - **Enhanced backups** - Auto-backup with action tracking, scope-specific backups, mode detection
 
 See [Team Mode](/docs/03-concepts/team-mode) for complete documentation.
 
-## Exporters (50 formats across 28+ agents)
+## Exporters
 
 All exporters support natural markdown sections format with fidelity notes:
 
@@ -137,7 +135,7 @@ All exporters support natural markdown sections format with fidelity notes:
 - **Kilocode MCP** - Kilocode MCP server
 - **OpenCode Config** - OpenCode configuration
 - **Root MCP** - Root-level MCP configuration
-- Plus 39 more exporters in `packages/exporters/src/`
+- Plus many more exporters in `packages/exporters/src/`
 
 See [Agent Support](/docs/04-reference/agent-support) for complete compatibility matrix.
 
@@ -185,7 +183,7 @@ See [Git Workflows](/docs/03-concepts/git-workflows) for details.
 - **Deterministic** — Identical inputs produce identical bundles, hashes, and exports. Byte-identical outputs for CI.
 - **Sections-based** — Natural markdown sections as the IR (not structured rules with metadata). Preserve user edits.
 - **Advisory by default** — Rules guide behavior; teams decide enforcement via lockfiles and CI gates.
-- **Multi-agent parity** — Preserve semantics across 28+ exporters; emit clear fidelity notes when translation is lossy.
+- **Multi-agent parity** — Preserve semantics across exporters; emit clear fidelity notes when translation is lossy.
 - **OSS and MIT** — Free forever. No vendor lock-in. Community extensible.
 
 ## Schema evolution & versioning

@@ -181,14 +181,14 @@ Need deeper checks (VS Code MCP, Windsurf, Warp, etc.)? See the [agent verificat
 
 AlignTrue uses a simple three-step process:
 
-1. **Write rules** - Edit `AGENTS.md` in natural markdown
-2. **Generate IR** - AlignTrue converts to internal format (`.aligntrue/rules`)
-3. **Export** - Rules sync to all configured agents (`.cursor/*.mdc`, `AGENTS.md`, etc.)
+1. **Write rules** - Edit `.aligntrue/rules/*.md` (single source of truth)
+2. **Generate exports** - AlignTrue validates and converts to internal IR
+3. **Sync to agents** - Agent files (including `AGENTS.md`) are generated in their native formats (`.cursor/*.mdc`, `AGENTS.md`, etc.)
 
 **Workflow:**
 
 ```
-AGENTS.md (you edit) → .aligntrue/rules (auto-generated) → Agent exports
+.aligntrue/rules (you edit) → AlignTrue IR → Agent exports (read-only, includes AGENTS.md)
 ```
 
 **Key concepts:**
