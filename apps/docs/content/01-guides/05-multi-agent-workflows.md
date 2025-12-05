@@ -417,6 +417,8 @@ aligntrue sync --dry-run
 
 Recommended `.gitignore` when not committing:
 
+Sync automatically updates the **root** `.gitignore`; these are the patterns it manages by default.
+
 ```bash
 .cursor/rules/
 AGENTS.md
