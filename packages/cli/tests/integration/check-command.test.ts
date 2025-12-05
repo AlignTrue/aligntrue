@@ -16,6 +16,7 @@ import { cleanupDir } from "../helpers/fs-cleanup.js";
 import { mkdtempSync } from "fs";
 import { tmpdir } from "os";
 import { mkdirSync } from "fs";
+import { captureOutput } from "../helpers/capture-output.js";
 
 let TEST_DIR: string;
 
@@ -77,14 +78,17 @@ describeSkipWindows("Check Command Integration", () => {
       // as there are no rules to validate
 
       const exitMock = mockProcessExit();
+      let stderr = "";
 
       try {
-        await check(["--ci"]);
+        const captured = await captureOutput(() => check(["--ci"]));
+        stderr = captured.stderr;
       } catch {
         // Expected exit
       }
 
       expect(exitMock.exitCode).toBeGreaterThan(0);
+      expect(stderr.toLowerCase()).toContain("check file permissions");
       exitMock.restore();
     });
   });
@@ -92,14 +96,17 @@ describeSkipWindows("Check Command Integration", () => {
   describe("Error Handling", () => {
     it("exits with error code 2 if config not found", async () => {
       const exitMock = mockProcessExit();
+      let stderr = "";
 
       try {
-        await check(["--ci"]);
+        const captured = await captureOutput(() => check(["--ci"]));
+        stderr = captured.stderr;
       } catch {
         // Expected exit
       }
 
       expect(exitMock.exitCode).toBe(2);
+      expect(stderr.toLowerCase()).toContain("aligntrue init");
       exitMock.restore();
     });
 
@@ -157,14 +164,17 @@ Test guidance
       );
 
       const exitMock = mockProcessExit();
+      let stderr = "";
 
       try {
-        await check(["--ci"]);
+        const captured = await captureOutput(() => check(["--ci"]));
+        stderr = captured.stderr;
       } catch {
         // Expected exit
       }
 
       expect(exitMock.exitCode).toBe(1);
+      expect(stderr.toLowerCase()).toContain("aligntrue exporters list");
       exitMock.restore();
     });
   });

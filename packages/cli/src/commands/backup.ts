@@ -323,7 +323,10 @@ async function handleRestore(
   const backups = BackupManager.listBackups(cwd);
 
   if (backups.length === 0) {
-    throw new Error("No backups found");
+    throw new ValidationError(
+      "No backups found",
+      "Create a backup first: aligntrue backup create",
+    );
   }
 
   // Parse --timestamp from argv manually if needed
@@ -338,7 +341,10 @@ async function handleRestore(
   if (toTimestamp) {
     targetBackup = backups.find((b) => b.timestamp === toTimestamp);
     if (!targetBackup) {
-      throw new Error(`Backup not found: ${toTimestamp}`);
+      throw new ValidationError(
+        `Backup not found: ${toTimestamp}`,
+        "Run 'aligntrue backup list' to view available timestamps",
+      );
     }
   } else {
     targetBackup = backups[0]; // Most recent

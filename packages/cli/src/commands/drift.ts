@@ -180,7 +180,7 @@ export async function drift(args: string[]): Promise<void> {
   }
 
   // Exit with error code if --gates flag used and drift detected
-  const strictModeEnabled = gatesFlagPresent && !parsedArgs.flags["json"];
+  const strictModeEnabled = gatesFlagPresent;
 
   if (strictModeEnabled && driftResults.driftDetected) {
     process.exitCode = 2;

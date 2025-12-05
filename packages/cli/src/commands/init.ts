@@ -36,6 +36,8 @@ import {
   detectRulerProject,
   promptRulerMigration,
 } from "./init/ruler-detector.js";
+import { addToGitignore } from "../utils/gitignore-helpers.js";
+import { createEmptyLockfile } from "../utils/lockfile-helpers.js";
 
 /**
  * Infer agent type from file path
@@ -782,7 +784,7 @@ export async function init(args: string[] = []): Promise<void> {
     },
   ];
 
-  // Generate config
+  // Generate config (personal defaults)
   const config: Partial<AlignTrueConfig> = {
     sources,
     exporters: finalExporters,
@@ -798,16 +800,57 @@ export async function init(args: string[] = []): Promise<void> {
     }
   }
 
+  // Team mode: write split configs (team + personal)
   if (mode === "team") {
-    config.mode = "team";
-    config.modules = {
-      lockfile: true,
-    };
-  }
+    const teamConfigPath = paths.teamConfig;
 
-  // Write config
-  writeFileSync(configPath, yaml.stringify(config), "utf-8");
-  createdFiles.push(".aligntrue/config.yaml");
+    const teamConfig: Partial<AlignTrueConfig> = {
+      mode: "team",
+      modules: {
+        lockfile: true,
+      },
+      lockfile: {
+        mode: "soft",
+      },
+      sources,
+    };
+
+    // Personal config keeps exporters/git/etc. but drops team-only fields
+    const personalConfig: Partial<AlignTrueConfig> = { ...config };
+    delete personalConfig.sources;
+    delete personalConfig.mode;
+    delete personalConfig.modules;
+    delete personalConfig.lockfile;
+
+    // Write team + personal configs
+    mkdirSync(dirname(teamConfigPath), { recursive: true });
+    writeFileSync(teamConfigPath, yaml.stringify(teamConfig), "utf-8");
+    createdFiles.push(".aligntrue/config.team.yaml");
+
+    writeFileSync(configPath, yaml.stringify(personalConfig), "utf-8");
+    createdFiles.push(".aligntrue/config.yaml");
+
+    // Gitignore personal config
+    await addToGitignore("config.yaml", "AlignTrue personal config", cwd);
+
+    // Create empty lockfile immediately for team mode
+    const lockfileResult = await createEmptyLockfile(cwd, "team");
+    if (!lockfileResult.success && lockfileResult.error) {
+      if (!nonInteractive) {
+        clack.log.warn(
+          `Could not create lockfile: ${lockfileResult.error}. It will be created on first sync.`,
+        );
+      } else {
+        console.warn(
+          `Could not create lockfile: ${lockfileResult.error}. It will be created on first sync.`,
+        );
+      }
+    }
+  } else {
+    // Solo mode: single config.yaml
+    writeFileSync(configPath, yaml.stringify(config), "utf-8");
+    createdFiles.push(".aligntrue/config.yaml");
+  }
 
   // Add README to .aligntrue directory
   const aligntrueReadmeContent = `# .aligntrue

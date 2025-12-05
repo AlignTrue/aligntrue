@@ -443,29 +443,29 @@ echo "First backup: $BACKUP1"
 - Cleanup removes backups older than `retention_days` while respecting `minimum_keep`
 - Backups are mandatory for all destructive operations
 
-#### Remote backup workflow
+#### Remotes workflow (replaces legacy remote backup)
 
-**For comprehensive remote backup testing scenarios, see Section 3.1.F "Remote Backup Testing".**
+**For comprehensive remotes testing scenarios, see Section 3.1.F "Remotes Testing".**
 
 That section covers:
 
-- Basic backup configuration and status checking
-- Manual backup push operations
-- Auto-backup during sync
-- Multiple backup destinations with file routing
-- Conflict detection between sources and backups
+- Basic remotes configuration and status checking
+- Manual remote push operations
+- Auto-push during sync
+- Multiple remote destinations with file routing
+- Conflict detection between sources and remotes
 
 Quick summary for Layer 2:
 
-- Backup configuration stores rules in remote git repositories
-- `aligntrue backup status` shows configured backups and file assignments
-- `aligntrue backup push` manually pushes to all configured backups
-- `auto: true` triggers backup during sync
+- Remotes configuration stores rules in remote git repositories
+- `aligntrue remotes status` shows configured remotes and file assignments
+- `aligntrue remotes push` manually pushes to all configured remotes
+- `auto: true` triggers remote push during sync
 - Multiple destinations supported with glob patterns
 
-#### Source/backup conflict detection
+#### Source/remote conflict detection
 
-Test warning when same URL is both source and backup:
+Test warning when same URL is both source and remote:
 
 ```bash
 cd /tmp/test-source-backup-conflict
@@ -473,25 +473,23 @@ aligntrue init --mode solo --yes
 
 git init --bare /tmp/conflicting-repo.git
 
-# Configure same URL as both source AND backup
+# Configure same URL as both source AND remote
 cat > .aligntrue/config.yaml <<'EOF'
 sources:
   - type: git
     url: /tmp/conflicting-repo.git
 
-backup:
-  default:
-    url: /tmp/conflicting-repo.git
-    auto: true
+remotes:
+  personal: /tmp/conflicting-repo.git
 EOF
 
 # Test sync - should warn about conflict
 aligntrue sync
-# Expected: warning about URL being both source and backup, backup skipped
+# Expected: warning about URL being both source and remote, remote push skipped
 
-# Test backup push - should also warn
-aligntrue backup push
-# Expected: same warning, backup skipped for conflicting URL
+# Test remotes push - should also warn
+aligntrue remotes push
+# Expected: same warning, remote push skipped for conflicting URL
 ```
 
 **Expected:**
@@ -1337,7 +1335,7 @@ aligntrue sync
 - [ ] C. Merge Conflict Scenarios
 - [ ] D. PR Workflow Testing
 - [ ] E. Git Source Update Workflows
-- [ ] F. Remote Backup Testing
+- [ ] F. Remotes Testing
 
 Test actual git operations for realistic team collaboration workflows. This section uses bare git repositories in `/tmp/` to simulate real team scenarios without network dependencies.
 
@@ -1347,6 +1345,8 @@ Test actual git operations for realistic team collaboration workflows. This sect
 # Setup bare repository (shared team repo)
 cd /tmp
 git init --bare team-repo.git
+# Set HEAD to main for clean clones
+git symbolic-ref HEAD refs/heads/main
 
 # Configure git user for test isolation
 export GIT_AUTHOR_NAME="Test User A"
@@ -1583,21 +1583,20 @@ aligntrue sync  # Should now pull updates
 
 **Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Configure a git source, test update detection with `--force-refresh`, and verify approval workflows.
 
-**F. Remote Backup Testing:**
+**F. Remotes Testing (replaces remote backup):**
 
 **STATUS: IMPLEMENTED**
 
-This scenario tests the remote backup feature that allows users to push their local rules to remote git repositories for backup. This is a unidirectional push (local → remote), distinct from git sources which are pull-only.
+This scenario tests the remotes feature that pushes local rules to remote git repositories. Remotes are for **push**; git sources are **pull**. Same URL cannot be both source AND remote (warning emitted).
 
 **Key concepts:**
 
 - **Source** = Pull (consume rules from remote)
-- **Backup** = Push (store your rules to remote)
-- Same URL cannot be both source AND backup (warning emitted)
+- **Remote** = Push (store your rules to remote)
 - `personal: true` on source = skip team approval + auto-gitignore
 - `gitignore: true` = don't commit rules (renamed from `private`)
 
-**For testing remote backups:**
+**For testing remotes:**
 
 ```bash
 # Create a test directory
@@ -1609,47 +1608,47 @@ mkdir -p .aligntrue/rules/guides
 echo "# TypeScript" > .aligntrue/rules/typescript.md
 echo "# React" > .aligntrue/rules/guides/react.md
 
-# Set up a local bare repo as backup target
-git init --bare /tmp/backup-repo.git
+# Set up a local bare repo as remote target
+git init --bare /tmp/remote-repo.git
 
-# Configure backup in config.yaml
+# Configure remotes in config.yaml
 cat >> .aligntrue/config.yaml <<'EOF'
-backup:
-  default:
-    url: /tmp/backup-repo.git
+remotes:
+  personal:
+    url: /tmp/remote-repo.git
     branch: main
     auto: true
 EOF
 
-# Test backup status
-aligntrue backup status
-# Shows: default backup with file assignments
+# Test remotes status
+aligntrue remotes status
+# Shows: configured remotes with file assignments
 
 # Test manual push
-aligntrue backup push
-# Pushes all rules to backup repo
+aligntrue remotes push
+# Pushes all rules to remote repo
 
 # Verify files preserved structure
-git clone /tmp/backup-repo.git /tmp/verify
+git clone /tmp/remote-repo.git /tmp/verify
 ls /tmp/verify/.aligntrue/rules/
 # Should show: typescript.md, guides/react.md
 
-# Test auto-backup during sync
+# Test auto-push during sync
 echo "Updated" >> .aligntrue/rules/typescript.md
 aligntrue sync
-# Should sync to agents AND push to backup
+# Should sync to agents AND push to remote
 ```
 
-**For testing multiple backup destinations:**
+**For testing multiple remote destinations:**
 
 ```bash
-# Configure additional backup with include patterns
+# Configure additional remote with include patterns
 cat > .aligntrue/config.yaml <<'EOF'
-backup:
-  default:
+remotes:
+  shared:
     url: /tmp/all-rules.git
     auto: true
-  additional:
+  custom:
     - id: oss-only
       url: /tmp/oss-rules.git
       include:
@@ -1657,31 +1656,30 @@ backup:
         - "guides/*.md"
 EOF
 
-aligntrue backup push
-# Files matching include go to oss-only
-# Remaining files go to default
+aligntrue remotes push
+# Files matching include go to oss-only (custom)
+# Remaining files go to shared
 ```
 
-**For testing source/backup conflict:**
+**For testing source/remote conflict:**
 
 ```bash
-# Configure same URL as source AND backup
+# Configure same URL as source AND remote
 cat > .aligntrue/config.yaml <<'EOF'
 sources:
   - type: git
     url: /tmp/shared-repo.git
-backup:
-  default:
-    url: /tmp/shared-repo.git
+remotes:
+  personal: /tmp/shared-repo.git
 EOF
 
 aligntrue sync
-# Warning: URL configured as both source and backup. Skipping backup.
+# Warning: URL configured as both source and remote. Skipping remote push.
 ```
 
-See [Backup documentation](https://aligntrue.ai/backup) for details.
+See remotes documentation (pending) for details.
 
-**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test backup status, manual push, auto-backup during sync, multiple destinations with file assignments, and source/backup conflict detection.
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test remotes status, manual push, auto-push during sync, multiple destinations with file assignments, and source/remote conflict detection.
 
 **Git Testing Best Practices:**
 
