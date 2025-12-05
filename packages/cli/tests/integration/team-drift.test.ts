@@ -711,13 +711,8 @@ This rule tests that drift detection passes after sync.
         lockfilePath: join(TEST_DIR, ".aligntrue/lock.json"),
       });
 
-      // Filter out agent_file drift which can be flaky in tests due to timing
-      const nonAgentDrift = driftResult.drift.filter(
-        (d: { category: string }) => d.category !== "agent_file",
-      );
-
       // Should have no drift after clean sync
-      expect(nonAgentDrift.length).toBe(0);
+      expect(driftResult.drift.length).toBe(0);
     });
   });
 });

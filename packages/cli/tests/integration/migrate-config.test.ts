@@ -62,7 +62,6 @@ sources:
 mode: team
 modules:
   lockfile: true
-  bundle: true
 lockfile:
   mode: soft
 exporters:

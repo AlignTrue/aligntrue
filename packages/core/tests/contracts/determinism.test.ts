@@ -194,6 +194,45 @@ Test content`;
 
       expect(lockfile1.bundle_hash).not.toBe(lockfile2.bundle_hash);
     });
+
+    it("uses deterministic empty hash when team config is missing", () => {
+      const rules: RuleFile[] = [
+        createRule("a", "Content A"),
+        createRule("b", "Content B"),
+      ];
+
+      // Ensure team config does not exist
+      const teamConfigPath = join(TEST_DIR, ".aligntrue", "config.team.yaml");
+      if (existsSync(teamConfigPath)) {
+        rmSync(teamConfigPath);
+      }
+
+      const lockfile1 = generateLockfile(rules, TEST_DIR);
+      const lockfile2 = generateLockfile(rules, TEST_DIR);
+
+      expect(lockfile1.bundle_hash).toBe(lockfile2.bundle_hash);
+    });
+
+    it("bundle hash changes when team config content changes", () => {
+      const rules: RuleFile[] = [
+        createRule("a", "Content A"),
+        createRule("b", "Content B"),
+      ];
+
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
+      const teamConfigPath = join(aligntrueDir, "config.team.yaml");
+
+      // Initial team config
+      writeFileSync(teamConfigPath, "profile:\n  id: team-one\n", "utf-8");
+      const lockfile1 = generateLockfile(rules, TEST_DIR);
+
+      // Modified team config
+      writeFileSync(teamConfigPath, "profile:\n  id: team-two\n", "utf-8");
+      const lockfile2 = generateLockfile(rules, TEST_DIR);
+
+      expect(lockfile1.bundle_hash).not.toBe(lockfile2.bundle_hash);
+    });
   });
 
   describe("Schema Hash Functions", () => {

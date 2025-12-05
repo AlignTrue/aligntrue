@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING: Team lockfile simplified to bundle hash only** - Lockfile v2 now contains only `version` and `bundle_hash` (hash of team rules + `config.team.yaml`). Per-rule sections, timestamps, mode fields, and provenance were removed. Drift detection compares only the bundle hash for reliability and easier Git-based review
+- **Drift command reduced to single `lockfile` category** - `aligntrue drift` and `--gates` now report only lockfile drift with clearer remediation (“run aligntrue sync” + git diff). JSON/SARIF outputs and help text updated accordingly
+- **Team sync uses unified backup flow** - Sync continues to back up agent exports before overwrite; lockfile generation/regeneration now always uses the simplified v2 format and includes team config in the hash
 - **BREAKING: Removed `--link` flag from `aligntrue add` and `aligntrue init`** - Use `aligntrue add source <url>` instead. For init, first run `aligntrue init` then `aligntrue add source <url>` to add connected sources
 - **BREAKING: GitProvider default path changed** - Git source provider now defaults to `"."` (directory scan) instead of `.aligntrue.yaml`. Remote rule repos should contain markdown rules in directories, not single YAML files
 - **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
@@ -22,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **BREAKING: Severity remapping and `.aligntrue.team.yaml`** - Removed remap config, APIs, and tests. Team config is solely `.aligntrue/config.team.yaml`
+- **BREAKING: Bundle module and agent export hash tracking** - Removed `modules.bundle`, `.agent-export-hashes.json`, and agent-file drift category. Drift now relies on lockfile bundle hash; per-agent export drift detection was redundant with backups and sync overwrite flow
 - **BREAKING: Watch mode command (`aligntrue watch`)** - Removed vestigial feature from bidirectional sync era. Rules change infrequently, making continuous file watching unnecessary. Replaced with pre-commit hook guidance and editor integration patterns in [CI/CD integration guide](/docs/01-guides/07-ci-cd-integration). Schema fields `watch_enabled`, `watch_debounce`, `watch_files` removed from config
 - **BREAKING: `aligntrue link` command removed** - The incomplete vendoring feature has been removed. For rules stored in git submodules or subtrees, use `type: local` sources instead with the path to the vendored directory. This is simpler and already works
 - **BREAKING: `vendor_path` and `vendor_type` fields removed** - Vendoring metadata removed from lockfile entries, drift detection, and schema. The "vendorized" drift category no longer exists
