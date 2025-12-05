@@ -260,8 +260,8 @@ export async function check(args: string[]): Promise<void> {
         }
 
         // Compute current bundle hash from rules
-        const rulesPath = resolve(".aligntrue", "rules");
         const cwd = process.cwd();
+        const rulesPath = resolve(cwd, ".aligntrue", "rules");
         const rules = await loadRulesDirectory(rulesPath, cwd);
         const currentLockfile = generateLockfile(rules, cwd);
         const validation = validateLockfile(
