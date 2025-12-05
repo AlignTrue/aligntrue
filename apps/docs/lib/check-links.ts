@@ -134,8 +134,13 @@ function linkExists(linkPath: string): boolean {
 }
 
 function normalizeLink(raw: string): string {
-  if (raw.startsWith(ALIGNTRUE_ORIGIN)) {
-    return raw.slice(ALIGNTRUE_ORIGIN.length);
+  try {
+    const url = new URL(raw);
+    if (url.protocol === 'https:' && url.host === 'aligntrue.ai') {
+      return url.pathname + url.search + url.hash;
+    }
+  } catch (_) {
+    // If invalid URL, fall through to return as-is
   }
   return raw;
 }
