@@ -109,10 +109,11 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 
 ## Team mode
 
-- **Lockfile generation** (`.aligntrue/lock.json`) - SHA-256 content hashes, reproducible builds
+- **Lockfile generation** (`.aligntrue/lock.json`) - v2 stores `version` + bundle hash (team rules + team config)
 - **Lockfile validation** - Three modes: off, soft (warn), strict (block)
-- **Drift detection** - Compare lockfile vs allowed sources, multiple output formats (human, JSON, SARIF)
+- **Drift detection** - Single category (`lockfile`) comparing current bundle hash vs lockfile; human/JSON/SARIF outputs
 - **Team commands** - `team enable`, `team disable`, `team status`
+- **Exporter ownership** - Exporters are shared/merged; enabling team mode keeps personal exporters personal by default. Teams can add a shared baseline in `config.team.yaml`.
 - **Scope & Storage Model** - Semantic scopes (team, personal, custom) with storage backends (local, repo, remote)
 - **Git-native approval** - Uses PR approval for reviewing rule changes
 - **Migration wizards** - Interactive flows for solo→team, team→solo, and mode detection on restore

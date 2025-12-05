@@ -26,7 +26,7 @@ import { tmpdir } from "os";
 import { init } from "../../src/commands/init.js";
 import { team } from "../../src/commands/team.js";
 import * as clack from "@clack/prompts";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 vi.mock("@clack/prompts");
 
@@ -130,6 +130,33 @@ Team guidance here.
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
       expect(lockfile.version).toBe("2");
       expect(lockfile.bundle_hash).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it("keeps exporters in personal config when enabling team mode", async () => {
+      process.chdir(env1);
+      await init(["--yes"]);
+
+      // Set personal exporters before enabling team mode
+      const personalPath = join(env1, ".aligntrue", "config.yaml");
+      const personalConfig = parseYaml(
+        readFileSync(personalPath, "utf-8"),
+      ) as Record<string, unknown>;
+      personalConfig["exporters"] = ["cursor", "agents"];
+      writeFileSync(personalPath, stringifyYaml(personalConfig), "utf-8");
+
+      await team(["enable", "--yes"]);
+
+      // Team config should not copy exporters by default
+      const teamConfig = parseYaml(
+        readFileSync(join(env1, ".aligntrue", "config.team.yaml"), "utf-8"),
+      ) as Record<string, unknown>;
+      expect(teamConfig["exporters"]).toBeUndefined();
+
+      // Personal config should still contain the exporters
+      const personalAfter = parseYaml(
+        readFileSync(personalPath, "utf-8"),
+      ) as Record<string, unknown>;
+      expect(personalAfter["exporters"]).toEqual(["cursor", "agents"]);
     });
   });
 

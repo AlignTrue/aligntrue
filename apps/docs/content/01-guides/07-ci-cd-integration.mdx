@@ -145,11 +145,12 @@ With team mode enabled, this also checks:
 - Lockfile exists
 - Lockfile is up to date
 - Hashes match current rules
+- Lockfile v2 contains only `version` and `bundle_hash` (team rules + team config)
 
 **Lockfile modes:**
 
 ```yaml
-# .aligntrue/config.yaml
+# .aligntrue/config.team.yaml (team) or .aligntrue/config.yaml (solo)
 lockfile:
   mode: strict # Fail CI if lockfile out of sync
   # or: soft   # Warn but don't fail

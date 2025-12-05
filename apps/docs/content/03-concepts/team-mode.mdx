@@ -120,7 +120,7 @@ Settings are split between two configuration files:
 - `mode: team`
 - `modules.lockfile`
 - `lockfile.*` configuration
-- Shared `sources` and `exporters`
+- Shared `sources`
 
 **Personal-only settings** (`.aligntrue/config.yaml`, gitignored):
 
@@ -129,8 +129,15 @@ Settings are split between two configuration files:
 
 **Shared settings** (merged additively):
 
-- `sources`, `exporters` - Both files contribute to the final list
+- `sources` - Both files contribute to the final list (team first, then personal)
+- `exporters` - Both files contribute; team may set a baseline, personal adds/preferences
 - `git`, `overlays`, `export`, etc. - Personal config overrides team config
+- `modules.checks`, `modules.mcp` - Personal overrides team
+
+**Exporter ownership (recommended workflow)**
+
+- When enabling team mode, exporters stay in personal config by default. Individuals pick their agents (Cursor, Claude, Windsurf, etc.).
+- If a team wants a standard set, add exporters to `config.team.yaml`; final exporters are the union of team + personal. Per-exporter object settings merge with personal taking precedence.
 
 When loading configuration, personal settings are merged on top of team settings, allowing local overrides while maintaining team standards.
 
