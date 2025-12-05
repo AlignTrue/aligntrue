@@ -195,8 +195,28 @@ function mergeExporters(
 }
 
 /**
+ * Get unique identifier for a source config
+ */
+function getSourceKey(
+  source: NonNullable<AlignTrueConfig["sources"]>[number],
+): string {
+  if (source.type === "local") {
+    return `local:${source.path || ".aligntrue/rules"}`;
+  }
+  if (source.type === "git") {
+    // Include URL and optionally ref/path for uniqueness
+    const parts = [source.url || ""];
+    if (source.ref) parts.push(`@${source.ref}`);
+    if (source.path) parts.push(`/${source.path}`);
+    return `git:${parts.join("")}`;
+  }
+  // Fallback for unknown types
+  return JSON.stringify(source);
+}
+
+/**
  * Merge sources from personal and team configs
- * Arrays are additive (concatenated)
+ * Arrays are merged with deduplication (team sources first, then unique personal sources)
  */
 function mergeSources(
   personal: AlignTrueConfig["sources"],
@@ -206,8 +226,29 @@ function mergeSources(
   if (!team) return personal;
   if (!personal) return team;
 
-  // Team sources first, then personal sources
-  return [...team, ...personal];
+  // Team sources first, then personal sources (deduplicated)
+  const seen = new Set<string>();
+  const merged: NonNullable<AlignTrueConfig["sources"]> = [];
+
+  // Add team sources first (higher priority)
+  for (const source of team) {
+    const key = getSourceKey(source);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(source);
+    }
+  }
+
+  // Add personal sources that aren't duplicates
+  for (const source of personal) {
+    const key = getSourceKey(source);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(source);
+    }
+  }
+
+  return merged;
 }
 
 /**

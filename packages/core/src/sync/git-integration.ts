@@ -192,7 +192,43 @@ export class GitIntegration {
   }
 
   /**
+   * Get the current git branch name
+   */
+  private getCurrentBranch(workspaceRoot: string): string | null {
+    try {
+      const branch = execFileSync(
+        "git",
+        ["rev-parse", "--abbrev-ref", "HEAD"],
+        {
+          cwd: workspaceRoot,
+          encoding: "utf-8",
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      ).trim();
+      return branch || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Check if the repository has at least one commit
+   */
+  private hasInitialCommit(workspaceRoot: string): boolean {
+    try {
+      execFileSync("git", ["rev-parse", "HEAD"], {
+        cwd: workspaceRoot,
+        stdio: "pipe",
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Apply branch mode: create feature branch and stage files
+   * If already on an aligntrue/sync-* branch, reuse it instead of creating a new one
    */
   private async applyBranchMode(
     workspaceRoot: string,
@@ -206,49 +242,73 @@ export class GitIntegration {
       );
     }
 
+    // Check if there's at least one commit (required for branch creation)
+    if (!this.hasInitialCommit(workspaceRoot)) {
+      throw new Error(
+        "Git branch mode requires at least one commit. Run: git commit --allow-empty -m 'Initial commit'",
+      );
+    }
+
     // Normalize paths (absolute to relative, backslashes to forward slashes)
     const normalizedFiles = this.normalizePathsForGitignore(
       workspaceRoot,
       files,
     );
 
-    // Generate branch name if not provided
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, 19);
-    const branch = branchName || `aligntrue/sync-${timestamp}`;
+    // Check if already on an aligntrue/sync branch
+    const currentBranch = this.getCurrentBranch(workspaceRoot);
+    const isOnSyncBranch =
+      currentBranch && currentBranch.startsWith("aligntrue/sync-");
 
-    try {
-      // Create and checkout new branch using execFileSync to avoid shell injection
-      execFileSync("git", ["checkout", "-b", branch], {
-        cwd: workspaceRoot,
-        stdio: "pipe",
-      });
+    let branch: string;
+    let branchCreated = false;
 
-      // Stage the generated files using execFileSync to avoid shell injection
-      const stagedFiles: string[] = [];
-      for (const file of normalizedFiles) {
-        const fullPath = join(workspaceRoot, file);
-        if (existsSync(fullPath)) {
-          execFileSync("git", ["add", file], {
-            cwd: workspaceRoot,
-            stdio: "pipe",
-          });
-          stagedFiles.push(file);
-        }
+    if (isOnSyncBranch && !branchName) {
+      // Reuse existing sync branch
+      branch = currentBranch;
+    } else {
+      // Generate branch name with full timestamp including milliseconds for uniqueness
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-")
+        .slice(0, 23); // Include milliseconds: 2025-12-05T20-10-15-123
+      branch = branchName || `aligntrue/sync-${timestamp}`;
+
+      try {
+        // Create and checkout new branch
+        execFileSync("git", ["checkout", "-b", branch], {
+          cwd: workspaceRoot,
+          stdio: "pipe",
+        });
+        branchCreated = true;
+      } catch (_error) {
+        const message =
+          _error instanceof Error ? _error.message : String(_error);
+        throw new Error(`Failed to create git branch: ${message}`);
       }
-
-      return {
-        mode: "branch",
-        action: "created branch and staged files",
-        filesAffected: stagedFiles,
-        branchCreated: branch,
-      };
-    } catch (_error) {
-      const message = _error instanceof Error ? _error.message : String(_error);
-      throw new Error(`Failed to create git branch: ${message}`);
     }
+
+    // Stage the generated files
+    const stagedFiles: string[] = [];
+    for (const file of normalizedFiles) {
+      const fullPath = join(workspaceRoot, file);
+      if (existsSync(fullPath)) {
+        execFileSync("git", ["add", file], {
+          cwd: workspaceRoot,
+          stdio: "pipe",
+        });
+        stagedFiles.push(file);
+      }
+    }
+
+    return {
+      mode: "branch",
+      action: branchCreated
+        ? "created branch and staged files"
+        : "staged files on existing branch",
+      filesAffected: stagedFiles,
+      ...(branchCreated ? { branchCreated: branch } : {}),
+    };
   }
 
   /**

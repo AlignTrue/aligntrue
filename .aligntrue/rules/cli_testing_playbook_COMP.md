@@ -1603,6 +1603,16 @@ This scenario tests the remotes feature that pushes local rules to remote git re
 - `personal: true` on source = skip team approval + auto-gitignore
 - `gitignore: true` = don't commit rules (renamed from `private`)
 
+**IMPORTANT: Scope-based routing:**
+
+Files are routed to remotes based on `scope` frontmatter in rule files:
+
+- `scope: personal` → pushed to `remotes.personal`
+- `scope: shared` → pushed to `remotes.shared`
+- No scope or `scope: team` → stays in main repo (NOT pushed to any remote)
+
+To push all files regardless of scope, use `remotes.custom` with glob patterns.
+
 **For testing remotes (auto-push during sync):**
 
 ```bash
@@ -1610,10 +1620,23 @@ This scenario tests the remotes feature that pushes local rules to remote git re
 cd /tmp/test-remote-backup
 aligntrue init --mode solo --yes
 
-# Create some rules
+# Create rules WITH scope: personal frontmatter (required for personal remote)
 mkdir -p .aligntrue/rules/guides
-echo "# TypeScript" > .aligntrue/rules/typescript.md
-echo "# React" > .aligntrue/rules/guides/react.md
+cat > .aligntrue/rules/typescript.md <<'EOF'
+---
+scope: personal
+---
+# TypeScript
+TypeScript coding standards.
+EOF
+
+cat > .aligntrue/rules/guides/react.md <<'EOF'
+---
+scope: personal
+---
+# React
+React development guide.
+EOF
 
 # Set up a local bare repo as remote target
 git init --bare /tmp/remote-repo.git
@@ -1629,7 +1652,7 @@ EOF
 
 # Run sync - this automatically pushes to configured remotes when auto: true
 aligntrue sync
-# Should sync to agents AND push to remote
+# Should sync to agents AND push personal-scoped files to remote
 
 # Verify files were pushed
 git clone /tmp/remote-repo.git /tmp/verify
@@ -1640,6 +1663,24 @@ ls /tmp/verify/.aligntrue/rules/
 echo "Updated" >> .aligntrue/rules/typescript.md
 aligntrue sync
 # Should sync to agents AND push updated files to remote
+```
+
+**Alternative: Push all files using custom patterns:**
+
+If you want to push ALL rule files regardless of scope, use `remotes.custom` with a glob pattern:
+
+```bash
+# Configure custom remote with include pattern for all .md files
+cat >> .aligntrue/config.yaml <<'EOF'
+remotes:
+  custom:
+    - id: all-rules
+      url: /tmp/remote-repo.git
+      branch: main
+      auto: true
+      include:
+        - "**/*.md"
+EOF
 ```
 
 **For testing multiple remote destinations:**

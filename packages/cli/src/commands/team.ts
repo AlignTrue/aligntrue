@@ -635,13 +635,6 @@ async function teamJoin(
     });
   }
 
-  // Check if personal config already exists
-  if (existsSync(configPath)) {
-    console.log("✓ Personal config already exists: .aligntrue/config.yaml");
-    console.log("  You're all set! Run 'aligntrue sync' to sync rules.");
-    return;
-  }
-
   if (!nonInteractive) {
     clack.intro("Team Join");
     clack.log.info(
@@ -674,7 +667,11 @@ version: "1"
 
   try {
     mkdirSync(dirname(configPath), { recursive: true });
-    writeFileSync(configPath, personalConfigContent, "utf-8");
+    writeFileSync(configPath, personalConfigContent, {
+      flag: "wx",
+      mode: 0o600,
+      encoding: "utf-8",
+    });
 
     if (!nonInteractive) {
       clack.log.success("Created personal config: .aligntrue/config.yaml");
@@ -693,6 +690,11 @@ version: "1"
   } catch (err) {
     if (err instanceof Error && err.message.startsWith("process.exit")) {
       throw err;
+    }
+    if ((err as NodeJS.ErrnoException)?.code === "EEXIST") {
+      console.log("✓ Personal config already exists: .aligntrue/config.yaml");
+      console.log("  You're all set! Run 'aligntrue sync' to sync rules.");
+      return;
     }
     console.error("✗ Failed to create personal config");
     console.error(`  ${err instanceof Error ? err.message : String(err)}`);
