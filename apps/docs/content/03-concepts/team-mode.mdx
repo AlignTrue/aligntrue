@@ -68,6 +68,11 @@ The `bundle_hash` is computed from:
 
 If the current state matches the lockfile, team rules haven't changed since approval.
 
+### Drift detection in team mode
+
+- `aligntrue drift --gates` reports a single category: **lockfile**. If the computed bundle hash differs from `.aligntrue/lock.json`, run `aligntrue sync` and review the git diff for the lockfile.
+- Agent export drift is intentionally not tracked; exports are regenerated artifacts. Sync still backs up agent files before overwrite.
+
 ### 3. Commit lockfile
 
 ```bash
@@ -202,6 +207,22 @@ git add .aligntrue/config.team.yaml .aligntrue/lock.json
 git commit -m "Remove old rule source"
 git push
 ```
+
+### Export handling and git defaults
+
+- Exports (Cursor `.mdc`, `AGENTS.md`, etc.) are generated artifacts. Default git mode for solo/team is `ignore`, so sync will add exports to `.gitignore`. Agents still work because exports exist on disk after `aligntrue sync`.
+- Commit exports only when required (compliance snapshot, downstream handoff without AlignTrue). Otherwise keep them ignored to avoid PR noise.
+- Use per-exporter overrides when a specific format must be tracked:
+
+```yaml
+git:
+  mode: ignore # default for team
+  per_exporter:
+    agents: commit # keep AGENTS.md tracked
+    cursor: ignore # keep .cursor/rules/ ignored
+```
+
+- Backups: `aligntrue sync` backs up exports before overwriting. For redundancy, push `.aligntrue/rules/` to team or personal remotes instead of committing exports.
 
 ## Troubleshooting
 

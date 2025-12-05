@@ -164,7 +164,7 @@ AlignTrue synchronizes rules between three locations:
 
 1. **Rules Directory** - `.aligntrue/rules/*.md` (your editable source, natural markdown with YAML frontmatter)
 2. **Intermediate Representation (IR)** - in-memory during sync (merged rules, section fingerprints; not written to disk)
-3. **Team artifacts** - `.aligntrue/lock.json` and `.aligntrue/bundle.yaml` (team mode only, track approved fingerprints and bundle metadata)
+3. **Team artifact** - `.aligntrue/lock.json` (team mode only, bundle hash over team rules + team config)
 
 The sync engine maintains consistency with one-way flow from rules directory to all exports.
 
@@ -281,6 +281,12 @@ aligntrue sync
 **Why**: Agent files are under AlignTrue's control. Manual edits are overwritten to maintain consistency.
 
 **Best practice:** Edit `.aligntrue/rules/*.md`, not agent files.
+
+### Git handling of exports
+
+- Exports are generated artifacts. Default git mode for solo/team is `ignore`, so sync will add agent files to `.gitignore`. Agents still work because exports exist on disk after `aligntrue sync`.
+- Commit exports only for explicit reasons (compliance snapshot, downstream handoff without AlignTrue). Otherwise keep them ignored to avoid merge noise.
+- Use per-exporter overrides when a specific format must be tracked (for example, `git.per_exporter.agents: commit` while leaving `.cursor/rules` ignored).
 
 ### Manual edit detection
 

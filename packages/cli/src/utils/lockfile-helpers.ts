@@ -6,8 +6,9 @@
 import { join } from "path";
 import { generateLockfile, writeLockfile } from "@aligntrue/core/lockfile";
 import { loadRulesDirectory } from "@aligntrue/core";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import type { AlignTrueConfig } from "@aligntrue/core";
+import { computeHash } from "@aligntrue/schema";
 
 export interface LockfileGenerationOptions {
   cwd: string;
@@ -128,12 +129,15 @@ export async function createEmptyLockfile(
 ): Promise<{ success: boolean; lockfilePath?: string; error?: string }> {
   const { join } = await import("path");
   const { writeLockfile } = await import("@aligntrue/core/lockfile");
-  const { computeHash } = await import("@aligntrue/schema");
   const lockfilePath = join(cwd, ".aligntrue", "lock.json");
 
   try {
-    // Compute empty bundle hash (hash of empty string)
-    const emptyBundleHash = computeHash("");
+    // Compute bundle hash consistent with generateLockfile: include team config hash (or empty-string hash if missing)
+    const teamConfigPath = join(cwd, ".aligntrue", "config.team.yaml");
+    const teamConfigHash = computeFileHash(teamConfigPath);
+
+    // With no rules yet, bundle hash is based solely on team config hash
+    const emptyBundleHash = computeHash(teamConfigHash);
 
     const emptyLockfile = {
       version: "2" as const,
@@ -151,5 +155,20 @@ export async function createEmptyLockfile(
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
+  }
+}
+
+/**
+ * Compute hash of a file's contents; returns hash of empty string if missing or unreadable.
+ */
+function computeFileHash(path: string): string {
+  try {
+    if (!existsSync(path)) {
+      return computeHash("");
+    }
+    const content = readFileSync(path, "utf-8");
+    return computeHash(content);
+  } catch {
+    return computeHash("");
   }
 }

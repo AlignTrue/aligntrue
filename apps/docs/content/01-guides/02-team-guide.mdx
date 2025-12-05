@@ -50,16 +50,15 @@ Team members joining will have `config.yaml` auto-created on first sync.
 
 **What you get:**
 
-- **Lockfile** - Reproducible builds with pinned hashes
-- **Drift detection** - Detect upstream changes and local modifications
-- **Bundle** - Dependency merging with precedence rules
-- **Audit trail** - Track who changed what and when
+- **Lockfile (v2)** - Reproducible builds via a single `bundle_hash` over team rules + team config
+- **Drift detection** - Compares current bundle hash to lockfile bundle hash (lockfile-only category)
+- **Audit trail** - Track who changed what and when (via git + lockfile updates)
 - **Git-native workflows** - Source approval via PR review
 
 **What changes from solo mode:**
 
 - Lockfile enabled (off/soft/strict validation)
-- Bundle enabled (dependency merging)
+- Drift detection available (lockfile-only)
 - Source approval via git PR workflow
 
 ## Organizing rules for teams
@@ -178,30 +177,18 @@ sources:
 
 **Note:** Source approval happens via git PR review workflow.
 
-### Step 3: Generate lockfile
+### Step 3: Generate lockfile (v2)
 
 ```bash
 aligntrue sync
 ```
 
-**Lockfile structure:**
+**Lockfile structure (v2):**
 
 ```json
 {
-  "spec_version": "1",
-  "generated_at": "2025-10-31T12:00:00Z",
-  "dependencies": {
-    "global-align": {
-      "version": "v1.0.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/AlignTrue/aligntrue/examples/aligns/global.yaml"
-      },
-      "base_hash": "sha256:abc123...",
-      "overlay_hash": "sha256:def456...",
-      "result_hash": "sha256:ghi789..."
-    }
-  }
+  "version": "2",
+  "bundle_hash": "sha256:abc123... (team rules + config.team.yaml)"
 }
 ```
 
@@ -218,8 +205,7 @@ git push
 - `.aligntrue/rules` - Source-of-truth rule files you author
 - `.aligntrue/config.team.yaml` - Team configuration
 - `.aligntrue/lock.json` - Lockfile with pinned hashes
-- `.cursor/rules/` - Exported Cursor rules (optional)
-- `AGENTS.md` - Universal agent export (optional)
+- Agent exports (`.cursor/rules/`, `AGENTS.md`, etc.) are **generated artifacts**. Default git mode for solo/team is `ignore`, so they are typically gitignored. Commit only when required (compliance snapshot, downstream handoff without AlignTrue) or set per-exporter overrides.
 
 **Also do not commit:**
 

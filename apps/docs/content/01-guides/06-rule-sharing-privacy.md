@@ -383,7 +383,8 @@ remotes:
 2. **Custom pattern routing** (additive): Use `custom` for fine-grained control
    - Files matching patterns go to those remotes **in addition** to scope-based routing
    - A rule can go to multiple destinations
-   - Useful for creating thematic bundles (e.g., all TypeScript rules)
+
+- Useful for creating thematic groups (e.g., all TypeScript rules)
 
 ## Using shared rules (for consumers)
 

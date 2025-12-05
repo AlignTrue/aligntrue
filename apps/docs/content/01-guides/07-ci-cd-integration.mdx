@@ -160,16 +160,11 @@ lockfile:
 
 ### Basic drift check
 
-Detect when upstream rules have changed:
+Detect when the current bundle hash (team rules + team config) differs from the lockfile:
 
 ```bash
 aligntrue drift
 ```
-
-**Checks:**
-
-- Git sources have new commits
-- Vendored aligns differ from source
 
 **Exit codes:**
 
@@ -195,11 +190,13 @@ aligntrue drift --gates
 
 ### Drift categories
 
+`lockfile` (only) — bundle hash in `.aligntrue/lock.json` differs from current rules + team config.
+
 ```bash
 aligntrue drift --json
 ```
 
-Output:
+Output example:
 
 ```json
 {
@@ -210,25 +207,15 @@ Output:
     {
       "category": "lockfile",
       "ruleId": "_bundle",
-      "description": "Rules have changed since last lockfile generation"
-    },
-    {
-      "category": "upstream",
-      "ruleId": "shared/security",
-      "description": "Upstream source has new commits",
-      "lockfile_hash": "sha256:...",
-      "expected_hash": "sha256:..."
+      "description": "Rules or team config have changed since last lockfile generation",
+      "lockfile_hash": "sha256:abc123...",
+      "expected_hash": "sha256:def456..."
     }
   ],
   "summary": {
-    "total": 2,
+    "total": 1,
     "by_category": {
-      "lockfile": 1,
-      "agent_file": 0,
-      "upstream": 1,
-      "overlay": 0,
-      "result": 0,
-      "severity_remap": 0
+      "lockfile": 1
     }
   }
 }
