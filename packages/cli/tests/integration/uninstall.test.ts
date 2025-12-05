@@ -256,6 +256,75 @@ AGENTS.md
     });
   });
 
+  describe("agent ignore cleanup", () => {
+    it("removes AlignTrue-managed ignore files when they contain only managed content", async () => {
+      setupAlignTrue();
+
+      const aligntrueSection = [
+        "# AlignTrue: Prevent duplicate context",
+        "# Managed by AlignTrue to prevent duplicate agent context",
+        "# Edit .aligntrue/config.yaml to change this behavior",
+        "",
+        ".cursor/rules/*.mdc",
+        "",
+        "# AlignTrue: End duplicate prevention",
+        "",
+      ].join("\n");
+
+      writeFileSync(".cursorignore", aligntrueSection, "utf-8");
+
+      await uninstall(["-y", "--delete-exports", "--delete-source"]);
+
+      expect(existsSync(".cursorignore")).toBe(false);
+    });
+
+    it("preserves user ignore entries while removing AlignTrue sections", async () => {
+      setupAlignTrue();
+
+      const aligntrueSection = [
+        "# AlignTrue: Prevent duplicate context",
+        "# Managed by AlignTrue to prevent duplicate agent context",
+        "# Edit .aligntrue/config.yaml to change this behavior",
+        "",
+        ".cursor/rules/*.mdc",
+        "",
+        "# AlignTrue: End duplicate prevention",
+        "",
+      ].join("\n");
+
+      const content = [
+        "# User entries",
+        "node_modules/",
+        "",
+        aligntrueSection,
+      ].join("\n");
+
+      writeFileSync(".cursorignore", content, "utf-8");
+
+      await uninstall(["-y", "--delete-exports", "--delete-source"]);
+
+      expect(existsSync(".cursorignore")).toBe(true);
+
+      const finalContent = readFileSync(".cursorignore", "utf-8");
+      expect(finalContent).toContain("node_modules/");
+      expect(finalContent).not.toContain(
+        "AlignTrue: Prevent duplicate context",
+      );
+    });
+  });
+
+  describe("export directory cleanup", () => {
+    it("removes empty export directories even when no exported files are detected", async () => {
+      setupAlignTrue();
+
+      rmSync(".cursor/rules/typescript.mdc", { force: true });
+
+      await uninstall(["-y", "--delete-exports", "--delete-source"]);
+
+      expect(existsSync(".cursor/rules")).toBe(false);
+    });
+  });
+
   describe("gitignore cleanup", () => {
     it("removes AlignTrue entries from .gitignore", async () => {
       setupAlignTrue();

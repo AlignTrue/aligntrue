@@ -342,10 +342,17 @@ async function determineTargetConfig(options: {
   }
 
   // Non-interactive team mode without flags: error
+  // For sources, --shared is not supported (only --personal or edit config.team.yaml directly)
+  // For remotes, both --personal and --shared are valid
+  const hintMessage =
+    operationType === "source"
+      ? `Use --personal for personal config, or edit config.team.yaml directly for shared sources`
+      : `Use: aligntrue add ${operationType} <url> --personal (or --shared)`;
+
   exitWithError({
     title: "Ambiguous target config",
-    message: `In team mode, specify --personal or --shared flag for add ${operationType}`,
-    hint: `Use: aligntrue add ${operationType} <url> --personal (or --shared)`,
+    message: `In team mode, specify target config for add ${operationType}`,
+    hint: hintMessage,
     code: "AMBIGUOUS_CONFIG_TARGET",
   });
 

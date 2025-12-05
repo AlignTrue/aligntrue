@@ -1233,7 +1233,7 @@ mkdir /tmp/team-user-b && cd /tmp/team-user-b
 cp -r /tmp/team-user-a/.aligntrue .
 cp /tmp/team-user-a/.aligntrue/config.team.yaml .aligntrue/
 cp /tmp/team-user-a/.aligntrue/lock.json .
-aligntrue init --yes  # Detects existing team setup
+aligntrue team join --yes  # Creates personal config and gitignore entries
 aligntrue sync
 ```
 
@@ -1376,7 +1376,7 @@ export GIT_COMMITTER_EMAIL="test-b@example.com"
 
 git clone /tmp/team-repo.git team-user-b
 cd team-user-b
-aligntrue init --yes  # Detects existing team setup
+aligntrue team join --yes  # Creates personal config and gitignore entries
 aligntrue sync
 
 # Verify lockfile and config are shared correctly
@@ -1546,7 +1546,7 @@ aligntrue drift --gates  # Should pass in CI after merge
 
 **E. Git Source Update Workflows:**
 
-Test git source update checking and approval workflows:
+Test git source update checking workflows:
 
 **Note:** Local `file://` URLs are not supported for git sources. Use HTTPS URLs (e.g., `https://github.com/AlignTrue/examples`) or SSH URLs (e.g., `git@github.com:user/repo.git`) for testing.
 
@@ -1556,32 +1556,38 @@ cd /tmp/test-git-updates
 aligntrue init --yes --mode team
 
 # Add git source using HTTPS URL (from AlignTrue examples repo)
-aligntrue add source https://github.com/AlignTrue/examples
+aligntrue add source https://github.com/AlignTrue/examples --personal
 aligntrue sync
 
 # Test update detection (branch reference checks daily)
 # Force update check
 aligntrue sync --force-refresh
 
-# In team mode, updates from branch refs may require approval
-aligntrue sync 2>&1 | grep -i "approval\|blocked" || echo "INFO: Update may require approval"
-
-# If updates are blocked, approve them
-aligntrue team approve https://github.com/AlignTrue/examples
-aligntrue sync  # Should now pull updates
+# Verify lockfile updated with source hash
+cat .aligntrue/lock.json | grep -i "hash"
 ```
 
 **Expected:**
 
 - Git source updates are detected in team mode
-- Updates from branch refs may require approval (configurable)
-- `aligntrue team approve` allows updates
-- Approved updates are pulled and applied
 - Lockfile reflects updated source hashes
+- Source changes pulled automatically on sync
+
+**Approval workflow in team mode:**
+
+Team mode uses PR-based approval via git, not a CLI command. When team rules change:
+
+1. Make changes to `.aligntrue/rules/` or update sources in `config.team.yaml`
+2. Run `aligntrue sync` to update lockfile
+3. Commit changes and create a PR
+4. Team reviews and approves the PR
+5. After merge, other team members run `aligntrue sync` to get updates
+
+Use `aligntrue drift --gates` in CI to enforce that lockfile matches the current rule state.
 
 **Note:** For testing update detection, you need an actual remote repository that changes over time. The AlignTrue/examples repo is stable, so update detection won't trigger unless the upstream repo is modified.
 
-**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Configure a git source, test update detection with `--force-refresh`, and verify approval workflows.
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Configure a git source, test update detection with `--force-refresh`, and verify lockfile updates.
 
 **F. Remotes Testing (replaces remote backup):**
 
@@ -1593,10 +1599,11 @@ This scenario tests the remotes feature that pushes local rules to remote git re
 
 - **Source** = Pull (consume rules from remote)
 - **Remote** = Push (store your rules to remote)
+- Remote push happens automatically during `aligntrue sync` when `auto: true` is configured
 - `personal: true` on source = skip team approval + auto-gitignore
 - `gitignore: true` = don't commit rules (renamed from `private`)
 
-**For testing remotes:**
+**For testing remotes (auto-push during sync):**
 
 ```bash
 # Create a test directory
@@ -1611,7 +1618,7 @@ echo "# React" > .aligntrue/rules/guides/react.md
 # Set up a local bare repo as remote target
 git init --bare /tmp/remote-repo.git
 
-# Configure remotes in config.yaml
+# Configure remotes in config.yaml with auto: true
 cat >> .aligntrue/config.yaml <<'EOF'
 remotes:
   personal:
@@ -1620,23 +1627,19 @@ remotes:
     auto: true
 EOF
 
-# Test remotes status
-aligntrue remotes status
-# Shows: configured remotes with file assignments
+# Run sync - this automatically pushes to configured remotes when auto: true
+aligntrue sync
+# Should sync to agents AND push to remote
 
-# Test manual push
-aligntrue remotes push
-# Pushes all rules to remote repo
-
-# Verify files preserved structure
+# Verify files were pushed
 git clone /tmp/remote-repo.git /tmp/verify
 ls /tmp/verify/.aligntrue/rules/
 # Should show: typescript.md, guides/react.md
 
-# Test auto-push during sync
+# Test that updates are pushed on subsequent syncs
 echo "Updated" >> .aligntrue/rules/typescript.md
 aligntrue sync
-# Should sync to agents AND push to remote
+# Should sync to agents AND push updated files to remote
 ```
 
 **For testing multiple remote destinations:**
@@ -1651,12 +1654,14 @@ remotes:
   custom:
     - id: oss-only
       url: /tmp/oss-rules.git
+      auto: true
       include:
         - typescript.md
         - "guides/*.md"
 EOF
 
-aligntrue remotes push
+# Sync triggers auto-push to all configured remotes
+aligntrue sync
 # Files matching include go to oss-only (custom)
 # Remaining files go to shared
 ```
@@ -1677,9 +1682,9 @@ aligntrue sync
 # Warning: URL configured as both source and remote. Skipping remote push.
 ```
 
-See remotes documentation (pending) for details.
+**Note:** There are no standalone `remotes status` or `remotes push` commands. Remote push is triggered automatically during `aligntrue sync` when `auto: true` is configured. To add a remote, use `aligntrue add remote <url>`.
 
-**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test remotes status, manual push, auto-push during sync, multiple destinations with file assignments, and source/remote conflict detection.
+**Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test auto-push during sync, multiple destinations with file assignments, and source/remote conflict detection.
 
 **Git Testing Best Practices:**
 

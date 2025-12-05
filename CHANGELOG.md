@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING: Backup restore flag standardized to `--timestamp`** - `aligntrue backup restore` now uses `--timestamp` flag instead of `--to` for consistency with `aligntrue revert`
 - **Internal: ResolvedSource returns Align directly** - Source resolver no longer serializes to YAML and re-parses. Simpler data flow, fewer allocations
 - **Internal: `aligntrue check` modularized** - Schema, lockfile, and overlay validation now live in dedicated helpers with unit coverage for easier maintenance
+- **Team sync prompts for join when personal config is missing** - `aligntrue sync` now detects team repos without a personal config and offers to run `aligntrue team join` (with non-interactive hint)
+- **Git mode switching cleans .gitignore** - Switching to `commit` or `branch` mode now removes AlignTrue managed ignore entries so generated files are tracked
 
 ### Removed
 
@@ -48,11 +50,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **CRITICAL: Config data loss when adding remotes or sources** - Fixed destructive bug where `aligntrue add remote` and other CLI commands would delete user configuration (sources, exporters, plugs, etc.) when updating config. The old `saveMinimalConfig` function incorrectly dropped user values that matched defaults. Replaced with `patchConfig` which surgically updates only the specified keys, preserving all other user configuration exactly as written
 - **`enabled: false` frontmatter now prevents rule export** - Rules with `enabled: false` in frontmatter are now correctly excluded from all agent exports. Previously the field existed in schema but was not enforced
+- **Disabled rules flagged as stale** - When a rule is disabled, existing multi-file exports (e.g., `.cursor/rules/*.mdc`) are now reported as stale so they can be cleaned with `aligntrue sync --clean`
 - **Lockfile creation timing in team mode** - Lockfile is now created immediately when team mode is enabled, rather than waiting for first sync. Provides immediate feedback and allows git tracking from the start
 - **Sources split non-interactive mode** - `aligntrue sources split --yes` now fully suppresses intro/outro messages for better CI/automation support
 - **Documentation examples updated** - Git source and solo guide documentation now uses markdown rule examples instead of obsolete YAML format
 - **Documentation accuracy for git sources and exporters** - Updated all reference docs to reflect new directory scan default (`.`) for git sources and `align.sections` usage in `ScopedExportRequest`. Removed references to `.aligntrue.yaml` file-based rules and deprecated `keep_count` backup config
 - **Exporter content mode typing** - Single-file exporters now read `sync.content_mode` via a typed helper instead of `any` casts
+- **Uninstall cleanup** - `aligntrue uninstall --delete-exports --delete-source` now removes AlignTrue-managed agent ignore files (e.g., `.cursorignore`) and prunes empty export directories for all supported agents instead of leaving empty folders behind
+- **Team config validation in personal files** - `aligntrue config set` no longer errors about missing `mode` when team config already defines it
+- **Non-interactive add source guidance** - `aligntrue add source` in team mode now explains to use `--personal` or edit `config.team.yaml` (removes misleading `--shared` hint)
 
 ## [0.5.2] - 2025-12-01
 

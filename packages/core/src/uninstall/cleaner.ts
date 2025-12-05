@@ -23,6 +23,13 @@ import type {
   DetectionResult,
 } from "./types.js";
 import { BackupManager } from "../backup/index.js";
+import { AGENT_IGNORE_REGISTRY } from "../agent-ignore/registry.js";
+import {
+  hasAlignTrueSection,
+  readIgnoreFile,
+  removeAlignTrueSection,
+} from "../agent-ignore/manager.js";
+import { EXPORT_DIRECTORIES } from "./detector.js";
 
 /**
  * Pattern to match READ-ONLY markers in exported files
@@ -182,7 +189,11 @@ export async function executeUninstall(
 
     // Step 3: Clean up empty export directories after file deletion
     if (options.exportHandling === "delete" && !options.dryRun) {
-      cleanupEmptyExportDirectories(cwd, detection.exportedFiles);
+      cleanupEmptyExportDirectories(
+        cwd,
+        detection.exportedFiles,
+        EXPORT_DIRECTORIES,
+      );
     }
 
     // Step 4: Handle source directory
@@ -225,6 +236,17 @@ export async function executeUninstall(
         result.removedGitignoreEntries = removed;
       } else {
         result.removedGitignoreEntries = detection.gitignoreEntries;
+      }
+    }
+
+    // Step 7: Clean up AlignTrue-managed agent ignore files (e.g., .cursorignore)
+    if (!options.dryRun) {
+      const ignoreCleanup = cleanupAgentIgnoreFiles(cwd);
+      if (ignoreCleanup.deleted.length > 0) {
+        result.deletedFiles.push(...ignoreCleanup.deleted);
+      }
+      if (ignoreCleanup.warnings.length > 0) {
+        result.warnings.push(...ignoreCleanup.warnings);
       }
     }
 
@@ -341,12 +363,19 @@ function removeGitignoreEntries(cwd: string): string[] {
 function cleanupEmptyExportDirectories(
   cwd: string,
   deletedFiles: { path: string }[],
+  knownExportDirs: string[] = [],
 ): void {
   // Get unique directories
   const dirs = new Set<string>();
   for (const file of deletedFiles) {
     const dir = dirname(file.path);
     if (dir !== ".") {
+      dirs.add(dir);
+    }
+  }
+
+  for (const dir of knownExportDirs) {
+    if (dir && dir !== ".") {
       dirs.add(dir);
     }
   }
@@ -385,4 +414,56 @@ function isEmptyDirectory(dirPath: string): boolean {
  */
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Remove AlignTrue-managed sections from agent ignore files
+ * Deletes the file if AlignTrue was the only content.
+ */
+function cleanupAgentIgnoreFiles(cwd: string): {
+  deleted: string[];
+  warnings: string[];
+} {
+  const deleted: string[] = [];
+  const warnings: string[] = [];
+
+  // Collect all ignore files (primary + indexing) from registry
+  const ignoreFiles = new Set<string>();
+  for (const spec of AGENT_IGNORE_REGISTRY) {
+    ignoreFiles.add(spec.ignoreFile);
+    if (spec.indexingIgnoreFile) {
+      ignoreFiles.add(spec.indexingIgnoreFile);
+    }
+  }
+
+  for (const ignoreFile of ignoreFiles) {
+    const filePath = join(cwd, ignoreFile);
+    const content = readIgnoreFile(filePath);
+
+    if (!content || !hasAlignTrueSection(content)) {
+      continue;
+    }
+
+    const cleaned = removeAlignTrueSection(content);
+    const trimmed = cleaned.trim();
+
+    try {
+      if (trimmed.length === 0) {
+        unlinkSync(filePath);
+        deleted.push(ignoreFile);
+      } else {
+        const normalized = cleaned.trimEnd();
+        const output = normalized.endsWith("\n")
+          ? normalized
+          : `${normalized}\n`;
+        writeFileSync(filePath, output, "utf-8");
+      }
+    } catch (err) {
+      warnings.push(
+        `Failed to clean ${ignoreFile}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  return { deleted, warnings };
 }

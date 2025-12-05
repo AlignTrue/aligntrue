@@ -23,7 +23,7 @@ const READ_ONLY_MARKER_PATTERN =
 /**
  * Known export file patterns from AlignTrue exporters
  */
-const EXPORT_PATTERNS = [
+export const EXPORT_PATTERNS = [
   // Cursor
   { dir: ".cursor/rules", ext: ".mdc" },
   // AGENTS.md (various agents)
@@ -85,6 +85,13 @@ const EXPORT_PATTERNS = [
   // Kiro
   { dir: ".kiro/rules" },
 ];
+
+/**
+ * Directories created by AlignTrue exporters (used for cleanup)
+ */
+export const EXPORT_DIRECTORIES = EXPORT_PATTERNS.filter(
+  (pattern) => "dir" in pattern && Boolean(pattern.dir),
+).map((pattern) => (pattern as { dir: string }).dir);
 
 /**
  * Gitignore markers used by AlignTrue

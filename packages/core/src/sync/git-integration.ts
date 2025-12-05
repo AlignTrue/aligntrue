@@ -255,7 +255,7 @@ export class GitIntegration {
    * Update .gitignore with managed section for AlignTrue files
    *
    * @param workspaceRoot - Workspace root directory
-   * @param files - Files to add to .gitignore
+   * @param files - Files to add/remove from .gitignore
    * @param autoMode - Auto-gitignore mode (auto, always, never)
    * @param gitMode - Current git mode (ignore, commit, branch)
    */
@@ -265,10 +265,7 @@ export class GitIntegration {
     autoMode: "auto" | "always" | "never",
     gitMode: GitMode,
   ): Promise<void> {
-    // auto mode logic
-    if (autoMode === "auto") {
-      if (gitMode !== "ignore") return; // Only manage in ignore mode
-    } else if (autoMode === "never") {
+    if (autoMode === "never") {
       return;
     }
 
@@ -290,6 +287,22 @@ export class GitIntegration {
       // File doesn't exist, content remains ""
     }
 
+    // When git mode is "commit" or "branch", remove files from .gitignore
+    // (they should be tracked by git, not ignored)
+    if (gitMode === "commit" || gitMode === "branch") {
+      // Remove the managed section entirely so files can be committed
+      const updatedContent = this.removeManagedSection(
+        content,
+        marker,
+        endMarker,
+      );
+      if (updatedContent !== content) {
+        writeFileSync(gitignorePath, updatedContent, "utf-8");
+      }
+      return;
+    }
+
+    // In "ignore" mode (or "auto" with ignore): add files to .gitignore
     // Normalize paths to relative (exporters may return absolute paths)
     const relativePaths = this.normalizePathsForGitignore(workspaceRoot, files);
 

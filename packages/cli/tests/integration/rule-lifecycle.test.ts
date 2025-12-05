@@ -322,6 +322,43 @@ Use camelCase for variables, PascalCase for classes.
       );
       expect(content).toContain("Permanent Rule");
     });
+
+    it("disabled rule: export skipped and existing export reported as stale", async () => {
+      createConfig(["cursor"]);
+      createRule("disabled.md", "Temporary Rule", "Should be disabled later.");
+
+      // Initial sync writes the export
+      await executeSync();
+      const exportPath = join(TEST_DIR, ".cursor", "rules", "disabled.mdc");
+      expect(existsSync(exportPath)).toBe(true);
+
+      // Disable the rule
+      const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+      const disabledContent = `---
+title: "Temporary Rule"
+enabled: false
+---
+
+# Temporary Rule
+
+Should be disabled later.
+`;
+      writeFileSync(join(rulesDir, "disabled.md"), disabledContent, "utf-8");
+
+      const warnSpy = vi.spyOn(clack.log, "warn");
+
+      await executeSync();
+
+      // Export no longer rewritten, and stale detection reports the existing file
+      expect(existsSync(exportPath)).toBe(true);
+      const warnCalls = warnSpy.mock.calls.map((call) => call[0] as string);
+      expect(warnCalls.some((msg) => msg.includes("stale export file"))).toBe(
+        true,
+      );
+      expect(
+        warnCalls.some((msg) => msg.includes(".cursor/rules/disabled.mdc")),
+      ).toBe(true);
+    });
   });
 
   describe("Rename/Reorganize Rules", () => {
