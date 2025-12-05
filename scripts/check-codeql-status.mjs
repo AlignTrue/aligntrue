@@ -15,7 +15,6 @@ import {
   print,
   getRateLimit,
   checkAuth,
-  getRepoUrl,
   getSecurityUrl,
   exitAuthError,
 } from "./lib/github-helpers.mjs";
