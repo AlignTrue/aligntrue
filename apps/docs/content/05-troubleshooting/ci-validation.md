@@ -82,25 +82,27 @@ aligntrue check --json
 
 ---
 
-## Lockfile strict mode failures
+## Lockfile drift failures
 
 **Error (CI):**
 
 ```
-✖ Lockfile validation failed in strict mode
-  2 rules have hash mismatches
+✖ Lockfile drift detected
+
+  Expected: abc123...
+  Actual:   def456...
 
 Exit code: 1
 ```
 
-**Cause:** CI is using `lockfile.mode: strict` and rules changed since the last lockfile update. Current lockfile path is `.aligntrue/lock.json` (AlignTrue will migrate legacy `.aligntrue/lock.json` when you run sync).
+**Cause:** The lockfile hash doesn't match the current rules. This happens when rules changed since the last `aligntrue sync`.
 
 **Fix:**
 
 **1. Refresh the lockfile in your branch:**
 
 ```bash
-# Regenerate lockfile (accept prompts, auto-add detected agents)
+# Regenerate lockfile (sync updates it automatically)
 aligntrue sync --yes
 
 # Commit updated lockfile
@@ -109,12 +111,12 @@ git commit -m "chore: update lockfile after rule changes"
 git push
 ```
 
-**2. Or temporarily use soft mode in CI:**
+**2. Or skip drift check temporarily:**
 
 ```yaml
-# .aligntrue/config.yaml
-lockfile:
-  mode: soft # Warn but don't block CI
+# CI workflow (not recommended for production)
+- run: aligntrue sync --yes
+# Skip drift check: don't run `aligntrue drift --gates`
 ```
 
 ---
@@ -128,7 +130,7 @@ All validations passed. Safe to merge.
 **Exit code 1 - Validation error:**
 
 - Schema validation failed
-- Lockfile drift detected (strict mode)
+- Lockfile drift detected (when using `drift --gates`)
 - User-fixable issues
 
 **Action:** Fix the validation errors and retry.
@@ -234,4 +236,5 @@ This is useful for:
 
 - Always run `aligntrue check --ci` before `aligntrue sync` in pipelines.
 - Use `aligntrue sync --dry-run --yes` to preview, then `aligntrue sync --yes` to write files (lockfile included).
-- Commit `.aligntrue/lock.json` whenever rules change in team mode; CI strict mode will block drift.
+- Commit `.aligntrue/lock.json` whenever rules change in team mode.
+- Use `aligntrue drift --gates` in CI to fail the pipeline if drift is detected.

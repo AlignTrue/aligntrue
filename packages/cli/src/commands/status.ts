@@ -80,7 +80,6 @@ interface StatusSummary {
   };
   lockfile: {
     enabled: boolean;
-    mode: string;
     exists: boolean;
     path: string;
   };
@@ -192,7 +191,6 @@ function buildStatusSummary(
 
   const lockfile = {
     enabled: lockfileEnabled,
-    mode: config.lockfile?.mode || (lockfileEnabled ? "soft" : "off"),
     exists: existsSync(paths.lockfile),
     path: paths.lockfile,
   };
@@ -295,10 +293,11 @@ function renderStatus(summary: StatusSummary): void {
 
   console.log("\nLockfile:");
   if (summary.lockfile.enabled) {
-    console.log(`  Status: enabled (${summary.lockfile.mode})`);
+    console.log(`  Status: enabled`);
     console.log(
       `  File: ${summary.lockfile.exists ? "present" : "missing (run 'aligntrue sync')"}`,
     );
+    console.log(`  Enforcement: aligntrue drift --gates`);
   } else {
     console.log("  Status: disabled");
   }

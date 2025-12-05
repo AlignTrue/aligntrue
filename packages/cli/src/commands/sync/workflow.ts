@@ -37,6 +37,7 @@ export interface SyncResult {
   success: boolean;
   written?: string[];
   warnings?: string[];
+  lockfilePath?: string;
   conflicts?: Array<{
     heading: string;
     files: Array<{ path: string; mtime: Date }>;
@@ -228,7 +229,43 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 5: Update .gitignore if configured
+  // Step 5: Generate lockfile (team mode only, respects dry-run)
+  if (
+    result.success &&
+    config.mode === "team" &&
+    config.modules?.lockfile &&
+    !options.dryRun
+  ) {
+    try {
+      const { generateLockfile, writeLockfile } = await import(
+        "@aligntrue/core/lockfile"
+      );
+      const { loadRulesDirectory, getAlignTruePaths } = await import(
+        "@aligntrue/core"
+      );
+
+      const paths = getAlignTruePaths(cwd);
+      const rules = await loadRulesDirectory(paths.rules, cwd);
+      const lockfile = generateLockfile(rules, cwd);
+      const lockfilePath = join(cwd, ".aligntrue", "lock.json");
+
+      writeLockfile(lockfilePath, lockfile);
+      result.lockfilePath = lockfilePath;
+
+      if (options.verbose) {
+        clack.log.success(`Lockfile updated: ${lockfilePath}`);
+      }
+    } catch (lockfileErr) {
+      // Log warning but don't fail sync
+      if (!options.quiet) {
+        clack.log.warn(
+          `Failed to update lockfile: ${lockfileErr instanceof Error ? lockfileErr.message : String(lockfileErr)}`,
+        );
+      }
+    }
+  }
+
+  // Step 6: Update .gitignore if configured
   if (
     !options.dryRun &&
     result.success &&
@@ -259,7 +296,7 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 6: Apply git integration mode (commit/branch)
+  // Step 7: Apply git integration mode (commit/branch)
   if (
     !options.dryRun &&
     result.success &&
@@ -300,7 +337,7 @@ export async function executeSyncWorkflow(
     }
   }
 
-  // Step 7: Push to remotes if configured and auto-enabled
+  // Step 8: Push to remotes if configured and auto-enabled
   if (!options.dryRun && result.success && config.remotes) {
     try {
       const { createRemotesManager } = await import("@aligntrue/core");

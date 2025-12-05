@@ -113,41 +113,32 @@ Still not seeing the sections? Run `aligntrue sync --verbose` to confirm the ali
 
 ## Lockfile drift (team mode)
 
-**Error (soft mode):**
+**Error (drift command):**
 
-```
-⚠ Warning: Lockfile is out of sync
-  Rule 'my-project.global.code-style' hash mismatch
-  Expected: a3b2c1d4...
-  Actual:   e5f6a7b8...
-
-Continuing sync (soft mode)...
-```
-
-**Error (strict mode):**
-
-```
-✖ Error: Lockfile validation failed
-  Rule 'my-project.global.code-style' hash mismatch
-  Expected: a3b2c1d4...
-  Actual:   e5f6a7b8...
-
-Aborting sync. Fix lockfile drift or use --force.
+```bash
+aligntrue drift --gates
+# ✖ Lockfile drift detected
+#   Expected: a3b2c1d4...
+#   Actual:   e5f6a7b8...
+#
+# Exit code: 1
 ```
 
 **Cause:** Rules changed since lockfile was last generated.
+
+**Note:** `aligntrue sync` automatically updates the lockfile. Use `aligntrue drift --gates` in CI to enforce lockfile validation.
 
 **Fix:**
 
 **1. Intentional changes - regenerate lockfile:**
 
 ```bash
-# Update lockfile to match current rules
-aligntrue sync --force
-
-# Or in two steps:
-rm .aligntrue/lock.json
+# Sync regenerates the lockfile automatically
 aligntrue sync
+
+# Commit the updated lockfile
+git add .aligntrue/lock.json
+git commit -m "chore: update lockfile"
 ```
 
 **2. Unintentional changes - review diff:**

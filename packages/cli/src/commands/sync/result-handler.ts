@@ -321,14 +321,14 @@ export async function handleSyncResult(
   // Important: This must happen BEFORE clack.outro()
   const lockfileExpected =
     context.config.mode === "team" && context.config.modules?.lockfile;
-  if (!options.dryRun && lockfileExpected && context.lockfilePath) {
-    if (existsSync(context.lockfilePath)) {
+  if (!options.dryRun && lockfileExpected && result.lockfilePath) {
+    if (existsSync(result.lockfilePath)) {
       clack.log.success(
-        `Lockfile updated: ${relative(cwd, context.lockfilePath)}`,
+        `Lockfile updated: ${relative(cwd, result.lockfilePath)}`,
       );
     } else {
       clack.log.warn(
-        `Expected lockfile at ${context.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
+        `Expected lockfile at ${result.lockfilePath} but it was not found. Run 'aligntrue sync' again to regenerate.`,
       );
     }
   }
@@ -754,7 +754,9 @@ export function handleSyncError(error: Error): void {
       clack.log.info("  2. Approve via git PR review workflow");
       clack.log.info("  3. Commit .aligntrue/lock.json to version control");
       clack.log.info("");
-      clack.log.info("Or set lockfile.mode: soft in config for warnings only");
+      clack.log.info(
+        "Use 'aligntrue drift --gates' in CI to enforce lockfile validation",
+      );
     } else if (error.message.includes("exporter")) {
       clack.log.info("Check exporter configuration in .aligntrue/config.yaml");
     }

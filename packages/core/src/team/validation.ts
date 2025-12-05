@@ -46,17 +46,8 @@ export function validateTeamConfig(
     });
   }
 
-  // If lockfile is enabled, mode should not be 'off'
-  if (config.modules?.lockfile && config.lockfile?.mode === "off") {
-    errors.push({
-      type: "warning",
-      message: "Lockfile enabled but mode is off",
-      suggestion: `Set lockfile mode to soft or strict:
-  lockfile:
-    mode: soft  # or strict`,
-      field: "lockfile.mode",
-    });
-  }
+  // Note: lockfile.mode validation removed. Use modules.lockfile: true/false instead.
+  // Drift enforcement via `aligntrue drift --gates` in CI.
 
   return errors;
 }

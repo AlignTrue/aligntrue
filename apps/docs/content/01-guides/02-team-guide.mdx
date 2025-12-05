@@ -244,15 +244,15 @@ cd project
 
 </Tabs>
 
-**Sync (pulls from lockfile):**
+**Sync (uses lockfile):**
 
 ```bash
 aligntrue sync
 
 # Output:
-# ✓ Validated lockfile (strict mode)
 # ✓ Pulled 3 sources
 # ✓ Applied 2 overlays
+# ✓ Lockfile updated
 # ✓ Exported to cursor, agents
 ```
 
@@ -524,23 +524,22 @@ git commit -m "chore: Update lockfile after rule changes"
 git push origin main
 ```
 
-**Lockfile modes:**
-
-- **`off`** - No validation (like solo mode)
-- **`soft`** - Warn on drift, allow sync to continue
-- **`strict`** - Block sync until hash is approved
-
-**Interactive vs CI behavior:**
-
-In **strict mode**:
-
-- **Interactive terminal** - Prompts to approve new hash
-- **CI/non-interactive** - Exits with code 1, requires manual approval
+**Lockfile enabled by default in team mode:**
 
 ```yaml
 # .aligntrue/config.team.yaml
-lockfile:
-  mode: strict # Block unapproved changes
+modules:
+  lockfile: true # Enabled by default
+```
+
+**CI enforcement:**
+
+Use `aligntrue drift --gates` in CI to fail the pipeline when lockfile drift is detected:
+
+```yaml
+# CI workflow
+- run: aligntrue sync --yes
+- run: aligntrue drift --gates # Fails if drift detected
 ```
 
 ### 2. Agent file drift
@@ -705,12 +704,12 @@ git commit -m "fix: Resolve lockfile drift
 - Tested with: aligntrue check && aligntrue sync"
 ```
 
-**4. Use strict mode in production:**
+**4. Enforce drift in CI:**
 
 ```yaml
-# .aligntrue/config.team.yaml
-lockfile:
-  mode: strict # Block unapproved changes
+# .github/workflows/ci.yml
+- name: Check for drift
+  run: aligntrue drift --gates # Fails CI if drift detected
 ```
 
 **5. Review drift in PRs:**

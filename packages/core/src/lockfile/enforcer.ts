@@ -1,5 +1,9 @@
 /**
- * Lockfile mode enforcement (off/soft/strict)
+ * Lockfile enforcement - simplified
+ *
+ * Validation is now simple: lockfile is on or off (via modules.lockfile).
+ * Enforcement (blocking on drift) happens in CI via `aligntrue drift --gates`.
+ * Sync always regenerates the lockfile; drift command validates it.
  */
 
 import type {
@@ -10,77 +14,39 @@ import type {
 import { formatValidationResult } from "./validator.js";
 
 /**
- * Enforce lockfile validation based on mode
+ * Check lockfile validation result
  *
- * Modes:
- * - off: Skip validation, always succeed
- * - soft: Warn to stderr on mismatch, exit 0
- * - strict: Error to stderr on mismatch, exit 1
+ * Returns a simple success/failure result. The caller decides how to handle it.
+ * For drift detection, use `aligntrue drift --gates` in CI.
  *
- * @param mode - Lockfile mode from config
  * @param validation - Validation result from validateLockfile
- * @returns EnforcementResult with exit code
+ * @returns EnforcementResult
  */
-export function enforceLockfile(
-  mode: LockfileMode,
+export function checkLockfileValidation(
   validation: LockfileValidationResult,
 ): EnforcementResult {
-  // Off mode: skip all validation
-  if (mode === "off") {
-    return {
-      success: true,
-      exitCode: 0,
-    };
-  }
-
-  // If validation passed, succeed regardless of mode
   if (validation.valid) {
     return {
       success: true,
-      message: "Lockfile validation passed",
-      exitCode: 0,
+      message: "Lockfile is up to date",
     };
   }
 
-  // Format validation result
-  const message = formatValidationResult(validation);
+  return {
+    success: false,
+    message: formatValidationResult(validation),
+  };
+}
 
-  // Soft mode: warn but allow to continue
-  if (mode === "soft") {
-    console.warn("\n⚠️  Lockfile drift detected (soft mode):\n");
-    console.warn(message);
-    console.warn(
-      "\nSync will continue. To approve these changes:\n" +
-        "  1. Review the changes above\n" +
-        "  2. Commit changes to git\n" +
-        "  3. Create PR for team review and approval\n",
-    );
-
-    return {
-      success: true, // Allow sync to continue
-      message,
-      exitCode: 0,
-    };
-  }
-
-  // Strict mode: error and abort
-  if (mode === "strict") {
-    console.error("\n❌ Lockfile validation failed (strict mode):\n");
-    console.error(message);
-    console.error(
-      "\nSync aborted. To approve these changes:\n" +
-        "  1. Review the changes above\n" +
-        "  2. Commit changes to git\n" +
-        "  3. Create PR for team review and approval\n",
-    );
-
-    return {
-      success: false, // Block sync
-      message,
-      exitCode: 1,
-    };
-  }
-
-  // Unknown mode (should not happen with type checking)
-  throw new Error(`Unknown lockfile mode: ${mode}`);
+/**
+ * @deprecated Use checkLockfileValidation instead. Mode-based enforcement removed.
+ * Kept for backward compatibility - behavior now ignores mode parameter.
+ */
+export function enforceLockfile(
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  _mode: LockfileMode,
+  validation: LockfileValidationResult,
+): EnforcementResult {
+  // Mode is now ignored - validation happens, caller decides what to do
+  return checkLockfileValidation(validation);
 }

@@ -83,6 +83,9 @@ export async function team(args: string[]): Promise<void> {
     case "status":
       await teamStatus();
       break;
+    case "join":
+      await teamJoin(parsed.flags);
+      break;
     default:
       showStandardHelp({
         name: "team",
@@ -90,17 +93,22 @@ export async function team(args: string[]): Promise<void> {
         usage: "aligntrue team <subcommand>",
         args: ARG_DEFINITIONS,
         examples: [
-          "aligntrue team enable",
-          "aligntrue team enable --yes",
-          "aligntrue team disable",
-          "aligntrue team status",
+          "aligntrue team enable      # Enable team mode (repo owner)",
+          "aligntrue team join        # Join existing team (new member)",
+          "aligntrue team disable     # Disable team mode",
+          "aligntrue team status      # Show team status",
         ],
         notes: [
           "Team mode features:",
           "  - Lockfile generation for reproducibility",
-          "  - Bundle generation for multi-source merging",
-          "  - Drift detection with soft/strict validation",
+          "  - Drift detection (use: aligntrue drift --gates in CI)",
           "  - Git-based collaboration workflows (PR approval)",
+          "",
+          "Subcommands:",
+          "  enable   Enable team mode (creates config.team.yaml)",
+          "  join     Create personal config for existing team repo",
+          "  disable  Disable team mode (non-destructive)",
+          "  status   Show team mode status",
         ],
       });
       console.error(`\nError: Unknown subcommand: ${subcommand}`);
@@ -170,14 +178,8 @@ async function teamStatus(): Promise<void> {
 
     // Lockfile status
     const lockfileEnabled = config.modules?.lockfile ?? false;
-    const lockfileMode = config.lockfile?.mode ?? "off";
     if (lockfileEnabled) {
-      const lockfileFriendly = formatLockfileMode(lockfileMode);
-      console.log(
-        `\nLockfile validation: ${lockfileFriendly}${
-          lockfileMode !== "off" ? ` (${lockfileMode})` : ""
-        }`,
-      );
+      console.log(`\nLockfile: enabled`);
       const lockfilePath = paths.lockfile;
       const lockfileExists = existsSync(lockfilePath);
       if (lockfileExists) {
@@ -186,12 +188,8 @@ async function teamStatus(): Promise<void> {
         console.log(`  File: .aligntrue/lock.json (not generated yet)`);
         console.log("  💡 Run 'aligntrue sync' to generate");
       }
-      console.log("  ℹ️  Lockfile Modes:");
-      console.log(
-        "    off              - Generate lockfile but skip validation",
-      );
-      console.log("    warn on drift    - Warn about drift, but allow sync");
-      console.log("    block on drift   - Block sync until lockfile approved");
+      console.log("  💡 Check drift: aligntrue drift");
+      console.log("  💡 CI enforcement: aligntrue drift --gates");
     } else {
       console.log("\nLockfile: disabled");
       console.log("  💡 Enable in team config: modules.lockfile: true");
@@ -344,40 +342,14 @@ async function teamEnable(
       clack.log.success(`Backup created: ${backup.timestamp}`);
     }
 
-    // Prompt for lockfile mode (interactive only, new setup only)
-    let lockfileMode: "soft" | "strict" = "soft";
+    // Show team mode benefits (interactive only, new setup only)
     if (!nonInteractive && !isReEnabling) {
-      // Explain team mode benefits first
       clack.log.info(`Team Mode Benefits:
   ✓ Reproducible builds with lockfiles
   ✓ Git-based collaboration workflow
   ✓ Separate team and personal rules
-  ✓ Drift detection in CI
+  ✓ Drift detection in CI (use: aligntrue drift --gates)
 `);
-
-      const lockfileModeResponse = await clack.select({
-        message: "Lockfile validation mode:",
-        options: [
-          {
-            value: "soft",
-            label: "Soft (warn on drift, allow sync)",
-            hint: "Recommended: Fast iteration, team lead approves via PR",
-          },
-          {
-            value: "strict",
-            label: "Strict (block until approved)",
-            hint: "Changes blocked until team lead approves",
-          },
-        ],
-        initialValue: "soft",
-      });
-
-      if (clack.isCancel(lockfileModeResponse)) {
-        clack.cancel("Team mode setup cancelled");
-        process.exit(0);
-      }
-
-      lockfileMode = lockfileModeResponse as "soft" | "strict";
     }
 
     if (isReEnabling) {
@@ -404,9 +376,6 @@ async function teamEnable(
         mode: "team",
         modules: {
           lockfile: true,
-        },
-        lockfile: {
-          mode: lockfileMode,
         },
       };
 
@@ -482,12 +451,12 @@ async function teamEnable(
       "",
       "Team config: .aligntrue/config.team.yaml (commit this)",
       "Personal config: .aligntrue/config.yaml (gitignored)",
-      `Lockfile: .aligntrue/lock.json (${lockfileMode} mode, ready)`,
+      "Lockfile: .aligntrue/lock.json (ready)",
       "",
       "Helpful commands:",
-      "  aligntrue sync   Sync rules and update lockfile",
-      "  aligntrue team   Manage team settings",
-      "  aligntrue --help See all commands",
+      "  aligntrue sync          Sync rules and update lockfile",
+      "  aligntrue drift         Check for drift",
+      "  aligntrue drift --gates CI enforcement (fails on drift)",
       "",
       "Learn more: https://aligntrue.ai/team",
     ];
@@ -625,13 +594,112 @@ async function teamDisable(
   }
 }
 
-function formatLockfileMode(mode: string): string {
-  switch (mode) {
-    case "soft":
-      return "warn on drift";
-    case "strict":
-      return "block on drift";
-    default:
-      return "off";
+/**
+ * Join an existing team repo by creating personal config
+ *
+ * This is for new team members joining a repo that already has team mode enabled.
+ * Creates the personal config.yaml file that is gitignored.
+ */
+async function teamJoin(
+  flags: Record<string, string | boolean | undefined>,
+): Promise<void> {
+  const paths = getAlignTruePaths(process.cwd());
+  const configPath = paths.config;
+  const teamConfigPath = paths.teamConfig;
+
+  const nonInteractive =
+    (flags["yes"] as boolean | undefined) ||
+    (flags["non-interactive"] as boolean | undefined) ||
+    process.env["CI"] === "true" ||
+    !isTTY() ||
+    false;
+
+  // Check if team config exists
+  if (!existsSync(teamConfigPath)) {
+    console.error("✗ No team config found: .aligntrue/config.team.yaml");
+    console.error("  This command is for joining an existing team repo.");
+    console.error(
+      "  If you're setting up a new team, run: aligntrue team enable",
+    );
+    exitWithError(1, "No team config found", {
+      hint: "This command is for joining existing team repos. Use 'aligntrue team enable' to set up a new team.",
+    });
+  }
+
+  // Check if team mode is active (not OFF marker)
+  if (!isTeamModeActive(process.cwd())) {
+    console.error("✗ Team mode is disabled in this repo");
+    console.error("  The config.team.yaml exists but has the OFF marker.");
+    console.error("  Ask a repo owner to enable team mode first.");
+    exitWithError(1, "Team mode is disabled", {
+      hint: "Team mode is disabled. Ask a repo owner to enable it.",
+    });
+  }
+
+  // Check if personal config already exists
+  if (existsSync(configPath)) {
+    console.log("✓ Personal config already exists: .aligntrue/config.yaml");
+    console.log("  You're all set! Run 'aligntrue sync' to sync rules.");
+    return;
+  }
+
+  if (!nonInteractive) {
+    clack.intro("Team Join");
+    clack.log.info(
+      "Creating your personal config for this team repo.\n" +
+        "This file is gitignored and stores your personal settings.",
+    );
+  }
+
+  // Create personal config with helpful comments
+  const personalConfigContent = `# Personal AlignTrue configuration
+# This file is gitignored and contains your personal settings.
+#
+# Your team uses AlignTrue to sync AI rules. This file is for YOUR settings only.
+# Learn more: https://aligntrue.ai/docs/01-guides/03-join-team
+#
+# Example personal settings:
+#   remotes:
+#     personal: git@github.com:you/personal-rules.git
+#   
+#   sources:
+#     - type: git
+#       url: git@github.com:you/personal-rules.git
+#       personal: true
+#
+#   git:
+#     mode: ignore  # Override team's git mode locally
+
+version: "1"
+`;
+
+  try {
+    mkdirSync(dirname(configPath), { recursive: true });
+    writeFileSync(configPath, personalConfigContent, "utf-8");
+
+    if (!nonInteractive) {
+      clack.log.success("Created personal config: .aligntrue/config.yaml");
+
+      clack.outro(
+        "Ready to sync!\n\n" +
+          "Next steps:\n" +
+          "  1. Run: aligntrue sync\n" +
+          "  2. (Optional) Add personal settings to .aligntrue/config.yaml\n\n" +
+          "Learn more: https://aligntrue.ai/docs/01-guides/03-join-team",
+      );
+    } else {
+      console.log("✓ Created personal config: .aligntrue/config.yaml");
+      console.log("\nNext: Run 'aligntrue sync' to sync rules.");
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("process.exit")) {
+      throw err;
+    }
+    console.error("✗ Failed to create personal config");
+    console.error(`  ${err instanceof Error ? err.message : String(err)}`);
+    exitWithError(
+      1,
+      `Failed to create personal config: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }

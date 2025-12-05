@@ -137,4 +137,10 @@ export interface SyncOptions {
    * Used when CLI has already generated the lockfile with correct fingerprints
    */
   skipLockfileGeneration?: boolean;
+
+  /**
+   * Block sync when git sources have updates (team mode only)
+   * Default: false (warn and continue)
+   */
+  strictSources?: boolean;
 }

@@ -809,9 +809,6 @@ export async function init(args: string[] = []): Promise<void> {
       modules: {
         lockfile: true,
       },
-      lockfile: {
-        mode: "soft",
-      },
       sources,
     };
 
@@ -820,7 +817,6 @@ export async function init(args: string[] = []): Promise<void> {
     delete personalConfig.sources;
     delete personalConfig.mode;
     delete personalConfig.modules;
-    delete personalConfig.lockfile;
 
     // Write team + personal configs
     mkdirSync(dirname(teamConfigPath), { recursive: true });

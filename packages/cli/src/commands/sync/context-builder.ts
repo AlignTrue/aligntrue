@@ -120,8 +120,6 @@ export interface SyncContext {
   engine: SyncEngine;
   registry: ExporterRegistry;
   spinner: SpinnerLike;
-  lockfilePath?: string;
-  lockfileWritten?: boolean;
 }
 
 /**
@@ -198,47 +196,15 @@ export async function buildSyncContext(
     }
   }
 
-  // New member flow: create empty personal config if team mode and no personal config
-  if (isTeamMode && existsSync(paths.teamConfig)) {
-    const personalConfigContent = `# Personal AlignTrue configuration
-# This file is gitignored and contains your personal settings.
-#
-# Your team uses AlignTrue to sync AI rules. This file is for YOUR settings only.
-# Learn more: https://aligntrue.ai/join-team
-#
-# Example personal settings:
-#   remotes:
-#     personal: git@github.com:you/personal-rules.git
-#   
-#   sources:
-#     - type: git
-#       url: git@github.com:you/personal-rules.git
-#       personal: true
-#
-#   git:
-#     mode: ignore  # Override team's git mode locally
-
-version: "1"
-`;
-    ensureDirectoryExists(dirname(paths.config));
-    try {
-      writeFileSync(paths.config, personalConfigContent, {
-        encoding: "utf-8",
-        flag: "wx",
-      });
-      if (!options.quiet) {
-        clack.log.info(
-          "Created personal config: .aligntrue/config.yaml\n" +
-            "  This file is for your personal settings (gitignored).\n" +
-            "  See: https://aligntrue.ai/join-team",
-        );
-      }
-    } catch (error) {
-      // Ignore if another process already created the file between checks
-      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
-        throw error;
-      }
-    }
+  // Check for new team member needing personal config
+  if (isTeamMode && existsSync(paths.teamConfig) && !existsSync(paths.config)) {
+    throw ErrorFactory.invalidConfig(
+      "Missing personal config file: .aligntrue/config.yaml\n\n" +
+        "This repo uses team mode. New team members need to create a personal config.\n\n" +
+        "Run: aligntrue team join\n\n" +
+        "This creates your personal config (gitignored) for local settings.\n" +
+        "Learn more: https://aligntrue.ai/docs/01-guides/03-join-team",
+    );
   }
 
   const spinnerWithMessage = spinner as SpinnerLike & {
@@ -310,27 +276,28 @@ version: "1"
   let absoluteSourcePath: string;
   let bundleResult: Awaited<ReturnType<typeof resolveAndMergeSources>>;
 
+  // Define resolve options outside try block so catch can reuse with offlineMode
+  const resolveOpts: {
+    cwd: string;
+    offlineMode?: boolean;
+    forceRefresh?: boolean;
+    warnConflicts: boolean;
+    onGitProgress: (update: GitProgressUpdate) => void;
+  } = {
+    cwd,
+    warnConflicts: true,
+    onGitProgress: handleGitProgress,
+  };
+
+  const offlineVal = options.offline || options.skipUpdateCheck;
+  if (offlineVal !== undefined) {
+    resolveOpts.offlineMode = offlineVal;
+  }
+  if (options.forceRefresh !== undefined) {
+    resolveOpts.forceRefresh = options.forceRefresh;
+  }
+
   try {
-    const resolveOpts: {
-      cwd: string;
-      offlineMode?: boolean;
-      forceRefresh?: boolean;
-      warnConflicts: boolean;
-      onGitProgress: (update: GitProgressUpdate) => void;
-    } = {
-      cwd,
-      warnConflicts: true,
-      onGitProgress: handleGitProgress,
-    };
-
-    const offlineVal = options.offline || options.skipUpdateCheck;
-    if (offlineVal !== undefined) {
-      resolveOpts.offlineMode = offlineVal;
-    }
-    if (options.forceRefresh !== undefined) {
-      resolveOpts.forceRefresh = options.forceRefresh;
-    }
-
     bundleResult = await resolveAndMergeSources(config, resolveOpts);
 
     // Use first source path for conflict detection and display
@@ -391,7 +358,7 @@ version: "1"
       throw err;
     }
 
-    // Handle git source updates available in team mode
+    // Handle git source updates available
     if (err instanceof UpdatesAvailableError) {
       const updateErr = err as UpdatesAvailableError;
       const commitsBehind =
@@ -408,77 +375,75 @@ version: "1"
         .filter(Boolean)
         .join("\n");
 
-      const nextSteps = [
-        "Review and merge changes to the source repository",
-        "Or rerun with --skip-update-check to bypass temporarily",
-        "Or run with --offline to work without updates",
-      ];
-
+      // In team mode: warn by default, block only with --strict-sources
       if (config.mode === "team") {
-        throw new TeamModeError(
+        if (options.strictSources) {
+          throw new TeamModeError(
+            `Git source has updates available:\n${details}`,
+            "Strict source checking enabled. Approve updates by merging the source PR.",
+          ).withNextSteps([
+            "Review and merge changes to the source repository",
+            "Or rerun without --strict-sources to allow updates",
+            "Or run with --offline to work without updates",
+          ]);
+        }
+
+        // Warn but continue with cached version (default behavior for team mode)
+        if (!options.quiet) {
+          clack.log.warn(
+            `Git source has updates available:\n${details}\n\n` +
+              `Continuing with cached version. To update:\n` +
+              `  1. Review and merge changes in the source repository\n` +
+              `  2. Or run with --skip-update-check to bypass\n` +
+              `  Use --strict-sources to block sync until approved.`,
+          );
+        }
+
+        // Retry with offline mode to use cached version
+        const offlineOpts = { ...resolveOpts, offlineMode: true };
+        bundleResult = await resolveAndMergeSources(config, offlineOpts);
+
+        // Continue to rest of context building
+        sourcePath =
+          config.sources?.[0]?.type === "local"
+            ? config.sources[0].path || paths.rules
+            : bundleResult.sources[0]?.sourcePath || ".aligntrue/rules";
+        absoluteSourcePath =
+          config.sources?.[0]?.type === "local"
+            ? resolve(cwd, sourcePath)
+            : sourcePath;
+      } else {
+        // Solo mode: also just warn and continue
+        throw new SyncError(
           `Git source has updates available:\n${details}`,
-          "Team mode requires approval before updating git sources.\nApprove by merging the source update PR, then run 'aligntrue sync'.",
-        ).withNextSteps(nextSteps);
+          "Rerun with --skip-update-check or --offline to proceed with cached version.",
+        ).withNextSteps([
+          "Review and merge changes to the source repository",
+          "Or rerun with --skip-update-check to bypass temporarily",
+          "Or run with --offline to work without updates",
+        ]);
       }
-
-      throw new SyncError(
-        `Git source has updates available:\n${details}`,
-        "Auto-update should handle solo mode; rerun with --skip-update-check or --offline to proceed.",
-      ).withNextSteps(nextSteps);
-    }
-
-    // Other errors
-    const sourceName =
-      config.sources?.[0]?.type === "local"
-        ? config.sources[0].path || "unknown"
-        : config.sources?.[0]?.url || "unknown";
-    throw ErrorFactory.fileWriteFailed(
-      sourceName,
-      err instanceof Error ? err.message : String(err),
-    );
-  }
-
-  let lockfilePath: string | undefined;
-  let lockfileWritten = false;
-
-  // Step 5: Write lockfile in team mode
-  if (config.mode === "team" && config.modules?.lockfile) {
-    lockfilePath = resolve(cwd, ".aligntrue", "lock.json");
-
-    const { generateLockfile, writeLockfile } = await import(
-      "@aligntrue/core/lockfile"
-    );
-    const { loadRulesDirectory } = await import("@aligntrue/core");
-
-    // Load rule files for lockfile generation
-    const rulesPath = resolve(cwd, ".aligntrue", "rules");
-    const rules = await loadRulesDirectory(rulesPath, cwd);
-    const newLockfile = generateLockfile(rules, cwd);
-
-    try {
-      writeLockfile(lockfilePath, newLockfile);
-      lockfileWritten = true;
-    } catch (err) {
+    } else {
+      // Other errors
+      const sourceName =
+        config.sources?.[0]?.type === "local"
+          ? config.sources[0].path || "unknown"
+          : config.sources?.[0]?.url || "unknown";
       throw ErrorFactory.fileWriteFailed(
-        ".aligntrue/lock.json",
+        sourceName,
         err instanceof Error ? err.message : String(err),
       );
     }
-
-    if (!existsSync(lockfilePath)) {
-      throw ErrorFactory.fileWriteFailed(
-        ".aligntrue/lock.json",
-        "Lockfile missing after write attempt",
-      );
-    }
   }
 
-  // Step 6: Check for new agents (with caching)
+  // Note: Lockfile generation moved to workflow.ts (after exports, respects dry-run)
+
+  // Step 5: Check for new agents (with caching)
   if (!options.dryRun) {
     await checkAgentsWithCache(cwd, config, configPath, options);
   }
 
-  // Step 7: Load exporters
+  // Step 6: Load exporters
   if (options.verbose) {
     spinner.start("Loading exporters");
   }
@@ -533,7 +498,7 @@ version: "1"
     );
   }
 
-  // Step 8: Validate rules
+  // Step 7: Validate rules
   if (options.verbose) {
     spinner.start("Validating rules");
   }
@@ -557,7 +522,7 @@ version: "1"
     );
   }
 
-  // Step 9: Write merged bundle to local IR (only for file-based sources)
+  // Step 8: Write merged bundle to local IR (only for file-based sources)
   // Skip for directory-based sources (new rule file format)
   if (bundleResult.sources.length > 0) {
     // For git sources, use a temporary bundle file instead of .aligntrue/rules
@@ -613,11 +578,6 @@ version: "1"
     registry,
     spinner,
   };
-
-  if (lockfilePath) {
-    context.lockfilePath = lockfilePath;
-    context.lockfileWritten = lockfileWritten;
-  }
 
   return context;
 }

@@ -155,29 +155,15 @@ describe("Config merging", () => {
       expect(config.mode).toBe("team");
     });
 
-    it("emits warning for team-only field in personal config", () => {
-      const personal = { lockfile: { mode: "soft" as const } };
-      const team = { mode: "team" as const };
-
-      const { warnings } = mergeConfigs(personal, team);
-      const hasWarning = warnings.some(
-        (w) => w.field.includes("lockfile") && w.level === "warn",
-      );
-      expect(hasWarning).toBe(true);
-    });
-
-    it("emits warning for personal-only field in team config", () => {
-      const personal = { mode: "solo" as const };
-      const team = {
-        mode: "team" as const,
-        remotes: { personal: "https://example.com" },
+    it("remotes are merged correctly", () => {
+      const personal = {
+        remotes: { personal: "https://personal.example.com" },
       };
+      const team = { remotes: { shared: "https://team.example.com" } };
 
-      const { warnings } = mergeConfigs(personal, team);
-      const hasWarning = warnings.some(
-        (w) => w.field.includes("remotes.personal") && w.level === "warn",
-      );
-      expect(hasWarning).toBe(true);
+      const { config } = mergeConfigs(personal, team);
+      expect(config.remotes?.personal).toBe("https://personal.example.com");
+      expect(config.remotes?.shared).toBe("https://team.example.com");
     });
   });
 

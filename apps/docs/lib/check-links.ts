@@ -16,7 +16,6 @@ const __dirname = path.dirname(__filename);
 
 const DOCS_ROOT = path.join(__dirname, "../content");
 const REDIRECTS_PATH = path.join(__dirname, "../vercel.json");
-const ALIGNTRUE_ORIGIN = "https://aligntrue.ai";
 
 const MARKDOWN_LINK_PATTERN =
   /\[([^\]]+)\]\(((?:https?:\/\/aligntrue\.ai\/[^\s)]+)|(?:\/docs\/[^\s)]+))\)/g;
@@ -136,10 +135,10 @@ function linkExists(linkPath: string): boolean {
 function normalizeLink(raw: string): string {
   try {
     const url = new URL(raw);
-    if (url.protocol === 'https:' && url.host === 'aligntrue.ai') {
+    if (url.protocol === "https:" && url.host === "aligntrue.ai") {
       return url.pathname + url.search + url.hash;
     }
-  } catch (_) {
+  } catch {
     // If invalid URL, fall through to return as-is
   }
   return raw;

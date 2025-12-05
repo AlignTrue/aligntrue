@@ -84,9 +84,8 @@ export interface AlignTrueConfig {
     checks?: boolean;
     mcp?: boolean;
   };
-  lockfile?: {
-    mode?: "off" | "soft" | "strict";
-  };
+  /** @deprecated Use modules.lockfile instead */
+  lockfile?: Record<string, never>;
   git?: {
     mode?: "ignore" | "commit" | "branch";
     per_exporter?: Record<string, "ignore" | "commit" | "branch">;

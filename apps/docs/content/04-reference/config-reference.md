@@ -231,26 +231,26 @@ modules:
   mcp: false # Enable MCP server
 ```
 
-### lockfile
+### lockfile (deprecated)
 
-**Type:** `object`
+**Note:** The `lockfile.mode` setting has been removed. Lockfile is now enabled via `modules.lockfile: true` in team mode.
 
-**Default:** `{ mode: "off" }` (solo), `{ mode: "soft" }` (team/enterprise)
-
-Lockfile validation mode for reproducible builds.
+Drift enforcement happens in CI using `aligntrue drift --gates`.
 
 ```yaml
-lockfile:
-  mode: soft # off | soft | strict
+# Old (deprecated):
+# lockfile:
+#   mode: soft
+
+# New approach:
+modules:
+  lockfile: true # Enable lockfile generation
+
+# CI enforcement:
+# aligntrue drift --gates  # Fails CI if drift detected
 ```
 
-Lockfile v2 stores only `version` and `bundle_hash` (team rules + `config.team.yaml`). Drift detection compares the current bundle hash to the lockfile.
-
-Values:
-
-- **off** - No lockfile validation
-- **soft** - Warn on drift but don't fail
-- **strict** - Fail on any drift (recommended for CI)
+Lockfile v2 stores `version` and `bundle_hash` (team rules + `config.team.yaml`). Use `aligntrue drift` to check for drift.
 
 ## Backup and restore
 

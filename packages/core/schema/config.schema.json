@@ -41,15 +41,9 @@
     },
     "lockfile": {
       "type": "object",
-      "description": "Lockfile-specific configuration",
+      "description": "Lockfile-specific configuration (deprecated: use modules.lockfile instead)",
       "additionalProperties": false,
-      "properties": {
-        "mode": {
-          "type": "string",
-          "enum": ["off", "soft", "strict"],
-          "description": "Lockfile validation mode: off (no validation), soft (warn on mismatch), strict (error on mismatch)"
-        }
-      }
+      "properties": {}
     },
     "git": {
       "type": "object",

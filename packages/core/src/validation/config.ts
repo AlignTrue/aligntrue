@@ -194,16 +194,8 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     result.modules.mcp = result.modules.mcp ?? true;
   }
 
-  // Apply lockfile defaults
-  if (!result.lockfile) {
-    result.lockfile = {};
-  }
-  // Default to 'soft' mode for team/enterprise when lockfile enabled
-  if (result.modules.lockfile) {
-    result.lockfile.mode = result.lockfile.mode ?? "soft";
-  } else {
-    result.lockfile.mode = result.lockfile.mode ?? "off";
-  }
+  // Note: lockfile.mode removed. Use modules.lockfile: true/false instead.
+  // Drift enforcement happens via `aligntrue drift --gates` in CI.
 
   // Apply git defaults
   if (!result.git) {

@@ -115,15 +115,15 @@ aligntrue sync
 # ◇ Detected 1 edited file(s)
 # ◇ Merging changes from rules
 # ✓ Merged changes to IR
-# ⚠ Lockfile drift (soft mode - warning)
+# ✓ Lockfile updated
 # ✓ Synced to: .cursor/rules/*.mdc, AGENTS.md
 ```
 
 **Flow:**
 
 - Changes merge to IR
-- Bundle hash computed and checked
-- If hash not approved: warning shown, sync continues (soft mode)
+- Lockfile regenerated with new bundle hash
+- Use `aligntrue drift --gates` in CI to enforce lockfile validation
 
 ## Technical details: rule loading and merging
 

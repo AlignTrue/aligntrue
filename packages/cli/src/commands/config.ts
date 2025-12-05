@@ -195,9 +195,9 @@ async function showConfig(configPath: string): Promise<void> {
       console.log(`  Checks: ${cfg.modules.checks ? "enabled" : "disabled"}`);
     }
 
-    if (cfg.lockfile && cfg.modules?.lockfile) {
-      console.log(`\n🔒 Lockfile:`);
-      console.log(`  Mode: ${cfg.lockfile.mode || "off"}`);
+    if (cfg.modules?.lockfile) {
+      console.log(`\n🔒 Lockfile: enabled`);
+      console.log(`  Use 'aligntrue drift --gates' in CI for enforcement`);
     }
 
     if (cfg.git) {
@@ -275,7 +275,7 @@ async function showSummary(configPath: string): Promise<void> {
 
     if (config.mode === "team") {
       console.log(
-        `  Lockfile: ${config.modules?.lockfile ? "enabled" : "disabled"} (${config.lockfile?.mode || "soft"} mode)`,
+        `  Lockfile: ${config.modules?.lockfile ? "enabled" : "disabled"}`,
       );
     }
 
