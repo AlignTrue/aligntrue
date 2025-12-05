@@ -1,20 +1,27 @@
-/**
- * Link Checker for AlignTrue Documentation
- *
- * Scans all .md and .mdx files in content/ and verifies that all
- * internal /docs/ links point to existing files.
- */
-
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+
+/**
+ * Link Checker for AlignTrue Documentation and CLI messages
+ *
+ * Validates:
+ * - /docs/... links in docs content
+ * - https://aligntrue.ai/... links in docs + CLI source files
+ * - Short links that map to redirects defined in apps/docs/vercel.json
+ */
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DOCS_ROOT = path.join(__dirname, "../content");
-// Static regex pattern for parsing markdown links - safe from ReDoS (bounded quantifiers)
-const LINK_PATTERN = /\[([^\]]+)\]\(\/docs\/([^)#]+)(?:#[^)]+)?\)/g;
+const REDIRECTS_PATH = path.join(__dirname, "../vercel.json");
+const ALIGNTRUE_ORIGIN = "https://aligntrue.ai";
+
+const MARKDOWN_LINK_PATTERN =
+  /\[([^\]]+)\]\(((?:https?:\/\/aligntrue\.ai\/[^\s)]+)|(?:\/docs\/[^\s)]+))\)/g;
+const ABSOLUTE_LINK_PATTERN = /https?:\/\/aligntrue\.ai\/[^\s)"']+/g;
+const RELATIVE_DOCS_PATTERN = /\/docs\/[^\s)"']+/g;
 
 export interface BrokenLink {
   file: string;
@@ -24,33 +31,56 @@ export interface BrokenLink {
   expectedFile: string;
 }
 
-/**
- * Recursively get all .md and .mdx files from a directory
- */
-function getAllMarkdownFiles(dir: string): string[] {
-  const files: string[] = [];
+type LinkMatch = {
+  target: string;
+  index: number;
+  text: string;
+};
 
-  function walk(currentPath: string) {
-    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+function getAllFiles(
+  dir: string,
+  exts: RegExp,
+  accumulator: string[] = [],
+): string[] {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-    for (const entry of entries) {
-      const fullPath = path.join(currentPath, entry.name);
-
-      // Skip hidden directories and node_modules
-      if (entry.name.startsWith(".") || entry.name === "node_modules") {
-        continue;
-      }
-
-      if (entry.isDirectory()) {
-        walk(fullPath);
-      } else if (entry.isFile() && /\.(md|mdx)$/.test(entry.name)) {
-        files.push(fullPath);
-      }
+  for (const entry of entries) {
+    if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      getAllFiles(fullPath, exts, accumulator);
+    } else if (entry.isFile() && exts.test(entry.name)) {
+      accumulator.push(fullPath);
     }
   }
 
-  walk(dir);
-  return files;
+  return accumulator;
+}
+
+function getDocsFiles(): string[] {
+  return getAllFiles(DOCS_ROOT, /\.(md|mdx)$/);
+}
+
+function getCliFiles(): string[] {
+  const cliRoot = path.join(__dirname, "../../packages/cli/src");
+  if (!fs.existsSync(cliRoot)) {
+    return [];
+  }
+  return getAllFiles(cliRoot, /\.(ts|tsx)$/);
+}
+
+function loadRedirectSources(): Set<string> {
+  try {
+    const raw = fs.readFileSync(REDIRECTS_PATH, "utf-8");
+    const parsed = JSON.parse(raw) as {
+      redirects?: { source: string; destination: string }[];
+    };
+    const set = new Set<string>();
+    parsed.redirects?.forEach((r) => set.add(r.source));
+    return set;
+  } catch {
+    return new Set<string>();
+  }
 }
 
 /**
@@ -98,77 +128,181 @@ function linkToFilePath(linkPath: string): string {
   return filePath;
 }
 
-/**
- * Check if a link target exists
- */
 function linkExists(linkPath: string): boolean {
   const filePath = linkToFilePath(linkPath);
   return fs.existsSync(filePath);
 }
 
-/**
- * Check all links in a file
- */
-function checkLinksInFile(filePath: string): BrokenLink[] {
-  const relativePath = path.relative(DOCS_ROOT, filePath);
-  const content = fs.readFileSync(filePath, "utf-8");
+function normalizeLink(raw: string): string {
+  if (raw.startsWith(ALIGNTRUE_ORIGIN)) {
+    return raw.slice(ALIGNTRUE_ORIGIN.length);
+  }
+  return raw;
+}
 
-  let match;
+function stripHash(pathname: string): string {
+  const hashIndex = pathname.indexOf("#");
+  return hashIndex === -1 ? pathname : pathname.slice(0, hashIndex);
+}
+
+function stripCodeBlocksAndInline(content: string): string {
+  const lines = content.split("\n");
+  let inFence = false;
+
+  const cleaned = lines
+    .map((line) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+        inFence = !inFence;
+        return "";
+      }
+      if (inFence) return "";
+      return line.replace(/`[^`]*`/g, "");
+    })
+    .join("\n");
+
+  return cleaned;
+}
+
+function extractLinks(content: string, isMarkdown: boolean): LinkMatch[] {
+  const body = isMarkdown ? stripCodeBlocksAndInline(content) : content;
+  const results: LinkMatch[] = [];
+  const seen = new Set<string>();
+
+  let match: RegExpExecArray | null;
+  MARKDOWN_LINK_PATTERN.lastIndex = 0;
+  while ((match = MARKDOWN_LINK_PATTERN.exec(body)) !== null) {
+    const target = match[2];
+    const key = `${match.index}:${target}`;
+    if (!seen.has(key)) {
+      results.push({
+        target,
+        index: match.index,
+        text: match[1],
+      });
+      seen.add(key);
+    }
+  }
+
+  ABSOLUTE_LINK_PATTERN.lastIndex = 0;
+  while ((match = ABSOLUTE_LINK_PATTERN.exec(body)) !== null) {
+    const target = match[0];
+    const key = `${match.index}:${target}`;
+    if (!seen.has(key)) {
+      results.push({
+        target,
+        index: match.index,
+        text: target,
+      });
+      seen.add(key);
+    }
+  }
+
+  RELATIVE_DOCS_PATTERN.lastIndex = 0;
+  while ((match = RELATIVE_DOCS_PATTERN.exec(body)) !== null) {
+    const target = match[0];
+    const key = `${match.index}:${target}`;
+    if (!seen.has(key)) {
+      results.push({
+        target,
+        index: match.index,
+        text: target,
+      });
+      seen.add(key);
+    }
+  }
+
+  return results;
+}
+
+function checkLinksInFile(
+  filePath: string,
+  redirectSources: Set<string>,
+  rootForRelative: string,
+): BrokenLink[] {
+  const content = fs.readFileSync(filePath, "utf-8");
+  const relativePath = path.relative(rootForRelative, filePath);
   const errors: BrokenLink[] = [];
 
-  // Reset regex state
-  LINK_PATTERN.lastIndex = 0;
+  const isMarkdown = filePath.endsWith(".md") || filePath.endsWith(".mdx");
+  const links = extractLinks(content, isMarkdown);
 
-  while ((match = LINK_PATTERN.exec(content)) !== null) {
-    const linkText = match[1];
-    const linkPath = match[2];
+  for (const link of links) {
+    const normalized = stripHash(normalizeLink(link.target));
 
-    if (!linkExists(linkPath)) {
-      errors.push({
-        file: relativePath,
-        linkText,
-        linkPath,
-        line: content.substring(0, match.index).split("\n").length,
-        expectedFile: linkToFilePath(linkPath),
-      });
+    // Only validate aligntrue links and /docs links
+    if (
+      !normalized.startsWith("/docs/") &&
+      !normalized.startsWith("/") // covers short redirects like /team
+    ) {
+      continue;
+    }
+
+    if (normalized.startsWith("/docs/")) {
+      const docPath = normalized.replace(/^\/docs\//, "");
+      if (!linkExists(docPath)) {
+        errors.push({
+          file: relativePath,
+          linkText: link.text,
+          linkPath: normalized,
+          line: content.substring(0, link.index).split("\n").length,
+          expectedFile: linkToFilePath(docPath),
+        });
+      }
+    } else {
+      // Non-/docs path must be a redirect
+      if (!redirectSources.has(normalized)) {
+        errors.push({
+          file: relativePath,
+          linkText: link.text,
+          linkPath: normalized,
+          line: content.substring(0, link.index).split("\n").length,
+          expectedFile: "Redirect entry in apps/docs/vercel.json",
+        });
+      }
     }
   }
 
   return errors;
 }
 
-/**
- * Check all documentation links
- */
 export function checkAllLinks(): BrokenLink[] {
-  const files = getAllMarkdownFiles(DOCS_ROOT);
+  const redirectSources = loadRedirectSources();
+  const docsFiles = getDocsFiles();
+  const cliFiles = getCliFiles();
   const allErrors: BrokenLink[] = [];
 
-  for (const file of files) {
-    const fileErrors = checkLinksInFile(file);
-    allErrors.push(...fileErrors);
+  for (const file of docsFiles) {
+    allErrors.push(...checkLinksInFile(file, redirectSources, DOCS_ROOT));
+  }
+
+  for (const file of cliFiles) {
+    allErrors.push(
+      ...checkLinksInFile(
+        file,
+        redirectSources,
+        path.join(__dirname, "../../packages/cli"),
+      ),
+    );
   }
 
   return allErrors;
 }
 
-/**
- * Get statistics about checked links
- */
 export function getLinkStats(): { totalFiles: number; totalLinks: number } {
-  const files = getAllMarkdownFiles(DOCS_ROOT);
-  let totalLinks = 0;
+  const docsFiles = getDocsFiles();
+  const cliFiles = getCliFiles();
+  const allFiles = [...docsFiles, ...cliFiles];
 
-  for (const file of files) {
+  let totalLinks = 0;
+  for (const file of allFiles) {
     const content = fs.readFileSync(file, "utf-8");
-    const matches = content.match(LINK_PATTERN);
-    if (matches) {
-      totalLinks += matches.length;
-    }
+    const isMarkdown = file.endsWith(".md") || file.endsWith(".mdx");
+    totalLinks += extractLinks(content, isMarkdown).length;
   }
 
   return {
-    totalFiles: files.length,
+    totalFiles: allFiles.length,
     totalLinks,
   };
 }

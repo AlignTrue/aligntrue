@@ -489,7 +489,7 @@ async function teamEnable(
       "  aligntrue team   Manage team settings",
       "  aligntrue --help See all commands",
       "",
-      "Learn more: https://aligntrue.ai/docs/team",
+      "Learn more: https://aligntrue.ai/team",
     ];
 
     if (!nonInteractive) {

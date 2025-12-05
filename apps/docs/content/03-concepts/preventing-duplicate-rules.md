@@ -204,7 +204,7 @@ For these agents, AlignTrue shows an informational warning:
   Uses .gitignore only, no dedicated ignore file.
   Consider disabling one exporter to avoid duplicate context.
 
-ℹ Learn more: https://aligntrue.ai/docs/concepts/preventing-duplicate-rules
+ℹ Learn more: https://aligntrue.ai/dupe-rules
 ```
 
 ### Workarounds

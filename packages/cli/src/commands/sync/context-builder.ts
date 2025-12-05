@@ -204,7 +204,7 @@ export async function buildSyncContext(
 # This file is gitignored and contains your personal settings.
 #
 # Your team uses AlignTrue to sync AI rules. This file is for YOUR settings only.
-# Learn more: https://aligntrue.ai/docs/joining-a-team
+# Learn more: https://aligntrue.ai/join-team
 #
 # Example personal settings:
 #   remotes:
@@ -230,7 +230,7 @@ version: "1"
         clack.log.info(
           "Created personal config: .aligntrue/config.yaml\n" +
             "  This file is for your personal settings (gitignored).\n" +
-            "  See: https://aligntrue.ai/docs/joining-a-team",
+            "  See: https://aligntrue.ai/join-team",
         );
       }
     } catch (error) {
