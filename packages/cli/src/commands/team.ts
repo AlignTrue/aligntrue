@@ -280,9 +280,6 @@ async function teamEnable(
       console.log(
         `  - Lockfile: ${config.modules?.lockfile ? "enabled" : "disabled"}`,
       );
-      console.log(
-        `  - Bundle: ${config.modules?.bundle ? "enabled" : "disabled"}`,
-      );
       return;
     }
 
@@ -297,7 +294,7 @@ async function teamEnable(
     const changes = isReEnabling
       ? [
           "Re-enable team config (remove OFF marker from config.team.yaml)",
-          "Lockfile and bundle generation will resume",
+          "Lockfile generation will resume",
         ]
       : [
           "Create config.team.yaml with team settings",
@@ -397,7 +394,6 @@ async function teamEnable(
         mode: "team",
         modules: {
           lockfile: true,
-          bundle: true,
         },
         lockfile: {
           mode: lockfileMode,

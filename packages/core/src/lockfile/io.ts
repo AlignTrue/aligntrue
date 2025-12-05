@@ -1,5 +1,5 @@
 /**
- * Lockfile I/O with atomic writes
+ * Lockfile I/O with atomic writes (v2)
  */
 
 import {
@@ -11,57 +11,40 @@ import {
 } from "fs";
 import { dirname, join } from "path";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
-import type { Lockfile } from "./types.js";
+import type { Lockfile, LockfileV1 } from "./types.js";
+import { isV1Lockfile } from "./types.js";
 
-const HASH_MIGRATION_MARKER_FILE = "lockfile-hash-migration.json";
-const LOCATION_MIGRATION_MARKER_FILE = "lockfile-location-migration.json";
+const V2_MIGRATION_MARKER_FILE = "lockfile-v2-migration.json";
 
 /**
  * Read lockfile from disk
  *
- * Supports migration from old location (.aligntrue.lock.json) to new location (.aligntrue/lock.json)
+ * Supports both v1 and v2 formats. v1 lockfiles will be detected
+ * and can be migrated by running sync again.
  *
  * @param path - Path to lockfile (typically .aligntrue/lock.json)
  * @returns Lockfile object or null if not found
  */
 export function readLockfile(path: string): Lockfile | null {
-  // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
   if (!existsSync(path)) {
-    // Check if old location exists and migrate
-    const oldPath = getOldLockfilePath(path);
-    if (existsSync(oldPath) && !hasLocationMigrationMarker(path)) {
-      try {
-        // Safe: Old path is derived from new path (safe internal path)
-        const content = readFileSync(oldPath, "utf8");
-        const lockfile = JSON.parse(content) as Lockfile;
-
-        // Migrate: write to new location and delete old
-        writeLockfile(path, lockfile, { silent: true });
-        // Safe: Old path is derived from new path (safe internal path)
-        unlinkSync(oldPath);
-
-        // Mark migration as complete
-        writeLocationMigrationMarker(path);
-
-        // Log migration once per workspace
-        console.log("✓ Migrated lockfile to .aligntrue/lock.json");
-
-        return lockfile;
-      } catch {
-        // Fall through to return null if migration fails
-      }
-    }
     return null;
   }
 
   try {
-    // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
     const content = readFileSync(path, "utf8");
-    const lockfile = JSON.parse(content) as Lockfile;
+    const lockfile = JSON.parse(content) as Lockfile | LockfileV1;
 
-    // Basic validation
-    if (!lockfile.version || !lockfile.rules || !lockfile.bundle_hash) {
+    // Basic validation - must have version and bundle_hash
+    if (!lockfile.version || !lockfile.bundle_hash) {
       throw new Error("Invalid lockfile structure");
+    }
+
+    // If v1 format, extract just what we need
+    if (isV1Lockfile(lockfile)) {
+      return {
+        version: "1", // Keep version to detect migration needed
+        bundle_hash: lockfile.bundle_hash,
+      };
     }
 
     return lockfile;
@@ -93,30 +76,19 @@ export function writeLockfile(
     throw new Error(`Invalid lockfile path: ${path}`);
   }
 
-  // Check if this is a migration from old hash format
-  // (Temporary migration code - remove after 1-2 releases)
-
-  // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
+  // Check if migrating from v1 to v2
   if (existsSync(path) && !options?.silent) {
     try {
-      // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
-      const oldLockfile = JSON.parse(readFileSync(path, "utf-8"));
+      const oldLockfile = JSON.parse(readFileSync(path, "utf-8")) as
+        | Lockfile
+        | LockfileV1;
       if (
-        oldLockfile.bundle_hash &&
-        oldLockfile.bundle_hash !== lockfile.bundle_hash &&
-        !hasHashMigrationMarker(path)
+        isV1Lockfile(oldLockfile) &&
+        lockfile.version === "2" &&
+        !hasV2MigrationMarker(path)
       ) {
-        console.warn("ℹ Lockfile regenerated with corrected hash computation");
-        console.warn(
-          "  Old hash: " + oldLockfile.bundle_hash.slice(0, 12) + "...",
-        );
-        console.warn(
-          "  New hash: " + lockfile.bundle_hash.slice(0, 12) + "...",
-        );
-        console.warn(
-          "  This is a one-time migration for determinism improvements",
-        );
-        writeHashMigrationMarker(path);
+        console.log("✓ Upgraded lockfile to v2 format (simplified)");
+        writeV2MigrationMarker(path);
       }
     } catch {
       // Ignore errors reading old lockfile
@@ -141,15 +113,10 @@ export function writeLockfile(
   const tempPath = `${path}.tmp`;
 
   try {
-    // Safe: Temp path derived from lockfile path (typically from getAlignTruePaths().lockfile)
     writeFileSync(tempPath, json, "utf8");
-
-    // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
     renameSync(tempPath, path);
 
     // Verify file was written successfully
-
-    // Safe: Path is typically from getAlignTruePaths().lockfile (safe internal path)
     if (!existsSync(path)) {
       throw new Error(
         `Lockfile was not created at ${path} after write operation`,
@@ -186,100 +153,34 @@ function sortKeys(key: string, value: unknown): unknown {
   return value;
 }
 
-function getMigrationMarkerPath(lockfilePath: string): string {
-  // lockfilePath is .aligntrue/lock.json, so dirname gives us .aligntrue
+function getV2MigrationMarkerPath(lockfilePath: string): string {
   const aligntrueDir = dirname(lockfilePath);
-  return join(aligntrueDir, ".cache", HASH_MIGRATION_MARKER_FILE);
+  return join(aligntrueDir, ".cache", V2_MIGRATION_MARKER_FILE);
 }
 
-function hasHashMigrationMarker(lockfilePath: string): boolean {
-  const markerPath = getMigrationMarkerPath(lockfilePath);
-
-  // Safe: Marker path derived from lockfile path (typically from getAlignTruePaths().lockfile)
+function hasV2MigrationMarker(lockfilePath: string): boolean {
+  const markerPath = getV2MigrationMarkerPath(lockfilePath);
   if (!existsSync(markerPath)) {
     return false;
   }
   try {
-    // Safe: Marker path derived from lockfile path (typically from getAlignTruePaths().lockfile)
     const data = JSON.parse(readFileSync(markerPath, "utf-8")) as {
-      hash_migration_completed?: boolean;
+      v2_migration_completed?: boolean;
     };
-    return Boolean(data?.hash_migration_completed);
+    return Boolean(data?.v2_migration_completed);
   } catch {
     return false;
   }
 }
 
-function writeHashMigrationMarker(lockfilePath: string): void {
+function writeV2MigrationMarker(lockfilePath: string): void {
   try {
-    const markerPath = getMigrationMarkerPath(lockfilePath);
+    const markerPath = getV2MigrationMarkerPath(lockfilePath);
     const markerDir = dirname(markerPath);
     ensureDirectoryExists(markerDir);
-
-    // Safe: Marker path derived from lockfile path (typically from getAlignTruePaths().lockfile)
     writeFileSync(
       markerPath,
-      JSON.stringify({ hash_migration_completed: true }, null, 2),
-      "utf-8",
-    );
-  } catch {
-    // Ignore marker write failures (non-critical)
-  }
-}
-
-/**
- * Get the old lockfile path (before migration to .aligntrue directory)
- * @param newPath - Current lockfile path (.aligntrue/lock.json)
- * @returns Old lockfile path (.aligntrue.lock.json in workspace root)
- */
-function getOldLockfilePath(newPath: string): string {
-  const workspaceDir = dirname(dirname(newPath)); // Go up from .aligntrue/
-  return join(workspaceDir, ".aligntrue.lock.json");
-}
-
-/**
- * Get marker file path for location migration
- */
-function getLocationMigrationMarkerPath(lockfilePath: string): string {
-  // lockfilePath is .aligntrue/lock.json, so dirname gives us .aligntrue
-  const aligntrueDir = dirname(lockfilePath);
-  return join(aligntrueDir, ".cache", LOCATION_MIGRATION_MARKER_FILE);
-}
-
-/**
- * Check if location migration has already been done
- */
-function hasLocationMigrationMarker(lockfilePath: string): boolean {
-  const markerPath = getLocationMigrationMarkerPath(lockfilePath);
-
-  // Safe: Marker path derived from lockfile path (safe internal path)
-  if (!existsSync(markerPath)) {
-    return false;
-  }
-  try {
-    // Safe: Marker path derived from lockfile path (safe internal path)
-    const data = JSON.parse(readFileSync(markerPath, "utf-8")) as {
-      location_migration_completed?: boolean;
-    };
-    return Boolean(data?.location_migration_completed);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Write marker indicating location migration is complete
- */
-function writeLocationMigrationMarker(lockfilePath: string): void {
-  try {
-    const markerPath = getLocationMigrationMarkerPath(lockfilePath);
-    const markerDir = dirname(markerPath);
-    ensureDirectoryExists(markerDir);
-
-    // Safe: Marker path derived from lockfile path (safe internal path)
-    writeFileSync(
-      markerPath,
-      JSON.stringify({ location_migration_completed: true }, null, 2),
+      JSON.stringify({ v2_migration_completed: true }, null, 2),
       "utf-8",
     );
   } catch {

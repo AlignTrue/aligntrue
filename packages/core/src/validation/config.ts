@@ -144,11 +144,10 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
     if (
       result.exporters &&
       getExporterCount(result.exporters) > 0 &&
-      !result.modules?.lockfile &&
-      !result.modules?.bundle
+      !result.modules?.lockfile
     ) {
       result.mode = "solo";
-    } else if (result.modules?.lockfile || result.modules?.bundle) {
+    } else if (result.modules?.lockfile) {
       result.mode = "team";
     } else {
       result.mode = "solo"; // Default to solo
@@ -170,12 +169,10 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    *
    * Solo mode:
    * - lockfile: disabled (no need for reproducibility in solo workflows)
-   * - bundle: disabled (no multi-source merging needed)
    * - checks: enabled (always validate rules)
    *
    * Team/enterprise mode:
    * - lockfile: enabled (ensures reproducible builds across team)
-   * - bundle: enabled (merge rules from multiple sources)
    * - checks: enabled (validate rules and detect drift)
    *
    * Lockfile modes (team only):
@@ -185,17 +182,14 @@ export function applyDefaults(config: AlignTrueConfig): AlignTrueConfig {
    */
   if (result.mode === "solo") {
     result.modules.lockfile = result.modules.lockfile ?? false;
-    result.modules.bundle = result.modules.bundle ?? false;
     result.modules.checks = result.modules.checks ?? true;
     result.modules.mcp = result.modules.mcp ?? false;
   } else if (result.mode === "team") {
     result.modules.lockfile = result.modules.lockfile ?? true;
-    result.modules.bundle = result.modules.bundle ?? true;
     result.modules.checks = result.modules.checks ?? true;
     result.modules.mcp = result.modules.mcp ?? false;
   } else if (result.mode === "enterprise") {
     result.modules.lockfile = result.modules.lockfile ?? true;
-    result.modules.bundle = result.modules.bundle ?? true;
     result.modules.checks = result.modules.checks ?? true;
     result.modules.mcp = result.modules.mcp ?? true;
   }
@@ -675,17 +669,6 @@ export async function validateConfig(
       );
     }
   }
-
-  if (config.mode === "solo" && config.modules?.bundle === true) {
-    const warningKey = "solo-bundle-mismatch";
-    if (!shownWarnings.has(warningKey)) {
-      shownWarnings.add(warningKey);
-      console.warn(
-        `Warning: Solo mode with bundle enabled is unusual.\n` +
-          `  Consider using 'mode: team' if you need bundle features.`,
-      );
-    }
-  }
 }
 
 /**
@@ -721,7 +704,6 @@ export function isValidConfigKey(key: string): boolean {
     "mode",
     "modules",
     "modules.lockfile",
-    "modules.bundle",
     "modules.checks",
     "modules.mcp",
     "lockfile",

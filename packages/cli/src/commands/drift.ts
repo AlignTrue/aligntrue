@@ -1,14 +1,12 @@
 /**
- * Drift command - Detect drift between lockfile and allowed sources
+ * Drift command - Detect drift between lockfile and current rules/config
  *
  * Enables:
- * - Team alignment monitoring (upstream changes)
- * - Severity remapping policy validation
+ * - Team alignment monitoring
  * - CI integration with --gates flag
  *
  * Strategy:
- * - Compare lockfile hashes against allowed sources
- * - Categorize drift types: upstream, severity_remap, lockfile, agent_file
+ * - Compare lockfile bundle_hash against current state
  * - Non-zero exit only with --gates flag (CI-friendly)
  * - Multiple output formats: human, JSON, SARIF
  */
@@ -30,7 +28,6 @@ type DriftDetectionResult = {
   mode: string;
   lockfilePath: string;
   summary?: string | undefined;
-  personalRulesCount?: number | undefined;
   drift: Array<{
     category: DriftCategory;
     ruleId: string;
@@ -76,11 +73,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
  * Help text for drift command
  */
 const HELP_TEXT = `
-aligntrue drift - Detect drift between lockfile and allowed sources
+aligntrue drift - Detect drift between lockfile and current state
 
 DESCRIPTION
-  Monitors team alignment by detecting drift between your lockfile and allowed sources.
-  Useful for CI pipelines and manual drift checking.
+  Monitors team alignment by detecting drift between your lockfile and current
+  rules/config. Useful for CI pipelines and manual drift checking.
 
 USAGE
   aligntrue drift [options]
@@ -92,15 +89,12 @@ OPTIONS
   --config <path>  Path to config file (default: .aligntrue/config.yaml)
   --help, -h       Show this help message
 
-DRIFT TYPES
-  lockfile        Rules changed since last lockfile generation
-  agent_file      Agent files modified after IR (team mode)
-  upstream        Rule content changed in allowed sources
-  severity_remap  Severity remapping policy violations
+WHAT IT CHECKS
+  The lockfile stores a bundle_hash computed from:
+  - All team-scoped rules (.aligntrue/rules/*.md excluding scope: personal)
+  - Team config (.aligntrue/config.team.yaml)
 
-COMPARISON
-  Use 'aligntrue check --ci' to validate schema/lockfile consistency.
-  Use 'aligntrue drift --gates' to detect source or agent file drift (team mode).
+  Drift is detected when the current bundle_hash differs from the lockfile.
 
 EXAMPLES
   # Check for drift (human readable)
@@ -247,17 +241,6 @@ function outputHuman(results: DriftDetectionResult): void {
   console.log(`Lockfile: ${results.lockfilePath}`);
   console.log(`Findings: ${results.drift.length}`);
 
-  // Show personal rules info if present
-  if (
-    results.personalRulesCount !== undefined &&
-    results.personalRulesCount > 0
-  ) {
-    console.log("");
-    console.log("PERSONAL RULES (not validated):");
-    console.log(`  ${results.personalRulesCount} personal sections`);
-    console.log("  Personal rules do not require team approval");
-  }
-
   console.log("");
   console.log("Tip: Use '--json' or '--sarif' for machine-readable output.");
   console.log("Tip: Add '--gates' to fail CI when drift is detected.");
@@ -274,23 +257,9 @@ function outputJson(results: DriftDetectionResult): void {
     findings: results.drift,
     summary: {
       total: results.drift.length,
-      by_category: results.drift.reduce(
-        (
-          acc: Record<string, number>,
-          item: DriftDetectionResult["drift"][0],
-        ) => {
-          acc[item.category] = (acc[item.category] || 0) + 1;
-          return acc;
-        },
-        {
-          lockfile: 0,
-          agent_file: 0,
-          upstream: 0,
-          overlay: 0,
-          result: 0,
-          severity_remap: 0,
-        } as Record<string, number>,
-      ),
+      by_category: {
+        lockfile: results.drift.filter((d) => d.category === "lockfile").length,
+      },
     },
   };
 

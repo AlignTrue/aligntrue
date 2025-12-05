@@ -178,7 +178,6 @@ async function showConfig(configPath: string): Promise<void> {
       console.log(
         `  Lockfile: ${cfg.modules.lockfile ? "enabled" : "disabled"}`,
       );
-      console.log(`  Bundle: ${cfg.modules.bundle ? "enabled" : "disabled"}`);
       console.log(`  Checks: ${cfg.modules.checks ? "enabled" : "disabled"}`);
     }
 
@@ -260,9 +259,6 @@ async function showSummary(configPath: string): Promise<void> {
     if (config.mode === "team") {
       console.log(
         `  Lockfile: ${config.modules?.lockfile ? "enabled" : "disabled"} (${config.lockfile?.mode || "soft"} mode)`,
-      );
-      console.log(
-        `  Bundle: ${config.modules?.bundle ? "enabled" : "disabled"}`,
       );
     }
 

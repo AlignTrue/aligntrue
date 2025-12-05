@@ -122,7 +122,6 @@ export interface AlignTrueConfig {
   mode: AlignTrueMode;
   modules?: {
     lockfile?: boolean;
-    bundle?: boolean;
     checks?: boolean;
     mcp?: boolean;
   };

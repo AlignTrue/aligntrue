@@ -6,9 +6,10 @@ import {
   validateLockfile,
   enforceLockfile,
 } from "../../src/lockfile/index.js";
-import { existsSync, mkdirSync, rmSync } from "fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
-import type { Align } from "@aligntrue/schema";
+import type { RuleFile } from "../../src/rules/file-io.js";
+import { computeHash } from "@aligntrue/schema";
 
 describe("lockfile integration", () => {
   const testDir = join(
@@ -16,31 +17,24 @@ describe("lockfile integration", () => {
     "packages/core/tests/lockfile/temp-integration",
   );
   const lockfilePath = join(testDir, ".aligntrue/lock.json");
+  const rulesDir = join(testDir, ".aligntrue/rules");
 
-  const mockAlign: Align = {
-    id: "test.align",
-    version: "1.0.0",
-    spec_version: "1",
-    summary: "Test align",
-    owner: "test-org",
-    source: "https://github.com/test-org/aligns",
-    source_sha: "abc123",
-    sections: [
-      {
-        heading: "Test Rule One",
-        level: 2,
-        content: "Test rule one",
-        fingerprint: "test-rule-one",
-      },
-    ],
-  };
+  // Helper to create mock rule files
+  function createMockRule(name: string, content: string): RuleFile {
+    return {
+      filename: `${name}.md`,
+      content,
+      hash: computeHash(content),
+      frontmatter: {},
+    };
+  }
 
   beforeEach(() => {
     // Clean up test directory
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
     }
-    mkdirSync(testDir, { recursive: true });
+    mkdirSync(rulesDir, { recursive: true });
   });
 
   afterEach(() => {
@@ -51,23 +45,37 @@ describe("lockfile integration", () => {
   });
 
   describe("end-to-end workflow", () => {
-    it("generates lockfile for a align", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
+    it("generates lockfile from rules", () => {
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nTest content"),
+      ];
+
+      const lockfile = generateLockfile(rules, testDir);
       writeLockfile(lockfilePath, lockfile);
 
       expect(existsSync(lockfilePath)).toBe(true);
 
       const read = readLockfile(lockfilePath);
       expect(read).not.toBeNull();
-      expect(read?.rules).toHaveLength(1);
-      expect(read?.mode).toBe("team");
+      expect(read?.version).toBe("2");
+      expect(read?.bundle_hash).toBeDefined();
     });
 
     it("validates matching lockfile", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nTest content"),
+      ];
+
+      const lockfile = generateLockfile(rules, testDir);
       writeLockfile(lockfilePath, lockfile);
 
-      const validation = validateLockfile(lockfile, mockAlign);
+      // Generate current hash
+      const currentLockfile = generateLockfile(rules, testDir);
+
+      const validation = validateLockfile(
+        lockfile,
+        currentLockfile.bundle_hash,
+      );
       const enforcement = enforceLockfile("soft", validation);
 
       expect(validation.valid).toBe(true);
@@ -76,20 +84,25 @@ describe("lockfile integration", () => {
     });
 
     it("detects drift and enforces based on mode", () => {
-      // Generate lockfile with original align
-      const lockfile = generateLockfile(mockAlign, "team");
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nOriginal content"),
+      ];
+
+      const lockfile = generateLockfile(rules, testDir);
       writeLockfile(lockfilePath, lockfile);
 
-      // Modify align
-      const modifiedAlign: Align = {
-        ...mockAlign,
-        sections: [{ ...mockAlign.sections[0], guidance: "Modified guidance" }],
-      };
+      // Modify rules
+      const modifiedRules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nModified content"),
+      ];
+      const currentLockfile = generateLockfile(modifiedRules, testDir);
 
       // Validate should detect mismatch
-      const validation = validateLockfile(lockfile, modifiedAlign);
+      const validation = validateLockfile(
+        lockfile,
+        currentLockfile.bundle_hash,
+      );
       expect(validation.valid).toBe(false);
-      expect(validation.mismatches).toHaveLength(1);
 
       // Soft mode allows continuation
       const softEnforcement = enforceLockfile("soft", validation);
@@ -103,107 +116,133 @@ describe("lockfile integration", () => {
     });
 
     it("handles new rules", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nTest content"),
+      ];
+
+      const lockfile = generateLockfile(rules, testDir);
       writeLockfile(lockfilePath, lockfile);
 
-      const alignWithNewRule: Align = {
-        ...mockAlign,
-        sections: [
-          ...mockAlign.sections,
-          {
-            ...mockAlign.sections[0],
-            id: "test.rule.new",
-            fingerprint: "test.rule.new",
-          },
-        ],
-      };
+      const rulesWithNew: RuleFile[] = [
+        ...rules,
+        createMockRule("new-rule", "# New Rule\n\nNew content"),
+      ];
+      const currentLockfile = generateLockfile(rulesWithNew, testDir);
 
-      const validation = validateLockfile(lockfile, alignWithNewRule);
+      const validation = validateLockfile(
+        lockfile,
+        currentLockfile.bundle_hash,
+      );
       expect(validation.valid).toBe(false);
-      expect(validation.newRules).toHaveLength(1);
-      expect(validation.newRules[0]).toBe("test.rule.new");
     });
 
     it("handles deleted rules", () => {
-      const alignWithTwoRules: Align = {
-        ...mockAlign,
-        sections: [
-          mockAlign.sections[0],
-          {
-            ...mockAlign.sections[0],
-            id: "test.rule.deleted",
-            fingerprint: "test.rule.deleted",
-          },
-        ],
-      };
-      const lockfile = generateLockfile(alignWithTwoRules, "team");
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nTest content"),
+        createMockRule("to-delete", "# To Delete\n\nDelete content"),
+      ];
+
+      const lockfile = generateLockfile(rules, testDir);
       writeLockfile(lockfilePath, lockfile);
 
-      const validation = validateLockfile(lockfile, mockAlign);
+      const rulesWithDeleted: RuleFile[] = [rules[0]];
+      const currentLockfile = generateLockfile(rulesWithDeleted, testDir);
+
+      const validation = validateLockfile(
+        lockfile,
+        currentLockfile.bundle_hash,
+      );
       expect(validation.valid).toBe(false);
-      expect(validation.deletedRules).toHaveLength(1);
-      expect(validation.deletedRules[0]).toBe("test.rule.deleted");
     });
 
     it("regenerates lockfile after changes", () => {
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nOriginal content"),
+      ];
+
       // Initial lockfile
-      const lockfile1 = generateLockfile(mockAlign, "team");
+      const lockfile1 = generateLockfile(rules, testDir);
       writeLockfile(lockfilePath, lockfile1);
 
-      // Modify align and regenerate
-      const modifiedAlign: Align = {
-        ...mockAlign,
-        sections: [{ ...mockAlign.sections[0], guidance: "Modified guidance" }],
-      };
-      const lockfile2 = generateLockfile(modifiedAlign, "team");
+      // Modify rules and regenerate
+      const modifiedRules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nModified content"),
+      ];
+      const lockfile2 = generateLockfile(modifiedRules, testDir);
       writeLockfile(lockfilePath, lockfile2);
 
-      // New lockfile should validate against modified align
-      const validation = validateLockfile(lockfile2, modifiedAlign);
+      // New lockfile should validate against modified rules
+      const currentLockfile = generateLockfile(modifiedRules, testDir);
+      const validation = validateLockfile(
+        lockfile2,
+        currentLockfile.bundle_hash,
+      );
       expect(validation.valid).toBe(true);
 
-      // But not against original align
-      const validation2 = validateLockfile(lockfile2, mockAlign);
+      // But not against original rules
+      const originalLockfile = generateLockfile(rules, testDir);
+      const validation2 = validateLockfile(
+        lockfile2,
+        originalLockfile.bundle_hash,
+      );
       expect(validation2.valid).toBe(false);
+    });
+
+    it("excludes personal rules from lockfile", () => {
+      const teamRule = createMockRule("team", "# Team Rule\n\nTeam content");
+      const personalRule: RuleFile = {
+        filename: "personal.md",
+        content: "# Personal Rule\n\nPersonal content",
+        hash: computeHash("# Personal Rule\n\nPersonal content"),
+        frontmatter: { scope: "personal" },
+      };
+
+      const rules: RuleFile[] = [teamRule, personalRule];
+
+      // First lockfile with both rules
+      const lockfile1 = generateLockfile(rules, testDir);
+
+      // Modify personal rule only
+      const modifiedPersonalRule: RuleFile = {
+        filename: "personal.md",
+        content: "# Personal Rule\n\nModified personal content",
+        hash: computeHash("# Personal Rule\n\nModified personal content"),
+        frontmatter: { scope: "personal" },
+      };
+
+      const rulesWithModifiedPersonal: RuleFile[] = [
+        teamRule,
+        modifiedPersonalRule,
+      ];
+      const lockfile2 = generateLockfile(rulesWithModifiedPersonal, testDir);
+
+      // Lockfiles should be identical (personal rule excluded)
+      expect(lockfile1.bundle_hash).toBe(lockfile2.bundle_hash);
     });
   });
 
-  describe("vendor.volatile exclusion", () => {
-    it("excludes volatile fields from hash", () => {
-      const alignWithVolatile: Align = {
-        ...mockAlign,
-        sections: [
-          {
-            ...mockAlign.sections[0],
-            vendor: {
-              cursor: { stable: "value", session_id: "abc123" },
-              _meta: { volatile: ["cursor.session_id"] },
-            },
-          },
-        ],
-      };
+  describe("team config inclusion", () => {
+    it("includes team config in bundle hash", () => {
+      const rules: RuleFile[] = [
+        createMockRule("test", "# Test Rule\n\nTest content"),
+      ];
 
-      const alignWithDifferentVolatile: Align = {
-        ...mockAlign,
-        sections: [
-          {
-            ...mockAlign.sections[0],
-            vendor: {
-              cursor: { stable: "value", session_id: "def456" },
-              _meta: { volatile: ["cursor.session_id"] },
-            },
-          },
-        ],
-      };
+      // Create team config
+      const teamConfigPath = join(testDir, ".aligntrue/config.team.yaml");
+      writeFileSync(teamConfigPath, "mode: team\nmodules:\n  lockfile: true");
 
-      const lockfile1 = generateLockfile(alignWithVolatile, "team");
-      const lockfile2 = generateLockfile(alignWithDifferentVolatile, "team");
+      const lockfile1 = generateLockfile(rules, testDir);
 
-      // Hashes should be identical (volatile field excluded)
-      expect(lockfile1.bundle_hash).toBe(lockfile2.bundle_hash);
-      expect(lockfile1.rules[0].content_hash).toBe(
-        lockfile2.rules[0].content_hash,
+      // Modify team config
+      writeFileSync(
+        teamConfigPath,
+        "mode: team\nmodules:\n  lockfile: true\n# Added comment",
       );
+
+      const lockfile2 = generateLockfile(rules, testDir);
+
+      // Bundle hashes should differ
+      expect(lockfile1.bundle_hash).not.toBe(lockfile2.bundle_hash);
     });
   });
 });

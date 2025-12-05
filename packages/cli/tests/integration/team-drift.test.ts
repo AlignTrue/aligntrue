@@ -108,10 +108,8 @@ Team-wide guidance.
       expect(existsSync(lockfilePath)).toBe(true);
 
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-      expect(lockfile.version).toBe("1");
-      expect(lockfile.mode).toBe("team");
+      expect(lockfile.version).toBe("2");
       expect(lockfile.bundle_hash).toMatch(/^[a-f0-9]{64}$/);
-      expect(lockfile.rules.length).toBeGreaterThan(0);
     });
 
     it("does not generate lockfile in solo mode by default", async () => {
@@ -266,7 +264,7 @@ First rule.
 
       const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const originalLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-      const originalRuleCount = originalLockfile.rules.length;
+      const originalBundleHash = originalLockfile.bundle_hash;
 
       // Add a new rule
       writeFileSync(
@@ -289,12 +287,9 @@ New rule.
         // May throw from process.exit
       }
 
-      // Verify rule count increased
+      // Verify bundle hash changed (indicating rules changed)
       const updatedLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-      expect(updatedLockfile.rules.length).toBe(originalRuleCount + 1);
-      expect(updatedLockfile.bundle_hash).not.toBe(
-        originalLockfile.bundle_hash,
-      );
+      expect(updatedLockfile.bundle_hash).not.toBe(originalBundleHash);
     });
 
     it("detects deleted rules", async () => {
@@ -350,7 +345,7 @@ Will be deleted.
 
       const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const originalLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-      const originalRuleCount = originalLockfile.rules.length;
+      const originalBundleHash = originalLockfile.bundle_hash;
 
       // Delete a rule
       unlinkSync(join(rulesDir, "delete.md"));
@@ -362,12 +357,9 @@ Will be deleted.
         // May throw from process.exit
       }
 
-      // Verify rule count decreased
+      // Verify bundle_hash changed (rule deletion detected)
       const updatedLockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-      expect(updatedLockfile.rules.length).toBe(originalRuleCount - 1);
-      expect(updatedLockfile.bundle_hash).not.toBe(
-        originalLockfile.bundle_hash,
-      );
+      expect(updatedLockfile.bundle_hash).not.toBe(originalBundleHash);
     });
   });
 
@@ -581,8 +573,8 @@ Personal guidance.
       const lockfilePath = join(TEST_DIR, ".aligntrue/lock.json");
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
 
-      // Verify lockfile was created with rules
-      expect(lockfile.rules.length).toBeGreaterThan(0);
+      // Verify lockfile was created with v2 format
+      expect(lockfile.version).toBe("2");
 
       // Bundle hash should be stable since rules exist
       expect(lockfile.bundle_hash).toMatch(/^[a-f0-9]{64}$/);
@@ -599,7 +591,7 @@ Personal guidance.
       const config = {
         mode: "team",
         profile: { id: "test-org" },
-        modules: { lockfile: true, bundle: false },
+        modules: { lockfile: true },
         sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };
@@ -656,20 +648,9 @@ This rule tests fingerprint consistency between sync and drift detection.
       // Bundle hash should be identical (fingerprints are consistent)
       expect(secondBundleHash).toBe(firstBundleHash);
 
-      // Rule IDs should use filename-based fingerprints (not hash-based)
-      // This ensures drift detection will find the same rules
-      const ruleIds = lockfileAfterSecondSync.rules.map(
-        (r: { rule_id: string }) => r.rule_id,
-      );
-
-      // Verify fingerprints are human-readable (filename-based, not hash-based)
-      // Hash-based would be 64 hex chars, filename-based would be short like "consistency-test"
-      for (const ruleId of ruleIds) {
-        // Fingerprint should NOT be a 64-char hex hash
-        expect(ruleId.length).toBeLessThan(64);
-        // Fingerprint should NOT start with .aligntrue/rules/ (that would be path-based)
-        expect(ruleId.startsWith(".aligntrue/rules/")).toBe(false);
-      }
+      // Lockfile v2 only contains bundle_hash, no per-rule tracking
+      expect(lockfileAfterSecondSync.version).toBe("2");
+      expect(lockfileAfterSecondSync.bundle_hash).toBeDefined();
     });
 
     it("drift command reports no drift after sync", async () => {
@@ -677,7 +658,7 @@ This rule tests fingerprint consistency between sync and drift detection.
       const config = {
         mode: "team",
         profile: { id: "test-org" },
-        modules: { lockfile: true, bundle: false },
+        modules: { lockfile: true },
         sources: [{ type: "local", path: ".aligntrue/rules" }],
         exporters: ["cursor"],
       };

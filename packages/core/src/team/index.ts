@@ -9,15 +9,8 @@ export * from "./validation.js";
 export {
   detectDrift,
   detectDriftForConfig,
-  detectAgentFileDrift,
   detectLockfileDrift,
 } from "./drift.js";
-export {
-  parseTeamYaml,
-  validateRemaps,
-  hasValidTeamYaml,
-  applySeverityRemap,
-} from "./remap.js";
 export {
   compareBundles,
   compareDetailedBundles,

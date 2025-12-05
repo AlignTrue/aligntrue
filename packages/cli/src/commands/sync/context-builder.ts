@@ -441,10 +441,12 @@ version: "1"
     const { generateLockfile, writeLockfile } = await import(
       "@aligntrue/core/lockfile"
     );
-    const newLockfile = generateLockfile(
-      bundleResult.align,
-      config.mode as "team" | "enterprise",
-    );
+    const { loadRulesDirectory } = await import("@aligntrue/core");
+
+    // Load rule files for lockfile generation
+    const rulesPath = resolve(cwd, ".aligntrue", "rules");
+    const rules = await loadRulesDirectory(rulesPath, cwd);
+    const newLockfile = generateLockfile(rules, cwd);
 
     try {
       writeLockfile(lockfilePath, newLockfile);

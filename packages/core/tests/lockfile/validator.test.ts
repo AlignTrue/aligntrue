@@ -1,189 +1,59 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   validateLockfile,
   formatValidationResult,
-  formatLockfileTeamErrors,
 } from "../../src/lockfile/validator.js";
-import { generateLockfile } from "../../src/lockfile/generator.js";
-import type { Align, AlignSection } from "@aligntrue/schema";
-
-// Mock filesystem - preserve real readFileSync for schema files
-const _realFs = await import("fs");
-vi.mock("fs", async () => {
-  const actual = await vi.importActual<typeof import("fs")>("fs");
-  return {
-    ...actual,
-    existsSync: vi.fn(),
-  };
-});
+import type {
+  Lockfile,
+  LockfileValidationResult,
+} from "../../src/lockfile/types.js";
 
 describe("lockfile validator", () => {
-  const mockRule: AlignSection = {
-    heading: "Test Rule One",
-    level: 2,
-    content: "Test rule guidance",
-    fingerprint: "test-rule-one",
-  };
-
-  const mockAlign: Align = {
-    id: "test.align",
-    version: "1.0.0",
-    spec_version: "1",
-    summary: "Test align",
-    owner: "test-org",
-    source: "https://github.com/test-org/aligns",
-    source_sha: "abc123",
-    sections: [mockRule],
-  };
-
   describe("validateLockfile", () => {
-    it("validates matching lockfile", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-      const result = validateLockfile(lockfile, mockAlign);
+    it("validates matching bundle hash", () => {
+      const lockfile: Lockfile = {
+        version: "2",
+        bundle_hash: "sha256:abc123",
+      };
+
+      const result = validateLockfile(lockfile, "sha256:abc123");
 
       expect(result.valid).toBe(true);
-      expect(result.mismatches).toHaveLength(0);
-      expect(result.newRules).toHaveLength(0);
-      expect(result.deletedRules).toHaveLength(0);
+      expect(result.expectedHash).toBe("sha256:abc123");
+      expect(result.actualHash).toBe("sha256:abc123");
     });
 
-    it("detects modified rules", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-      const modifiedAlign: Align = {
-        ...mockAlign,
-        sections: [{ ...mockRule, content: "Modified guidance" }],
+    it("detects bundle hash mismatch", () => {
+      const lockfile: Lockfile = {
+        version: "2",
+        bundle_hash: "sha256:abc123",
       };
 
-      const result = validateLockfile(lockfile, modifiedAlign);
+      const result = validateLockfile(lockfile, "sha256:different");
 
       expect(result.valid).toBe(false);
-      expect(result.mismatches).toHaveLength(1);
-      expect(result.mismatches[0].rule_id).toBe("test-rule-one");
-      expect(result.mismatches[0].expected_hash).toBeDefined();
-      expect(result.mismatches[0].actual_hash).toBeDefined();
-      expect(result.mismatches[0].expected_hash).not.toBe(
-        result.mismatches[0].actual_hash,
-      );
+      expect(result.expectedHash).toBe("sha256:abc123");
+      expect(result.actualHash).toBe("sha256:different");
     });
 
-    it("detects new rules", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-      const alignWithNewRule: Align = {
-        ...mockAlign,
-        sections: [
-          mockRule,
-          {
-            heading: "New Rule",
-            level: 2,
-            content: "New guidance",
-            fingerprint: "test-rule-new",
-          },
-        ],
+    it("handles v1 lockfile format", () => {
+      const lockfile: Lockfile = {
+        version: "1",
+        bundle_hash: "sha256:v1hash",
       };
 
-      const result = validateLockfile(lockfile, alignWithNewRule);
-
-      expect(result.valid).toBe(false);
-      expect(result.newRules).toHaveLength(1);
-      expect(result.newRules[0]).toBe("test-rule-new");
-    });
-
-    it("detects deleted rules", () => {
-      const alignWithTwoRules: Align = {
-        ...mockAlign,
-        sections: [
-          mockRule,
-          {
-            heading: "Deleted Rule",
-            level: 2,
-            content: "Deleted guidance",
-            fingerprint: "test-rule-deleted",
-          },
-        ],
-      };
-      const lockfile = generateLockfile(alignWithTwoRules, "team");
-
-      const result = validateLockfile(lockfile, mockAlign);
-
-      expect(result.valid).toBe(false);
-      expect(result.deletedRules).toHaveLength(1);
-      expect(result.deletedRules[0]).toBe("test-rule-deleted");
-    });
-
-    it("detects multiple types of changes", () => {
-      const originalAlign: Align = {
-        ...mockAlign,
-        sections: [
-          mockRule,
-          {
-            heading: "Rule Two",
-            level: 2,
-            content: "Second guidance",
-            fingerprint: "test-rule-two",
-          },
-        ],
-      };
-      const lockfile = generateLockfile(originalAlign, "team");
-
-      const modifiedAlign: Align = {
-        ...mockAlign,
-        sections: [
-          { ...mockRule, content: "Modified guidance" }, // Modified
-          {
-            heading: "Rule Three",
-            level: 2,
-            content: "Third guidance",
-            fingerprint: "test-rule-three",
-          }, // New
-          // test-rule-two is deleted
-        ],
-      };
-
-      const result = validateLockfile(lockfile, modifiedAlign);
-
-      expect(result.valid).toBe(false);
-      expect(result.mismatches).toHaveLength(1);
-      expect(result.mismatches[0].rule_id).toBe("test-rule-one");
-      expect(result.newRules).toHaveLength(1);
-      expect(result.newRules[0]).toBe("test-rule-three");
-      expect(result.deletedRules).toHaveLength(1);
-      expect(result.deletedRules[0]).toBe("test-rule-two");
-    });
-
-    it("handles empty rule arrays", () => {
-      const emptyAlign: Align = { ...mockAlign, sections: [] };
-      const lockfile = generateLockfile(emptyAlign, "team");
-
-      const result = validateLockfile(lockfile, emptyAlign);
+      const result = validateLockfile(lockfile, "sha256:v1hash");
 
       expect(result.valid).toBe(true);
-      expect(result.mismatches).toHaveLength(0);
-      expect(result.newRules).toHaveLength(0);
-      expect(result.deletedRules).toHaveLength(0);
-    });
-
-    it("includes source in mismatch info", () => {
-      const lockfile = generateLockfile(mockAlign, "team");
-      const modifiedAlign: Align = {
-        ...mockAlign,
-        sections: [{ ...mockRule, guidance: "Modified" }],
-      };
-
-      const result = validateLockfile(lockfile, modifiedAlign);
-
-      expect(result.mismatches[0].source).toBe(
-        "https://github.com/test-org/aligns",
-      );
     });
   });
 
   describe("formatValidationResult", () => {
     it("formats success message", () => {
-      const result = {
+      const result: LockfileValidationResult = {
         valid: true,
-        mismatches: [],
-        newRules: [],
-        deletedRules: [],
+        expectedHash: "sha256:abc",
+        actualHash: "sha256:abc",
       };
 
       const message = formatValidationResult(result);
@@ -191,225 +61,32 @@ describe("lockfile validator", () => {
       expect(message).toContain("up to date");
     });
 
-    it("formats modified rules", () => {
-      const result = {
+    it("formats drift message with hashes", () => {
+      const result: LockfileValidationResult = {
         valid: false,
-        mismatches: [
-          {
-            rule_id: "test.rule.one",
-            expected_hash: "1234567890abcdef",
-            actual_hash: "fedcba0987654321",
-          },
-        ],
-        newRules: [],
-        deletedRules: [],
+        expectedHash: "sha256:abc123def456789012345678901234567890",
+        actualHash: "sha256:xyz789uvw0123456789012345678901234567",
       };
 
       const message = formatValidationResult(result);
 
-      expect(message).toContain("Modified rules");
-      expect(message).toContain("test.rule.one");
-      expect(message).toContain("Expected: 1234567890ab");
-      expect(message).toContain("Actual:   fedcba098765");
+      expect(message).toContain("drift detected");
+      // Hash is truncated to 16 characters
+      expect(message).toContain("Expected: sha256:abc123de");
+      expect(message).toContain("Actual:   sha256:xyz789uv");
     });
 
-    it("formats new rules", () => {
-      const result = {
+    it("includes fix instructions", () => {
+      const result: LockfileValidationResult = {
         valid: false,
-        mismatches: [],
-        newRules: ["test.rule.new"],
-        deletedRules: [],
+        expectedHash: "sha256:old",
+        actualHash: "sha256:new",
       };
 
       const message = formatValidationResult(result);
 
-      expect(message).toContain("New rules");
-      expect(message).toContain("+ test.rule.new");
-    });
-
-    it("formats deleted rules", () => {
-      const result = {
-        valid: false,
-        mismatches: [],
-        newRules: [],
-        deletedRules: ["test.rule.deleted"],
-      };
-
-      const message = formatValidationResult(result);
-
-      expect(message).toContain("Deleted rules");
-      expect(message).toContain("- test.rule.deleted");
-    });
-
-    it("formats multiple changes", () => {
-      const result = {
-        valid: false,
-        mismatches: [
-          {
-            rule_id: "test.rule.modified",
-            expected_hash: "1234",
-            actual_hash: "5678",
-          },
-        ],
-        newRules: ["test.rule.new"],
-        deletedRules: ["test.rule.deleted"],
-      };
-
-      const message = formatValidationResult(result);
-
-      expect(message).toContain("Modified rules");
-      expect(message).toContain("New rules");
-      expect(message).toContain("Deleted rules");
-    });
-  });
-
-  describe("formatLockfileTeamErrors", () => {
-    it("formats errors and warnings separately", () => {
-      const result = {
-        valid: false,
-        errors: [
-          {
-            type: "error" as const,
-            message: "Test error",
-            suggestion: "Fix it",
-          },
-          {
-            type: "warning" as const,
-            message: "Test warning",
-            suggestion: "Consider this",
-          },
-        ],
-      };
-
-      const formatted = formatLockfileTeamErrors(result);
-      expect(formatted).toContain("Lockfile Team Mode Errors:");
-      expect(formatted).toContain("ERROR: Test error");
-      expect(formatted).toContain("Lockfile Team Mode Warnings:");
-      expect(formatted).toContain("WARNING: Test warning");
-    });
-
-    it("returns success message when valid", () => {
-      const result = {
-        valid: true,
-        errors: [],
-      };
-
-      const formatted = formatLockfileTeamErrors(result);
-      expect(formatted).toContain("passes team mode validation");
-    });
-  });
-
-  // Team mode enhancements: Section-based validation tests
-  describe("section-based validation", () => {
-    const mockSection: AlignSection = {
-      heading: "Testing Guidelines",
-      level: 2,
-      content: "Write comprehensive tests for all features.",
-      fingerprint: "fp:testing-guidelines-abc123",
-    };
-
-    const mockSectionAlign: Align = {
-      id: "test.section.align",
-      version: "1.0.0",
-      spec_version: "1",
-      summary: "Test section align",
-      owner: "test-org",
-      source: "https://github.com/test-org/aligns",
-      source_sha: "def456",
-      sections: [mockSection],
-    };
-
-    it("validates matching section-based lockfile", () => {
-      const lockfile = generateLockfile(mockSectionAlign, "team");
-      const result = validateLockfile(lockfile, mockSectionAlign);
-
-      expect(result.valid).toBe(true);
-      expect(result.mismatches).toHaveLength(0);
-      expect(result.newRules).toHaveLength(0);
-      expect(result.deletedRules).toHaveLength(0);
-    });
-
-    it("detects modified sections", () => {
-      const lockfile = generateLockfile(mockSectionAlign, "team");
-      const modifiedAlign: Align = {
-        ...mockSectionAlign,
-        sections: [{ ...mockSection, content: "Modified content" }],
-      };
-
-      const result = validateLockfile(lockfile, modifiedAlign);
-
-      expect(result.valid).toBe(false);
-      expect(result.mismatches).toHaveLength(1);
-      expect(result.mismatches[0].rule_id).toBe("fp:testing-guidelines-abc123");
-    });
-
-    it("detects new sections", () => {
-      const lockfile = generateLockfile(mockSectionAlign, "team");
-      const expandedAlign: Align = {
-        ...mockSectionAlign,
-        sections: [
-          mockSection,
-          {
-            ...mockSection,
-            fingerprint: "fp:new-section",
-            heading: "New Section",
-          },
-        ],
-      };
-
-      const result = validateLockfile(lockfile, expandedAlign);
-
-      expect(result.valid).toBe(false);
-      expect(result.newRules).toHaveLength(1);
-      expect(result.newRules[0]).toBe("fp:new-section");
-    });
-
-    it("detects deleted sections", () => {
-      const alignWithTwo: Align = {
-        ...mockSectionAlign,
-        sections: [
-          mockSection,
-          {
-            ...mockSection,
-            fingerprint: "fp:second-section",
-            heading: "Second Section",
-          },
-        ],
-      };
-
-      const lockfile = generateLockfile(alignWithTwo, "team");
-      const result = validateLockfile(lockfile, mockSectionAlign);
-
-      expect(result.valid).toBe(false);
-      expect(result.deletedRules).toHaveLength(1);
-      expect(result.deletedRules[0]).toBe("fp:second-section");
-    });
-
-    it("handles multiple section changes", () => {
-      const originalAlign: Align = {
-        ...mockSectionAlign,
-        sections: [
-          { ...mockSection, fingerprint: "fp:one", content: "Content 1" },
-          { ...mockSection, fingerprint: "fp:two", content: "Content 2" },
-        ],
-      };
-
-      const lockfile = generateLockfile(originalAlign, "team");
-
-      const modifiedAlign: Align = {
-        ...mockSectionAlign,
-        sections: [
-          { ...mockSection, fingerprint: "fp:one", content: "Modified 1" },
-          { ...mockSection, fingerprint: "fp:three", content: "Content 3" },
-        ],
-      };
-
-      const result = validateLockfile(lockfile, modifiedAlign);
-
-      expect(result.valid).toBe(false);
-      expect(result.mismatches).toHaveLength(1); // fp:one modified
-      expect(result.newRules).toHaveLength(1); // fp:three added
-      expect(result.deletedRules).toHaveLength(1); // fp:two deleted
+      expect(message).toContain("aligntrue sync");
+      expect(message).toContain("git diff");
     });
   });
 });

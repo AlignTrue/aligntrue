@@ -8,7 +8,6 @@ import * as clack from "@clack/prompts";
 import { computeHash } from "@aligntrue/schema";
 import {
   updateLastSyncTimestamp,
-  storeAgentExportHash,
   storeSourceRuleHashes,
   detectStaleExports,
   cleanStaleExports,
@@ -257,48 +256,11 @@ export async function handleSyncResult(
     try {
       updateLastSyncTimestamp(cwd);
 
-      // Store agent export hashes for drift detection
-      // Track ALL files written by exporters for comprehensive drift detection
-      const { readFileSync, existsSync: fsExists } = await import("fs");
-      const { join: pathJoin, resolve, relative } = await import("path");
-
-      // Track all files written by exporters
-      if (result.written && result.written.length > 0) {
-        for (const file of result.written) {
-          // Normalize path to relative path from cwd
-          const absPath = resolve(cwd, file);
-          const relPath = relative(cwd, absPath).replace(/\\/g, "/");
-
-          try {
-            const content = readFileSync(absPath, "utf-8");
-            storeAgentExportHash(cwd, relPath, content);
-          } catch {
-            // Ignore read errors (file may have been deleted or moved)
-          }
-        }
-      }
-
-      // Also track common agent files that may exist but weren't in result.written
-      // This ensures we have a baseline hash for drift detection on first sync
-      const commonAgentFiles = [
-        "AGENTS.md",
-        "CLAUDE.md",
-        ".cursor/rules/aligntrue.mdc",
-      ];
-      for (const trackedFile of commonAgentFiles) {
-        const filePath = pathJoin(cwd, trackedFile);
-        if (fsExists(filePath)) {
-          try {
-            const content = readFileSync(filePath, "utf-8");
-            storeAgentExportHash(cwd, trackedFile, content);
-          } catch {
-            // Ignore read errors
-          }
-        }
-      }
-
-      // Store source rule hashes for sync detection (per ADR-002)
+      // Store source rule hashes for sync detection
       // This enables reliable change detection in checkIfSyncNeeded()
+      const { readFileSync, existsSync: fsExists } = await import("fs");
+      const { join: pathJoin } = await import("path");
+
       try {
         const { globSync } = await import("glob");
         const sourceRulesDir = pathJoin(cwd, ".aligntrue", "rules");

@@ -83,11 +83,6 @@ interface StatusSummary {
     exists: boolean;
     path: string;
   };
-  bundle: {
-    enabled: boolean;
-    exists: boolean;
-    path: string;
-  };
 }
 
 /**
@@ -191,19 +186,12 @@ function buildStatusSummary(
   };
 
   const lockfileEnabled = config.modules?.lockfile === true;
-  const bundleEnabled = config.modules?.bundle === true;
 
   const lockfile = {
     enabled: lockfileEnabled,
     mode: config.lockfile?.mode || (lockfileEnabled ? "soft" : "off"),
     exists: existsSync(paths.lockfile),
     path: paths.lockfile,
-  };
-
-  const bundle = {
-    enabled: bundleEnabled,
-    exists: existsSync(paths.bundle),
-    path: paths.bundle,
   };
 
   // Count rule files in .aligntrue/rules/ (recursively)
@@ -244,7 +232,6 @@ function buildStatusSummary(
       files: ruleFiles,
     },
     lockfile,
-    bundle,
   };
 }
 
@@ -308,15 +295,6 @@ function renderStatus(summary: StatusSummary): void {
     console.log(`  Status: enabled (${summary.lockfile.mode})`);
     console.log(
       `  File: ${summary.lockfile.exists ? "present" : "missing (run 'aligntrue sync')"}`,
-    );
-  } else {
-    console.log("  Status: disabled");
-  }
-
-  console.log("\nBundle:");
-  if (summary.bundle.enabled) {
-    console.log(
-      `  File: ${summary.bundle.exists ? "present" : "missing (run 'aligntrue sync')"}`,
     );
   } else {
     console.log("  Status: disabled");

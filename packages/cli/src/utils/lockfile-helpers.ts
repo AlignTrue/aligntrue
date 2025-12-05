@@ -5,7 +5,7 @@
 
 import { join } from "path";
 import { generateLockfile, writeLockfile } from "@aligntrue/core/lockfile";
-import { loadIR } from "@aligntrue/core";
+import { loadRulesDirectory } from "@aligntrue/core";
 import { existsSync } from "fs";
 import type { AlignTrueConfig } from "@aligntrue/core";
 
@@ -56,33 +56,22 @@ export async function ensureLockfileExists(
   // Generate lockfile
   try {
     // Find rules directory
-    const irPath = join(cwd, ".aligntrue", "rules");
-    if (!existsSync(irPath)) {
+    const rulesPath = join(cwd, ".aligntrue", "rules");
+    if (!existsSync(rulesPath)) {
       return {
         success: false,
         error: "Rules directory not found. Run 'aligntrue sync' first.",
       };
     }
 
-    // Load IR using loadIR which handles both files and directories
-    const align = await loadIR(irPath, { mode: config.mode });
-
-    // Ensure align has required fields
-    if (!align || typeof align !== "object") {
-      return {
-        success: false,
-        error: "Invalid IR format",
-      };
-    }
+    // Load rule files
+    const rules = await loadRulesDirectory(rulesPath, cwd);
 
     // Generate lockfile
-    const lockfile = generateLockfile(
-      align,
-      config.mode as "team" | "enterprise",
-    );
+    const lockfile = generateLockfile(rules, cwd);
 
     // Write lockfile
-    await writeLockfile(lockfilePath, lockfile);
+    writeLockfile(lockfilePath, lockfile);
 
     if (!quiet) {
       console.log(`✓ Generated lockfile: ${lockfilePath}`);
@@ -135,7 +124,7 @@ export function getLockfileStatusMessage(
  */
 export async function createEmptyLockfile(
   cwd: string,
-  mode: "team" | "enterprise",
+  _mode: "team" | "enterprise",
 ): Promise<{ success: boolean; lockfilePath?: string; error?: string }> {
   const { join } = await import("path");
   const { writeLockfile } = await import("@aligntrue/core/lockfile");
@@ -147,14 +136,8 @@ export async function createEmptyLockfile(
     const emptyBundleHash = computeHash("");
 
     const emptyLockfile = {
-      version: "1" as const,
-      generated_at: new Date().toISOString(),
-      mode,
-      rules: [],
+      version: "2" as const,
       bundle_hash: emptyBundleHash,
-      // Mark as initial lockfile - drift detection will skip this
-      // until first sync populates it with actual rules
-      is_initial: true,
     };
 
     writeLockfile(lockfilePath, emptyLockfile, { silent: true });

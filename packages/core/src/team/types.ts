@@ -2,13 +2,5 @@
  * Team mode types
  */
 
-/**
- * Severity remapping types (from remap.ts)
- */
-export type {
-  AlignSeverity,
-  CheckSeverity,
-  SeverityRemap,
-  TeamYaml,
-  RemapValidationError,
-} from "./remap.js";
+// Re-export drift types for convenience
+export type { DriftCategory, DriftFinding, DriftResult } from "./drift.js";

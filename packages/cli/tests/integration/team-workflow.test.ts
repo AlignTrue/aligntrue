@@ -128,8 +128,7 @@ Team guidance here.
       expect(existsSync(lockfilePath)).toBe(true);
 
       const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
-      expect(lockfile.version).toBe("1");
-      expect(lockfile.mode).toBe("team");
+      expect(lockfile.version).toBe("2");
       expect(lockfile.bundle_hash).toMatch(/^[a-f0-9]{64}$/);
     });
   });
@@ -381,8 +380,8 @@ Shared team guidance.
         readFileSync(join(env1, ".aligntrue/lock.json"), "utf-8"),
       );
 
-      // Lockfile should contain team rules
-      expect(lockfile.rules.length).toBeGreaterThan(0);
+      // Lockfile should have v2 format with bundle hash
+      expect(lockfile.version).toBe("2");
       expect(lockfile.bundle_hash).toMatch(/^[a-f0-9]{64}$/);
     });
 

@@ -1,5 +1,5 @@
 /**
- * Lockfile management logic for SyncEngine
+ * Lockfile management logic for SyncEngine (v2)
  * Handles validation, enforcement, and generation of lockfiles
  */
 
@@ -9,9 +9,9 @@ import type { AuditEntry, OperationResult } from "./engine.js";
 import {
   readLockfile,
   writeLockfile,
-  validateLockfileFromRules,
+  validateLockfile,
   enforceLockfile,
-  generateLockfileFromRules,
+  generateLockfile,
 } from "../lockfile/index.js";
 import type { RuleFile } from "../rules/file-io.js";
 
@@ -55,8 +55,12 @@ export function validateAndEnforceLockfile(
   const existingLockfile = readLockfile(lockfilePath);
 
   if (existingLockfile) {
-    // Validate lockfile against current rules
-    const validation = validateLockfileFromRules(existingLockfile, rules);
+    // Generate current lockfile to get bundle_hash for comparison
+    const currentLockfile = generateLockfile(rules, cwd);
+    const validation = validateLockfile(
+      existingLockfile,
+      currentLockfile.bundle_hash,
+    );
     const enforcement = enforceLockfile(lockfileMode, validation);
 
     // Audit trail: Lockfile validation
@@ -112,10 +116,7 @@ export function generateAndWriteLockfile(
   }
 
   try {
-    const lockfile = generateLockfileFromRules(
-      rules,
-      config.mode as "team" | "enterprise",
-    );
+    const lockfile = generateLockfile(rules, cwd);
 
     // Validate lockfile path is absolute
     const absoluteLockfilePath = lockfilePath.startsWith("/")
@@ -132,7 +133,7 @@ export function generateAndWriteLockfile(
       source: "lockfile",
       hash: lockfile.bundle_hash,
       timestamp: new Date().toISOString(),
-      details: `Generated lockfile with ${lockfile.rules?.length || 0} entry hashes`,
+      details: `Generated lockfile v2 with bundle hash`,
     });
   } catch (_err) {
     const errorMsg = _err instanceof Error ? _err.message : String(_err);

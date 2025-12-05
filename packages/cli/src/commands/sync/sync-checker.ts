@@ -7,7 +7,6 @@ import {
   getAlignTruePaths,
   loadMergedConfig,
   getExporterNames,
-  detectAgentFileDrift,
   isTeamModeActive,
 } from "@aligntrue/core";
 import { detectNewAgents } from "../../utils/detect-agents.js";
@@ -15,7 +14,6 @@ import type { SyncOptions } from "./options.js";
 
 /**
  * Check if sync is needed using hash-based change detection
- * (replaces unreliable timestamp-based detection per ADR-002)
  *
  * Returns true if:
  * - No previous sync (first time)
@@ -23,7 +21,6 @@ import type { SyncOptions } from "./options.js";
  * - Any source rule content changed
  * - New rule files added
  * - Rule files deleted
- * - Agent files manually edited (drift detected)
  * - New agent files detected that aren't configured yet
  * - CLI flags that override export behavior (e.g., --content-mode)
  *
@@ -51,7 +48,7 @@ export async function checkIfSyncNeeded(
     return true;
   }
 
-  // 1. Hash-based source rule change detection (per ADR-002)
+  // 1. Hash-based source rule change detection
   const rulesDir = join(cwd, ".aligntrue", "rules");
   if (!existsSync(rulesDir)) {
     // Rules directory missing - sync is needed (will fail with proper error in buildSyncContext)
@@ -96,14 +93,7 @@ export async function checkIfSyncNeeded(
     return true;
   }
 
-  // 2. Hash-based agent file drift detection (per ADR-002)
-  // Detects manual edits to exported files
-  const agentDrift = detectAgentFileDrift(cwd);
-  if (agentDrift.length > 0) {
-    return true;
-  }
-
-  // 3. Check for new agent files that aren't configured yet
+  // 2. Check for new agent files that aren't configured yet
   // This handles detection of newly added agent files
   const newAgents = detectNewAgents(
     cwd,
