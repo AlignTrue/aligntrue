@@ -21,12 +21,12 @@ This mirrors AlignTrue's own philosophy: docs are the IR (Intermediate Represent
 
 ## File mapping
 
-| Docs Source                                  | Generated File    | Purpose                          |
-| -------------------------------------------- | ----------------- | -------------------------------- |
-| `apps/docs/content/index.mdx`                | `README.md`       | GitHub landing page              |
-| `apps/docs/content/07-contributing/index.md` | `CONTRIBUTING.md` | Contribution guide               |
-| `apps/docs/content/06-development/*.md`      | `DEVELOPMENT.md`  | Development guide (concatenated) |
-| `apps/docs/content/security.md`              | `SECURITY.md`     | Security policy                  |
+| Docs Source                                   | Generated File    | Purpose                          |
+| --------------------------------------------- | ----------------- | -------------------------------- |
+| `apps/docs/content/index.mdx`                 | `README.md`       | GitHub landing page              |
+| `apps/docs/content/07-contributing/index.md`  | `CONTRIBUTING.md` | Contribution guide               |
+| `apps/docs/content/06-development/*.{md,mdx}` | `DEVELOPMENT.md`  | Development guide (concatenated) |
+| `apps/docs/content/security.md`               | `SECURITY.md`     | Security policy                  |
 
 ## Editing workflow
 
@@ -41,11 +41,9 @@ apps/docs/content/index.mdx
 # Edit contribution guide (becomes CONTRIBUTING.md)
 apps/docs/content/07-contributing/index.md
 
-# Edit development pages (become DEVELOPMENT.md)
-apps/docs/content/06-development/setup.mdx
-apps/docs/content/06-development/workspace.md
-apps/docs/content/06-development/commands.md
-apps/docs/content/06-development/architecture.md
+# Edit development pages (become DEVELOPMENT.md; md or mdx, excluding index)
+apps/docs/content/06-development/*.md
+apps/docs/content/06-development/*.mdx
 
 # Edit security policy (becomes SECURITY.md)
 apps/docs/content/security.md
@@ -53,28 +51,29 @@ apps/docs/content/security.md
 
 ### 2. Stage your changes
 
-Stage the docs source files:
+Stage the docs source files. If you run `pnpm generate:repo-files` manually, stage the regenerated root files too:
 
 ```bash
 git add apps/docs/content/
+git add README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md
 ```
-
-You can also stage any other files that are part of your change.
 
 ### 3. Commit
 
-When you commit, the pre-commit hook will automatically:
+The pre-commit hook auto-runs `pnpm generate:repo-files` when staged files include:
 
-- Detect that docs source changed
-- Run `pnpm generate:repo-files`
-- Stage the regenerated protected files
-- Allow the commit to proceed
+- `apps/docs/content/index.mdx`
+- `apps/docs/content/07-contributing/creating-aligns.md`
+- `apps/docs/content/07-policies/security.md`
+- Any `apps/docs/content/06-development/*.md` or `.mdx`
+
+If you change other mapped sources (for example `apps/docs/content/07-contributing/index.md` or `apps/docs/content/security.md`), run `pnpm generate:repo-files` yourself before committing so the root files stay in sync.
 
 ```bash
-git commit -m "docs: Update documentation"
+git commit -m "docs: update documentation"
 ```
 
-The generated files are included automatically.
+The hook also stages regenerated root files when it runs.
 
 ## Link handling
 
@@ -232,8 +231,7 @@ graph LR
 See these pages for diagram examples:
 
 - [How it works](/docs) - Homepage flow diagram
-- [Sync behavior](/docs/03-concepts/sync-behavior) - Sequence diagrams
-- [Sync behavior](/docs/03-concepts/sync-behavior) - How sync works
+- [Sync behavior](/docs/03-concepts/sync-behavior) - Sequence and flow diagrams
 - [Solo vs team](/docs/00-getting-started/02-solo-vs-team-mode) - Architecture comparison
 - [Customization](/docs/02-customization) - Decision flowchart
 
@@ -242,24 +240,26 @@ See these pages for diagram examples:
 ### Test docs site
 
 ```bash
-cd apps/docs
-pnpm dev
-# Open http://localhost:3001
+# From repo root
+pnpm --filter @aligntrue/docs dev
+# Open http://localhost:3000
 ```
 
 ### Test generation script
 
 ```bash
+# Export README/CONTRIBUTING/DEVELOPMENT/SECURITY from docs sources
 pnpm generate:repo-files
 ```
 
 ### Test both
 
 ```bash
-pnpm docs:build
+# Build the docs site (run from repo root)
+pnpm --filter @aligntrue/docs build
 ```
 
-This runs generation then builds the docs site.
+Run `pnpm generate:repo-files` first if you changed mapped sources and need the root files refreshed.
 
 ## What if you manually edit protected files?
 

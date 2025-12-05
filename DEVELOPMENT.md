@@ -70,27 +70,28 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 
 ## Determinism
 
-### When to canonicalize
+### When we canonicalize
 
-**Only canonicalize when determinism is required:**
+We canonicalize any time we compute a content hash so identical inputs yield the
+same checksum:
 
-- **Lockfile generation** (`aligntrue sync` in team mode) - Produce canonical hash for drift detection
-- **Catalog publishing** (`aligntrue publish` - removed from roadmap) - Produce integrity hash for distribution
-- **NOT during:** init, sync, export, import, normal file operations
+- Rule and section hashing via `computeContentHash` during rule load, sync, and
+  exporter content hashing
+- Lockfile generation hashes sections, overlays, and plugs for drift detection
+- MCP config generation hashes the server map
+- Catalog publishing (removed from roadmap) would reuse the same hashing path
 
-**Why:**
-
-- Solo devs don't need canonicalization overhead for local files
-- Team mode only needs determinism for lockfile-based drift detection
-- Catalog publishing needs integrity hash at distribution boundary
-- Running canonicalization on every operation adds unnecessary cost
+We do **not** re-canonicalize whole bundles on every operation—only the inputs
+being hashed—to keep normal workflows fast.
 
 ### Implementation
 
-- `packages/schema/src/canonicalize.ts` contains JCS canonicalization logic
-- `packages/core/src/lockfile/index.ts` (and its helpers) call canonicalize when generating locks
-- Exporters do NOT canonicalize; they work with IR directly
-- Canonical hashing is exposed via `computeHash` in `packages/schema/src/canonicalize.ts`, and plug-specific workflows live in `packages/core/src/plugs/hashing.ts`
+- `packages/schema/src/canonicalize.ts` provides JCS canonicalization and hashing
+  helpers used across the stack
+- `packages/core/src/lockfile/` and `packages/core/src/plugs/hashing.ts` build on
+  those helpers for team-mode locks and plug hashes
+- Exporters compute `contentHash` with the same canonicalization and return it in
+  `ExportResult` (not written into markdown exports)
 
 ## Package architecture
 
@@ -119,7 +120,8 @@ These adapt core logic to specific surfaces:
 Vendor bags enable lossless round-trips for agent-specific metadata:
 
 - `vendor.<agent>` namespace for agent-specific extensions
-- `vendor.*.volatile` excluded from hashing (timestamps, session IDs, etc.)
+- Volatile paths excluded from hashing via `vendor._meta.volatile` (timestamps,
+  session IDs, etc.)
 - Preserved during sync operations
 - Allows agents to store additional metadata without breaking AlignTrue semantics
 
@@ -131,6 +133,9 @@ vendor:
     session_id: "abc123" # Volatile, excluded from hash
     preferences:
       theme: "dark" # Stable, included in hash
+  _meta:
+    volatile:
+      - cursor.session_id
 ```
 
 ## Source precedence and merge
@@ -192,7 +197,7 @@ Rules merge with precedence from most specific to least specific.
 
 ## Exporters
 
-AlignTrue includes 50 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks this against `packages/exporters/src`.
+AlignTrue includes 50 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks manifests in `packages/exporters/src`.
 
 ### Categories
 
@@ -213,11 +218,11 @@ Each exporter documents what information may be lost when converting from IR:
 
 ### Content hash
 
-- Computed deterministically from IR sections
+- Computed deterministically from canonicalized IR sections
 - Returned in `ExportResult.contentHash`
 - Useful for drift detection and integrity verification
-- Not written to exported files (files kept clean)
-- For MCP config exporters, hash is included in JSON as `content_hash` field
+- Not written to markdown exports (files kept clean); MCP JSON includes
+  `content_hash`
 
 ## AI-maintainable code principles
 
@@ -629,35 +634,31 @@ Runs automatically on every `git commit`. Optimized for speed with incremental c
 
 **Flow:**
 
-1. **Format** staged files with Prettier (~5s)
-2. **Validate protected repo files** - Prevent direct edits to auto-generated files
-3. **Quick typecheck** changed packages only (~5-15s) ← **Fails fast**
-4. **Build** changed packages (~15-30s)
-5. **Full typecheck** changed packages (~10-20s)
+1. Warn if 50+ files are staged (commit may be slow; consider splitting).
+2. Block temp artifacts: fails if any staged path starts with `temp-`.
+3. Auto-regenerate protected docs (`README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`) when their sources change and stage the outputs.
+4. Validate workspace protocol on staged `package.json` files (`pnpm validate:workspace`).
+5. Format and lint staged files via `lint-staged` (Prettier + ESLint, zero warnings).
+6. If staged files include TypeScript, build affected packages (`pnpm build:packages`) to catch resolution/type errors.
+7. Validate Next.js `transpilePackages` configuration.
+8. Validate documentation accuracy when docs or related code change (docs content, `package.json`, CLI command registry, exporters, performance thresholds).
 
-**Total time:** 30-60s for typical commits (vs 2+ min previously)
-
-**Key improvements:**
-
-- Catches type errors BEFORE build (saves time)
-- Only checks/builds changed packages (faster)
-- Shows clear error messages with fix suggestions
-- **Prevents direct edits to auto-generated files** (new)
+**Total time:** ~45-90s for typical commits (faster with small staged sets)
 
 ### Protected repository files
 
 The following files are auto-generated from documentation source and cannot be directly edited:
 
 - `README.md` (generated from `apps/docs/content/index.mdx`)
-- `CONTRIBUTING.md` (generated from `apps/docs/content/05-contributing/creating-aligns.md`)
-- `DEVELOPMENT.md` (generated from `apps/docs/content/07-development/*`)
+- `CONTRIBUTING.md` (generated from `apps/docs/content/07-contributing/creating-aligns.md`)
+- `DEVELOPMENT.md` (generated from `apps/docs/content/06-development/*`)
 
 **Why:** AlignTrue practices what it preaches - documentation is the IR (Intermediate Representation), and generated files are the exports. This enforces the docs-first architecture.
 
 **Correct workflow:**
 
 1. Edit the canonical source in `apps/docs/content/`
-2. Run `pnpm generate:repo-files` to regenerate root files
+2. Run `pnpm generate:repo-files` to regenerate root files (the pre-commit hook will also do this automatically when docs sources change)
 3. Commit both the doc changes AND the regenerated files
 
 **If you accidentally try to directly edit a protected file:**
@@ -692,12 +693,15 @@ Runs on every push to `main` or `develop`. Comprehensive validation of entire wo
 
 **What CI checks:**
 
-1. Lockfile sync validation
-2. Full workspace build
-3. Full workspace typecheck
-4. All tests (unit + integration)
-5. Conformance testkit
-6. Golden repository validation
+1. Workspace protocol validation (`pnpm validate:workspace`)
+2. Workspace link verification (`pnpm verify:workspace-links`)
+3. Build all packages (`pnpm build:packages`)
+4. Full validation suite (`pnpm validate:all`)
+5. Docs build (`pnpm --filter @aligntrue/docs build`)
+6. Full typecheck (`pnpm typecheck`)
+7. Tests with coverage (`pnpm test -- --coverage`)
+8. Conformance testkit (`pnpm verify`)
+9. Golden repository validation (`examples/golden-repo/test-golden-repo.sh`)
 
 **Time:** 3-5 minutes per platform
 
@@ -705,14 +709,9 @@ Runs on every push to `main` or `develop`. Comprehensive validation of entire wo
 
 CI runs on multiple platforms to catch platform-specific issues:
 
-- **Ubuntu (Linux)** - Primary platform, full test suite
-- **macOS** - Development platform, full test suite
-- **Windows** - Limited test coverage (see below)
-
-Additionally, CI tests multiple Node.js versions:
-
-- **Node 20** - LTS minimum (all platforms)
-- **Node 22** - Current LTS (all platforms)
+- **Ubuntu (Linux)** - Node 20 and Node 22
+- **macOS** - Node 22
+- **Windows** - Node 22 (limited coverage, see below)
 
 ### Windows test limitations
 
@@ -988,8 +987,9 @@ const hash = computeHash(content);
 **Available functions:**
 
 - `computeHash(data: string): string` - SHA-256 hash
-- `computeContentHash(obj: unknown): string` - Hash an object after canonicalization
+- `computeContentHash(obj: unknown, excludeVolatile = true): string` - Canonicalize (drops `vendor.*.volatile` by default) + SHA-256
 - `hashObject(obj: unknown): string` - Convenience wrapper
+- `computeAlignHash(input: string | unknown): string` - Resets `integrity.value` to `<pending>`, filters volatile vendor fields, then hashes
 
 **Locations where hashing is used:**
 
@@ -1022,8 +1022,8 @@ const clone = cloneDeep(obj);
 
 - `cloneDeep<T>(obj: T): T` - Deep clone using structuredClone
 - `parseJsonSafe(str: string): Result<unknown, Error>` - Parse with error handling
-- `stringifyCanonical(obj: unknown): string` - Canonical JSON
-- `computeContentHash(obj: unknown): string` - Hash an object deterministically
+- `stringifyCanonical(obj: unknown, excludeVolatile = true): string` - Canonical JSON (drops `vendor.*.volatile` by default)
+- `computeContentHash(obj: unknown, excludeVolatile = true): string` - Deterministic hash (canonical JSON + SHA-256)
 - `compareCanonical(a: unknown, b: unknown): boolean` - Compare by canonical form
 - `type Result<T, E>` - Result type for operations that may fail
 
@@ -1035,46 +1035,60 @@ const clone = cloneDeep(obj);
 
 ### Canonicalization
 
-**Use `canonicalizeJson()` and `computeAlignHash()` for deterministic operations:**
+**Use `canonicalizeJson()` and `computeAlignHash()` for deterministic operations (defaults exclude `vendor.*.volatile`):**
 
 ```typescript
 // ✅ Do: use schema utilities for determinism
 import { canonicalizeJson, computeAlignHash } from "@aligntrue/schema";
 
-const canonical = canonicalizeJson(obj, true); // with volatile filtering
-const hash = computeAlignHash(yamlString);
+const canonical = canonicalizeJson(obj); // volatile fields dropped by default
+const hash = computeAlignHash(yamlString); // sets integrity.value to <pending> before hashing
 ```
 
 ## Error handling
 
 ### CLI errors
 
-Use the error hierarchy from `@aligntrue/cli/utils/error-types` in CLI commands:
+Use the structured error hierarchy (re-exported by `@aligntrue/cli/utils/error-types`, defined in `@aligntrue/core`) so exit codes, hints, and next steps stay consistent:
 
 ```typescript
 import {
+  AlignTrueError,
   ConfigError,
   ValidationError,
   SyncError,
+  ErrorFactory,
 } from "@aligntrue/cli/utils/error-types";
 
-// Create descriptive errors
+// Create descriptive errors with actionable guidance
 throw new ConfigError(
-  "Invalid config field",
+  "Invalid config field: profile.id missing",
   "Set profile.id in .aligntrue/config.yaml",
-).withNextSteps(["Run 'aligntrue init'", "Edit: aligntrue config edit"]);
+).withNextSteps(["Run: aligntrue init", "Edit: aligntrue config edit"]);
+
+// Prefer ErrorFactory helpers for common cases
+throw ErrorFactory.configNotFound(configPath);
+
+// Use AlignTrueError (base) only when none of the typed errors fit
+throw new AlignTrueError(
+  "Unexpected state while resolving plugs",
+  "UNEXPECTED_STATE",
+  1,
+);
 ```
 
 ### Core package errors
 
-Keep error messages clear and actionable. Use `throw new Error()` with descriptive messages:
+Keep error messages clear and actionable. Use the typed errors above for user-facing failures; reserve bare `Error` for internal invariants only:
 
 ```typescript
-// ✅ Good
-throw new Error(
-  `Failed to load config from ${path}: ${details}\n` +
-    `Hint: Run 'aligntrue init' to create a config file`,
-);
+// ✅ Good (user-facing)
+throw ErrorFactory.fileWriteFailed(path, cause);
+
+// ✅ Good (internal invariant)
+if (!graph.has(node)) {
+  throw new Error(`Invariant: node ${node} should exist before traversal`);
+}
 
 // ❌ Avoid
 throw new Error("Config load failed");
@@ -1127,8 +1141,11 @@ Use the centralized `AtomicFileWriter` from `@aligntrue/file-utils`:
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 const writer = new AtomicFileWriter();
-await writer.write(filePath, content);
-// Handles atomicity, checksums, and rollback
+// Optional: prompt-aware checksum handler to protect manual edits
+// writer.setChecksumHandler(async (...) => "overwrite" | "keep" | "abort");
+
+await writer.write(filePath, content, { interactive, force });
+// Handles atomicity, checksum tracking, overwrite protection, rollback
 ```
 
 ### Large datasets
@@ -1139,7 +1156,7 @@ The schema package provides performance guardrails:
 import { checkFileSize } from "@aligntrue/core/performance";
 
 checkFileSize(filePath, 100, "team", force);
-// Validates file size with mode-dependent behavior
+// Solo: warns; Team/enterprise: throws; Force: bypasses
 ```
 
 ## Package dependencies
@@ -1200,7 +1217,7 @@ pnpm validate:docs
 
 ## Related documentation
 
-- [Debugging workflow](https://aligntrue.ai/docs/06-development/ci) for investigation patterns
+- [CI guide](https://aligntrue.ai/docs/06-development/ci) for validation and debugging workflow
 - [Architecture](https://aligntrue.ai/docs/06-development/architecture) for design principles
 - [Test maintenance](https://aligntrue.ai/docs/06-development/test-maintenance) for test strategy
 
@@ -1218,42 +1235,63 @@ Common commands and workflows for AlignTrue development.
 pnpm dev
 ```
 
-Starts the documentation site at `http://localhost:3000` (from `apps/docs`)
+Starts the docs site at `http://localhost:3000` from `apps/docs`.
 
-### Build all packages
+### Build
 
 ```bash
-pnpm build
+pnpm build          # Turbo build across workspace
+pnpm build:packages # Build only workspace packages
+pnpm --filter @aligntrue/core build # Build one package
 ```
 
-### Run tests
+### Tests and type checks
 
 ```bash
-pnpm test        # All tests across all packages
+pnpm test        # All tests
 pnpm test:fast   # Fast reporter for quick feedback
+pnpm typecheck   # TypeScript across all packages
 ```
 
-### Type-check all packages
+### Linting and formatting
 
 ```bash
-pnpm typecheck
+pnpm lint          # ESLint (zero warnings)
+pnpm lint:fix      # Fix then re-run lint
+pnpm format        # Prettier write
+pnpm format:check  # Prettier check only
 ```
 
-### Format
+### Validation helpers
 
 ```bash
-pnpm format        # Format code with Prettier
-pnpm format:check  # Check formatting without changes
+pnpm validate:all            # Full validation suite
+pnpm validate:docs           # Docs accuracy checks
+pnpm validate:workspace      # Ensure workspace:* protocol
+pnpm verify:workspace-links  # Verify node_modules links resolve locally
+pnpm check                   # Aggregated CI-like check runner
+pnpm ci:errors               # Summarize recent CI failures
 ```
 
-### Clean
+### Docs + repo files
 
 ```bash
-# Remove all node_modules and build artifacts
-pnpm clean
+pnpm start:docs          # Start docs with preflight
+pnpm generate:repo-files # Regenerate README/CONTRIBUTING/etc. from docs
+```
 
-# Remove temp files created by AI/debugging
-pnpm clean-temp
+### Cleaning
+
+```bash
+pnpm clean        # Remove node_modules and dist outputs
+pnpm clean-temp   # Delete temp-* debug files
+pnpm cleanup:temps # Remove cached test temp artifacts (supports --delete/--verbose)
+```
+
+### Bootstrapping
+
+```bash
+pnpm bootstrap  # Install deps then build once
 ```
 
 ## Working on packages
@@ -1417,72 +1455,48 @@ pnpm update --latest --recursive
 pnpm audit
 ```
 
-## Versioning with changesets
+## Releasing (manual flow)
 
-We use Changesets for managing package versions and changelogs.
-
-### Creating a changeset
-
-After making changes, create a changeset describing your changes:
+Releases use `scripts/manual-release.mjs`—no Changesets.
 
 ```bash
-pnpm changeset
+pnpm release [--dry-run] [--type=patch|minor|major|current]
 ```
 
-Follow the prompts to:
+What it does:
 
-1. Select which packages changed
-2. Choose version bump type (major/minor/patch)
-3. Write a summary of changes
+- prompts (or uses `--type`) for bump level across publishable packages
+- bumps versions in each package.json
+- runs `pnpm build:packages`
+- publishes each package with `pnpm publish` (rewrites workspace:\*)
+- runs `node scripts/validate-published-deps.mjs` to catch workspace leaks
+- commits + tags (`chore: Release <version> (<type>)`) and pushes
 
-The changeset file will be committed with your changes.
+Tips:
 
-### Versioning packages
-
-To consume changesets and bump versions:
-
-```bash
-pnpm version
-```
-
-This updates `package.json` versions and `CHANGELOG.md` files.
-
-### Publishing packages
-
-After versioning, publish to npm:
-
-```bash
-pnpm release
-```
-
-This builds all packages and publishes them to npm.
+- Use `--dry-run` to preview without changing files or publishing.
+- Start from a clean main branch with CI green and npm auth configured.
+- After release, update `CHANGELOG.md` and verify `npx aligntrue --version`.
 
 ## CI/CD
 
-CI runs on every PR:
+CI runs on every PR and reuses the same scripts as local helpers:
 
-- Lockfile sync validation
-- `pnpm typecheck` - Type checking
-- `pnpm test` - Tests
-- `pnpm build` - Production build
-- Integration tests
-- Golden repository validation
+- lockfile sync and docs accuracy validation
+- `pnpm build`, `pnpm typecheck`, `pnpm test` (unit + integration + golden repo)
+- bundle-size and workspace protocol checks
 
-All must pass before merge.
-
-**Note:** Pre-push hooks mirror CI checks, so if pre-push passes, CI should pass too.
+If `pnpm pre-ci` succeeds from a clean tree, CI should match.
 
 ## Troubleshooting
 
 ### Pre-commit hook fails with formatting errors
 
-The hook auto-formats code with Prettier. If it still fails, check the error output for issues with the lockfile update or other problems.
+The hook auto-regenerates repo files when docs change, validates workspace protocol, runs `pnpm lint-staged`, and builds affected packages when TypeScript files are staged. Fix the first reported failure (format, lint, or build) and rerun.
 
 ### Pre-push hook is too slow
 
-Pre-push runs the full validation suite (~30-60 seconds). This is intentional to catch issues before CI.
-
-For faster iteration during development, use watch mode for tests instead of relying on hooks.
+Pre-push runs `pnpm pre-ci` (frozen install, build, typecheck, tests, bundle-size validation). Use watch mode and `pnpm test:fast` for tight loops, then rely on pre-push before CI.
 
 ### Commit message rejected
 
@@ -1492,7 +1506,7 @@ Ensure your commit message follows Conventional Commits format:
 <type>: <description>
 ```
 
-Example: `feat: Add new command` or `fix: Resolve memory leak`
+Example: `feat: add new command` or `fix: resolve memory leak`
 
 ## Next steps
 
@@ -1510,10 +1524,13 @@ This document explains AlignTrue's hybrid approach to automatically merging Depe
 
 **Goal:** Save maintainer time on routine dependency updates while preserving manual review for higher-risk changes.
 
-**Strategy:**
+**Strategy (matches the workflow logic):**
 
-- ✅ Auto-merge: devDependencies, patch & minor updates
-- 🚫 Manual review: production dependencies, major version bumps
+- Auto-merge when the PR is from Dependabot **and**:
+  - Labeled `devDependencies`, **or**
+  - Detected as a security patch, **or**
+  - Title includes `patch`/`from` **and** the PR is **not** labeled `requires-review`
+- Manual review for PRs labeled `requires-review` or anything without a safe signal
 
 ## Configuration
 
@@ -1523,22 +1540,22 @@ Dependabot is configured to:
 
 - Create separate PRs per directory (workspace isolation)
 - Label PRs by scope (devDependencies, schema, cli, web, docs, etc.)
-- Group updates intelligently (production vs development)
+- Group updates by risk (dev vs production)
 - Ignore unsafe updates (e.g., Next.js major versions)
 
 **Key scopes:**
 
-- **Root `/`**: dev-dependencies only → auto-merge safe
-- **Packages** (`/packages/schema`, `/packages/cli`, etc.): patch/minor only → auto-merge safe
-- **Web app** (`/apps/web`): split into dev (auto-merge) + production (manual review)
-- **Docs app** (`/apps/docs`): split into dev (auto-merge) + production (manual review)
+- **Root `/`**: dev-dependencies only → auto-merge safe (labeled `devDependencies`)
+- **Packages** (`/packages/schema`, `/packages/cli`, `/packages/mcp`): patch/minor only → auto-merge safe (no `requires-review` label applied)
+- **Web app** (`/apps/web`): dev deps auto-merge; production deps labeled `requires-review` → manual
+- **Docs app** (`/apps/docs`): dev deps auto-merge; production deps labeled `requires-review` → manual
 
 ### 2. `.github/workflows/dependabot-auto-merge.yml`
 
 GitHub Actions workflow that:
 
 1. Detects all Dependabot PRs
-2. Checks if PR is labeled as "safe" (devDependencies OR patch/minor without "requires-review")
+2. Checks if PR is labeled as "safe" (`devDependencies`, security, or title includes `patch`/`from` without `requires-review`)
 3. Auto-approves safe PRs with rationale
 4. Waits for CI to pass (max 10 minutes)
 5. Enables GitHub's auto-merge (squash strategy)
@@ -1554,18 +1571,19 @@ GitHub Actions workflow that:
 
 ## What gets auto-merged
 
-✅ **Automatically merged once CI passes:**
+✅ **Automatically merged once CI passes (safe signals):**
 
-- All devDependencies (test frameworks, linters, build tools)
-- Patch updates to production packages (bug fixes)
-- Minor updates to production packages (new backward-compatible features)
-- **Security patches** (CVE fixes, even if major version) — _high urgency, low risk_
+- Any PR with `devDependencies` label (all scopes)
+- PRs Dependabot marks as security patches (label or body text)
+- PR titles containing `patch`/`from` **without** `requires-review` label (covers patch/minor in scoped packages; majors would only pass if no `requires-review` label is applied)
 
-❌ **Requires manual review:**
+Note: The workflow does not explicitly parse minor updates; Dependabot titles include `from`, so the title check covers patch/minor (and majors if a `requires-review` label is missing).
 
-- Major version bumps (Next.js 15→16, etc.) — unless they're security patches
-- Production dependencies not explicitly allowed
-- Any PR labeled "requires-review" — except security patches
+❌ **Requires manual review (no safe signal):**
+
+- PRs labeled `requires-review` (runtime deps for web/docs, or other scopes you opt in)
+- Any PR missing a safe signal (e.g., custom scopes without `devDependencies` label)
+- Security patches still auto-approve/merge unless you remove that behavior
 
 ## What to watch for
 
@@ -1573,12 +1591,12 @@ GitHub Actions workflow that:
    - Is it a real incompatibility? → Manual fix or manual rejection
    - Is it a flaky test? → Re-run CI or merge manually
 
-2. **Security patches:** Now auto-merged at all severity levels (low, medium, high, critical). The approval comment will clearly identify them:
+2. **Security patches:** Auto-merged at all severity levels. The approval comment will clearly identify them:
    - Look for `🔒 Auto-approved: Security patch` in the PR comment
    - Verify CI tests pass (they're gated behind full CI run)
    - Merged via squash merge for clean history
-
-3. **Monorepo issues:** Web and docs apps have both auto-merge and manual-review rules to balance safety with developer experience.
+3. **Label coverage:** Manual review depends on `requires-review` labels. If you add new production scopes, ensure Dependabot applies `requires-review` or restricts update types; otherwise majors could be treated as safe due to the title check.
+4. **Monorepo balance:** Web and docs apps have both auto-merge and manual-review rules to balance safety with developer experience.
 
 ## Performance impact
 
@@ -1602,7 +1620,7 @@ After pushing these files, the workflow starts on next pull request:
 
 1. Wait for a new Dependabot PR to arrive (weekly on Mondays)
 2. Check the PR for:
-   - Expected labels (e.g., "devDependencies", "cli", "requires-review", "security")
+   - Expected labels (e.g., `devDependencies`, `cli`, `requires-review`, `security`)
    - Auto-approval comment from the workflow with reasoning
    - Auto-merge badge once CI passes
 3. Monitor GitHub Actions to see the workflow logs
@@ -1618,6 +1636,14 @@ To verify security patch auto-merge works:
    - Run full CI (Linux + Windows)
    - Auto-merge once CI passes
 4. **Validate in GitHub Actions:** Check `.github/workflows/dependabot-auto-merge.yml` logs to see security detection logic
+
+### Testing manual-review coverage
+
+To confirm majors and other risky updates stay manual:
+
+1. Create or wait for a PR in a scope that should require review (e.g., `apps/web` runtime deps).
+2. Verify the PR has `requires-review` label.
+3. Confirm the workflow does **not** auto-approve and leaves the PR pending review.
 
 ## Related documentation
 
@@ -1759,10 +1785,11 @@ AlignTrue uses a manual release process with automated validation, workspace pro
 
 ## TL;DR
 
-1. Ensure all changes are committed and pushed to main
-2. Run `pnpm release` (interactive) or `pnpm release:helper patch|minor|major` (scripted)
-3. Script bumps versions, builds, publishes to npm, validates, and creates git tag
-4. Verify on npm registry
+1. Preflight: clean git, npm auth, Node >=20 / pnpm >=9
+2. Interactive (recommended): `pnpm release` or `pnpm release --type=patch|minor|major|current`
+3. Scripted publish only: `pnpm release:helper patch|minor|major` (no git commit/tag; no dry-run)
+4. Dry run: `pnpm release --dry-run`
+5. After helper: run the printed git steps, then verify on npm
 
 ---
 
@@ -1770,10 +1797,10 @@ AlignTrue uses a manual release process with automated validation, workspace pro
 
 ### Prerequisites
 
-Before releasing:
+Before releasing, confirm:
 
 ```bash
-# Ensure clean git status
+# Clean git status
 git status
 
 # Verify you're logged into npm
@@ -1782,19 +1809,33 @@ npm login
 # Verify you're logged into git (SSH keys or git login)
 git config --global user.email
 git config --global user.name
+
+# Optional quick checks (recommended before publish)
+pnpm validate:workspace       # ensure no workspace:* leaks
+pnpm test:fast                # or your preferred minimal test set
 ```
 
 ### 1. Interactive release (recommended)
 
 ```bash
-pnpm release
+pnpm release                  # interactive prompts
+pnpm release --type=patch     # non-interactive, choose bump upfront
+pnpm release --dry-run        # simulate, no changes
 ```
 
 This prompts you for:
 
 - **Bump type:** `patch` (fixes), `minor` (features), `major` (breaking), or `current` (no bump)
 - **Confirmation:** Review version changes before proceeding
-- **Dry run option:** Test with `--dry-run` flag
+- **Dry run option:** Use `--dry-run` to simulate everything
+
+What it does (real run):
+
+- Bumps versions in publishable packages
+- Builds all packages
+- Publishes to npm via `pnpm publish` (rewrites `workspace:*`)
+- Runs post-publish validation (`scripts/validate-published-deps.mjs`)
+- Commits and tags git, then pushes (commit message: `chore: Release <version> (<bump>)`)
 
 ### 2. Scripted release (CI/automation)
 
@@ -1809,20 +1850,32 @@ pnpm release:helper minor
 pnpm release:helper major
 ```
 
+Notes:
+
+- This path **publishes for real** (no dry-run flag available).
+- It does **not** commit or tag. Follow the printed steps afterward.
+
 ### 3. What the script does
 
-The release script automatically:
+`pnpm release` (interactive) automatically:
 
 1. Bumps versions in all `package.json` files
 2. Builds all packages
-3. Pre-validates: checks for workspace protocol leaks
-4. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*` to concrete versions)
-5. Post-validates: verifies npm registry has correct versions
-6. Commits and tags git
+3. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*` to concrete versions)
+4. Post-validates: verifies npm registry has correct versions
+5. Commits, tags, and pushes git
+
+`pnpm release:helper` (scripted publish only):
+
+1. Bumps versions in all `package.json` files
+2. Builds all packages
+3. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*`)
+4. Post-validates via `scripts/validate-published-deps.mjs`
+5. Prints manual git steps (no commit/tag is performed)
 
 ### 4. After publish
 
-The script prints next steps:
+If you used `pnpm release:helper`, complete git steps manually:
 
 ```bash
 pnpm install
@@ -1846,6 +1899,12 @@ Two-layer defense:
 
 1. **pnpm Publish:** We use `pnpm publish` (not `npm publish`). pnpm automatically rewrites `workspace:*` to concrete versions during publish.
 2. **Post-publish Validation:** `scripts/validate-published-deps.mjs` queries npm registry immediately after publishing. If it detects `workspace:*` leaks, it alerts you.
+
+Optional preflight check (fast):
+
+```bash
+pnpm validate:workspace    # or: node scripts/validate-workspace-protocol.mjs
+```
 
 ### Manual verification
 
@@ -1897,14 +1956,10 @@ This script simulates the real npm distribution by rewriting `workspace:*` to co
 Test the entire release process without publishing:
 
 ```bash
-# Interactive dry run
 pnpm release --dry-run
-
-# Scripted dry run
-pnpm release:helper patch  # Then check output
 ```
 
-Dry run shows what would happen but makes no changes.
+Dry run shows what would happen but makes no changes and performs no git operations.
 
 ---
 
@@ -1959,20 +2014,18 @@ If git operations fail after publishing:
 
 ## Prerequisites
 
-- **Node.js** 20 or later (`.node-version` file included for Volta/asdf/nvm)
-- **pnpm** 9 or later
+- **Node.js** 20 or later (`.node-version` pins 20.18.1 for Volta/asdf/nvm)
+- **pnpm** 10 (repo sets `packageManager: pnpm@10.0.0`; `engines.pnpm` is >=9)
 
 **Install pnpm:**
 
 <Tabs items={["npm", "yarn", "Homebrew (macOS)", "Direct"]}>
 
-<Tabs.Tab>`bash npm install -g pnpm@9 `</Tabs.Tab>
+<Tabs.Tab>`bash npm install -g pnpm@10 `</Tabs.Tab>
 
-<Tabs.Tab>`bash yarn global add pnpm@9 `</Tabs.Tab>
+<Tabs.Tab>`bash yarn global add pnpm@10 `</Tabs.Tab>
 
-<Tabs.Tab>
-`bash brew install pnpm pnpm env use --global 9 # Set version to 9+ `
-</Tabs.Tab>
+<Tabs.Tab>`bash brew install pnpm pnpm env use --global 10 `</Tabs.Tab>
 
 <Tabs.Tab>
 Visit [pnpm.io](https://pnpm.io/installation) for platform-specific
@@ -2036,16 +2089,21 @@ Hooks are installed automatically when you run `pnpm install`.
 
 ### Pre-commit hook
 
-Runs automatically before each commit:
+Runs automatically before each commit and enforces zero warnings:
 
-1. **Format staged files** (~1-2s) - Prettier auto-formats code
-2. **Build packages** (~1-3s) - Only if `packages/*/src/**` files changed
-3. **Typecheck** (~2-3s) - Type checks all staged TypeScript files
+1. Warns on large staged sets (>50 files)
+2. Blocks temp artifacts (`temp-*`)
+3. Regenerates repo root docs if `apps/docs/content/**` changed
+4. Validates `workspace:*` protocol in staged `package.json` files
+5. Formats + lints staged files via lint-staged (Prettier + ESLint)
+6. Builds all packages if any staged file is TypeScript (catches missing exports or module resolution issues)
+7. Validates Next.js `transpilePackages` config
+8. Validates docs accuracy when docs, CLI command list, exporter list, or perf thresholds change
 
-**Total time:**
+Typical time:
 
-- Without package changes: ~3-5 seconds
-- With package changes: ~4-8 seconds
+- No TypeScript changes: ~5-15s
+- With TypeScript changes (build step): ~15-60s depending on scope
 
 ### Commit message hook
 
@@ -2069,14 +2127,15 @@ Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
 
 ### Pre-push hook
 
-Runs automatically before pushing (takes ~30-60 seconds):
+Runs `pnpm pre-ci` before pushing:
 
-- Full typecheck across all packages
-- Full test suite (all packages)
-- Full build to catch build errors
-- Mirrors CI validation
+- Install dependencies with `--frozen-lockfile`
+- Full build for all packages
+- Full typecheck
+- Full test suite (all packages, `TURBO_CONCURRENCY=1`)
+- Validate bundle sizes
 
-This ensures you never push code that will fail CI.
+Expect several minutes on a fresh or large change; matches CI scope.
 
 ### Bypassing hooks (emergency only)
 
@@ -2146,14 +2205,6 @@ Cannot find module '@aligntrue/ui'
 1. Check your Next.js config has `transpilePackages`:
 
 ```typescript
-// apps/web/next.config.ts
-const nextConfig: NextConfig = {
-  transpilePackages: ["@aligntrue/ui"],
-  // ... rest of config
-};
-```
-
-```javascript
 // apps/docs/next.config.mjs
 export default withNextra({
   transpilePackages: ["@aligntrue/ui"],
@@ -2164,20 +2215,20 @@ export default withNextra({
 2. Clean stale build caches:
 
 ```bash
-rm -rf apps/web/.next apps/docs/.next
+rm -rf apps/docs/.next
 ```
 
 3. Restart dev servers:
 
 ```bash
-pnpm dev:web   # or pnpm dev:docs
+pnpm dev:docs
 ```
 
 **Prevention:**
 
 - CI validates `transpilePackages` config: `pnpm validate:transpile-packages`
-- Pre-commit hook automatically cleans `.next` directories before each commit
-- If you add a new workspace package that exports TypeScript source, add it to `transpilePackages` in both Next.js configs
+- Pre-commit hook validates `transpilePackages`
+- If you add a workspace package that exports TypeScript source, add it to `transpilePackages` in each Next.js app config
 
 **Workflow after editing docs:**
 
@@ -2188,7 +2239,7 @@ pnpm dev:docs  # View changes at localhost:3001
 # 2. When done, generate root files
 pnpm generate:repo-files
 
-# 3. Commit (pre-commit hook handles cache cleanup)
+# 3. Commit
 git add -A
 git commit -m "docs: Update documentation"
 ```
@@ -2277,11 +2328,14 @@ Core format changes break many tests at once. The pre-push hook catches this bef
 ### Step 1: Identify affected tests
 
 ```bash
-# Find all references to old format/path
-grep -r "old-file-name\|old-extension" packages/*/tests/
+# Find references to old formats/paths across tests
+rg "old-file-name|old-extension" packages/*/tests
 
-# Example: searching for specific file references
-grep -r "\.rules\.yaml" packages/*/tests/
+# Example: locate deprecated rule file naming
+rg "\.rules\.yaml" packages/*/tests
+
+# Narrow to a package or file when the blast radius is known
+rg "legacy-marker" packages/cli/tests/integration
 ```
 
 ### Step 2: Update each test file
@@ -2301,23 +2355,28 @@ const rulesPath = join(testDir, ".aligntrue", "old-format.md");
 const content = readFileSync(rulesPath, "utf-8");
 expect(content).toContain("legacy-marker");
 
-// After
-const rulesPath = join(testDir, ".aligntrue", "rules");
+// After: current `.aligntrue/rules/*.md`
+const rulesPath = join(testDir, ".aligntrue", "rules", "demo-rule.md");
 const content = readFileSync(rulesPath, "utf-8");
-expect(content).toContain("spec_version:");
-expect(content).toContain("id: test-rule");
+expect(content).toContain("---"); // frontmatter delimiter
+expect(content).toContain("spec_version: 1");
+expect(content).toContain("id: demo-rule");
 ```
 
 ### Step 3: Run tests to verify
 
 ```bash
-# Test single package
-pnpm --filter @aligntrue/cli test
+# Target one file to iterate quickly
+pnpm --filter @aligntrue/cli vitest run packages/cli/tests/commands/import.test.ts
 
-# Test all packages
+# Target a single test when fixing assertions
+pnpm --filter @aligntrue/cli vitest run packages/cli/tests/integration -- -t "init writes rule frontmatter"
+
+# Update snapshots/fixtures if formats changed
+pnpm --filter @aligntrue/core vitest -u
+
+# Full sweep before push
 pnpm test
-
-# Pre-push will run this anyway, but verify locally first
 ```
 
 ## Prevention: Atomic commits
@@ -2335,6 +2394,8 @@ feat: Switch from YAML-first to agent-format-first
 feat: Switch to agent-format-first
   (Note: tests failing, will fix separately)
 ```
+
+Also include any regenerated snapshots or updated fixtures in the same commit to keep history consistent and avoid flaky reviews.
 
 ## Why this matters
 
@@ -2427,13 +2488,14 @@ The `aligntrue`/`aln` CLI tool.
 
 ```bash
 cd packages/cli
-pnpm build
+pnpm test          # CLI unit/integration tests
+pnpm build         # Build to dist/
 node dist/index.js --help
 ```
 
 ### packages/exporters
 
-Agent-specific export exporters (50 exporters for 28+ agents).
+Agent-specific exporters for Cursor, `AGENTS.md`, MCP targets, and other agent formats.
 
 **Responsibilities:**
 
@@ -2448,20 +2510,21 @@ Agent-specific export exporters (50 exporters for 28+ agents).
 ```bash
 cd packages/exporters
 pnpm test          # Run exporter tests
+pnpm test:watch    # Watch mode
 pnpm build         # Build to dist/
 ```
 
 ## Supporting packages
 
-### Natural markdown parsing
+### Natural markdown parsing (core parsing layer)
 
-Natural markdown sections → IR conversion (integrated into core).
+Natural markdown sections → IR conversion (implemented in the core parsing layer).
 
 **Responsibilities:**
 
-- Parse natural markdown with YAML frontmatter
-- Convert `##` sections to IR rules
-- Validate extracted content
+- Parse natural markdown with optional YAML frontmatter
+- Convert heading sections to IR rules
+- Validate extracted content before handing off to core
 
 ### packages/sources
 
@@ -2473,6 +2536,7 @@ Multi-source pulling (local, catalog, git, url).
 - Cache management
 - Git repository cloning
 - HTTP fetching with ETag support
+- Deterministic content hashing for remote sources
 
 ### packages/file-utils
 
@@ -2482,7 +2546,7 @@ Shared infrastructure utilities.
 
 - Atomic file writes
 - Checksums and integrity verification
-- No workspace dependencies (pure utilities)
+- No workspace dependencies (pure utilities, safe for cross-package reuse)
 
 ### packages/plugin-contracts
 
@@ -2610,6 +2674,13 @@ Apps depend on multiple packages as needed.
 ## Working across packages
 
 See [development commands](https://aligntrue.ai/docs/06-development/commands) for package build workflows and watch mode.
+
+From the repo root you can target a package without changing directories:
+
+```bash
+pnpm --filter @aligntrue/core test -- --watch
+pnpm --filter @aligntrue/cli build
+```
 
 ## Next steps
 

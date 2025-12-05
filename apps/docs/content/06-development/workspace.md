@@ -79,13 +79,14 @@ The `aligntrue`/`aln` CLI tool.
 
 ```bash
 cd packages/cli
-pnpm build
+pnpm test          # CLI unit/integration tests
+pnpm build         # Build to dist/
 node dist/index.js --help
 ```
 
 ### packages/exporters
 
-Agent-specific export exporters (50 exporters for 28+ agents).
+Agent-specific exporters for Cursor, `AGENTS.md`, MCP targets, and other agent formats.
 
 **Responsibilities:**
 
@@ -100,20 +101,21 @@ Agent-specific export exporters (50 exporters for 28+ agents).
 ```bash
 cd packages/exporters
 pnpm test          # Run exporter tests
+pnpm test:watch    # Watch mode
 pnpm build         # Build to dist/
 ```
 
 ## Supporting packages
 
-### Natural markdown parsing
+### Natural markdown parsing (core parsing layer)
 
-Natural markdown sections → IR conversion (integrated into core).
+Natural markdown sections → IR conversion (implemented in the core parsing layer).
 
 **Responsibilities:**
 
-- Parse natural markdown with YAML frontmatter
-- Convert `##` sections to IR rules
-- Validate extracted content
+- Parse natural markdown with optional YAML frontmatter
+- Convert heading sections to IR rules
+- Validate extracted content before handing off to core
 
 ### packages/sources
 
@@ -125,6 +127,7 @@ Multi-source pulling (local, catalog, git, url).
 - Cache management
 - Git repository cloning
 - HTTP fetching with ETag support
+- Deterministic content hashing for remote sources
 
 ### packages/file-utils
 
@@ -134,7 +137,7 @@ Shared infrastructure utilities.
 
 - Atomic file writes
 - Checksums and integrity verification
-- No workspace dependencies (pure utilities)
+- No workspace dependencies (pure utilities, safe for cross-package reuse)
 
 ### packages/plugin-contracts
 
@@ -262,6 +265,13 @@ Apps depend on multiple packages as needed.
 ## Working across packages
 
 See [development commands](/docs/06-development/commands) for package build workflows and watch mode.
+
+From the repo root you can target a package without changing directories:
+
+```bash
+pnpm --filter @aligntrue/core test -- --watch
+pnpm --filter @aligntrue/cli build
+```
 
 ## Next steps
 

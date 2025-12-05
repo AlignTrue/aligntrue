@@ -38,83 +38,53 @@ We will respond within 48 hours and work with you to understand and address the 
 
 We release patches for security vulnerabilities as soon as possible. Only the latest minor version receives security updates.
 
-## Data handling
+## Defaults at a glance
 
-- **Core operations work fully offline** - No network calls required for validate, bundle, export, or verify operations
-- **No PII logging** - CLI, MCP server, and exporters do not log raw personally identifiable information
-- **Redaction utility** - Mask common secret patterns and environment keys in logs and exports
-- **Telemetry opt-in** - Telemetry is off by default and requires explicit opt-in
+- **Offline-first CLI** - `init`, `check`, `sync`, `status`, `doctor`, `exporters`, `scopes`, and `rules` operate on local files and do not make outbound requests unless you configure remote sources.
+- **No telemetry collected** - Telemetry is not emitted; tests run with `ALIGNTRUE_NO_TELEMETRY=1` to enforce this. Any future telemetry would require explicit opt-in via `ALIGNTRUE_TELEMETRY=on`.
+- **Deterministic artifacts** - Lockfiles and exports include content hashes and avoid timestamps so outputs are diffable.
+- **Minimal logging** - CLI output is concise and avoids printing secrets or raw PII.
 
-## File and environment security
+## Network and data handling
 
-- **No secret printing** - Secrets and access tokens are never printed to console or logs
-- **Sensitive key redaction** - Known sensitive keys are redacted if environment details are logged
-- **Appropriate file permissions** - Configs and outputs use appropriate file permissions
-- **Air-gapped support** - Air-gapped environments work without configuration changes
-- **Atomic writes** - All artifacts written to temp file in same directory, then renamed
-- **Path validation** - Paths normalized and validated to prevent directory traversal
-
-## Network policy
-
-- **Core path is offline** - Core commands (`validate`, `check`, `bundle`, `export`, `align`, `verify-align`) make no outbound requests
-- **Localhost-only MCP** - MCP server binds to `127.0.0.1` only
-- **Explicit remote fetches** - Remote git fetches require explicit config or flags and use local cache
-- **Fail-fast on network** - If a network call would occur in core mode, fail fast with clear error
-
-## Secrets hygiene
-
-- **Secret pattern masking** - Redaction helper masks values for keys including: `token`, `secret`, `password`, `key`, `auth`, `cookie`, and similar
-- **Path privacy** - Full home directory paths avoided in errors when possible
-- **No secrets in exports** - Cursor `.mdc` and other exports contain only rules, metadata, and hashes
-
-## Artifacts and logs
-
-- **Content hashes** - Stamped in lockfiles and returned by exporters for verification
-- **Concise, non-sensitive logs** - Logs are concise and non-sensitive by default
-- **Structured logging** - `--json` flag available for structured logs
-- **Deterministic artifacts** - No timestamps or UUIDs in deterministic artifacts
-
-## On-Prem and Offline
-
-- **No cloud dependency** - Validate, bundle, export, and verify work without cloud
-- **Offline workflows** - All documented workflows function without internet access
-- **Local align mirroring** - Documented way to mirror or vendor rule aligns locally
+- **No secret printing** - CLI output and exports avoid secrets; exports contain only rules, metadata, and hashes.
+- **Offline by default** - Remote fetches (for aligns or git sources) occur only when you configure them and reuse local cache when present.
+- **Local MCP access** - MCP exporters are scoped to the local workspace and avoid exposing arbitrary command execution.
 
 ## Dependency and supply chain
 
-- **Pinned dependencies** - Dependencies pinned via lockfile in releases, no floating ranges
-- **Audit in CI** - `pnpm audit` runs in CI, fails on high severity unless explicitly documented exception
-- **SBOM generation** - CycloneDX SBOM generated for tagged releases
-- **Release checksums** - Checksums attached to release artifacts
-- **Data-only aligns** - Never execute code from Aligns or aligns, treat as data only
+- **Pinned dependencies** - Releases are locked via `pnpm-lock.yaml`; no floating ranges.
+- **Dependabot monitoring** - Dependabot tracks manifest updates.
+- **Manual audits** - Run `pnpm audit --prod` locally before releases (not currently automated in CI).
+- **Data-only aligns** - Aligns are treated as data; they are never executed.
+- **SBOM and checksums** - SBOMs and release checksums are not published yet; verify releases via tags and repository hashes.
 
 ## MCP and IDE integration
 
-- **Read-only operations** - MCP capabilities restricted to read-only operations within active workspace
-- **No arbitrary execution** - No arbitrary command execution exposed through MCP
-- **Minimal data exposure** - Return minimal necessary data for scope and rule queries
+- **Read-only operations** - MCP capabilities are scoped to read-only access within the active workspace.
+- **No arbitrary execution** - No arbitrary command execution is exposed through MCP.
+- **Minimal data exposure** - Exporters return only data needed for scope and rule queries.
 
 ## YAML and parsing safety
 
-- **Safe YAML parsing** - Reject anchors and custom executable types
-- **Reject unsafe values** - Reject `NaN` and `Infinity` in canonicalization and hash-relevant paths
-- **Size limits** - Enforce size limits on inputs to avoid memory pressure and abuse
+- **Safe YAML parsing** - Reject anchors and custom executable types.
+- **Reject unsafe values** - Reject `NaN` and `Infinity` in canonicalization and hash-relevant paths.
+- **Size limits** - Enforce size limits on inputs to avoid memory pressure and abuse.
 
 ## Build and release hardening
 
-- **Reproducible builds** - Aim for reproducible CLI builds
-- **Signed artifacts** - Sign release artifacts and publish checksums
-- **Security changelog** - Record all security-related changes under **Security** section in `CHANGELOG.md`
+- **Reproducible outputs** - CLI artifacts aim for reproducible, deterministic content.
+- **Security changelog** - Record security-related changes under **Security** in `CHANGELOG.md`.
 
 ## Verification checklist
 
-- [ ] Core commands run with network disabled
-- [ ] Telemetry disabled by default, only enabled with `ALIGNTRUE_TELEMETRY=on` (or `1`)
-- [ ] Secrets masked in logs and error messages
-- [ ] MCP server listens on localhost only
-- [ ] Lockfiles and exports deterministic and timestamp-free
-- [ ] SBOM generated and attached for releases
-- [ ] Checksums published for release artifacts
+- [ ] Core commands (`init`, `check`, `sync`, `status`, `doctor`, `exporters`, `scopes`, `rules`) run with network blocked in your environment
+- [ ] Telemetry remains off (`ALIGNTRUE_TELEMETRY` unset) and tests run with `ALIGNTRUE_NO_TELEMETRY=1`
+- [ ] Secrets do not appear in logs or exports
+- [ ] MCP exporters remain scoped to local workspace access
+- [ ] Lockfiles and exports remain deterministic (hashes stable across runs)
+- [ ] `pnpm audit --prod` passes before publishing releases
+- [ ] Release artifacts are verified via git tags and repository hashes (SBOM and checksums not yet published)
 
 ## Incident response
 

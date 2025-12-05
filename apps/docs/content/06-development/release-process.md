@@ -9,10 +9,11 @@ AlignTrue uses a manual release process with automated validation, workspace pro
 
 ## TL;DR
 
-1. Ensure all changes are committed and pushed to main
-2. Run `pnpm release` (interactive) or `pnpm release:helper patch|minor|major` (scripted)
-3. Script bumps versions, builds, publishes to npm, validates, and creates git tag
-4. Verify on npm registry
+1. Preflight: clean git, npm auth, Node >=20 / pnpm >=9
+2. Interactive (recommended): `pnpm release` or `pnpm release --type=patch|minor|major|current`
+3. Scripted publish only: `pnpm release:helper patch|minor|major` (no git commit/tag; no dry-run)
+4. Dry run: `pnpm release --dry-run`
+5. After helper: run the printed git steps, then verify on npm
 
 ---
 
@@ -20,10 +21,10 @@ AlignTrue uses a manual release process with automated validation, workspace pro
 
 ### Prerequisites
 
-Before releasing:
+Before releasing, confirm:
 
 ```bash
-# Ensure clean git status
+# Clean git status
 git status
 
 # Verify you're logged into npm
@@ -32,19 +33,33 @@ npm login
 # Verify you're logged into git (SSH keys or git login)
 git config --global user.email
 git config --global user.name
+
+# Optional quick checks (recommended before publish)
+pnpm validate:workspace       # ensure no workspace:* leaks
+pnpm test:fast                # or your preferred minimal test set
 ```
 
 ### 1. Interactive release (recommended)
 
 ```bash
-pnpm release
+pnpm release                  # interactive prompts
+pnpm release --type=patch     # non-interactive, choose bump upfront
+pnpm release --dry-run        # simulate, no changes
 ```
 
 This prompts you for:
 
 - **Bump type:** `patch` (fixes), `minor` (features), `major` (breaking), or `current` (no bump)
 - **Confirmation:** Review version changes before proceeding
-- **Dry run option:** Test with `--dry-run` flag
+- **Dry run option:** Use `--dry-run` to simulate everything
+
+What it does (real run):
+
+- Bumps versions in publishable packages
+- Builds all packages
+- Publishes to npm via `pnpm publish` (rewrites `workspace:*`)
+- Runs post-publish validation (`scripts/validate-published-deps.mjs`)
+- Commits and tags git, then pushes (commit message: `chore: Release <version> (<bump>)`)
 
 ### 2. Scripted release (CI/automation)
 
@@ -59,20 +74,32 @@ pnpm release:helper minor
 pnpm release:helper major
 ```
 
+Notes:
+
+- This path **publishes for real** (no dry-run flag available).
+- It does **not** commit or tag. Follow the printed steps afterward.
+
 ### 3. What the script does
 
-The release script automatically:
+`pnpm release` (interactive) automatically:
 
 1. Bumps versions in all `package.json` files
 2. Builds all packages
-3. Pre-validates: checks for workspace protocol leaks
-4. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*` to concrete versions)
-5. Post-validates: verifies npm registry has correct versions
-6. Commits and tags git
+3. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*` to concrete versions)
+4. Post-validates: verifies npm registry has correct versions
+5. Commits, tags, and pushes git
+
+`pnpm release:helper` (scripted publish only):
+
+1. Bumps versions in all `package.json` files
+2. Builds all packages
+3. Publishes to npm using `pnpm publish` (automatically rewrites `workspace:*`)
+4. Post-validates via `scripts/validate-published-deps.mjs`
+5. Prints manual git steps (no commit/tag is performed)
 
 ### 4. After publish
 
-The script prints next steps:
+If you used `pnpm release:helper`, complete git steps manually:
 
 ```bash
 pnpm install
@@ -96,6 +123,12 @@ Two-layer defense:
 
 1. **pnpm Publish:** We use `pnpm publish` (not `npm publish`). pnpm automatically rewrites `workspace:*` to concrete versions during publish.
 2. **Post-publish Validation:** `scripts/validate-published-deps.mjs` queries npm registry immediately after publishing. If it detects `workspace:*` leaks, it alerts you.
+
+Optional preflight check (fast):
+
+```bash
+pnpm validate:workspace    # or: node scripts/validate-workspace-protocol.mjs
+```
 
 ### Manual verification
 
@@ -147,14 +180,10 @@ This script simulates the real npm distribution by rewriting `workspace:*` to co
 Test the entire release process without publishing:
 
 ```bash
-# Interactive dry run
 pnpm release --dry-run
-
-# Scripted dry run
-pnpm release:helper patch  # Then check output
 ```
 
-Dry run shows what would happen but makes no changes.
+Dry run shows what would happen but makes no changes and performs no git operations.
 
 ---
 

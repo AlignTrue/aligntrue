@@ -9,11 +9,29 @@ AlignTrue uses Vitest for unit and integration tests. All contributions must inc
 
 ## Running tests
 
+### Test environment safety (critical)
+
+- Run CLI and integration tests only from isolated `/tmp` directories, never the repo root.
+- Use the built CLI binary with an absolute path (after building): `node <repo>/packages/cli/dist/index.js ...`.
+- Set `TZ=UTC` (and `NODE_ENV=test` when helpful) to keep results deterministic.
+- Prefix temporary artifacts with `temp-` and clean up with `pnpm cleanup:temps` (or `pnpm cleanup:temps:dry` to preview).
+- Avoid leaving artifacts under `apps/`, `packages/`, or the repo root; keep everything inside the temp directory you created.
+
 ### Run all tests
 
 ```bash
 pnpm test
 ```
+
+Runs the workspace test target via Turbo. Use this before pushing.
+
+### Fast loop (reduced reporter)
+
+```bash
+pnpm test:fast
+```
+
+Dot reporter for quicker feedback.
 
 ### Run tests for a specific package
 
@@ -25,21 +43,27 @@ pnpm --filter @aligntrue/cli test
 ### Watch mode (recommended during development)
 
 ```bash
-pnpm test --watch
+pnpm --filter @aligntrue/core test:watch
 ```
 
-Reruns tests when files change.
+Reruns tests in the selected package when files change.
 
 ### Run a single test file
 
 ```bash
-pnpm --filter @aligntrue/core test packages/core/tests/bundle.test.ts
+pnpm --filter @aligntrue/core vitest run packages/core/tests/bundle.test.ts
 ```
 
 ### Run tests matching a pattern
 
 ```bash
-pnpm test --grep "determinism"
+pnpm --filter @aligntrue/core vitest run --grep "determinism"
+```
+
+### Run with coverage
+
+```bash
+pnpm test -- --coverage
 ```
 
 ## Test structure
@@ -117,7 +141,7 @@ Test how components work together:
 
 ```typescript
 it("syncs config to agent files", async () => {
-  const config = loadConfig(".aligntrue.yaml");
+  const config = loadConfig(".aligntrue/config.yaml");
   const rules = compileRules(config);
   const result = exportToAgent(rules);
   expect(result.filesWritten).toContain(".cursor/rules/main.mdc");
@@ -130,7 +154,7 @@ Test that operations produce identical outputs:
 
 ```typescript
 it("generates identical lockfile hashes", () => {
-  const bundle = compileBunde(config);
+  const bundle = compileBundle(config);
   const hash1 = computeLockfileHash(bundle);
   const hash2 = computeLockfileHash(bundle);
   expect(hash1).toBe(hash2);
@@ -242,9 +266,9 @@ it("includes helpful error message", () => {
 
 ### Target coverage
 
-- **New features**: 80%+ line coverage
-- **Bug fixes**: 100% for the fixed code path
-- **Refactors**: Match or improve existing coverage
+- **New behavior**: Keep or improve existing coverage for the touched areas.
+- **Bug fixes**: 100% coverage for the fixed code path.
+- **Deterministic surfaces** (schema, core, exporters, CLI wiring): prefer higher coverage and include determinism assertions.
 
 ### Check coverage
 
@@ -254,23 +278,28 @@ pnpm test --coverage
 
 Coverage reports are generated in `coverage/` directory.
 
-### Coverage for different packages
-
-- `@aligntrue/core`: 85%+
-- `@aligntrue/cli`: 80%+
-- `@aligntrue/schema`: 90%+ (critical for validation)
-- `@aligntrue/exporters`: 85%+
+Review `packages/cli/tests/COVERAGE.md` for the current CLI coverage matrix and priority gaps. Aim to close high-priority gaps before adding new low-level tests.
 
 ## CI integration
 
-### GitHub Actions
+### GitHub Actions matrix
 
-Tests run on every PR:
+- Ubuntu (Node 20, Node 22), macOS (Node 22), Windows (Node 22).
+- PRs must pass on all platforms.
 
-```yaml
-pnpm test
-pnpm lint
-```
+### Steps executed in CI (ordered)
+
+1. `pnpm validate:workspace`
+2. `pnpm verify:workspace-links`
+3. `pnpm build:packages`
+4. `pnpm validate:all`
+5. `pnpm --filter @aligntrue/docs build`
+6. `pnpm typecheck`
+7. `pnpm test -- --coverage`
+8. `pnpm verify` (conformance testkit)
+9. `examples/golden-repo/test-golden-repo.sh`
+
+Coverage uploads to Codecov run after tests.
 
 ### Pre-commit hook
 
@@ -299,6 +328,7 @@ PRs must pass:
 - **Edge cases**: Empty inputs, null values, errors
 - **Contracts**: Function signatures and return types
 - **Determinism**: Outputs are reproducible
+- **Workflows**: Real CLI flows from temp directories using the built binary
 
 ### What not to test
 
@@ -358,6 +388,18 @@ describe("Database operations", () => {
   });
 });
 ```
+
+### Mocking and boundaries
+
+- Do not mock `@aligntrue/*` packages; prefer exercising real flows.
+- Mock external services, time, randomness, and prompts only when needed.
+- Favor contract or integration tests over shallow mock assertions.
+
+### Fixtures and cleanup
+
+- Keep fixtures minimal and close to the tests that use them.
+- Write artifacts under the test temp directory with `temp-` prefixes.
+- Clean up in `afterEach`/`afterAll`, or rely on helpers that remove temp dirs.
 
 ## Troubleshooting
 

@@ -19,9 +19,47 @@ Natural markdown lets you write rules as readable markdown sections instead of s
 - Markdown structure is automatically fingerprinted for change detection
 - Easier for AI agents to read and understand
 
+## Quick start
+
+1. Initialize AlignTrue (solo mode by default):
+
+   ```bash
+   aligntrue init
+   ```
+
+2. Create `.aligntrue/rules/my-rules.md` with a minimal frontmatter header:
+
+   ```markdown
+   ---
+   id: aligns/example/my-rules
+   version: 1.0.0
+   summary: Natural markdown example
+   tags: [example]
+   ---
+
+   # My project rules
+
+   ## Testing requirements
+
+   Run unit tests and linters before merging.
+   ```
+
+3. Add `##` sections for each rule.
+4. Validate locally:
+
+   ```bash
+   aligntrue check
+   ```
+
+5. Export to configured agents:
+
+   ```bash
+   aligntrue sync
+   ```
+
 ## Section format
 
-Write sections with level 2 headings (`##`):
+Use level 2 headings (`##`) for primary rules. Level 3+ headings are also extracted as **independent** sections (nested for structure only) and receive their own fingerprints, so keep nesting intentional:
 
 ```markdown
 ---
@@ -60,16 +98,22 @@ Never commit secrets to version control. Use environment variables or a secrets 
 - Review third-party dependencies
 ```
 
-Each section becomes a rule with:
+Each heading from `##` to `######` becomes a rule-like section with:
 
-- **Fingerprint** - Stable identifier based on heading and position
+- **Fingerprint** - Generated from heading + content (or an explicit ID)
 - **Heading** - Section heading (e.g., "Testing Requirements")
-- **Content** - Full markdown content under the heading
+- **Content** - Markdown content under the heading **until the next heading at any depth**
 - **Level** - Heading level (typically 2 for rules)
+
+Notes:
+
+- Content above the first heading is treated as a preamble and not exported as a section.
+- Parent sections stop collecting content when the first child heading appears; child sections become separate entries with their own fingerprints.
+- Headings inside fenced code blocks are ignored (they stay in the surrounding section’s content).
 
 ## Frontmatter
 
-All natural markdown files must include YAML frontmatter:
+Frontmatter is optional but recommended. If omitted, AlignTrue defaults to `id: unnamed-align` and `version: 1.0.0`.
 
 ```yaml
 ---
@@ -80,65 +124,43 @@ tags: ["tag1", "tag2"]
 ---
 ```
 
-**Required fields:**
+**Supported fields:**
 
-- `id` - Align identifier (e.g., `aligns/base/base-testing`)
-- `version` - Semantic version
-- `summary` - Brief description
-- `tags` - Search tags
+- `id` - Align identifier (recommend set explicitly; required in team mode)
+- `version` - Semantic version (defaults to `1.0.0` if omitted)
+- `summary` - Brief description (required in team/catalog modes)
+- `tags` - Optional tags (lowercase, kebab-case)
+- `owner` - Required in team/catalog modes
+- `source` - Required in team/catalog modes (e.g., repo URL)
+- `source_sha` - Required in team/catalog modes (git SHA or content hash)
 
-**Optional fields:**
-
-- `author` - Align author name
-- `license` - License identifier (default: CC0-1.0)
+`spec_version` is added automatically by the CLI. `license`/`author` fields are not read by the natural markdown parser today.
 
 ## Fingerprints
 
-Each section gets a stable fingerprint based on:
+- Format: `{kebab-heading}-{6-char-hash}` where:
+  - Heading is lowercased, non-alphanumerics replaced with `-`, trimmed, and capped at 50 chars.
+  - Hash uses normalized content with whitespace collapsed.
+- Fingerprints change when heading **or content** changes; whitespace-only edits usually keep the same hash.
+- Add an explicit ID comment to pin the fingerprint across edits (lowercase letters, numbers, `.`, `-`):
 
-1. Heading text (normalized)
-2. Position in document
-3. Parent section context
+  ```markdown
+  ## Testing requirements
 
-**Example fingerprints:**
+  Run tests. <!-- aligntrue-id: testing.requirements -->
+  ```
 
-- `testing-requirements-5d8e` - "Testing Requirements" section
-- `performance-standards-7a2c` - "Performance Standards" section
-
-Fingerprints remain stable when:
-
-- Content changes
-- New sections are added before/after
-- Order of content lines changes
-
-Fingerprints change when:
-
-- Heading text is renamed
-- Section is moved to different level
+- Duplicate headings produce warnings at the first occurrence; make them unique or add explicit IDs.
 
 ## Change detection
 
-AlignTrue detects three types of changes:
+AlignTrue tracks section fingerprints and content hashes to detect:
 
-**Modified sections:**
+- **Modified** - Fingerprint matches lockfile but content hash differs.
+- **New** - Fingerprint not present in lockfile.
+- **Deleted** - Fingerprint present in lockfile but missing in current document.
 
-```
-hash mismatch - content changed since last sync
-```
-
-**New sections:**
-
-```
-section added - not in previous lockfile
-```
-
-**Deleted sections:**
-
-```
-section removed - in lockfile but not in current document
-```
-
-See [Lockfile](#lockfile-integration) for how changes are tracked.
+See [Lockfile](#lockfile-integration) for how changes are recorded.
 
 ## Lockfile integration
 
@@ -146,23 +168,24 @@ In team mode, lockfile entries use section fingerprints:
 
 ```json
 {
+  "version": "1",
+  "generated_at": "2024-01-01T00:00:00.000Z",
+  "mode": "team",
   "rules": [
     {
-      "rule_id": "testing-requirements-5d8e",
-      "content_hash": "sha256:abc123...",
-      "source": "https://github.com/org/repo"
+      "rule_id": "testing-requirements-5d8e9c",
+      "content_hash": "sha256:abc123..."
     }
   ],
   "bundle_hash": "sha256:def456..."
 }
 ```
 
-Changes are detected by comparing content hashes:
+Lockfile notes:
 
-- **Same hash** - Section unchanged
-- **Different hash** - Section modified
-- **Missing hash** - Section was deleted
-- **New hash** - Section was added
+- `rule_id` comes from the section fingerprint (or explicit ID comment).
+- `content_hash` is derived from the section content; rules are sorted by `rule_id` for determinism.
+- `bundle_hash` is computed from the sorted rule hashes.
 
 ## Writing guidelines
 
@@ -211,36 +234,20 @@ feat(auth): add two-factor authentication
 
 ### Section hierarchy
 
-Use H2 (`##`) for main sections (becomes rules):
+Use H2 (`##`) for primary rules. H3+ headings are captured as separate sections under the preceding H2. Parent content ends before the first child heading, so put shared guidance above child headings.
 
 ```markdown
 # Title
 
-Introduction
+Intro text
 
-## Main Section 1
-
-Content
-
-## Main Section 2
-
-Content
-```
-
-Use H3 (`###`) for subsections (part of parent section content):
-
-```markdown
 ## Security
 
-All code must follow security best practices.
+Baseline rules.
 
 ### Input validation
 
-Never trust user input. Validate all inputs...
-
-### Error handling
-
-Never expose internal errors to users...
+Never trust user input.
 ```
 
 ## Advanced examples
@@ -302,7 +309,7 @@ Each `##` heading becomes a separate rule:
 - `Testing`
 - `Documentation`
 
-Subsections under each rule (`###`) are included in the parent rule's content.
+Each `###` heading becomes its own section under the prior `##`; parent content does **not** automatically include child sections.
 
 ### Included example aligns
 

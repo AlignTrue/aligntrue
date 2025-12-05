@@ -46,27 +46,28 @@ Agent Exports (.mdc, AGENTS.md, MCP configs, etc.)
 
 ## Determinism
 
-### When to canonicalize
+### When we canonicalize
 
-**Only canonicalize when determinism is required:**
+We canonicalize any time we compute a content hash so identical inputs yield the
+same checksum:
 
-- **Lockfile generation** (`aligntrue sync` in team mode) - Produce canonical hash for drift detection
-- **Catalog publishing** (`aligntrue publish` - removed from roadmap) - Produce integrity hash for distribution
-- **NOT during:** init, sync, export, import, normal file operations
+- Rule and section hashing via `computeContentHash` during rule load, sync, and
+  exporter content hashing
+- Lockfile generation hashes sections, overlays, and plugs for drift detection
+- MCP config generation hashes the server map
+- Catalog publishing (removed from roadmap) would reuse the same hashing path
 
-**Why:**
-
-- Solo devs don't need canonicalization overhead for local files
-- Team mode only needs determinism for lockfile-based drift detection
-- Catalog publishing needs integrity hash at distribution boundary
-- Running canonicalization on every operation adds unnecessary cost
+We do **not** re-canonicalize whole bundles on every operation—only the inputs
+being hashed—to keep normal workflows fast.
 
 ### Implementation
 
-- `packages/schema/src/canonicalize.ts` contains JCS canonicalization logic
-- `packages/core/src/lockfile/index.ts` (and its helpers) call canonicalize when generating locks
-- Exporters do NOT canonicalize; they work with IR directly
-- Canonical hashing is exposed via `computeHash` in `packages/schema/src/canonicalize.ts`, and plug-specific workflows live in `packages/core/src/plugs/hashing.ts`
+- `packages/schema/src/canonicalize.ts` provides JCS canonicalization and hashing
+  helpers used across the stack
+- `packages/core/src/lockfile/` and `packages/core/src/plugs/hashing.ts` build on
+  those helpers for team-mode locks and plug hashes
+- Exporters compute `contentHash` with the same canonicalization and return it in
+  `ExportResult` (not written into markdown exports)
 
 ## Package architecture
 
@@ -95,7 +96,8 @@ These adapt core logic to specific surfaces:
 Vendor bags enable lossless round-trips for agent-specific metadata:
 
 - `vendor.<agent>` namespace for agent-specific extensions
-- `vendor.*.volatile` excluded from hashing (timestamps, session IDs, etc.)
+- Volatile paths excluded from hashing via `vendor._meta.volatile` (timestamps,
+  session IDs, etc.)
 - Preserved during sync operations
 - Allows agents to store additional metadata without breaking AlignTrue semantics
 
@@ -107,6 +109,9 @@ vendor:
     session_id: "abc123" # Volatile, excluded from hash
     preferences:
       theme: "dark" # Stable, included in hash
+  _meta:
+    volatile:
+      - cursor.session_id
 ```
 
 ## Source precedence and merge
@@ -168,7 +173,7 @@ Rules merge with precedence from most specific to least specific.
 
 ## Exporters
 
-AlignTrue includes 50 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks this against `packages/exporters/src`.
+AlignTrue includes 50 exporters supporting 28+ agents; `scripts/validate-docs-accuracy.mjs` cross-checks manifests in `packages/exporters/src`.
 
 ### Categories
 
@@ -189,11 +194,11 @@ Each exporter documents what information may be lost when converting from IR:
 
 ### Content hash
 
-- Computed deterministically from IR sections
+- Computed deterministically from canonicalized IR sections
 - Returned in `ExportResult.contentHash`
 - Useful for drift detection and integrity verification
-- Not written to exported files (files kept clean)
-- For MCP config exporters, hash is included in JSON as `content_hash` field
+- Not written to markdown exports (files kept clean); MCP JSON includes
+  `content_hash`
 
 ## AI-maintainable code principles
 

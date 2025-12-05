@@ -14,8 +14,15 @@ Common issues when working with overlays and their solutions.
 ### Diagnosis
 
 ```bash
-# Check overlay health
+# Apply overlays and rebuild IR/exports
+aligntrue sync
+# Output shows: ✓ Applied N overlays
+
+# Confirm selector health against the current IR
 aligntrue override status
+
+# Inspect the change the overlay applies
+aligntrue override diff 'rule[id=your-rule-id]'
 
 # Look for issues
 aligntrue override status --json
@@ -146,33 +153,29 @@ aligntrue override add \
 ### Verify overlays are active
 
 ```bash
-# 1. Check that overlay is active and healthy
+# 1. Apply overlays (required for IR/exports)
+aligntrue sync
+# Output shows: ✓ Applied N overlays
+
+# 2. Check that overlay is active and healthy
 aligntrue override status
 # Shows: ✓ rule[id=your-rule-id]
 #        Set: severity="error"
 #        Healthy: yes
 
-# 2. View the effect of the overlay
-aligntrue override diff
+# 3. View the effect of the overlay in IR
+aligntrue override diff 'rule[id=your-rule-id]'
 # Shows: Original → Modified with overlay applied
-
-# 3. Check `.aligntrue/rules` contains the modified value
-grep -r "rule\[id=your-rule-id\]" .aligntrue/rules/
-# Should show: severity: error (modified by overlay)
-
-# 4. Check CLI output during sync
-aligntrue sync
-# Output shows: ✓ Applied N overlays
 ```
 
 ### Overlay effects not visible in exports
 
 If you don't see severity changes in AGENTS.md or other exports, this is **expected**. Here's why:
 
-- **IR is canonical:** `.aligntrue/rules/` contains overlay-modified content
-- **Exports are simplified:** Markdown formats prioritize readability
+- **Overlays apply at sync time:** `.aligntrue/rules/` stays upstream; overlays modify the in-memory IR during `aligntrue sync`
+- **Exports are simplified:** Markdown exports may omit some fields for readability
 - **Behavior is affected:** Checks use the modified IR behavior
-- **Verification:** Use `aligntrue override diff` and `aligntrue override status` to confirm
+- **Verification:** Run `aligntrue sync` (look for "Applied N overlays"), then use `aligntrue override status` and `aligntrue override diff` to confirm
 
 ## Quick commands
 

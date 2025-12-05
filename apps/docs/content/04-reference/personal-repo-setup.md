@@ -22,8 +22,8 @@ Use git sources to pull rules; use remotes to push rules. Personal sources are a
 
 ## Quick start (SSH + personal remote)
 
-1. Run `aligntrue init` if `.aligntrue/config.yaml` does not exist.
-2. Add one SSH source and one personal remote:
+1. Ensure `.aligntrue/config.yaml` exists (`aligntrue init` if not).
+2. Add this config:
 
 ```yaml
 sources:
@@ -31,12 +31,13 @@ sources:
     path: .aligntrue/rules
   - type: git
     url: git@github.com:yourusername/aligntrue-personal-rules.git
-    personal: true # auto scope + gitignore
+    personal: true # scope personal + gitignore (SSH URLs auto-apply this)
 
 remotes:
   personal:
     url: git@github.com:yourusername/personal-rules.git
-    auto: true # default; set false to require manual push
+    auto: true # push on sync; set false to review before pushing
+    branch: main # default; change if your remote uses another branch
 ```
 
 3. Sync:
@@ -45,7 +46,7 @@ remotes:
 aligntrue sync
 ```
 
-During sync, remotes push automatically unless `auto: false` is set for that destination.
+Remotes push automatically unless `auto: false` is set for that destination. Use HTTPS if SSH is blocked in your environment.
 
 ## Prerequisites
 
@@ -113,42 +114,13 @@ ssh -T git@gitlab.com
 
 ### To pull personal rules from a remote
 
-Add the remote as a source in `.aligntrue/config.yaml`:
-
-```yaml
-sources:
-  - type: local
-    path: .aligntrue/rules
-  - type: git
-    url: git@github.com:yourusername/aligntrue-personal-rules.git
-    personal: true # Auto-gitignored and personal-scope
-```
-
-The `personal: true` flag:
-
-- Marks rules from this source as `scope: personal`
-- Auto-applies `gitignore: true` (not committed to main repo)
-- SSH URLs automatically get these flags
+Use the git source from the quick start. `personal: true` scopes imported rules to `personal` and gitignores them; SSH URLs apply these defaults automatically.
 
 ### To sync local rules to a remote
 
-`auto` defaults to true for every remote; set `auto: false` to require an explicit push step later.
-
-Configure remotes based on rule scopes:
-
-```yaml
-remotes:
-  # Personal-scope rules sync here
-  personal:
-    url: git@github.com:yourusername/personal-rules.git
-    branch: main # default is main; override if needed
-    auto: true # push on sync; set false to skip auto-push
-
-  # Shared-scope rules sync here (for publishing)
-  shared: git@github.com:yourusername/shared-rules.git
-```
-
-Then mark your rules with the appropriate scope:
+- `auto: true` (default) pushes on every `aligntrue sync`; set `auto: false` to defer pushing until you re-enable it.
+- `branch` defaults to `main`; set it if your remote uses another branch.
+- Mark rules with a scope so they route to the right remote:
 
 ```yaml
 ---

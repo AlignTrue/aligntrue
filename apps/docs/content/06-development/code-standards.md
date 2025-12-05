@@ -35,8 +35,9 @@ const hash = computeHash(content);
 **Available functions:**
 
 - `computeHash(data: string): string` - SHA-256 hash
-- `computeContentHash(obj: unknown): string` - Hash an object after canonicalization
+- `computeContentHash(obj: unknown, excludeVolatile = true): string` - Canonicalize (drops `vendor.*.volatile` by default) + SHA-256
 - `hashObject(obj: unknown): string` - Convenience wrapper
+- `computeAlignHash(input: string | unknown): string` - Resets `integrity.value` to `<pending>`, filters volatile vendor fields, then hashes
 
 **Locations where hashing is used:**
 
@@ -69,8 +70,8 @@ const clone = cloneDeep(obj);
 
 - `cloneDeep<T>(obj: T): T` - Deep clone using structuredClone
 - `parseJsonSafe(str: string): Result<unknown, Error>` - Parse with error handling
-- `stringifyCanonical(obj: unknown): string` - Canonical JSON
-- `computeContentHash(obj: unknown): string` - Hash an object deterministically
+- `stringifyCanonical(obj: unknown, excludeVolatile = true): string` - Canonical JSON (drops `vendor.*.volatile` by default)
+- `computeContentHash(obj: unknown, excludeVolatile = true): string` - Deterministic hash (canonical JSON + SHA-256)
 - `compareCanonical(a: unknown, b: unknown): boolean` - Compare by canonical form
 - `type Result<T, E>` - Result type for operations that may fail
 
@@ -82,46 +83,60 @@ const clone = cloneDeep(obj);
 
 ### Canonicalization
 
-**Use `canonicalizeJson()` and `computeAlignHash()` for deterministic operations:**
+**Use `canonicalizeJson()` and `computeAlignHash()` for deterministic operations (defaults exclude `vendor.*.volatile`):**
 
 ```typescript
 // ✅ Do: use schema utilities for determinism
 import { canonicalizeJson, computeAlignHash } from "@aligntrue/schema";
 
-const canonical = canonicalizeJson(obj, true); // with volatile filtering
-const hash = computeAlignHash(yamlString);
+const canonical = canonicalizeJson(obj); // volatile fields dropped by default
+const hash = computeAlignHash(yamlString); // sets integrity.value to <pending> before hashing
 ```
 
 ## Error handling
 
 ### CLI errors
 
-Use the error hierarchy from `@aligntrue/cli/utils/error-types` in CLI commands:
+Use the structured error hierarchy (re-exported by `@aligntrue/cli/utils/error-types`, defined in `@aligntrue/core`) so exit codes, hints, and next steps stay consistent:
 
 ```typescript
 import {
+  AlignTrueError,
   ConfigError,
   ValidationError,
   SyncError,
+  ErrorFactory,
 } from "@aligntrue/cli/utils/error-types";
 
-// Create descriptive errors
+// Create descriptive errors with actionable guidance
 throw new ConfigError(
-  "Invalid config field",
+  "Invalid config field: profile.id missing",
   "Set profile.id in .aligntrue/config.yaml",
-).withNextSteps(["Run 'aligntrue init'", "Edit: aligntrue config edit"]);
+).withNextSteps(["Run: aligntrue init", "Edit: aligntrue config edit"]);
+
+// Prefer ErrorFactory helpers for common cases
+throw ErrorFactory.configNotFound(configPath);
+
+// Use AlignTrueError (base) only when none of the typed errors fit
+throw new AlignTrueError(
+  "Unexpected state while resolving plugs",
+  "UNEXPECTED_STATE",
+  1,
+);
 ```
 
 ### Core package errors
 
-Keep error messages clear and actionable. Use `throw new Error()` with descriptive messages:
+Keep error messages clear and actionable. Use the typed errors above for user-facing failures; reserve bare `Error` for internal invariants only:
 
 ```typescript
-// ✅ Good
-throw new Error(
-  `Failed to load config from ${path}: ${details}\n` +
-    `Hint: Run 'aligntrue init' to create a config file`,
-);
+// ✅ Good (user-facing)
+throw ErrorFactory.fileWriteFailed(path, cause);
+
+// ✅ Good (internal invariant)
+if (!graph.has(node)) {
+  throw new Error(`Invariant: node ${node} should exist before traversal`);
+}
 
 // ❌ Avoid
 throw new Error("Config load failed");
@@ -174,8 +189,11 @@ Use the centralized `AtomicFileWriter` from `@aligntrue/file-utils`:
 import { AtomicFileWriter } from "@aligntrue/file-utils";
 
 const writer = new AtomicFileWriter();
-await writer.write(filePath, content);
-// Handles atomicity, checksums, and rollback
+// Optional: prompt-aware checksum handler to protect manual edits
+// writer.setChecksumHandler(async (...) => "overwrite" | "keep" | "abort");
+
+await writer.write(filePath, content, { interactive, force });
+// Handles atomicity, checksum tracking, overwrite protection, rollback
 ```
 
 ### Large datasets
@@ -186,7 +204,7 @@ The schema package provides performance guardrails:
 import { checkFileSize } from "@aligntrue/core/performance";
 
 checkFileSize(filePath, 100, "team", force);
-// Validates file size with mode-dependent behavior
+// Solo: warns; Team/enterprise: throws; Force: bypasses
 ```
 
 ## Package dependencies
@@ -247,6 +265,6 @@ pnpm validate:docs
 
 ## Related documentation
 
-- [Debugging workflow](/docs/06-development/ci) for investigation patterns
+- [CI guide](/docs/06-development/ci) for validation and debugging workflow
 - [Architecture](/docs/06-development/architecture) for design principles
 - [Test maintenance](/docs/06-development/test-maintenance) for test strategy

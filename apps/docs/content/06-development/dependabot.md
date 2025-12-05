@@ -11,10 +11,13 @@ This document explains AlignTrue's hybrid approach to automatically merging Depe
 
 **Goal:** Save maintainer time on routine dependency updates while preserving manual review for higher-risk changes.
 
-**Strategy:**
+**Strategy (matches the workflow logic):**
 
-- ✅ Auto-merge: devDependencies, patch & minor updates
-- 🚫 Manual review: production dependencies, major version bumps
+- Auto-merge when the PR is from Dependabot **and**:
+  - Labeled `devDependencies`, **or**
+  - Detected as a security patch, **or**
+  - Title includes `patch`/`from` **and** the PR is **not** labeled `requires-review`
+- Manual review for PRs labeled `requires-review` or anything without a safe signal
 
 ## Configuration
 
@@ -24,22 +27,22 @@ Dependabot is configured to:
 
 - Create separate PRs per directory (workspace isolation)
 - Label PRs by scope (devDependencies, schema, cli, web, docs, etc.)
-- Group updates intelligently (production vs development)
+- Group updates by risk (dev vs production)
 - Ignore unsafe updates (e.g., Next.js major versions)
 
 **Key scopes:**
 
-- **Root `/`**: dev-dependencies only → auto-merge safe
-- **Packages** (`/packages/schema`, `/packages/cli`, etc.): patch/minor only → auto-merge safe
-- **Web app** (`/apps/web`): split into dev (auto-merge) + production (manual review)
-- **Docs app** (`/apps/docs`): split into dev (auto-merge) + production (manual review)
+- **Root `/`**: dev-dependencies only → auto-merge safe (labeled `devDependencies`)
+- **Packages** (`/packages/schema`, `/packages/cli`, `/packages/mcp`): patch/minor only → auto-merge safe (no `requires-review` label applied)
+- **Web app** (`/apps/web`): dev deps auto-merge; production deps labeled `requires-review` → manual
+- **Docs app** (`/apps/docs`): dev deps auto-merge; production deps labeled `requires-review` → manual
 
 ### 2. `.github/workflows/dependabot-auto-merge.yml`
 
 GitHub Actions workflow that:
 
 1. Detects all Dependabot PRs
-2. Checks if PR is labeled as "safe" (devDependencies OR patch/minor without "requires-review")
+2. Checks if PR is labeled as "safe" (`devDependencies`, security, or title includes `patch`/`from` without `requires-review`)
 3. Auto-approves safe PRs with rationale
 4. Waits for CI to pass (max 10 minutes)
 5. Enables GitHub's auto-merge (squash strategy)
@@ -55,18 +58,19 @@ GitHub Actions workflow that:
 
 ## What gets auto-merged
 
-✅ **Automatically merged once CI passes:**
+✅ **Automatically merged once CI passes (safe signals):**
 
-- All devDependencies (test frameworks, linters, build tools)
-- Patch updates to production packages (bug fixes)
-- Minor updates to production packages (new backward-compatible features)
-- **Security patches** (CVE fixes, even if major version) — _high urgency, low risk_
+- Any PR with `devDependencies` label (all scopes)
+- PRs Dependabot marks as security patches (label or body text)
+- PR titles containing `patch`/`from` **without** `requires-review` label (covers patch/minor in scoped packages; majors would only pass if no `requires-review` label is applied)
 
-❌ **Requires manual review:**
+Note: The workflow does not explicitly parse minor updates; Dependabot titles include `from`, so the title check covers patch/minor (and majors if a `requires-review` label is missing).
 
-- Major version bumps (Next.js 15→16, etc.) — unless they're security patches
-- Production dependencies not explicitly allowed
-- Any PR labeled "requires-review" — except security patches
+❌ **Requires manual review (no safe signal):**
+
+- PRs labeled `requires-review` (runtime deps for web/docs, or other scopes you opt in)
+- Any PR missing a safe signal (e.g., custom scopes without `devDependencies` label)
+- Security patches still auto-approve/merge unless you remove that behavior
 
 ## What to watch for
 
@@ -74,12 +78,12 @@ GitHub Actions workflow that:
    - Is it a real incompatibility? → Manual fix or manual rejection
    - Is it a flaky test? → Re-run CI or merge manually
 
-2. **Security patches:** Now auto-merged at all severity levels (low, medium, high, critical). The approval comment will clearly identify them:
+2. **Security patches:** Auto-merged at all severity levels. The approval comment will clearly identify them:
    - Look for `🔒 Auto-approved: Security patch` in the PR comment
    - Verify CI tests pass (they're gated behind full CI run)
    - Merged via squash merge for clean history
-
-3. **Monorepo issues:** Web and docs apps have both auto-merge and manual-review rules to balance safety with developer experience.
+3. **Label coverage:** Manual review depends on `requires-review` labels. If you add new production scopes, ensure Dependabot applies `requires-review` or restricts update types; otherwise majors could be treated as safe due to the title check.
+4. **Monorepo balance:** Web and docs apps have both auto-merge and manual-review rules to balance safety with developer experience.
 
 ## Performance impact
 
@@ -103,7 +107,7 @@ After pushing these files, the workflow starts on next pull request:
 
 1. Wait for a new Dependabot PR to arrive (weekly on Mondays)
 2. Check the PR for:
-   - Expected labels (e.g., "devDependencies", "cli", "requires-review", "security")
+   - Expected labels (e.g., `devDependencies`, `cli`, `requires-review`, `security`)
    - Auto-approval comment from the workflow with reasoning
    - Auto-merge badge once CI passes
 3. Monitor GitHub Actions to see the workflow logs
@@ -119,6 +123,14 @@ To verify security patch auto-merge works:
    - Run full CI (Linux + Windows)
    - Auto-merge once CI passes
 4. **Validate in GitHub Actions:** Check `.github/workflows/dependabot-auto-merge.yml` logs to see security detection logic
+
+### Testing manual-review coverage
+
+To confirm majors and other risky updates stay manual:
+
+1. Create or wait for a PR in a scope that should require review (e.g., `apps/web` runtime deps).
+2. Verify the PR has `requires-review` label.
+3. Confirm the workflow does **not** auto-approve and leaves the PR pending review.
 
 ## Related documentation
 

@@ -42,22 +42,45 @@ Choose a clear, descriptive filename for your align that indicates its purpose:
 
 Examples are stored flat in `examples/aligns/` without namespace directories. Create descriptive filenames that make the purpose immediately clear.
 
+### Format and location
+
+Aligns are markdown files (`.md`) that use natural markdown sections. Prefer:
+
+- `.aligntrue/rules/` for your own projects
+- `examples/aligns/` when contributing examples to this repository
+
+Frontmatter keeps IDs stable and helps downstream consumers:
+
+```yaml
+---
+id: "aligns/base/typescript-config"
+version: "1.0.0"
+summary: "TypeScript configuration baseline"
+tags: ["typescript", "configuration"]
+---
+```
+
+Use `aligns/base/*` for global rules and `aligns/stacks/*` for stack-specific rules.
+
 ### Minimal example
 
 Here's a minimal align using natural markdown sections:
 
 ````markdown
-# TypeScript Configuration Align
+---
+id: "aligns/base/typescript-config"
+version: "1.0.0"
+summary: "Ensure projects use a strict tsconfig"
+tags: ["typescript", "configuration"]
+---
 
-## Ensure TypeScript configuration
+# TypeScript configuration
 
-All TypeScript projects should have a properly configured `tsconfig.json` file.
+## Require a tsconfig
 
-### Setup
+All TypeScript projects must include `tsconfig.json`. Use `npx tsc --init` if missing.
 
-Run `npx tsc --init` to create a tsconfig.json if missing.
-
-### Recommended configuration
+### Recommended options
 
 ```json
 {
@@ -73,8 +96,6 @@ Run `npx tsc --init` to create a tsconfig.json if missing.
 
 Enable strict mode for better type safety and fewer runtime errors.
 
-````
-
 For more examples, browse existing aligns in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory.
 
 ## Testing locally
@@ -85,6 +106,7 @@ You'll need:
 
 - Node.js 20+ and pnpm 9+
 - The `AlignTrue/aligntrue` repository cloned
+- Your align saved as `.md` in `.aligntrue/rules/` (or in `examples/aligns/` if contributing here)
 
 ### Validate your align
 
@@ -96,7 +118,7 @@ pnpm install
 
 # Validate your rules
 aligntrue check
-````
+```
 
 ### Verify deterministic hash
 
@@ -218,35 +240,35 @@ Users should be able to copy-paste your hint and make progress.
 sources:
   - type: git
     url: https://github.com/yourorg/rules-repo
-    path: aligns/your-align.yaml
+    path: aligns/your-align.md
 ````
 
 2. **Share raw URL** - Users can download directly:
 
 ```bash
-curl -o .aligntrue/rules.yaml https://raw.githubusercontent.com/yourorg/rules-repo/main/aligns/your-align.yaml
+curl -o .aligntrue/rules/your-align.md https://raw.githubusercontent.com/yourorg/rules-repo/main/aligns/your-align.md
+aligntrue sync
 ```
 
 ### Via local files
 
-Share the YAML file directly - users can copy it to their project:
+Share the markdown file directly - users can copy it to their project:
 
 ```bash
-cp your-align.yaml .aligntrue/rules.yaml
-aligntrue sync
+cp your-align.md .aligntrue/rules/
+aligntrue check && aligntrue sync
 ```
 
 ### Quality checklist
 
 Before sharing your align, verify:
 
-- [ ] Schema validation passes locally
-- [ ] Integrity hash is computed (not `<computed>`)
-- [ ] Evidence messages are specific and actionable
-- [ ] Autofix hints are concrete commands or steps
-- [ ] Align summary clearly states purpose in one sentence
-- [ ] Namespace follows conventions (aligns/base or aligns/stacks)
-- [ ] All check types use one of the 5 supported types
+- [ ] File is `.md` using natural markdown sections
+- [ ] Frontmatter includes `id`, `version`, and `summary` (plus `owner`/`source` in team mode)
+- [ ] `aligntrue check` passes twice with identical hashes (no timestamps or random values)
+- [ ] Guidance is specific, actionable, and copy-pasteable
+- [ ] Plugs use recommended conventions or clearly documented custom keys
+- [ ] Namespace uses `aligns/base` or `aligns/stacks` to match scope
 
 ## Code of conduct
 
@@ -299,7 +321,7 @@ deps:
     version: "^1.0.0"
 ```
 
-Dependencies are resolved and merged in order. Keep dependencies minimal.
+Add `deps` in frontmatter alongside your other metadata. Dependencies are resolved and merged in order—keep them minimal.
 
 ### Scoping rules
 
@@ -310,7 +332,7 @@ scope:
   applies_to: ["backend"] # or ["frontend"], ["cli"], etc.
 ```
 
-This helps users understand when to use your align.
+Add `scope` to frontmatter so users understand when to use your align.
 
 ### Testing your align
 
@@ -321,7 +343,7 @@ To test your align locally:
 ```yaml
 sources:
   - type: local
-    path: ./your-align.md
+    path: ./.aligntrue/rules/your-align.md
 ```
 
 2. **Sync to agents:**

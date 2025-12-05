@@ -15,42 +15,63 @@ Common commands and workflows for AlignTrue development.
 pnpm dev
 ```
 
-Starts the documentation site at `http://localhost:3000` (from `apps/docs`)
+Starts the docs site at `http://localhost:3000` from `apps/docs`.
 
-### Build all packages
+### Build
 
 ```bash
-pnpm build
+pnpm build          # Turbo build across workspace
+pnpm build:packages # Build only workspace packages
+pnpm --filter @aligntrue/core build # Build one package
 ```
 
-### Run tests
+### Tests and type checks
 
 ```bash
-pnpm test        # All tests across all packages
+pnpm test        # All tests
 pnpm test:fast   # Fast reporter for quick feedback
+pnpm typecheck   # TypeScript across all packages
 ```
 
-### Type-check all packages
+### Linting and formatting
 
 ```bash
-pnpm typecheck
+pnpm lint          # ESLint (zero warnings)
+pnpm lint:fix      # Fix then re-run lint
+pnpm format        # Prettier write
+pnpm format:check  # Prettier check only
 ```
 
-### Format
+### Validation helpers
 
 ```bash
-pnpm format        # Format code with Prettier
-pnpm format:check  # Check formatting without changes
+pnpm validate:all            # Full validation suite
+pnpm validate:docs           # Docs accuracy checks
+pnpm validate:workspace      # Ensure workspace:* protocol
+pnpm verify:workspace-links  # Verify node_modules links resolve locally
+pnpm check                   # Aggregated CI-like check runner
+pnpm ci:errors               # Summarize recent CI failures
 ```
 
-### Clean
+### Docs + repo files
 
 ```bash
-# Remove all node_modules and build artifacts
-pnpm clean
+pnpm start:docs          # Start docs with preflight
+pnpm generate:repo-files # Regenerate README/CONTRIBUTING/etc. from docs
+```
 
-# Remove temp files created by AI/debugging
-pnpm clean-temp
+### Cleaning
+
+```bash
+pnpm clean        # Remove node_modules and dist outputs
+pnpm clean-temp   # Delete temp-* debug files
+pnpm cleanup:temps # Remove cached test temp artifacts (supports --delete/--verbose)
+```
+
+### Bootstrapping
+
+```bash
+pnpm bootstrap  # Install deps then build once
 ```
 
 ## Working on packages
@@ -214,72 +235,48 @@ pnpm update --latest --recursive
 pnpm audit
 ```
 
-## Versioning with changesets
+## Releasing (manual flow)
 
-We use Changesets for managing package versions and changelogs.
-
-### Creating a changeset
-
-After making changes, create a changeset describing your changes:
+Releases use `scripts/manual-release.mjs`—no Changesets.
 
 ```bash
-pnpm changeset
+pnpm release [--dry-run] [--type=patch|minor|major|current]
 ```
 
-Follow the prompts to:
+What it does:
 
-1. Select which packages changed
-2. Choose version bump type (major/minor/patch)
-3. Write a summary of changes
+- prompts (or uses `--type`) for bump level across publishable packages
+- bumps versions in each package.json
+- runs `pnpm build:packages`
+- publishes each package with `pnpm publish` (rewrites workspace:\*)
+- runs `node scripts/validate-published-deps.mjs` to catch workspace leaks
+- commits + tags (`chore: Release <version> (<type>)`) and pushes
 
-The changeset file will be committed with your changes.
+Tips:
 
-### Versioning packages
-
-To consume changesets and bump versions:
-
-```bash
-pnpm version
-```
-
-This updates `package.json` versions and `CHANGELOG.md` files.
-
-### Publishing packages
-
-After versioning, publish to npm:
-
-```bash
-pnpm release
-```
-
-This builds all packages and publishes them to npm.
+- Use `--dry-run` to preview without changing files or publishing.
+- Start from a clean main branch with CI green and npm auth configured.
+- After release, update `CHANGELOG.md` and verify `npx aligntrue --version`.
 
 ## CI/CD
 
-CI runs on every PR:
+CI runs on every PR and reuses the same scripts as local helpers:
 
-- Lockfile sync validation
-- `pnpm typecheck` - Type checking
-- `pnpm test` - Tests
-- `pnpm build` - Production build
-- Integration tests
-- Golden repository validation
+- lockfile sync and docs accuracy validation
+- `pnpm build`, `pnpm typecheck`, `pnpm test` (unit + integration + golden repo)
+- bundle-size and workspace protocol checks
 
-All must pass before merge.
-
-**Note:** Pre-push hooks mirror CI checks, so if pre-push passes, CI should pass too.
+If `pnpm pre-ci` succeeds from a clean tree, CI should match.
 
 ## Troubleshooting
 
 ### Pre-commit hook fails with formatting errors
 
-The hook auto-formats code with Prettier. If it still fails, check the error output for issues with the lockfile update or other problems.
+The hook auto-regenerates repo files when docs change, validates workspace protocol, runs `pnpm lint-staged`, and builds affected packages when TypeScript files are staged. Fix the first reported failure (format, lint, or build) and rerun.
 
 ### Pre-push hook is too slow
 
-Pre-push runs the full validation suite (~30-60 seconds). This is intentional to catch issues before CI.
-
-For faster iteration during development, use watch mode for tests instead of relying on hooks.
+Pre-push runs `pnpm pre-ci` (frozen install, build, typecheck, tests, bundle-size validation). Use watch mode and `pnpm test:fast` for tight loops, then rely on pre-push before CI.
 
 ### Commit message rejected
 
@@ -289,7 +286,7 @@ Ensure your commit message follows Conventional Commits format:
 <type>: <description>
 ```
 
-Example: `feat: Add new command` or `fix: Resolve memory leak`
+Example: `feat: add new command` or `fix: resolve memory leak`
 
 ## Next steps
 
