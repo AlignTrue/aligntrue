@@ -2,6 +2,8 @@
  * Capture console output during a test run.
  * Restores original console methods after execution.
  */
+import { ProcessExitError } from "./exit-mock.js";
+
 export async function captureOutput(
   fn: () => Promise<void> | void,
 ): Promise<{ stdout: string; stderr: string }> {
@@ -19,6 +21,12 @@ export async function captureOutput(
 
   try {
     await fn();
+  } catch (error) {
+    // Commands often signal termination via mocked process.exit; capture output
+    // but do not treat that as a failure for the test harness.
+    if (!(error instanceof ProcessExitError)) {
+      throw error;
+    }
   } finally {
     console.log = originalLog;
     console.error = originalError;
