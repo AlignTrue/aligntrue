@@ -39,21 +39,25 @@ In team mode, configuration is split into two files:
 
 **Field ownership:**
 
-| Field                   | Config file   | Notes                   |
-| ----------------------- | ------------- | ----------------------- |
-| `mode`                  | Team only     | Determines mode         |
-| `modules.lockfile`      | Team only     | Team-controlled         |
-| `modules.bundle`        | Team only     | Team-controlled         |
-| `lockfile.*`            | Team only     | Team-controlled         |
-| `remotes.personal`      | Personal only | Individual setting      |
-| `sources`, `exporters`  | Shared        | Merged additively       |
-| `git`, `overlays`, etc. | Shared        | Personal overrides team |
+| Field                   | Config file   | Notes                               |
+| ----------------------- | ------------- | ----------------------------------- |
+| `mode`                  | Team only     | Determines mode                     |
+| `modules.lockfile`      | Team only     | Team-controlled                     |
+| `lockfile.*`            | Team only     | Team-controlled                     |
+| `remotes.personal`      | Personal only | Individual setting                  |
+| `sources`, `exporters`  | Shared        | Merged additively (team + personal) |
+| `git`, `overlays`, etc. | Shared        | Personal overrides team for scalars |
 
 **Merging behavior:**
 
 - **Arrays (sources, exporters):** Team + personal combined
 - **Scalars (git.mode, etc.):** Personal overrides team locally
 - **Lockfile:** Generated from team config only
+
+**Team enable defaults:**
+
+- `sources` are moved into `config.team.yaml` (team-owned inputs).
+- `exporters` stay in personal `config.yaml` by default; team can add a shared baseline if desired. Final exporters are the union of team + personal.
 
 ## Core fields
 
@@ -97,6 +101,8 @@ exporters:
 ```
 
 See [Agent Support](/docs/04-reference/agent-support) for all 50 available exporters.
+
+**Team mode behavior:** Exporters are shared/merged, but enabling team mode does **not** move personal exporters into `config.team.yaml`. Add exporters to the team file only when the team wants a standard baseline; personal config can still add more.
 
 ### sources
 
@@ -214,14 +220,13 @@ aligntrue exporters detect
 
 Feature flags for optional modules.
 
-- Solo: lockfile `false`, bundle `false`, checks `true`, mcp `false`
-- Team: lockfile `true`, bundle `true`, checks `true`, mcp `false`
-- Enterprise: lockfile `true`, bundle `true`, checks `true`, mcp `true`
+- Solo: lockfile `false`, checks `true`, mcp `false`
+- Team: lockfile `true`, checks `true`, mcp `false`
+- Enterprise: lockfile `true`, checks `true`, mcp `true`
 
 ```yaml
 modules:
   lockfile: false # Generate .aligntrue/lock.json
-  bundle: false # Generate .aligntrue/bundle.yaml
   checks: true # Enable machine-checkable rules
   mcp: false # Enable MCP server
 ```
@@ -238,6 +243,8 @@ Lockfile validation mode for reproducible builds.
 lockfile:
   mode: soft # off | soft | strict
 ```
+
+Lockfile v2 stores only `version` and `bundle_hash` (team rules + `config.team.yaml`). Drift detection compares the current bundle hash to the lockfile.
 
 Values:
 

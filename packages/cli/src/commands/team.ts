@@ -400,17 +400,11 @@ async function teamEnable(
         },
       };
 
-      // Move sources and exporters to team config (they're shared but default to team)
+      // Move sources to team config (team-owned inputs)
       const rawSources = personalRaw["sources"];
       if (rawSources !== undefined && rawSources !== null) {
         teamConfig.sources = rawSources as NonNullable<
           AlignTrueConfig["sources"]
-        >;
-      }
-      const rawExporters = personalRaw["exporters"];
-      if (rawExporters !== undefined && rawExporters !== null) {
-        teamConfig.exporters = rawExporters as NonNullable<
-          AlignTrueConfig["exporters"]
         >;
       }
 
@@ -421,13 +415,7 @@ async function teamEnable(
 
       // Clean personal config: remove team-only fields
       const cleanedPersonal: Record<string, unknown> = {};
-      const teamOnlyFields = [
-        "mode",
-        "modules",
-        "lockfile",
-        "sources",
-        "exporters",
-      ];
+      const teamOnlyFields = ["mode", "modules", "lockfile", "sources"];
       for (const [key, value] of Object.entries(personalRaw)) {
         if (!teamOnlyFields.includes(key) && value !== undefined) {
           cleanedPersonal[key] = value;
