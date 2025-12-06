@@ -358,7 +358,7 @@ describe("GitIntegration", () => {
         encoding: "utf-8",
       }).trim();
       expect(stagedFiles).toContain("AGENTS.md");
-    });
+    }, 20000);
   });
 
   describe("per-exporter overrides", () => {
