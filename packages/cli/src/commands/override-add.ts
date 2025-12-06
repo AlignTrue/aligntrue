@@ -47,6 +47,42 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   },
 ];
 
+function normalizeSet(
+  value: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!value) return undefined;
+  return Object.keys(value)
+    .sort()
+    .reduce<Record<string, unknown>>((acc, key) => {
+      acc[key] = value[key] as unknown;
+      return acc;
+    }, {});
+}
+
+function normalizeRemove(value: string[] | undefined): string[] | undefined {
+  if (!value) return undefined;
+  return [...value].sort();
+}
+
+function overlaysEqual(
+  a: { selector: string; set?: Record<string, unknown>; remove?: string[] },
+  b: { selector: string; set?: Record<string, unknown>; remove?: string[] },
+): boolean {
+  if (a.selector !== b.selector) return false;
+
+  const normalizedASet = normalizeSet(a.set);
+  const normalizedBSet = normalizeSet(b.set);
+  if (JSON.stringify(normalizedASet) !== JSON.stringify(normalizedBSet)) {
+    return false;
+  }
+
+  const normalizedARemove = normalizeRemove(a.remove);
+  const normalizedBRemove = normalizeRemove(b.remove);
+  return (
+    JSON.stringify(normalizedARemove) === JSON.stringify(normalizedBRemove)
+  );
+}
+
 export async function overrideAdd(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
@@ -101,6 +137,29 @@ export async function overrideAdd(args: string[]): Promise<void> {
   // Extract flags
   const selector = parsed.flags["selector"] as string | undefined;
   const config = parsed.flags["config"] as string | undefined;
+
+  if (!selector) {
+    const positional = parsed.positional?.[0];
+    const messageParts = [
+      "Missing --selector. Provide a selector with --selector '<value>' (quote to avoid shell globbing).",
+    ];
+    if (positional) {
+      messageParts.push(
+        `Example: aligntrue override add --selector '${positional}' --set severity=warn`,
+      );
+    } else {
+      messageParts.push(
+        "Examples:",
+        "  aligntrue override add --selector 'rule[id=testing]' --set severity=warn",
+        "  aligntrue override add --selector 'sections[0]' --set enabled=false",
+      );
+    }
+
+    clack.log.error(messageParts.join("\n"));
+    exitWithError(1, "Missing required --selector flag", {
+      hint: "Pass the selector with --selector '<value>'",
+    });
+  }
 
   // Collect all --set and --remove values
   const setValues: string[] = [];
@@ -291,8 +350,18 @@ async function runOverrideAdd(options: OverrideAddOptions): Promise<void> {
     overlay.remove = removeOperations;
   }
 
-  // Build updated overlays with new override
-  const updatedOverrides = [...config.overlays.overrides, overlay];
+  // Build updated overlays with new override if not already present
+  const existingOverrides = config.overlays.overrides || [];
+  const isDuplicate = existingOverrides.some((existing) =>
+    overlaysEqual(existing, overlay),
+  );
+
+  if (isDuplicate) {
+    clack.log.info("Overlay already present; no changes made");
+    return;
+  }
+
+  const updatedOverrides = [...existingOverrides, overlay];
 
   // Patch config - only update overlays, preserve everything else
   await patchConfig(

@@ -11,6 +11,9 @@ import {
   isValidConfigKey,
   getExporterNames,
   isTeamModeActive,
+  normalizePath,
+  validateConfigSchema,
+  formatConfigValidationErrors,
 } from "@aligntrue/core";
 import type { AlignTrueConfig } from "@aligntrue/core";
 import {
@@ -426,6 +429,11 @@ async function configSet(
         parsedValue = Number(value);
     }
 
+    // Normalize path-like strings for known keys
+    if (key === "sync.edit_source" && typeof parsedValue === "string") {
+      parsedValue = normalizePath(parsedValue);
+    }
+
     const validator = CONFIG_VALIDATORS[key];
     if (validator) {
       const validationError = validator(parsedValue);
@@ -441,6 +449,34 @@ async function configSet(
 
     // Validate the config (skip for vendor keys which are always allowed)
     if (!key.startsWith("vendor.")) {
+      // Schema validation to catch unsupported keys before writing
+      const schemaResult = validateConfigSchema(config);
+      if (!schemaResult.valid) {
+        const formattedErrors = formatConfigValidationErrors(
+          schemaResult.errors,
+        );
+
+        // Preserve legacy phrases expected by integration tests and users
+        const legacyHints: string[] = [];
+        if (formattedErrors.includes("mode:")) {
+          legacyHints.push("Invalid mode");
+        }
+        if (
+          formattedErrors.includes("exporters:") &&
+          formattedErrors.includes("Expected type array")
+        ) {
+          legacyHints.push("exporters must be an array");
+        }
+
+        const legacyPrefix =
+          legacyHints.length > 0 ? `${legacyHints.join("\n")}\n` : "";
+
+        exitWithError(
+          1,
+          `${legacyPrefix}Invalid config:\n${formattedErrors}\n  See config.schema.json for full specification.`,
+        );
+      }
+
       try {
         await validateConfig(config as unknown as AlignTrueConfig);
       } catch (err) {

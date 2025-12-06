@@ -64,6 +64,7 @@ interface BackupArgs {
   help?: boolean;
   config?: string;
   yes?: boolean; // Non-interactive mode - skip confirmation prompts
+  latest?: boolean; // Restore most recent backup
 
   // Create subcommand
   notes?: string;
@@ -89,6 +90,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--timestamp",
     hasValue: true,
     description: "Restore specific backup by timestamp (restore subcommand)",
+  },
+  {
+    flag: "--latest",
+    hasValue: false,
+    description: "Restore the most recent backup (restore subcommand)",
   },
   {
     flag: "--dry-run",
@@ -132,6 +138,7 @@ Remote Backup Subcommands:
 Options:
   --notes <text>         Add notes to backup (create subcommand)
   --timestamp <id>       Restore specific backup by timestamp (restore subcommand)
+  --latest               Restore the most recent backup (restore subcommand)
   --dry-run              Preview changes without pushing (push subcommand)
   --force                Force push even if no changes detected (push subcommand)
   --config <path>        Path to config file
@@ -162,6 +169,9 @@ Examples:
 
   # Set up remote backup interactively
   aligntrue backup setup
+
+  # Restore the most recent backup quickly
+  aligntrue backup restore --latest --yes
 
 Learn more: https://aligntrue.ai/backup
 `;
@@ -363,10 +373,19 @@ async function handleRestore(
 
   // Parse --timestamp from argv manually if needed
   const timestampIndex = argv.indexOf("--timestamp");
+  const latestFlag =
+    (args.latest as boolean | undefined) || argv.includes("--latest");
   const toTimestamp =
     timestampIndex >= 0 && argv[timestampIndex + 1]
       ? argv[timestampIndex + 1]
       : args.timestamp;
+
+  if (latestFlag && toTimestamp) {
+    throw new ValidationError(
+      "Cannot use --latest with --timestamp",
+      "Choose one: --latest to restore most recent or --timestamp <id> for a specific backup",
+    );
+  }
 
   let targetBackup: BackupInfo | undefined;
 
@@ -378,6 +397,8 @@ async function handleRestore(
         "Run 'aligntrue backup list' to view available timestamps",
       );
     }
+  } else if (latestFlag) {
+    targetBackup = backups[0]; // Most recent
   } else {
     targetBackup = backups[0]; // Most recent
   }

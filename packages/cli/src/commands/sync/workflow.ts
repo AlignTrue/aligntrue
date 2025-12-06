@@ -2,7 +2,7 @@
  * Sync workflow execution - handles unidirectional sync from .aligntrue/rules/ to agents
  */
 
-import { existsSync, unlinkSync } from "fs";
+import { existsSync, readFileSync, unlinkSync } from "fs";
 import { join } from "path";
 import * as clack from "@clack/prompts";
 import { BackupManager, getExporterNames } from "@aligntrue/core";
@@ -266,12 +266,7 @@ export async function executeSyncWorkflow(
   }
 
   // Step 6: Update .gitignore if configured
-  if (
-    !options.dryRun &&
-    result.success &&
-    result.written &&
-    result.written.length > 0
-  ) {
+  if (!options.dryRun && result.success) {
     const gitMode = config.git?.mode || "ignore";
     const autoGitignore = config.git?.auto_gitignore || "auto";
 
@@ -279,12 +274,43 @@ export async function executeSyncWorkflow(
       try {
         const { GitIntegration } = await import("@aligntrue/core");
         const gitIntegration = new GitIntegration();
-        await gitIntegration.updateGitignore(
-          cwd,
-          result.written,
-          autoGitignore,
-          gitMode,
-        );
+        const managedMarker = "# START AlignTrue Generated Files";
+        const managedEndMarker = "# END AlignTrue Generated Files";
+        const gitignorePath = join(cwd, ".gitignore");
+
+        // If no files were written this run, we still may need to restore the managed block
+        const agentFilePatterns = getAgentFilePatterns(context);
+        // Always include exporter output patterns to ensure .gitignore covers
+        // generated files even if a particular run produced no writes (e.g. no diff)
+        const filesForIgnore = [
+          ...(agentFilePatterns ?? []),
+          ...(result.written ?? []),
+        ];
+
+        let hasManagedSection = false;
+        try {
+          const gitignoreContent = readFileSync(gitignorePath, "utf-8");
+          hasManagedSection =
+            gitignoreContent.includes(managedMarker) &&
+            gitignoreContent.includes(managedEndMarker);
+        } catch {
+          // Missing file counts as missing managed section
+          hasManagedSection = false;
+        }
+
+        const shouldUpdateGitignore =
+          (result.written && result.written.length > 0) ||
+          (gitMode === "ignore" &&
+            (!hasManagedSection || filesForIgnore.length > 0));
+
+        if (shouldUpdateGitignore) {
+          await gitIntegration.updateGitignore(
+            cwd,
+            filesForIgnore,
+            autoGitignore,
+            gitMode,
+          );
+        }
       } catch (_error) {
         // Silent failure on gitignore update - not critical
         if (options.verbose) {

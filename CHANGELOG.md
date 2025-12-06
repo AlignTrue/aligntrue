@@ -48,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Override removal now respects `--yes`/non-interactive runs and clarifies full-overlay deletion
+- Sync warns when rules disappear since the last successful run to catch accidental deletions
+- Backup restore accepts `--latest` for restoring the most recent snapshot and rejects conflicting flags
 - Sync now rejects invalid `--content-mode` values with exit code 2 and guidance
 - `aligntrue migrate` without a subcommand exits non-zero instead of silently showing help
 - `aligntrue remotes push`, `backup push`, and `sources split` fail fast in non-interactive/no-remote scenarios for CI-friendly gating

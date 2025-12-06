@@ -116,6 +116,39 @@ describe("backup command", () => {
       const content = readFileSync(join(aligntrueDir, "config.yaml"), "utf-8");
       expect(content).toBe("mode: solo");
     });
+
+    it("accepts --latest flag", async () => {
+      BackupManager.createBackup({ cwd: testDir, notes: "old" });
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      writeFileSync(join(aligntrueDir, "config.yaml"), "mode: team", "utf-8");
+      const newest = BackupManager.createBackup({
+        cwd: testDir,
+        notes: "newest",
+      });
+
+      await backupCommand(["restore", "--latest", "--yes"]);
+
+      const content = readFileSync(join(aligntrueDir, "config.yaml"), "utf-8");
+      expect(content).toBe("mode: team");
+
+      const backups = BackupManager.listBackups(testDir);
+      expect(backups[0]?.timestamp).toBe(newest.timestamp);
+    });
+
+    it("errors when --latest and --timestamp are both provided", async () => {
+      const backup1 = BackupManager.createBackup({
+        cwd: testDir,
+        notes: "old",
+      });
+      await expect(
+        backupCommand([
+          "restore",
+          "--latest",
+          "--timestamp",
+          backup1.timestamp,
+        ]),
+      ).rejects.toBeInstanceOf(ValidationError);
+    });
   });
 
   describe("cleanup subcommand", () => {

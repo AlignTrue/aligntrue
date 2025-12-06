@@ -105,15 +105,20 @@ export class BackupManager {
     const agentFiles: string[] = [];
     const includeAgentFiles = options.includeAgentFiles !== false;
 
-    if (includeAgentFiles && options.agentFilePatterns) {
+    const effectiveAgentPatterns =
+      includeAgentFiles && options.agentFilePatterns
+        ? Array.isArray(options.agentFilePatterns)
+          ? options.agentFilePatterns
+          : [options.agentFilePatterns]
+        : null;
+
+    if (includeAgentFiles && effectiveAgentPatterns) {
       // Create agent-files subdirectory in backup
       const agentFilesDir = join(backupDir, "agent-files");
       mkdirSync(agentFilesDir, { recursive: true });
 
       // Resolve patterns from agentFilePatterns
-      const patterns = Array.isArray(options.agentFilePatterns)
-        ? options.agentFilePatterns
-        : [options.agentFilePatterns];
+      const patterns = effectiveAgentPatterns;
 
       // Find all matching agent files
       const agentFilePaths = new Set<string>();
@@ -274,6 +279,8 @@ export class BackupManager {
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
+      // Skip internal storage directory for agent files
+      if (entry.name === "files") continue;
 
       const backupDir = join(backupsDir, entry.name);
       const manifestPath = join(backupDir, "manifest.json");

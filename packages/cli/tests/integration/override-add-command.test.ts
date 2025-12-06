@@ -150,6 +150,28 @@ describeSkipWindows("Override Add Command Integration", () => {
 
       expect(updatedConfig.overlays.overrides[0].set.priority).toBe(10);
     });
+
+    it("is idempotent when the same selector and operations are applied twice", async () => {
+      setupWorkspace();
+
+      const args = [
+        "--selector",
+        "rule[id=test-rule]",
+        "--set",
+        "severity=warn",
+      ];
+
+      await overrideAdd(args);
+      await overrideAdd(args);
+
+      const updatedConfig = yaml.parse(readFileSync(configPath(), "utf-8"));
+
+      expect(updatedConfig.overlays.overrides).toHaveLength(1);
+      expect(updatedConfig.overlays.overrides[0]).toMatchObject({
+        selector: "rule[id=test-rule]",
+        set: { severity: "warn" },
+      });
+    });
   });
 
   describe("Multiple Overrides", () => {
@@ -210,6 +232,16 @@ describeSkipWindows("Override Add Command Integration", () => {
           ]),
         1,
         "Selector did not match the current rules",
+      );
+    });
+
+    it("guides user to --selector when provided as positional", async () => {
+      setupWorkspace();
+
+      await expectAlignTrueExit(
+        () => overrideAdd(["rule[id=test-rule]", "--set", "severity=warn"]),
+        1,
+        "Missing required --selector",
       );
     });
   });

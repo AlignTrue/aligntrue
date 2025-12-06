@@ -13,6 +13,7 @@ import {
   detectStaleExports,
   cleanStaleExports,
   type SourceRuleInfo,
+  getSourceRuleHashes,
 } from "@aligntrue/core/sync";
 import { getExporterNames } from "@aligntrue/core";
 import type { SyncContext } from "./context-builder.js";
@@ -20,6 +21,47 @@ import type { SyncOptions } from "./options.js";
 import type { SyncResult } from "./workflow.js";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { AlignTrueError } from "../../utils/error-types.js";
+
+async function collectCurrentRuleHashes(cwd: string): Promise<{
+  rules: Record<string, string>;
+  configHash: string | null;
+}> {
+  const { globSync } = await import("glob");
+  const { readFileSync, existsSync: fsExists } = await import("fs");
+  const { join: pathJoin } = await import("path");
+
+  const sourceRulesDir = pathJoin(cwd, ".aligntrue", "rules");
+  const rules: Record<string, string> = {};
+  let configHash: string | null = null;
+
+  if (fsExists(sourceRulesDir)) {
+    const ruleFiles = globSync("**/*.md", {
+      cwd: sourceRulesDir,
+      absolute: true,
+    });
+
+    for (const file of ruleFiles) {
+      try {
+        const content = readFileSync(file, "utf-8");
+        const hash = computeHash(content);
+        const relPath = file.replace(cwd + "/", "");
+        rules[relPath] = hash;
+      } catch {
+        // Ignore read errors; will re-evaluate on next sync
+      }
+    }
+  }
+
+  const configPath = pathJoin(cwd, ".aligntrue", "config.yaml");
+  try {
+    const configContent = readFileSync(configPath, "utf-8");
+    configHash = computeHash(configContent);
+  } catch {
+    configHash = null;
+  }
+
+  return { rules, configHash };
+}
 
 /**
  * Handle and display sync results
@@ -30,6 +72,11 @@ export async function handleSyncResult(
   options: SyncOptions,
 ): Promise<void> {
   const { cwd, registry } = context;
+  const previousRuleHashes = getSourceRuleHashes(cwd);
+  let currentRuleSnapshot: {
+    rules: Record<string, string>;
+    configHash: string | null;
+  } | null = null;
 
   if (!result.success) {
     const warnings = result.warnings || [];
@@ -64,6 +111,35 @@ export async function handleSyncResult(
   // Show provenance in dry-run
   if (options.dryRun && result.auditTrail) {
     displayProvenance(result.auditTrail);
+  }
+
+  // Warn if rules disappeared since last successful sync
+  if (previousRuleHashes) {
+    const snapshot = await collectCurrentRuleHashes(cwd);
+    currentRuleSnapshot = snapshot;
+    const removedRules = Object.keys(previousRuleHashes.rules).filter(
+      (path) => !(path in snapshot.rules),
+    );
+
+    if (removedRules.length > 0) {
+      const previewCount = 5;
+      const preview = removedRules
+        .slice(0, previewCount)
+        .map((p) => relative(cwd, p))
+        .join(", ");
+      const extra =
+        removedRules.length > previewCount
+          ? ` (+${removedRules.length - previewCount} more)`
+          : "";
+      const warning = [
+        "Rules removed since last sync:",
+        `  ${preview}${extra}`,
+        "Restore from backup if this was not intentional (aligntrue backup restore --list).",
+      ].join("\n");
+
+      result.warnings = [...(result.warnings ?? []), warning];
+      clack.log.warn(warning);
+    }
   }
 
   // Group all warnings at the end
@@ -263,45 +339,11 @@ export async function handleSyncResult(
 
       // Store source rule hashes for sync detection
       // This enables reliable change detection in checkIfSyncNeeded()
-      const { readFileSync, existsSync: fsExists } = await import("fs");
-      const { join: pathJoin } = await import("path");
-
       try {
-        const { globSync } = await import("glob");
-        const sourceRulesDir = pathJoin(cwd, ".aligntrue", "rules");
-        if (fsExists(sourceRulesDir)) {
-          const ruleFiles = globSync("**/*.md", {
-            cwd: sourceRulesDir,
-            absolute: true,
-          });
-          const currentRules: Record<string, string> = {};
-
-          // Compute hash for each rule file
-          for (const file of ruleFiles) {
-            try {
-              const content = readFileSync(file, "utf-8");
-              const hash = computeHash(content);
-              const relPath = file.replace(cwd + "/", "");
-              currentRules[relPath] = hash;
-            } catch {
-              // Ignore read errors, hashing will be attempted again on next sync
-            }
-          }
-
-          // Compute config hash
-          const configPath =
-            context.configPath || pathJoin(cwd, ".aligntrue", "config.yaml");
-          let configHash = "";
-          try {
-            const configContent = readFileSync(configPath, "utf-8");
-            configHash = computeHash(configContent);
-          } catch {
-            // Ignore read errors
-          }
-
-          if (configHash) {
-            storeSourceRuleHashes(cwd, currentRules, configHash);
-          }
+        const snapshot =
+          currentRuleSnapshot ?? (await collectCurrentRuleHashes(cwd));
+        if (snapshot.configHash) {
+          storeSourceRuleHashes(cwd, snapshot.rules, snapshot.configHash);
         }
 
         // Store export file hashes for drift detection of generated agent files
@@ -310,7 +352,7 @@ export async function handleSyncResult(
           const exportHashes: Record<string, string> = {};
 
           for (const file of uniqueWritten) {
-            if (!fsExists(file)) {
+            if (!existsSync(file)) {
               continue;
             }
 
@@ -378,6 +420,13 @@ export async function handleSyncResult(
     // Build source rule info with nested_location for proper stale detection
     // This ensures exports at wrong locations (e.g., root when rule has nested_location) are flagged
     const sourceRules: SourceRuleInfo[] = [];
+    const sourceRuleKeys = new Set<string>();
+    const addSourceRule = (name: string, nestedLocation?: string) => {
+      const key = `${name}::${nestedLocation ?? ""}`;
+      if (sourceRuleKeys.has(key)) return;
+      sourceRules.push({ name, ...(nestedLocation ? { nestedLocation } : {}) });
+      sourceRuleKeys.add(key);
+    };
 
     // Load rule files to get frontmatter with nested_location
     const rulesDir = join(cwd, ".aligntrue", "rules");
@@ -395,30 +444,44 @@ export async function handleSyncResult(
           // Use filename without extension as the rule name
           const name = rule.filename.replace(/\.md$/, "");
           const nestedLocation = rule.frontmatter.nested_location;
-          sourceRules.push({
+          addSourceRule(
             name,
-            nestedLocation:
-              typeof nestedLocation === "string" ? nestedLocation : undefined,
-          });
+            typeof nestedLocation === "string" ? nestedLocation : undefined,
+          );
         }
       } catch (err) {
         // Fall back to bundle result if rule files can't be loaded
         if (options.verbose) {
           clack.log.warn(`Failed to load rules for stale detection: ${err}`);
         }
-        for (const section of context.bundleResult.align.sections) {
-          const typedSection = section as {
-            fingerprint?: string;
-            heading?: string;
-          };
-          const name =
-            typedSection.fingerprint ||
-            typedSection.heading?.replace(/^#+\s*/, "") ||
-            "unknown";
-          if (name !== "unknown") {
-            sourceRules.push({ name });
-          }
+      }
+    }
+
+    // Always include rules from the merged bundle so connected sources are considered
+    if (context.bundleResult.align?.sections) {
+      for (const section of context.bundleResult.align.sections) {
+        const typedSection = section as {
+          fingerprint?: string;
+          heading?: string;
+          vendor?: { aligntrue?: { frontmatter?: Record<string, unknown> } };
+        };
+        const name =
+          typedSection.fingerprint ||
+          typedSection.heading?.replace(/^#+\s*/, "") ||
+          "unknown";
+        if (name === "unknown") continue;
+
+        const vendorFrontmatter = typedSection.vendor?.aligntrue?.frontmatter;
+        if (vendorFrontmatter && vendorFrontmatter["enabled"] === false) {
+          continue;
         }
+
+        const nestedLocation =
+          typedSection.vendor?.aligntrue?.frontmatter?.["nested_location"];
+        addSourceRule(
+          name,
+          typeof nestedLocation === "string" ? nestedLocation : undefined,
+        );
       }
     }
 
