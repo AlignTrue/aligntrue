@@ -768,7 +768,6 @@ aligntrue check --ci
 
 ### Other commands
 
-- `aligntrue import` - Import rules from agent configs (coming soon)
 - `aligntrue md` - Markdown validation and formatting (Step 4 ✓)
 - `aligntrue migrate` - Migration status (Step 24 ✓)
 

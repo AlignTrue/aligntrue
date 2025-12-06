@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Sync no longer tracks agent export file hashes or prompts on "dirty exports"; sync simply overwrites after creating safety backups, relying on rule/config hashes and backups for protection
+- Drift command no longer blocks when git conflicts exist; lockfile bundle hash comparison now runs regardless of working tree state
+- Backup CLI is now local-only (create/list/restore/cleanup); remote push/setup/status subcommands were removed to avoid overlap with `aligntrue remotes`
 - **Plugs and overlays simplified (experimental)** - Plugs now take fills only from `.aligntrue/config.yaml`, deprecated `file`/`url` formats are treated as `text`, unresolved required plugs fail sync by default, and the plugs CLI is reduced to a single status view plus `set`/`unset`. Overlays now support only `rule[id=...]` and `sections[index]` selectors, use `set: { key: null }` for removals, fail on conflicts by default (opt-in flag to allow), and remove unused merge/patch code. CLI commands collapsed to `override` (status/diff), `override add`, and `override selectors`.
 - **Team mode simplified** - Removed `lockfile.mode` soft/strict options; lockfile is now enabled via `modules.lockfile: true` and drift enforcement happens via `aligntrue drift --gates` in CI. Lockfile generation now runs once after exports and respects `--dry-run`
 - **Git sources in team mode warn instead of block** - Sync now continues with cached git sources when updates are available; add `--strict-sources` to block until updates are approved
@@ -29,9 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Internal: `aligntrue check` modularized** - Schema, lockfile, and overlay validation now live in dedicated helpers with unit coverage for easier maintenance
 - **Team sync prompts for join when personal config is missing** - `aligntrue sync` now detects team repos without a personal config and offers to run `aligntrue team join` (with non-interactive hint)
 - **Git mode switching cleans .gitignore** - Switching to `commit` or `branch` mode now removes AlignTrue managed ignore entries so generated files are tracked
+- Removed stale TODO/stub references from docs/READMEs and deleted unused sync prompts stub file
 
 ### Removed
 
+- Legacy agent export hash tracking file `.agent-export-hashes.json` and associated drift detection code (backups and lockfile hash already cover safety)
+- Backup command remote subcommands (`backup push/status/setup`) removed; use `aligntrue remotes` for remote operations
 - **BREAKING: Severity remapping and `.aligntrue.team.yaml`** - Removed remap config, APIs, and tests. Team config is solely `.aligntrue/config.team.yaml`
 - **BREAKING: Bundle module and agent export hash tracking** - Removed `modules.bundle`, `.agent-export-hashes.json`, and agent-file drift category. Drift now relies on lockfile bundle hash; per-agent export drift detection was redundant with backups and sync overwrite flow
 - **BREAKING: Watch mode command (`aligntrue watch`)** - Removed vestigial feature from bidirectional sync era. Rules change infrequently, making continuous file watching unnecessary. Replaced with pre-commit hook guidance and editor integration patterns in [CI/CD integration guide](/docs/01-guides/07-ci-cd-integration). Schema fields `watch_enabled`, `watch_debounce`, `watch_files` removed from config
@@ -54,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backup restore accepts `--latest` for restoring the most recent snapshot and rejects conflicting flags
 - Sync now rejects invalid `--content-mode` values with exit code 2 and guidance
 - `aligntrue migrate` without a subcommand exits non-zero instead of silently showing help
-- `aligntrue remotes push`, `backup push`, and `sources split` fail fast in non-interactive/no-remote scenarios for CI-friendly gating
+- `aligntrue remotes push` and `sources split` fail fast in non-interactive/no-remote scenarios for CI-friendly gating
 - **CRITICAL: Config data loss when adding remotes or sources** - Fixed destructive bug where `aligntrue add remote` and other CLI commands would delete user configuration (sources, exporters, plugs, etc.) when updating config. The old `saveMinimalConfig` function incorrectly dropped user values that matched defaults. Replaced with `patchConfig` which surgically updates only the specified keys, preserving all other user configuration exactly as written
 - **`enabled: false` frontmatter now prevents rule export** - Rules with `enabled: false` in frontmatter are now correctly excluded from all agent exports. Previously the field existed in schema but was not enforced
 - **Disabled rules flagged as stale** - When a rule is disabled, existing multi-file exports (e.g., `.cursor/rules/*.mdc`) are now reported as stale so they can be cleaned with `aligntrue sync --clean`

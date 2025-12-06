@@ -65,11 +65,11 @@ export class MyExporter implements ExporterPlugin {
 - `ExportResult` - Files written, hash, fidelity notes
 - `ExporterManifest` - Declarative manifest.json metadata
 
-### Future Plugin Types
+### Supported Plugin Types
 
-- **Importers:** Convert agent-specific formats back to IR (stubbed)
-- **Sources:** Fetch rules from git, catalog, URLs (git sources implemented)
-- **MCP Servers:** Model Context Protocol integrations (implemented)
+- **Exporters:** Convert IR to agent-ready formats
+- **MCP Servers:** Model Context Protocol integrations
+- **Scopes/overlays helpers:** Shared contracts used by core/CLI
 
 ## Usage
 

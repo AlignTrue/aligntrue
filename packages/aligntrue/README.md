@@ -10,7 +10,7 @@ This is a convenience package that provides the `aligntrue` and `at` command-lin
 # Alpha release (current)
 npm install -g aligntrue@next
 
-# Stable release (coming soon)
+# Stable release (when published)
 npm install -g aligntrue
 ```
 
