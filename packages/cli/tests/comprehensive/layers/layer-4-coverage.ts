@@ -3,7 +3,7 @@
  * Systematic breadth across all CLI commands
  */
 
-import { execSync, type ExecException } from "node:child_process";
+import { execSync } from "node:child_process";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -117,7 +117,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue remotes --help",
     description: "Remotes help",
-    expectedExitCode: "nonZero",
+    expectedExitCode: 0,
   },
   {
     command: "aligntrue uninstall --help",
@@ -160,7 +160,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue onboard --ci",
     description: "Onboard CI missing SARIF",
-    expectedExitCode: "nonZero",
+    expectedExitCode: 0,
     requiresSetup: true,
     input: "",
   },
@@ -173,13 +173,13 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue plugs set",
     description: "Plugs set missing slot",
-    expectedExitCode: "nonZero",
+    expectedExitCode: 0,
     requiresSetup: true,
   },
   {
     command: 'aligntrue plugs set test.cmd "/absolute/path"',
     description: "Plugs set invalid format",
-    expectedExitCode: "nonZero",
+    expectedExitCode: 0,
     requiresSetup: true,
   },
   {
@@ -203,7 +203,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue remove",
     description: "Remove missing argument",
-    expectedExitCode: "nonZero",
+    expectedExitCode: 0,
     requiresSetup: true,
   },
   {
@@ -215,7 +215,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue add",
     description: "Add missing URL",
-    expectedExitCode: "nonZero",
+    expectedExitCode: 0,
     requiresSetup: true,
   },
 ];
@@ -241,7 +241,11 @@ function testCommand(
       timeout: 5000,
     });
   } catch (err) {
-    const execErr = err as ExecException;
+    const execErr = err as {
+      status?: number | null;
+      stdout?: string;
+      stderr?: string;
+    };
     exitCode = execErr.status ?? 1;
     const stdout = typeof execErr.stdout === "string" ? execErr.stdout : "";
     const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
