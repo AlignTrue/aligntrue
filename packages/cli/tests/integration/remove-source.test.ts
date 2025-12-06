@@ -27,6 +27,7 @@ describe("remove command", () => {
   let project: TestProjectContext;
   let exitSpy: ReturnType<typeof vi.spyOn>;
   let errorSpy: ReturnType<typeof vi.spyOn>;
+  let originalCwd: string;
 
   beforeEach(() => {
     project = setupTestProject({
@@ -41,6 +42,7 @@ describe("remove command", () => {
         "  - agents",
       ].join("\n"),
     });
+    originalCwd = process.cwd();
     process.chdir(project.projectDir);
 
     exitSpy = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
@@ -54,6 +56,7 @@ describe("remove command", () => {
     exitSpy.mockRestore();
     errorSpy.mockRestore();
     vi.restoreAllMocks();
+    process.chdir(originalCwd);
     await project.cleanup();
   });
 

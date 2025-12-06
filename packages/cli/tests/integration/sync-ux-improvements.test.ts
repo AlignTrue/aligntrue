@@ -14,6 +14,7 @@ vi.mock("@clack/prompts");
 
 let TEST_DIR: string;
 let testProjectContext: TestProjectContext;
+let originalCwd: string;
 
 // Skip on Windows due to file locking issues
 const describeSkipWindows =
@@ -25,6 +26,7 @@ beforeEach(async () => {
   // Create fresh test directory
   testProjectContext = await setupTestProject();
   TEST_DIR = testProjectContext.projectDir;
+  originalCwd = process.cwd();
 
   // Change to test directory
   process.chdir(TEST_DIR);
@@ -44,6 +46,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  process.chdir(originalCwd);
   // Cleanup
   await testProjectContext.cleanup();
 });
@@ -52,6 +55,7 @@ describeSkipWindows("Sync UX Improvements", () => {
   it("skips sync when nothing has changed since last sync", async () => {
     // 1. Setup valid project state - use skipFiles to start fresh
     const testCtx = await setupTestProject({ skipFiles: true });
+    const priorCwd = process.cwd();
     process.chdir(testCtx.projectDir);
 
     const config = { exporters: ["agents"] };
@@ -122,6 +126,7 @@ describeSkipWindows("Sync UX Improvements", () => {
     expect(clack.outro).toHaveBeenCalledWith("✓ No changes detected");
 
     // Cleanup
+    process.chdir(priorCwd);
     await testCtx.cleanup();
   });
 
@@ -260,6 +265,7 @@ describeSkipWindows("Sync UX Improvements", () => {
 
   it("shows concise missing-config error and hint", async () => {
     const bareProject = setupTestProject({ skipFiles: true });
+    const priorCwd = process.cwd();
     process.chdir(bareProject.projectDir);
 
     await expect(sync([])).rejects.toMatchObject({
@@ -267,12 +273,13 @@ describeSkipWindows("Sync UX Improvements", () => {
       hint: expect.stringContaining("aligntrue init"),
     });
 
+    process.chdir(priorCwd);
     await bareProject.cleanup();
-    process.chdir(TEST_DIR);
   });
 
   it("includes backup restore hint when config is missing but backups exist", async () => {
     const project = await setupTestProject({ skipFiles: true });
+    const priorCwd = process.cwd();
     process.chdir(project.projectDir);
 
     // Create minimal config + rules to allow a backup, then delete config
@@ -292,12 +299,13 @@ describeSkipWindows("Sync UX Improvements", () => {
       hint: expect.stringContaining("backup restore"),
     });
 
+    process.chdir(priorCwd);
     await project.cleanup();
-    process.chdir(TEST_DIR);
   });
 
   it("recreates managed .gitignore block when removed", async () => {
     const project = setupTestProject();
+    const priorCwd = process.cwd();
     process.chdir(project.projectDir);
 
     await sync([]);
@@ -312,6 +320,7 @@ describeSkipWindows("Sync UX Improvements", () => {
     expect(gitignoreContent).toContain(".aligntrue/.backups/");
     expect(gitignoreContent).toContain("AGENTS.md");
 
+    process.chdir(priorCwd);
     await project.cleanup();
   });
 

@@ -13,9 +13,11 @@ describe("onboard --ci validation", () => {
   let project: TestProjectContext;
   let exitSpy: ReturnType<typeof vi.spyOn>;
   let errorSpy: ReturnType<typeof vi.spyOn>;
+  let originalCwd: string;
 
   beforeEach(() => {
     project = setupTestProject();
+    originalCwd = process.cwd();
     process.chdir(project.projectDir);
 
     exitSpy = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
@@ -41,6 +43,7 @@ describe("onboard --ci validation", () => {
   afterEach(async () => {
     exitSpy.mockRestore();
     errorSpy.mockRestore();
+    process.chdir(originalCwd);
     await project.cleanup();
   });
 

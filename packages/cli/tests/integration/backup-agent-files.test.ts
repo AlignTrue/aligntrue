@@ -24,6 +24,7 @@ const describeSkipWindows =
 
 let TEST_DIR: string;
 let testProjectContext: TestProjectContext;
+let originalCwd: string;
 
 function listBackups(dir: string): string[] {
   return readdirSync(join(dir, ".aligntrue", ".backups"))
@@ -38,6 +39,7 @@ describeSkipWindows("Backup includes agent files", () => {
 
     testProjectContext = await setupTestProject();
     TEST_DIR = testProjectContext.projectDir;
+    originalCwd = process.cwd();
     process.chdir(TEST_DIR);
 
     vi.spyOn(process, "exit").mockImplementation(((
@@ -56,6 +58,7 @@ describeSkipWindows("Backup includes agent files", () => {
   });
 
   afterEach(async () => {
+    process.chdir(originalCwd);
     await testProjectContext.cleanup();
   });
 
