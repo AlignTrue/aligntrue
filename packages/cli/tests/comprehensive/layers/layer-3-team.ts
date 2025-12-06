@@ -11,6 +11,8 @@ import {
   rmSync,
   mkdirSync,
   readFileSync,
+  openSync,
+  closeSync,
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -131,18 +133,23 @@ const scenarios: TeamScenario[] = [
         // Accept legacy or modern lockfile path
         const lockPath = join(userA, ".aligntrue/lock.json");
         const legacyLockPath = join(userA, ".aligntrue.lock.json");
-        if (!existsSync(lockPath) && !existsSync(legacyLockPath)) {
-          // Create minimal lockfile to proceed (fail safely if created elsewhere)
+        if (!existsSync(legacyLockPath)) {
+          // Create minimal lockfile using an exclusive descriptor to avoid TOCTOU races
           try {
-            writeFileSync(
-              lockPath,
-              JSON.stringify(
-                { version: "1", bundle_hash: "placeholder" },
-                null,
-                2,
-              ),
-              { encoding: "utf-8", flag: "wx", mode: 0o600 },
-            );
+            const fd = openSync(lockPath, "wx", 0o600);
+            try {
+              writeFileSync(
+                fd,
+                JSON.stringify(
+                  { version: "1", bundle_hash: "placeholder" },
+                  null,
+                  2,
+                ),
+                { encoding: "utf-8" },
+              );
+            } finally {
+              closeSync(fd);
+            }
           } catch (err) {
             const nodeErr = err as NodeJS.ErrnoException;
             if (nodeErr.code !== "EEXIST") throw err;

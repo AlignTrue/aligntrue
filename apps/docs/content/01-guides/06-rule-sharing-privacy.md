@@ -385,6 +385,20 @@ remotes:
 
 - Useful for creating thematic groups (e.g., all TypeScript rules)
 
+Routing recap (team mode):
+
+| Scope      | Default push       | Lockfile | Typical config file               |
+| ---------- | ------------------ | -------- | --------------------------------- |
+| `team`     | Stays in main repo | Included | Team                              |
+| `shared`   | `remotes.shared`   | Included | Team (or personal if you publish) |
+| `personal` | `remotes.personal` | Excluded | Personal                          |
+
+FAQs:
+
+- **Can one rule be both personal and shared?** No. Each rule has one `scope`. Use `remotes.custom[]` for extra destinations.
+- **Where should remotes live?** `remotes.shared` usually in `config.team.yaml`; `remotes.personal` in your personal `config.yaml`. Both files can add `remotes.custom` and they concatenate.
+- **Do custom remotes replace scope routing?** No. Custom remotes are additive; scope routing still happens.
+
 ## Using shared rules (for consumers)
 
 ### Option 1: Link as a source (get updates)

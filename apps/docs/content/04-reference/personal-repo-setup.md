@@ -142,6 +142,13 @@ remotes:
 
 Custom remotes are additive - files can go to multiple destinations.
 
+### Team mode placement
+
+- `remotes.personal` belongs in your personal `config.yaml` (gitignored).
+- `remotes.shared` usually belongs in `config.team.yaml` (team-owned); you can set it personally if you publish a shared pack yourself.
+- `remotes.custom[]` concatenate from both files. Use unique `id` values to avoid confusion.
+- Each rule has one `scope`. Use custom remotes for extra destinations instead of multiple scopes.
+
 ## Step 4: Sync and publish
 
 ```bash

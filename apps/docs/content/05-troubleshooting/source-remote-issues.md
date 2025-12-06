@@ -138,6 +138,11 @@ remotes:
   - `shared` - Rules with `scope: shared` push here
 - `branch` defaults to `main`; set it if the backup repo uses another branch.
 
+**Team mode notes:**
+
+- One scope per rule. To push to multiple destinations, keep one scope and add `remotes.custom[]` entries (pattern-based, additive).
+- `remotes.shared` typically lives in `config.team.yaml`; `remotes.personal` lives in personal `config.yaml`. `remotes.custom` concatenate from both files.
+
 ### Invalid remotes configuration
 
 **Error:**
