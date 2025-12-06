@@ -9,7 +9,6 @@ import { computeHash } from "@aligntrue/schema";
 import {
   updateLastSyncTimestamp,
   storeSourceRuleHashes,
-  storeExportFileHashes,
   detectStaleExports,
   cleanStaleExports,
   type SourceRuleInfo,
@@ -344,35 +343,6 @@ export async function handleSyncResult(
           currentRuleSnapshot ?? (await collectCurrentRuleHashes(cwd));
         if (snapshot.configHash) {
           storeSourceRuleHashes(cwd, snapshot.rules, snapshot.configHash);
-        }
-
-        // Store export file hashes for drift detection of generated agent files
-        if (result.written && result.written.length > 0) {
-          const uniqueWritten = Array.from(new Set(result.written));
-          const exportHashes: Record<string, string> = {};
-
-          for (const file of uniqueWritten) {
-            if (!existsSync(file)) {
-              continue;
-            }
-
-            // Only track files within the workspace (skip temp/outside paths)
-            const relPath = relative(cwd, file);
-            if (relPath.startsWith("..")) {
-              continue;
-            }
-
-            try {
-              const content = readFileSync(file, "utf-8");
-              exportHashes[relPath] = computeHash(content);
-            } catch {
-              // Ignore read errors; hashes will refresh on next successful sync
-            }
-          }
-
-          if (Object.keys(exportHashes).length > 0) {
-            storeExportFileHashes(cwd, exportHashes);
-          }
         }
       } catch (err) {
         // Log warning but don't fail sync

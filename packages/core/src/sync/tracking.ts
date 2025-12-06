@@ -129,12 +129,6 @@ export interface SourceRuleHashes {
 /**
  * Stored export file hashes for drift detection of generated agent files
  */
-export interface ExportFileHashes {
-  version: "1";
-  files: Record<string, string>; // relative path -> SHA-256 hash
-  updated_at: number;
-}
-
 /**
  * Get stored source rule hashes
  * @param cwd - Workspace root directory
@@ -181,64 +175,6 @@ export function storeSourceRuleHashes(
     writeFileSync(hashFile, JSON.stringify(hashes, null, 2), "utf-8");
   } catch (err) {
     console.warn(`Failed to save source rule hashes: ${err}`);
-  }
-}
-
-/**
- * Get stored export file hashes
- * Used to detect manual edits to generated agent files
- */
-export function getExportFileHashes(cwd: string): ExportFileHashes | null {
-  const hashFile = join(cwd, ".aligntrue", ".agent-export-hashes.json");
-
-  if (!existsSync(hashFile)) {
-    return null;
-  }
-
-  try {
-    const content = readFileSync(hashFile, "utf-8");
-    const parsed = JSON.parse(content) as ExportFileHashes & {
-      exports?: Record<string, string>;
-    };
-
-    // Backward compatibility: older versions stored hashes under "exports"
-    if (!parsed.files && parsed.exports) {
-      return {
-        version: parsed.version || "1",
-        files: parsed.exports,
-        updated_at: parsed.updated_at || Date.now(),
-      };
-    }
-
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Store export file hashes after successful sync
- * @param cwd - Workspace root directory
- * @param files - Map of relative file paths to content hashes
- */
-export function storeExportFileHashes(
-  cwd: string,
-  files: Record<string, string>,
-): void {
-  const hashFile = join(cwd, ".aligntrue", ".agent-export-hashes.json");
-
-  const hashes: ExportFileHashes = {
-    version: "1",
-    files,
-    updated_at: Date.now(),
-  };
-
-  try {
-    const dir = dirname(hashFile);
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(hashFile, JSON.stringify(hashes, null, 2), "utf-8");
-  } catch (err) {
-    console.warn(`Failed to save export file hashes: ${err}`);
   }
 }
 

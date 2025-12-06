@@ -5,7 +5,7 @@ description: "Get AlignTrue running in 60 seconds. Auto-detect agents and sync y
 
 # Quickstart guide
 
-Get AlignTrue running in under 60 seconds with three commands.
+Get AlignTrue running in under 60 seconds with two commands.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ npm install -g aligntrue
 
 **Alternative:** Use npx for one-off commands without installing: `npx aligntrue init`
 
-## Quick start (3 commands)
+## Quick start (2 commands)
 
 ### 1. Initialize
 
@@ -60,19 +60,7 @@ If no files are found, you'll get a fresh `AGENTS.md` starter. After import, it 
 
 **Want to start with external rules?** Use `aligntrue init --source <git-url>` to import from GitHub, GitLab, SSH URLs, or local paths. See [Working with external sources](/docs/01-guides/04-external-sources) for all supported source formats.
 
-### 2. Sync to your agents
-
-```bash
-aligntrue sync
-```
-
-This syncs to all your detected agents in their native formats:
-
-- `.cursor/rules/*.mdc` (if Cursor detected - one file per rule)
-- `AGENTS.md` (universal format for Copilot, Claude, Aider, etc.)
-- `.vscode/mcp.json` (if VS Code MCP detected)
-
-### 3. Customize your rules
+### 2. Customize your rules
 
 Edit rules in `.aligntrue/rules/`. Create `.md` files for your rule categories:
 

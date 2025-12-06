@@ -93,18 +93,6 @@ describeSkipWindows("Init Command Integration", () => {
       expect(existsSync(cursorPath)).toBe(false);
     });
 
-    // Skip: Init now uses both agents and cursor by default for new projects
-    // This test needs to be updated for new default behavior
-    it.skip("uses default exporters when none specified", async () => {
-      await init(["--yes"]);
-
-      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
-      const configContent = readFileSync(configPath, "utf-8");
-      const config = yaml.parse(configContent);
-
-      expect(config.exporters).toEqual(["agents"]);
-    });
-
     it("respects --exporters flag", async () => {
       await init(["--yes", "--exporters", "cursor,agents"]);
 
@@ -180,20 +168,6 @@ describeSkipWindows("Init Command Integration", () => {
       await init(["--yes", "--exporters", "cursor"]);
 
       expect(existsSync(join(TEST_DIR, ".aligntrue"))).toBe(true);
-    });
-  });
-
-  // Skip: sync config is no longer set during init in the new architecture
-  describe.skip("Workflow Mode Configuration", () => {
-    it("configures ir_source workflow for fresh start", async () => {
-      await init(["--yes"]);
-
-      const configPath = join(TEST_DIR, ".aligntrue", "config.yaml");
-      const configContent = readFileSync(configPath, "utf-8");
-      const config = yaml.parse(configContent);
-
-      // sync settings are not set during init (handled by workflow detection later)
-      expect(config.sync).toBeDefined();
     });
   });
 
