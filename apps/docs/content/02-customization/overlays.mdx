@@ -5,9 +5,22 @@ description: Fork-safe customization of upstream rules - change severity, adjust
 
 # Overlays guide
 
+<Callout type="warning">
+  **Experimental feature.** Overlays are functional but under active
+  development. APIs may change. Most solo developers can skip this feature
+  entirely.
+</Callout>
+
 <Callout type="info">
   **Solo developer?** You can skip this page unless you're using external rule
   aligns. Overlays are for advanced customization of third-party rules.
+</Callout>
+
+<Callout type="warning">
+  Supported selectors: `rule[id=...]` and `sections[index]`. Property/heading
+  selectors are deprecated. Use `set: { key: null }` to remove properties
+  (`remove` is deprecated). Overlay conflicts fail by default; use
+  `--allow-overlay-conflicts` to allow last-writer-wins.
 </Callout>
 
 Overlays let you customize third-party aligns without forking. Change severity, add check inputs, or remove autofix while preserving upstream updates.

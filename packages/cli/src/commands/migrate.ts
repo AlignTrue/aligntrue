@@ -3,12 +3,7 @@
  */
 
 import * as clack from "@clack/prompts";
-import {
-  type AlignTrueConfig,
-  type RulerConfig,
-  getAlignTruePaths,
-  isLegacyTeamConfig,
-} from "@aligntrue/core";
+import { type AlignTrueConfig, type RulerConfig } from "@aligntrue/core";
 import { isTTY } from "../utils/tty-helper.js";
 import {
   parseCommonArgs,
@@ -16,7 +11,6 @@ import {
   exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
-import { addToGitignore } from "../utils/gitignore-helpers.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -43,18 +37,12 @@ export async function migrate(args: string[]): Promise<void> {
       description: "Migrate from other tools or upgrade config formats",
       usage: "aligntrue migrate <subcommand> [options]",
       args: ARG_DEFINITIONS,
-      examples: [
-        "aligntrue migrate config",
-        "aligntrue migrate config --dry-run",
-        "aligntrue migrate ruler",
-      ],
+      examples: ["aligntrue migrate ruler"],
       notes: [
         "Subcommands:",
-        "  config - Split legacy team config into personal/team files",
         "  ruler  - Migrate from Ruler to AlignTrue",
         "",
-        "The 'config' migration is needed if you have mode: team in config.yaml",
-        "from before the two-file config system was introduced.",
+        "The 'ruler' migration converts a Ruler project into AlignTrue format.",
       ],
     });
     return;
@@ -66,22 +54,16 @@ export async function migrate(args: string[]): Promise<void> {
       description: "Migrate from other tools or upgrade config formats",
       usage: "aligntrue migrate <subcommand> [options]",
       args: ARG_DEFINITIONS,
-      examples: [
-        "aligntrue migrate config",
-        "aligntrue migrate config --dry-run",
-        "aligntrue migrate ruler",
-      ],
+      examples: ["aligntrue migrate ruler"],
       notes: [
         "Subcommands:",
-        "  config - Split legacy team config into personal/team files",
         "  ruler  - Migrate from Ruler to AlignTrue",
         "",
-        "The 'config' migration is needed if you have mode: team in config.yaml",
-        "from before the two-file config system was introduced.",
+        "The 'ruler' migration converts a Ruler project into AlignTrue format.",
       ],
     });
     exitWithError(2, "Missing subcommand for migrate", {
-      hint: "Use one of: config, ruler",
+      hint: "Use: ruler",
       code: "MISSING_MIGRATE_SUBCOMMAND",
     });
   }
@@ -90,9 +72,6 @@ export async function migrate(args: string[]): Promise<void> {
   const cwd = process.cwd();
 
   switch (subcommand) {
-    case "config":
-      await migrateConfig(cwd, parsed.flags);
-      break;
     case "ruler":
       await migrateRuler(cwd, parsed.flags);
       break;
@@ -103,175 +82,6 @@ export async function migrate(args: string[]): Promise<void> {
         hint: "Run 'aligntrue migrate --help' for usage",
       });
   }
-}
-
-/**
- * Migrate legacy team config to two-file config system
- *
- * Splits config.yaml into:
- * - config.yaml (personal, gitignored)
- * - config.team.yaml (team, committed)
- */
-async function migrateConfig(
-  cwd: string,
-  flags: MigrationFlags,
-): Promise<void> {
-  const { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } =
-    await import("fs");
-  const { dirname } = await import("path");
-  const { parse: parseYaml, stringify: stringifyYaml } = await import("yaml");
-
-  const dryRun = flags["dry-run"] || false;
-  const yes = flags["yes"] || false;
-  const interactive = !yes && isTTY();
-
-  const paths = getAlignTruePaths(cwd);
-
-  // Check if legacy team config exists
-  if (!isLegacyTeamConfig(cwd)) {
-    if (existsSync(paths.teamConfig)) {
-      clack.log.info(
-        "No migration needed. Already using two-file config system.",
-      );
-      clack.log.info(`  Team config: ${paths.teamConfig}`);
-      clack.log.info(`  Personal config: ${paths.config}`);
-    } else {
-      clack.log.info("No migration needed. Not in team mode.");
-      clack.log.info("Run 'aligntrue team enable' to enable team mode.");
-    }
-    return;
-  }
-
-  clack.intro("Migrating to two-file config system");
-
-  // Load existing config
-  const configContent = readFileSync(paths.config, "utf-8");
-  const config = parseYaml(configContent) as Record<string, unknown>;
-
-  // Separate team-only fields from personal/shared fields
-  const teamOnlyFields = ["mode", "modules", "lockfile"];
-  const teamConfig: Record<string, unknown> = {};
-  const personalConfig: Record<string, unknown> = {};
-
-  for (const [key, value] of Object.entries(config)) {
-    if (teamOnlyFields.includes(key)) {
-      teamConfig[key] = value;
-    } else if (key === "sources" || key === "exporters") {
-      // These move to team config by default
-      teamConfig[key] = value;
-    } else if (key === "remotes") {
-      // Split remotes: personal goes to personal config, shared goes to team
-      const remotes = value as Record<string, unknown>;
-      if (remotes["personal"]) {
-        personalConfig["remotes"] = { personal: remotes["personal"] };
-      }
-      if (remotes["shared"] || remotes["custom"]) {
-        const teamRemotes: Record<string, unknown> = {};
-        if (remotes["shared"]) {
-          teamRemotes["shared"] = remotes["shared"];
-        }
-        if (remotes["custom"]) {
-          teamRemotes["custom"] = remotes["custom"];
-        }
-        teamConfig["remotes"] = teamRemotes;
-      }
-    } else {
-      // Other fields go to personal config (can override team)
-      personalConfig[key] = value;
-    }
-  }
-
-  // Show what will happen
-  clack.log.info("Migration plan:");
-  clack.log.info(`\n  Team config (${paths.teamConfig}):`);
-  clack.log.info(`    - mode: ${teamConfig["mode"]}`);
-  clack.log.info(`    - modules: ${JSON.stringify(teamConfig["modules"])}`);
-  if (teamConfig["sources"]) {
-    const sources = teamConfig["sources"] as unknown[];
-    clack.log.info(`    - sources: ${sources.length} source(s)`);
-  }
-  if (teamConfig["exporters"]) {
-    const exporters = teamConfig["exporters"] as unknown[];
-    clack.log.info(
-      `    - exporters: ${Array.isArray(exporters) ? exporters.length : Object.keys(exporters).length} exporter(s)`,
-    );
-  }
-
-  clack.log.info(`\n  Personal config (${paths.config}):`);
-  const personalKeys = Object.keys(personalConfig);
-  if (personalKeys.length === 0) {
-    clack.log.info("    (empty - ready for your personal settings)");
-  } else {
-    personalKeys.forEach((key) => {
-      clack.log.info(`    - ${key}`);
-    });
-  }
-
-  clack.log.info("\n  Additional changes:");
-  clack.log.info("    - Add config.yaml to .gitignore");
-
-  // Confirm
-  if (interactive) {
-    const confirm = await clack.confirm({
-      message: "Apply this migration?",
-      initialValue: true,
-    });
-
-    if (clack.isCancel(confirm) || !confirm) {
-      clack.cancel("Migration cancelled");
-      return;
-    }
-  }
-
-  if (dryRun) {
-    clack.log.info("Dry run - no changes made");
-    clack.outro("Migration preview complete");
-    return;
-  }
-
-  // Create backup
-  const { BackupManager } = await import("@aligntrue/core");
-  const backup = BackupManager.createBackup({
-    cwd,
-    created_by: "migrate-config",
-    notes: "Before two-file config migration",
-    action: "migrate-config",
-    mode: "team",
-  });
-  clack.log.success(`Backup created: ${backup.timestamp}`);
-
-  // Write team config
-  const teamYaml = stringifyYaml(teamConfig);
-  mkdirSync(dirname(paths.teamConfig), { recursive: true });
-  writeFileSync(paths.teamConfig, teamYaml, "utf-8");
-  clack.log.success(`Created ${paths.teamConfig}`);
-
-  // Write personal config (or keep minimal if empty)
-  if (Object.keys(personalConfig).length === 0) {
-    personalConfig["version"] = config["version"] || "1";
-  }
-  const personalYaml = stringifyYaml(personalConfig);
-  const tempPath = `${paths.config}.tmp`;
-  writeFileSync(tempPath, personalYaml, "utf-8");
-  renameSync(tempPath, paths.config);
-  clack.log.success(`Updated ${paths.config}`);
-
-  // Add config.yaml to .gitignore
-  await addToGitignore("config.yaml", "AlignTrue personal config", cwd);
-  clack.log.success("Added config.yaml to .gitignore");
-
-  // Outro
-  const outroLines = [
-    "Migration complete!",
-    "",
-    `Team config: ${paths.teamConfig} (commit this)`,
-    `Personal config: ${paths.config} (gitignored)`,
-    "",
-    "Your team members should run 'aligntrue sync' after pulling.",
-    `Backup available: aligntrue backup restore --timestamp ${backup.timestamp}`,
-  ];
-
-  clack.outro(outroLines.join("\n"));
 }
 
 /**

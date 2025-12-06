@@ -23,6 +23,7 @@ import {
 } from "../utils/command-utilities.js";
 import { exitWithError } from "../utils/error-formatter.js";
 import { createManagedSpinner } from "../utils/spinner.js";
+import { resolve } from "path";
 
 /**
  * Argument definitions for onboard command
@@ -459,6 +460,22 @@ export async function onboard(args: string[]): Promise<void> {
     return;
   }
 
+  const ciPath = parsed.flags["ci"] as string | undefined;
+  if (ciPath) {
+    const resolvedPath = resolve(ciPath);
+    if (!existsSync(resolvedPath)) {
+      exitWithError(
+        {
+          title: "CI results not found",
+          message: `SARIF file not found at: ${resolvedPath}`,
+          hint: "Pass --ci with a valid SARIF file path or remove the flag.",
+          code: "ERR_SARIF_NOT_FOUND",
+        },
+        2,
+      );
+    }
+  }
+
   clack.intro("AlignTrue Onboard");
   console.log("");
 
@@ -471,7 +488,6 @@ export async function onboard(args: string[]): Promise<void> {
 
     // Parse CI results if provided
     let ciResults: { failedChecks: string[]; warnings: string[] } | undefined;
-    const ciPath = parsed.flags["ci"] as string | undefined;
     if (ciPath) {
       ciResults = parseSARIF(ciPath);
     }

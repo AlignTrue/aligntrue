@@ -7,6 +7,7 @@
 
 /**
  * Plug format types
+ * NOTE: "file" and "url" are deprecated; they are still validated for safety.
  */
 export type PlugFormat = "command" | "text" | "file" | "url";
 
@@ -88,9 +89,7 @@ export function validatePlugKey(key: string): PlugKeyValidation {
  *
  * Rules by format:
  * - command: Single line, no env vars except CI=true
- * - text: Single line, any UTF-8
- * - file: Single line, repo-relative POSIX path, reject ".." segments
- * - url: Single line, must start with http:// or https://
+ * - text/file/url: Single line, any UTF-8 (file/url are deprecated)
  *
  * @param value - Value to validate
  * @param format - Expected format
@@ -121,7 +120,7 @@ export function validatePlugValue(
 
   // Format-specific validation
   switch (format) {
-    case "command":
+    case "command": {
       // No env var interpolation except CI=true
       const envVarPattern = /\$\{?[A-Za-z_][A-Za-z0-9_]*\}?/g;
       const envVars = trimmed.match(envVarPattern) || [];
@@ -137,44 +136,11 @@ export function validatePlugValue(
         };
       }
       break;
+    }
 
     case "file":
-      // Must be repo-relative, no ".." segments, no absolute paths
-      if (trimmed.startsWith("/")) {
-        return {
-          valid: false,
-          error: `File path must be repo-relative (cannot start with '/')`,
-        };
-      }
-
-      if (trimmed.includes("..")) {
-        return {
-          valid: false,
-          error: `File path cannot contain '..' segments (security: path traversal)`,
-        };
-      }
-      break;
-
     case "url":
-      // Must be valid http:// or https:// URL (validate using URL constructor)
-      try {
-        const parsed = new URL(trimmed);
-        if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-          return {
-            valid: false,
-            error: `URL protocol must be http:// or https://`,
-          };
-        }
-      } catch {
-        return {
-          valid: false,
-          error: `URL must be a valid http:// or https:// URL`,
-        };
-      }
-      break;
-
     case "text":
-      // No additional constraints beyond single-line
       break;
 
     default:

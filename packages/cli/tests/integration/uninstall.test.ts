@@ -151,6 +151,21 @@ AGENTS.md
     });
   });
 
+  describe("flag conflicts", () => {
+    it("fails fast when conflicting export flags are provided", async () => {
+      setupAlignTrue();
+
+      await expect(
+        uninstall(["-y", "--delete-exports", "--keep-exports"]),
+      ).rejects.toThrow("process.exit: 2");
+
+      const errors = _errorSpy.mock.calls.flat().join(" ");
+      expect(errors).toContain("Choose only one of --convert-exports");
+      expect(errors).toContain("--delete-exports");
+      expect(errors).toContain("--keep-exports");
+    });
+  });
+
   describe("when AlignTrue is not installed", () => {
     it("exits gracefully", async () => {
       await expect(uninstall(["-y"])).rejects.toThrow("process.exit: 0");

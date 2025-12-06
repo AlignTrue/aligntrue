@@ -43,11 +43,6 @@ export interface SyncOptions {
   defaultResolutionStrategy?: string;
 
   /**
-   * Fail if required plugs are unresolved
-   */
-  strict?: boolean;
-
-  /**
    * Allow sync even with IR validation errors
    */
   forceInvalidIR?: boolean;
@@ -71,6 +66,11 @@ export interface SyncOptions {
    * Output JSON format
    */
   json?: boolean;
+
+  /**
+   * Allow overlay conflicts (last writer wins). Default: fail on conflicts.
+   */
+  allowOverlayConflicts?: boolean;
 
   /**
    * Verbose output

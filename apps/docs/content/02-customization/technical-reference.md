@@ -9,12 +9,12 @@ This page provides technical implementation details for working with plugs, over
 
 ## Where to declare features
 
-| Feature     | Align Files  | Config File | Primary Use               |
-| ----------- | ------------ | ----------- | ------------------------- |
-| Plugs slots | ✓            | -           | Define template variables |
-| Plugs fills | ✓ (defaults) | ✓ (project) | Fill template variables   |
-| Overlays    | -            | ✓           | Override rule properties  |
-| Scopes      | -            | ✓           | Filter rules by path      |
+| Feature     | Align Files | Config File | Primary Use                            |
+| ----------- | ----------- | ----------- | -------------------------------------- |
+| Plugs slots | ✓           | -           | Define template variables              |
+| Plugs fills | -           | ✓           | Fill template variables (config only)  |
+| Overlays    | -           | ✓           | Override rule properties (config only) |
+| Scopes      | -           | ✓           | Filter rules by path                   |
 
 **Plugs slots:**
 
@@ -23,13 +23,16 @@ This page provides technical implementation details for working with plugs, over
 
 **Plugs fills:**
 
-- Declared in `.aligntrue/config.yaml` (project-level fills)
-- OR in align files as stack-level defaults
+- Declared in `.aligntrue/config.yaml` only (project-level fills)
+- Formats supported: `command`, `text` (`file` and `url` are deprecated and treated as `text`)
+- Sync fails if required plugs are missing
 
 **Overlays:**
 
 - Declared in `.aligntrue/config.yaml` only (under `overlays.overrides:`)
-- Applied at sync time before export
+- Supported selectors: `rule[id=...]`, `sections[index]` (others are deprecated)
+- Remove via `set: { key: null }` (`remove` is deprecated)
+- Conflicts fail by default; `--allow-overlay-conflicts` opts into last-writer-wins
 
 **Scopes:**
 

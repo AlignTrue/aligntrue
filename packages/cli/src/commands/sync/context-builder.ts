@@ -8,6 +8,7 @@ import {
   statSync,
   readdirSync,
   readFileSync,
+  realpathSync,
 } from "fs";
 import { dirname, join, resolve } from "path";
 import { createHash } from "crypto";
@@ -19,7 +20,6 @@ import {
   patchConfig,
   getExporterNames,
   loadMergedConfig,
-  isLegacyTeamConfig,
   type ConfigWarning,
   detectNestedAgentFiles,
 } from "@aligntrue/core";
@@ -140,7 +140,7 @@ export interface SyncContext {
 export async function buildSyncContext(
   options: SyncOptions,
 ): Promise<SyncContext> {
-  const cwd = process.cwd();
+  const cwd = realpathSync(process.cwd());
   const paths = getAlignTruePaths(cwd);
   const configPath = options.configPath || paths.config;
 
@@ -178,7 +178,7 @@ export async function buildSyncContext(
     // Check for missing team config (team artifacts exist but config.team.yaml is missing)
     if (!isTeamMode && existsSync(paths.lockfile)) {
       // Lockfile exists but not in team mode - might be missing team config
-      if (!existsSync(paths.teamConfig) && !isLegacyTeamConfig(cwd)) {
+      if (!existsSync(paths.teamConfig)) {
         configWarnings.push({
           field: "config.team.yaml",
           message:

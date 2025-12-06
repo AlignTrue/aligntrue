@@ -3,7 +3,7 @@
  * Coordinates loading config, pulling sources, and syncing IR to/from agents
  */
 
-import { existsSync } from "fs";
+import { existsSync, realpathSync } from "fs";
 import * as clack from "@clack/prompts";
 import { getAlignTruePaths, isTeamModeActive } from "@aligntrue/core";
 import { parseSyncOptions, showSyncHelp } from "./options.js";
@@ -93,6 +93,13 @@ export async function sync(args: string[]): Promise<void> {
   if (options.help) {
     showSyncHelp();
     return;
+  }
+
+  // Canonicalize working directory to avoid symlink-induced path drift (e.g., /tmp -> /private/tmp)
+  const initialCwd = process.cwd();
+  const canonicalCwd = realpathSync(initialCwd);
+  if (canonicalCwd !== initialCwd) {
+    process.chdir(canonicalCwd);
   }
 
   if (!options.quiet) {

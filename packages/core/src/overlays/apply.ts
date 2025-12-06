@@ -5,6 +5,7 @@
 
 import type { Align } from "@aligntrue/schema";
 import { evaluateSelector } from "./selector-engine.js";
+import { parseSelector } from "./selector-parser.js";
 import { compareSelectors } from "./selector-parser.js";
 import {
   applyRemoveOperations,
@@ -34,6 +35,8 @@ export function applyOverlays(
     maxOverrides?: number;
     /** Maximum operations per override (set + remove combined) */
     maxOperationsPerOverride?: number;
+    /** Allow overlapping overlays to continue (otherwise fail) */
+    allowConflicts?: boolean;
   },
 ): OverlayApplicationResult {
   // Deep clone IR to avoid mutations
@@ -62,6 +65,20 @@ export function applyOverlays(
   // Apply each overlay
   for (const overlay of sortedOverlays) {
     try {
+      const parsed = parseSelector(overlay.selector);
+      if (
+        parsed &&
+        (parsed.type === "property" || parsed.type === "section_heading")
+      ) {
+        warnings.push(
+          `Selector "${overlay.selector}" uses a deprecated selector type. Prefer rule[id=...] or sections[index].`,
+        );
+      }
+      if (overlay.remove && overlay.remove.length > 0) {
+        warnings.push(
+          `Overlay "${overlay.selector}" uses deprecated remove operations. Use set: { key: null } instead.`,
+        );
+      }
       // Check operations count
       const setCount = overlay.set ? Object.keys(overlay.set).length : 0;
       const removeCount = overlay.remove ? overlay.remove.length : 0;
@@ -113,7 +130,16 @@ export function applyOverlays(
   }
 
   // Check for conflicts (multiple overlays targeting same property)
-  detectConflicts(sortedOverlays, warnings);
+  const conflictMessages = detectConflicts(sortedOverlays);
+  const allowConflicts = options?.allowConflicts ?? true;
+
+  if (conflictMessages.length > 0) {
+    if (allowConflicts) {
+      warnings.push(...conflictMessages);
+    } else {
+      errors.push(...conflictMessages);
+    }
+  }
 
   if (errors.length > 0) {
     const result: OverlayApplicationResult = {
@@ -189,12 +215,11 @@ function getTargetFromPath(ir: unknown, path: string[]): unknown {
  * @param overlays - Sorted array of overlays
  * @param warnings - Array to append warnings to
  */
-function detectConflicts(
-  overlays: OverlayDefinition[],
-  warnings: string[],
-): void {
+function detectConflicts(overlays: OverlayDefinition[]): string[] {
   // Track which selector+property combinations are modified
   const modifications = new Map<string, string[]>(); // selector -> properties modified
+
+  const conflictMessages: string[] = [];
 
   for (const overlay of overlays) {
     const properties: string[] = [];
@@ -216,8 +241,8 @@ function detectConflicts(
       // Check for property overlap
       const overlap = properties.filter((p) => prevProps.includes(p));
       if (overlap.length > 0) {
-        warnings.push(
-          `Multiple overlays modify same properties on "${overlay.selector}": ${overlap.join(", ")} (last wins)`,
+        conflictMessages.push(
+          `Multiple overlays modify same properties on "${overlay.selector}": ${overlap.join(", ")}`,
         );
       }
 
@@ -228,6 +253,8 @@ function detectConflicts(
       modifications.set(overlay.selector, properties);
     }
   }
+
+  return conflictMessages;
 }
 
 /**

@@ -60,6 +60,12 @@ export const ARG_DEFINITIONS: ArgDefinition[] = [
       "Block sync when git sources have updates (team mode only, default: warn)",
   },
   {
+    flag: "--allow-overlay-conflicts",
+    hasValue: false,
+    description:
+      "Allow overlays that target the same property (last-writer-wins). Default: fail on conflicts.",
+  },
+  {
     flag: "--verbose",
     hasValue: false,
     description:
@@ -154,6 +160,8 @@ export function parseSyncOptions(args: string[]): SyncOptions {
     offline: (parsed.flags["offline"] as boolean | undefined) || false,
     strictSources:
       (parsed.flags["strict-sources"] as boolean | undefined) || false,
+    allowOverlayConflicts:
+      (parsed.flags["allow-overlay-conflicts"] as boolean | undefined) || false,
     verbose:
       (parsed.flags["verbose"] as boolean | undefined) || verboseCount >= 1,
     verboseFull,

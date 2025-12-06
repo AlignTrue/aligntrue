@@ -466,7 +466,7 @@ remotes:
 
 **Type:** `object`
 
-Declarative modifications to upstream rules.
+Declarative modifications to upstream rules. Conflicts fail by default.
 
 ```yaml
 overlays:
@@ -474,19 +474,32 @@ overlays:
     - selector: "rule[id=authn]"
       set:
         severity: MUST
+# allow conflicts (last-writer-wins)
+allow_overlay_conflicts: false
 ```
+
+**Notes:**
+
+- Supported selectors: `rule[id=...]`, `sections[index]` (property/heading selectors are deprecated)
+- Use `set: { key: null }` to remove properties (`remove` is deprecated)
+- To allow conflicts instead of failing, set `allow_overlay_conflicts: true` or pass `--allow-overlay-conflicts`
 
 ### plugs
 
 **Type:** `object`
 
-Template slot fills for rules.
+Template slot fills for rules. Fills are config-only; sync fails if required plugs are missing.
 
 ```yaml
 plugs:
   fills:
     service_name: checkout
+    test.cmd: "pnpm test" # required plugs must be set
 ```
+
+**Notes:**
+
+- Supported formats: `command`, `text` (`file`/`url` are deprecated and treated as `text`)
 
 ### approval
 

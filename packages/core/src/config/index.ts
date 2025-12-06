@@ -30,7 +30,6 @@ export {
   TEAM_MODE_OFF_MARKER,
   isTeamModeActive,
   hasTeamModeOffMarker,
-  isLegacyTeamConfig,
   mergeConfigs,
   loadMergedConfig,
   getConfigSource,

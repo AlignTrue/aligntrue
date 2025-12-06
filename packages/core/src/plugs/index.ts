@@ -43,14 +43,18 @@ export function resolvePlugsForAlign(
     const plugsSources: Array<{ plugs?: Plugs | undefined; source: string }> =
       [];
 
-    if (align.plugs) {
-      plugsSources.push({ plugs: align.plugs, source: "align" });
+    // Slots come from IR; fills come only from config/additionalFills
+    if (align.plugs && (align.plugs.slots || align.plugs.fills)) {
+      plugsSources.push({
+        plugs: align.plugs,
+        source: "align",
+      });
     }
 
     if (additionalFills && Object.keys(additionalFills).length > 0) {
       plugsSources.push({
         plugs: { fills: additionalFills },
-        source: "additional",
+        source: "config",
       });
     }
 

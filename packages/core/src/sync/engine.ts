@@ -132,8 +132,8 @@ export class SyncEngine {
   async loadIRFromSource(
     sourcePath: string,
     force?: boolean,
-    strict?: boolean,
-    configFills?: Record<string, string>,
+    allowConflictsOrConfigFills?: boolean | Record<string, string>,
+    configFillsMaybe?: Record<string, string>,
   ): Promise<{ success: boolean; warnings?: string[] }> {
     if (!this.config) {
       throw new Error(
@@ -141,13 +141,18 @@ export class SyncEngine {
       );
     }
 
+    const plugFills =
+      typeof allowConflictsOrConfigFills === "object" &&
+      allowConflictsOrConfigFills !== null
+        ? (allowConflictsOrConfigFills as Record<string, string>)
+        : configFillsMaybe;
+
     try {
       const loadOptions: {
         mode: AlignTrueMode;
         maxFileSizeMb: number;
         force: boolean;
         config: AlignTrueConfig;
-        strictPlugs?: boolean;
         plugFills?: Record<string, string>;
       } = {
         mode: this.config.mode,
@@ -157,11 +162,8 @@ export class SyncEngine {
       };
 
       // Only include optional properties if they have defined values
-      if (strict !== undefined) {
-        loadOptions.strictPlugs = strict;
-      }
-      if (configFills !== undefined) {
-        loadOptions.plugFills = configFills;
+      if (plugFills !== undefined) {
+        loadOptions.plugFills = plugFills;
       }
 
       const result = await loadIRAndResolvePlugs(sourcePath, loadOptions);
@@ -207,7 +209,6 @@ export class SyncEngine {
       const loadResult = await this.loadIRFromSource(
         irPath,
         options.force,
-        options.strict,
         this.config?.plugs?.fills,
       );
 
@@ -260,10 +261,20 @@ export class SyncEngine {
             this.config.overlays.limits.max_operations_per_override;
         }
 
+        const hasLimitOptions = Object.keys(overlayOptions).length > 0;
+        const hasConflictOption = options.allowOverlayConflicts !== undefined;
+
         const overlayResult = applyOverlays(
           this.ir,
           this.config.overlays.overrides,
-          Object.keys(overlayOptions).length > 0 ? overlayOptions : undefined,
+          hasLimitOptions || hasConflictOption
+            ? {
+                ...overlayOptions,
+                ...(hasConflictOption && {
+                  allowConflicts: options.allowOverlayConflicts,
+                }),
+              }
+            : undefined,
         );
 
         if (!overlayResult.success) {

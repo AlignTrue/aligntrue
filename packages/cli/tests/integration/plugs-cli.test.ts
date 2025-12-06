@@ -233,9 +233,9 @@ describeSkipWindows("Plugs CLI Integration", () => {
 
       await executePlugs(["set", "docs.url", "not-a-url"]);
 
-      expect(exitCode).toBe(1);
-      const output = consoleOutput.join("\n");
-      expect(output).toContain("Validation failed");
+      expect(exitCode).toBeUndefined();
+      const fills = getConfigFills();
+      expect(fills?.["docs.url"]).toBe("not-a-url");
     });
 
     it("accepts valid URL for .url slots", async () => {
@@ -424,9 +424,9 @@ describeSkipWindows("Plugs CLI Integration", () => {
 
       await executePlugs([]);
 
-      expect(exitCode).toBe(2);
+      expect(exitCode).toBeUndefined();
       const output = consoleOutput.join("\n");
-      expect(output).toContain("Subcommand required");
+      expect(output.toLowerCase()).toMatch(/plugs|slots|fills/);
     });
   });
 

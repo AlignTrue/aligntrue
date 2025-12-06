@@ -1357,9 +1357,10 @@ export GIT_COMMITTER_EMAIL="test-a@example.com"
 # User A: Initialize team
 mkdir /tmp/team-user-a && cd /tmp/team-user-a
 git init
+git branch -M main
 git remote add origin /tmp/team-repo.git
 aligntrue init --yes --mode team
-aligntrue sync  # Generates lockfile
+aligntrue sync --yes  # Generates lockfile
 
 # Commit and push team configuration
 git add .aligntrue/ .aligntrue/lock.json
@@ -1403,7 +1404,9 @@ Test the three git integration modes (ignore, commit, branch) and per-exporter o
 # Setup test environment
 cd /tmp/test-git-modes
 git init
+git branch -M main
 aligntrue init --yes --mode team
+aligntrue exporters enable cursor
 
 # Branch mode requires at least one commit before it can create feature branches
 git add .
@@ -1411,19 +1414,19 @@ git commit -m "Initial commit"
 
 # Test ignore mode (default for personal rules)
 aligntrue config set git.mode ignore
-aligntrue sync
+aligntrue sync --yes
 grep "AGENTS.md" .gitignore || echo "FAIL: AGENTS.md not ignored"
 grep ".cursor/rules/*.mdc" .gitignore || echo "FAIL: .cursor/rules not ignored"
 
 # Test commit mode (for team shared rules)
 aligntrue config set git.mode commit
-aligntrue sync
+aligntrue sync --yes
 git status --porcelain | grep "AGENTS.md" || echo "FAIL: AGENTS.md not staged for commit"
 # Note: commit mode ensures files are NOT in .gitignore
 
 # Test branch mode (for PR workflows)
 aligntrue config set git.mode branch
-aligntrue sync
+aligntrue sync --yes
 git branch | grep "aligntrue/sync" || echo "FAIL: feature branch not created"
 BRANCH_NAME=$(git branch | grep "aligntrue/sync" | sed 's/^..//')
 test -n "$BRANCH_NAME" || echo "FAIL: branch name empty"
@@ -1433,7 +1436,7 @@ git status --porcelain | grep "AGENTS.md" || echo "FAIL: files not staged on bra
 # Test per-exporter override
 aligntrue config set git.mode ignore
 aligntrue config set git.per_exporter.cursor branch
-aligntrue sync
+aligntrue sync --yes
 # Cursor files should be on branch, AGENTS.md should be ignored
 grep "AGENTS.md" .gitignore || echo "FAIL: AGENTS.md not ignored"
 git branch | grep "aligntrue/sync" || echo "FAIL: cursor branch not created"
@@ -1457,40 +1460,41 @@ Test git merge conflicts and resolution workflows:
 # Setup shared repository
 cd /tmp
 git init --bare team-repo.git
+git symbolic-ref HEAD refs/heads/main
 
 # User A: Make initial commit
 cd /tmp
 mkdir team-user-a && cd team-user-a
 git init
+git branch -M main
 git remote add origin /tmp/team-repo.git
 aligntrue init --yes --mode team
 echo "## Team Rule A" >> AGENTS.md
-aligntrue sync
+aligntrue sync --yes
 git add . && git commit -m "Initial team rules"
 git push -u origin main
 
-# User B: Clone and make conflicting change
+# User B: Clone baseline
 cd /tmp
 git clone /tmp/team-repo.git team-user-b
 cd team-user-b
 echo "## Team Rule B" >> AGENTS.md
-aligntrue sync
+aligntrue sync --yes
 git add . && git commit -m "Add rule B"
-git push origin main  # Should succeed if no conflict
 
-# User A: Make conflicting change and push
+# User A: Diverge and push
 cd /tmp/team-user-a
-git pull  # Get user B's changes
 echo "## Team Rule C" >> AGENTS.md
-aligntrue sync
+aligntrue sync --yes
 git add . && git commit -m "Add rule C"
-git push origin main  # Should succeed or show conflict
+git push origin main  # User A pushes first; user B will now diverge
 
-# Test lockfile conflict handling
+# User B: Create conflict, then pull
 cd /tmp/team-user-b
-git pull  # Should merge cleanly or show conflict
+git push origin main || echo "EXPECTED: push rejected (diverged)"
+git pull || echo "EXPECTED: merge conflict"
 test -f .aligntrue/lock.json || echo "FAIL: lockfile missing after merge"
-aligntrue drift --gates  # Should validate lockfile integrity
+aligntrue drift --gates  # Validate lockfile integrity after resolving conflicts
 ```
 
 **Expected:**
@@ -1510,13 +1514,14 @@ Test feature branch creation and PR simulation:
 # Setup with branch mode
 cd /tmp/test-pr-workflow
 git init
+git branch -M main
 aligntrue init --yes --mode team
 aligntrue config set git.mode branch
 
 # Make changes and sync (creates feature branch)
 # Edit rule sources (AGENTS.md is regenerated on sync)
 echo "## New Feature Rule" >> .aligntrue/rules/testing.md
-aligntrue sync
+aligntrue sync --yes
 
 # Verify branch created
 BRANCH_NAME=$(git branch | grep "aligntrue/sync" | sed 's/^..//')
@@ -1533,10 +1538,12 @@ aligntrue drift --gates
 # Simulate merge to main
 git checkout main
 git merge "$BRANCH_NAME" --no-ff -m "Merge feature branch"
-aligntrue sync  # Should sync after merge
+aligntrue sync --yes  # Should sync after merge
 
 # Test CI integration
 aligntrue drift --gates  # Should pass in CI after merge
+
+# Note: After merging a sync branch, set git.mode to commit or ignore if you want subsequent syncs to stay on main (branch mode will continue creating aligntrue/sync-* branches).
 ```
 
 **Expected:**
@@ -1836,7 +1843,7 @@ test -f .aligntrue/rules/worker.mdc || echo "FAIL: worker scope export missing"
 
 #### Plugs workflows
 
-**Note:** Plug slots are defined in rule files (`.aligntrue/rules/*.md`) using YAML frontmatter, NOT in config.yaml. Config.yaml only stores `plugs.fills` values set via the CLI.
+**Note:** Plug slots are defined in rule files (`.aligntrue/rules/*.md`) using YAML frontmatter. Fills are config-only (`plugs.fills` in `.aligntrue/config.yaml`). Sync fails if required plugs are unresolved.
 
 **1. Slot declaration and fill resolution:**
 
@@ -1869,8 +1876,8 @@ Run tests with: [[plug:test.cmd]]
 Documentation: [[plug:docs.url]]
 EOF
 
-# List plugs (should show unresolved required)
-aligntrue plugs list
+# Plugs status (shows unresolved required)
+aligntrue plugs
 # Should show: test.cmd (required, unresolved), docs.url (optional)
 
 # Set fill for required plug via CLI (saves to config.yaml under plugs.fills)
@@ -1878,24 +1885,24 @@ aligntrue plugs set test.cmd "pnpm test"
 # Should validate format and update config.yaml
 
 # Verify fill was set
-aligntrue plugs list
+aligntrue plugs
 # Should show: test.cmd filled (from config), docs.url optional
 
 # Test unset command
 aligntrue plugs unset test.cmd
-aligntrue plugs list
+aligntrue plugs
 # Should show: test.cmd unresolved again
 
 # Set it back
 aligntrue plugs set test.cmd "pnpm test"
 
-# Test format validation
+# Test format validation (supported: command, text; file/url are deprecated and treated as text)
 aligntrue plugs set test.cmd "/absolute/path" || echo "Expected: validation error"
 aligntrue plugs set docs.url "not-a-url" || echo "Expected: validation error"
 aligntrue plugs set docs.url "https://docs.example.com"  # Should succeed
 
-# Resolve and verify
-aligntrue plugs resolve
+# Status and verify resolution
+aligntrue plugs
 # Should show: test.cmd resolved to "pnpm test", docs.url resolved to URL
 
 # Sync and check output
@@ -1957,12 +1964,12 @@ aligntrue plugs set author.name "Jane Smith"
 # Verify fills in config.yaml
 grep -A 5 "plugs:" .aligntrue/config.yaml | grep -q "test.cmd" || echo "FAIL: fills not in config"
 
-# List plugs and verify source (should show "from config")
-aligntrue plugs list
+# Status and verify source (should show "from config")
+aligntrue plugs
 # Expected: All three slots filled with values from config
 
-# Resolve plugs
-aligntrue plugs resolve
+# Status shows resolved values
+aligntrue plugs
 # Expected: All slots resolved to their fill values
 
 # Sync and verify fills are applied
@@ -1979,19 +1986,17 @@ aligntrue plugs unset author.name
 # Verify it was removed
 grep "author.name" .aligntrue/config.yaml && echo "FAIL: unset didn't remove fill" || echo "PASS: fill removed"
 
-# Verify plugs list shows unset slot as unresolved
-aligntrue plugs list | grep -q "author.name" || echo "FAIL: unset slot not shown"
+# Verify plugs status shows unset slot as unresolved
+aligntrue plugs | grep -q "author.name" || echo "FAIL: unset slot not shown"
 
-# Test invalid format values
+# Test invalid format values (file/url deprecated; treat as text)
 aligntrue plugs set test.cmd "/absolute/path" 2>&1 | grep -i "error" || echo "FAIL: should reject absolute path"
 aligntrue plugs set docs.url "not-a-url" 2>&1 | grep -i "error" || echo "FAIL: should reject invalid URL"
-aligntrue plugs set docs.url "ftp://invalid" 2>&1 | grep -i "error" || echo "FAIL: should reject non-https URL"
+aligntrue plugs set docs.url "ftp://invalid" 2>&1 | grep -i "error" || echo "FAIL: should reject invalid URL"
 
-# Test unresolved required plugs generate TODO blocks
+# Test unresolved required plugs fail sync (strict by default)
 aligntrue plugs unset test.cmd
-aligntrue sync
-# Verify TODO block appears in output
-grep "TODO(plug:test.cmd):" AGENTS.md || echo "FAIL: TODO block missing"
+aligntrue sync && echo "FAIL: sync should fail on unresolved required plug" || echo "PASS: sync failed as expected"
 ```
 
 **Expected:**
@@ -2043,7 +2048,7 @@ EOF
 
 # Sync and verify overlay applied
 aligntrue sync
-aligntrue override status  # Should show 1 active overlay
+aligntrue override         # Default shows status + diff
 
 # Check output has upgraded severity
 # (Implementation detail: verify in exported files)
@@ -2060,13 +2065,13 @@ aligntrue override add \
 aligntrue override status  # Should show override
 ```
 
-**3. Remove autofix:**
+**3. Remove autofix (use set null):**
 
 ```bash
-# Remove property from rule
+# Remove property from rule (remove is deprecated; use null)
 aligntrue override add \
   --selector 'rule[id=prefer-const]' \
-  --remove autofix
+  --set autofix=null
 
 aligntrue override diff  # Should show autofix removed
 ```
@@ -2075,8 +2080,8 @@ aligntrue override diff  # Should show autofix removed
 
 ```bash
 # Add multiple overlays
-# Run aligntrue override status
-# Verify all show as "healthy"
+# Run aligntrue override (default status + diff)
+# Verify all show as "healthy"; conflicts fail unless allow flag is set
 
 # Simulate upstream change (rename rule ID)
 # Run aligntrue override status
