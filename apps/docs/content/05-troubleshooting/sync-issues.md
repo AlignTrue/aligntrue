@@ -371,7 +371,7 @@ See the [agent verification guide](/docs/04-reference/agent-verification) for ag
 
    ```bash
    # Agent files have read-only warnings
-   head -20 .cursor/rules/aligntrue.mdc
+   head -20 .cursor/rules/testing.mdc
    head -20 AGENTS.md
    ```
 

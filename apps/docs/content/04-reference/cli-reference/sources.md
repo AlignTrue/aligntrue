@@ -4,11 +4,11 @@ description: Manage rule sources and imports
 
 # Sources
 
-Commands for adding and managing rule sources from git repositories, local paths, and remote URLs.
+Commands for adding and managing rule sources from git repositories and local paths.
 
 ## `aligntrue add`
 
-Add rules from a git repository or local path. Default: copy rules to `.aligntrue/rules/`. Use `add source` subcommand to keep sources connected for ongoing updates.
+Add rules from a git repository or local path. Default: copy rules to `.aligntrue/rules/`. Use `add source` subcommand to keep git sources connected for ongoing updates.
 
 **Usage:**
 
@@ -84,19 +84,6 @@ Tips:
 Done
 ```
 
-**Example output (link mode):**
-
-```
-✓ Linked https://github.com/org/rules
-
-Vendor path: vendor/org-rules
-Vendor type: submodule
-Profile: org/typescript-rules
-
-Next steps:
-  aligntrue sync
-```
-
 **Exit codes:**
 
 - `0` - Success
@@ -104,6 +91,95 @@ Next steps:
 - `2` - System error (permissions, disk space)
 
 **See also:** [Remove command](#aligntrue-remove) to remove sources
+
+---
+
+## `aligntrue add source`
+
+Keep a git source connected for ongoing updates on each `aligntrue sync`.
+
+**Usage:**
+
+```bash
+aligntrue add source <git-url> [options]
+```
+
+**Arguments:**
+
+- `<git-url>` - Git URL (HTTPS/SSH), e.g., `https://github.com/org/rules`
+
+**Options:**
+
+| Flag         | Alias | Description                          | Default                  |
+| ------------ | ----- | ------------------------------------ | ------------------------ |
+| `--ref`      |       | Git ref: branch, tag, or commit SHA  | `main`                   |
+| `--path`     |       | Path to rules within repository      | Root                     |
+| `--personal` |       | Write to personal config (team mode) | `false`                  |
+| `--shared`   |       | Write to team config (team mode)     | `false`                  |
+| `--yes`      | `-y`  | Non-interactive mode                 | `false`                  |
+| `--config`   | `-c`  | Custom config file path              | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+1. Adds the git source to config (`config.yaml` or `config.team.yaml`).
+2. Fetches rules on each `aligntrue sync` using cache + updates.
+3. Prompts for consent on first network access.
+
+**Examples:**
+
+```bash
+# Connect a shared source
+aligntrue add source https://github.com/org/rules
+
+# Pin to tag
+aligntrue add source https://github.com/org/rules --ref v2.0.0
+
+# Team mode: write to personal config
+aligntrue add source https://github.com/org/rules --personal
+```
+
+**Exit codes:** `0` success, `1` invalid URL, `2` system error
+
+---
+
+## `aligntrue add remote`
+
+Add a push destination for your rules repository (team workflows).
+
+**Usage:**
+
+```bash
+aligntrue add remote <git-url> [options]
+```
+
+**Arguments:**
+
+- `<git-url>` - Git URL (HTTPS/SSH)
+
+**Options:**
+
+| Flag         | Alias | Description              | Default                  |
+| ------------ | ----- | ------------------------ | ------------------------ |
+| `--personal` |       | Write to personal config | `false`                  |
+| `--shared`   |       | Write to team config     | `false`                  |
+| `--config`   | `-c`  | Custom config file path  | `.aligntrue/config.yaml` |
+
+**What it does:**
+
+1. Adds the remote to the selected config (personal or team).
+2. Used by workflows that push rules to a central repo.
+
+**Examples:**
+
+```bash
+# Add shared remote
+aligntrue add remote git@github.com:org/aligntrue-rules.git
+
+# Personal remote
+aligntrue add remote git@github.com:me/aligntrue-rules.git --personal
+```
+
+**Exit codes:** `0` success, `1` invalid URL, `2` system error
 
 ---
 

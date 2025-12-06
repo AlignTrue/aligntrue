@@ -28,18 +28,18 @@ Create a repository to publish your rules:
    - For public sharing: Create a public repository
    - For team/private sharing: Create a private repository with appropriate access
 
-2. **Configure remote backup** in `.aligntrue/config.yaml`:
+2. **Configure remotes** in `.aligntrue/config.yaml`:
 
 ```yaml
 remotes:
   shared: git@github.com:username/shared-rules.git
 ```
 
-3. **Push your rules**:
+3. **Push your rules (manual)**:
 
 ```bash
 aligntrue sync          # Export to agents
-aligntrue remotes push  # Push rules to configured remotes
+aligntrue remotes push  # Push rules to configured remotes (manual)
 ```
 
 4. **Share the repository URL** with others. They can consume your rules as a source:
@@ -58,7 +58,7 @@ As a rules maintainer:
 
 1. **Edit rules locally** - Make changes in `.aligntrue/rules/`
 2. **Test changes** - Run `aligntrue sync` to verify exports
-3. **Push to remote** - Your backup auto-pushes on sync
+3. **Push to remote** - Run `aligntrue remotes push` when ready
 
 Your rules repository structure:
 
@@ -75,7 +75,7 @@ Consumers receive these files when they sync from your repository.
 
 ### Separating public and private rules
 
-You may want to share some rules publicly while keeping others private. Use multiple backup destinations:
+You may want to share some rules publicly while keeping others private. Use multiple remotes:
 
 ```yaml
 remotes:

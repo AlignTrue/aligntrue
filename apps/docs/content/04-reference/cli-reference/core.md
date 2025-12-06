@@ -25,7 +25,7 @@ aligntrue init [options]
 | `--no-sync`         |       | Skip automatic sync after initialization                        | `false`     |
 | `--mode`            |       | Operating mode: `solo` or `team`                                | `solo`      |
 | `--exporters`       |       | Comma-separated list of exporters (skips interactive selection) | Auto-detect |
-| `--source`          |       | Import rules from URL or path (skips auto-detect)               | Auto-detect |
+| `--source`          |       | Import rules from git URL or local path (skips auto-detect)     | Auto-detect |
 | `--ref`             |       | Git ref (branch/tag/commit) for git sources                     | `main`      |
 
 **What it does:**
@@ -46,7 +46,7 @@ aligntrue init
 # Non-interactive with defaults
 aligntrue init --yes
 
-# Initialize with external rules
+# Initialize with external rules (git)
 aligntrue init --source https://github.com/org/rules
 
 # Team mode with lockfile

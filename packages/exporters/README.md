@@ -26,13 +26,13 @@ Generates `.cursor/rules/*.mdc` files (one per scope) with YAML frontmatter.
 
 **Features:**
 
-- Scope-based file organization (default → `aligntrue.mdc`, named → `{scope}.mdc`)
+- Scope-based file organization (preserves source file names; default scope uses the source filename)
 - Vendor.cursor metadata extracted to YAML frontmatter
 - Multiple rules concatenated as markdown sections
 - Content hash footer for drift detection
 - Fidelity tracking for unmapped fields and cross-agent vendor metadata
 
-**Example output:** `.cursor/rules/aligntrue.mdc`
+**Example output:** `.cursor/rules/testing.mdc`
 
 ```markdown
 ---

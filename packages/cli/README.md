@@ -67,9 +67,6 @@ Team Commands:
 Settings:
   telemetry      Telemetry settings
 
-Coming Soon:
-  migrate        Schema migration (preview mode)
-
 Run aligntrue <command> --help for command-specific options
 ```
 
@@ -350,7 +347,7 @@ All agent files are read-only exports. If you manually edit an agent file, it wi
 │
 ◇  Sync complete
 │  ✓ Wrote 2 files
-│    .cursor/rules/aligntrue.mdc
+│    .cursor/rules/testing.mdc
 │    AGENTS.md
 │
 └  ✓ Sync complete

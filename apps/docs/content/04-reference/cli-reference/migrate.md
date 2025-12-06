@@ -122,5 +122,5 @@ See [Personal Repository Setup](/docs/04-reference/personal-repo-setup) for deta
 
 ## See also
 
-- [Personal Repository Setup](/docs/04-reference/personal-repo-setup) - Setting up remote backup
+- [Personal Repository Setup](/docs/04-reference/personal-repo-setup) - Setting up remotes for pushing rules
 - [CLI Reference](/docs/04-reference/cli-reference) - All CLI commands

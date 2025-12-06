@@ -293,7 +293,7 @@ describe("CursorExporter", () => {
       expect(result.filesWritten).toHaveLength(0);
       expect(result.contentHash).toMatch(/^[a-f0-9]{64}$/);
       expect(
-        existsSync(join(TEST_OUTPUT_DIR, ".cursor", "rules", "aligntrue.mdc")),
+        existsSync(join(TEST_OUTPUT_DIR, ".cursor", "rules", "testing.mdc")),
       ).toBe(false);
     });
   });
@@ -329,7 +329,8 @@ describe("CursorExporter", () => {
 # Test Rule Content
 
 Follow this guidance for testing.`,
-          scope: ".",
+          level: 2,
+          fingerprint: "test-rule",
         },
       ];
 
@@ -366,7 +367,8 @@ Follow this guidance for testing.`,
 <!-- This is a regular comment -->
 
 Some text here.`,
-          scope: ".",
+          level: 2,
+          fingerprint: "rule-with-comments",
         },
       ];
 
@@ -406,6 +408,6 @@ function createRequest(
   return {
     scope,
     align,
-    outputPath: join(TEST_OUTPUT_DIR, ".cursor", "rules", "aligntrue.mdc"),
+    outputPath: join(TEST_OUTPUT_DIR, ".cursor", "rules", "testing.mdc"),
   };
 }

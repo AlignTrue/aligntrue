@@ -107,7 +107,7 @@ await exporter.export(
   {
     scope: { path: ".", normalizedPath: ".", isDefault: true },
     rules: [rule1, rule2],
-    outputPath: ".cursor/rules/aligntrue.mdc",
+    outputPath: ".cursor/rules/testing.mdc",
   },
   options,
 );
@@ -117,7 +117,7 @@ await exporter.export(
   {
     scope: { path: "apps/web", normalizedPath: "apps/web", isDefault: false },
     rules: [rule3, rule4],
-    outputPath: ".cursor/rules/apps-web.mdc",
+    outputPath: ".cursor/rules/apps-web/testing.mdc",
   },
   options,
 );

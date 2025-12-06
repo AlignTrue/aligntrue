@@ -16,7 +16,6 @@ How to switch from links to inline rules: https://aligntrue.ai/export-content-mo
 - Testing (./.aligntrue/rules/testing.md)
 - Security (./.aligntrue/rules/security.md)
 - Global (./.aligntrue/rules/global.md)
-- Extracted Rules (./.aligntrue/rules/extracted-rules.md)
 - Documentation (./.aligntrue/rules/documentation.md)
 - Code Review (./.aligntrue/rules/code-review.md)
 - AI Guidance (./.aligntrue/rules/ai-guidance.md)

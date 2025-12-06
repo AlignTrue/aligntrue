@@ -9,7 +9,6 @@
 .cursor/rules/ai-guidance.mdc
 .cursor/rules/code-review.mdc
 .cursor/rules/documentation.mdc
-.cursor/rules/extracted-rules.mdc
 .cursor/rules/global.mdc
 .cursor/rules/security.mdc
 .cursor/rules/testing.mdc

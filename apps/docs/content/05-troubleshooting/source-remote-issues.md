@@ -177,7 +177,7 @@ remotes:
   personal: git@github.com:youruser/personal-rules.git
 ```
 
-Or remove `scope: personal` from rules if you don't need remote backup.
+Or remove `scope: personal` from rules if you don't need to push them to a personal remote.
 
 ## SSH issues
 
