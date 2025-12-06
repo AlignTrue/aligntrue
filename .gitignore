@@ -109,7 +109,6 @@ apps/docs/public/_pagefind
 .cursor/rules/ci_troubleshooting.mdc
 .cursor/rules/debugging.mdc
 .cursor/rules/documentation.mdc
-.cursor/rules/extracted-rules.mdc
 .cursor/rules/global.mdc
 .cursor/rules/guardrails.mdc
 .cursor/rules/implementation_specs.mdc
