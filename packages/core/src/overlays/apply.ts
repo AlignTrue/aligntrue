@@ -131,7 +131,7 @@ export function applyOverlays(
 
   // Check for conflicts (multiple overlays targeting same property)
   const conflictMessages = detectConflicts(sortedOverlays);
-  const allowConflicts = options?.allowConflicts ?? true;
+  const allowConflicts = options?.allowConflicts ?? false;
 
   if (conflictMessages.length > 0) {
     if (allowConflicts) {
