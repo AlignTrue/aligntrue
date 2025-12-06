@@ -8,7 +8,7 @@
  * Features:
  * - TTL (time-to-live) expiration
  * - Size limits with LRU eviction
- * - In-memory caching (future: persistent cache)
+ * - In-memory caching (persistent cache not implemented)
  *
  * Team mode development: Performance optimization
  */

@@ -86,7 +86,7 @@ EXECUTION PROTOCOL:
 2. Execute team workflows:
    - Solo → team migration (user-a)
    - Git repository setup and team initialization (user-a pushes, user-b clones)
-   - Remote backup setup (user-a)
+   - Remotes setup (user-a)
    - Joining existing team via git clone (user-b) — run `aligntrue team join --yes` after cloning to create personal config and gitignore entries
    - Team rule changes with PR workflow (using git branch mode)
    - Personal rule changes (no approval)
@@ -139,8 +139,8 @@ EXECUTION PROTOCOL:
    - aligntrue onboard: Generate checklist, test --ci flag with SARIF input
    - aligntrue plugs set/unset: Test format validation and fill management
    - aligntrue backup cleanup: Test cleanup with retention_days and minimum_keep
-   - aligntrue backup push: Test remote backup push to configured destinations
-   - aligntrue backup status: Test backup status display with file assignments
+   - aligntrue remotes push: Test remote push to configured destinations
+   - aligntrue remotes status: Test remote status display with file assignments
    - aligntrue add source/remote: Test new subcommand structure
    - aligntrue rules list: Test rule listing by agent
    - aligntrue remove: Test source removal from config

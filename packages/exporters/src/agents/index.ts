@@ -207,7 +207,7 @@ export class AgentsExporter extends ExporterBase {
   private generateLinkBasedContent(
     rules: RuleFile[],
     location: string,
-    _outputDir: string, // Unused but kept for potential future use
+    _outputDir: string, // Unused (kept for interface parity)
   ): string {
     const lines: string[] = [];
 

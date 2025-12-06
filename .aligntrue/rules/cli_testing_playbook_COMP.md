@@ -1143,10 +1143,10 @@ test -f apps/docs/.aligntrue/rules/web_stack.mdc && echo "PASS: exported to nest
    - Personal `config.yaml` created for local overrides
    - `aligntrue sync`
 
-3. **Personal remote backup setup:**
+3. **Personal remotes setup:**
    - Create private git repository for backup
    - Configure backup URL in config.yaml under `backup.default`
-   - Push personal rules to backup with `aligntrue backup push`
+   - Push personal rules to remote with `aligntrue remotes push`
    - Verify git operations (push to remote)
    - Auto-backup during sync when `auto: true`
 
@@ -1212,7 +1212,7 @@ test -f apps/docs/.aligntrue/rules/web_stack.mdc && echo "PASS: exported to nest
 9. **Personal rules with remote backup:**
    - Configure backup in config.yaml
    - Modify personal rules and sync
-   - Verify backup push operations
+   - Verify remote push operations
 
 ### Team Testing Patterns
 
@@ -1743,7 +1743,7 @@ aligntrue sync
 # Warning: URL configured as both source and remote. Skipping remote push.
 ```
 
-**Note:** There are no standalone `remotes status` or `remotes push` commands. Remote push is triggered automatically during `aligntrue sync` when `auto: true` is configured. To add a remote, use `aligntrue add remote <url>`.
+**Note:** Remote push can run automatically during `aligntrue sync` when `auto: true` is configured. You can also run `aligntrue remotes status` and `aligntrue remotes push` directly. To add a remote, use `aligntrue add remote <url>`.
 
 **Automated test implementation:** Add this scenario to `layer-3-team.ts` using the `TeamScenario` interface. Test auto-push during sync, multiple destinations with file assignments, and source/remote conflict detection.
 

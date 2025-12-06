@@ -54,14 +54,14 @@
           "items": {
             "type": "string"
           },
-          "description": "Relative paths to skill .md files to include (future)"
+          "description": "Relative paths to skill .md files to include"
         },
         "mcp": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Relative paths to MCP configuration files (future)"
+          "description": "Relative paths to MCP configuration files"
         }
       },
       "additionalProperties": false,

@@ -45,7 +45,7 @@ An Align can be:
 - A collection of rules (e.g., `typescript.md`, `testing.md`)
 - An MCP server configuration
 - A skill definition
-- Other shareable elements (future)
+- Other shareable elements (as needed)
 
 **Key points:**
 

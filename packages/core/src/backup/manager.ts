@@ -684,7 +684,7 @@ export class BackupManager {
   ): Promise<void> {
     throw new Error(
       "Remote backup sync not yet implemented. " +
-        "Please use 'git push' manually to sync backups to remote repository.",
+        "Use 'aligntrue remotes push' (or manual git push) to sync backups to a remote repository.",
     );
   }
 }

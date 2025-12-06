@@ -119,7 +119,7 @@ If you see `Network unavailable, using cached align`:
 
 - This is expected when offline
 - Cache will be refreshed on next online sync
-- Use `--force-refresh` to bypass cache when online (future CLI)
+- To bypass cache immediately, delete `.aligntrue/.cache/git/` and rerun sync
 
 ### Cache Issues
 
