@@ -33,6 +33,13 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
   },
 ];
 
+const CONFIG_VALIDATORS: Record<string, (value: unknown) => string | null> = {
+  "sync.ignore_file_priority": (value: unknown) => {
+    if (value === "native" || value === "custom") return null;
+    return "Must be 'native' or 'custom'";
+  },
+};
+
 /**
  * Config command implementation
  */
@@ -419,12 +426,28 @@ async function configSet(
         parsedValue = Number(value);
     }
 
+    const validator = CONFIG_VALIDATORS[key];
+    if (validator) {
+      const validationError = validator(parsedValue);
+      if (validationError) {
+        exitWithError(1, `Invalid value for ${key}: ${validationError}`, {
+          hint: "Use one of the allowed values for this setting.",
+        });
+      }
+    }
+
     // Set the value
     setNestedValue(config, key, parsedValue);
 
     // Validate the config (skip for vendor keys which are always allowed)
     if (!key.startsWith("vendor.")) {
-      await validateConfig(config as unknown as AlignTrueConfig);
+      try {
+        await validateConfig(config as unknown as AlignTrueConfig);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : String(err ?? "Unknown error");
+        exitWithError(1, `Failed to set '${key}': ${message}`);
+      }
     }
 
     // Write back to file

@@ -371,3 +371,12 @@ aligntrue sync
 - [CLI Reference](/docs/04-reference/cli-reference)
 - [Solo Developer Guide](/docs/01-guides/01-solo-developer-guide)
 - [Team Guide](/docs/01-guides/02-team-guide)
+
+## Handling gitignore merge conflicts
+
+AlignTrue manages `.gitignore` entries between `# START AlignTrue Generated Files` and `# END` markers. If a merge conflict appears in that managed block:
+
+- Keep either side of the conflict (do not try to hand-merge individual lines).
+- Save and rerun `aligntrue sync` — the managed section will be rewritten cleanly.
+
+Conflicts outside the managed block should be resolved normally.

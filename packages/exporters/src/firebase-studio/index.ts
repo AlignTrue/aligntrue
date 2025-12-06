@@ -3,13 +3,14 @@
  * Exports AlignTrue rules to Firebase IDX's .idx/*.md multi-file format
  */
 
-import { join } from "path";
 import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
   ExporterCapabilities,
 } from "../types.js";
+import { normalizePath } from "@aligntrue/core";
+import { join } from "path";
 import { ExporterBase } from "../base/index.js";
 
 export class FirebaseStudioExporter extends ExporterBase {
@@ -48,7 +49,9 @@ export class FirebaseStudioExporter extends ExporterBase {
       // nested_location is for monorepo scopes (different concept)
       const ruleRelPath = rule.relativePath || rule.filename;
       let outputPath: string;
-      const nestedLoc = rule.frontmatter.nested_location;
+      const nestedLoc = rule.frontmatter.nested_location
+        ? normalizePath(rule.frontmatter.nested_location)
+        : undefined;
       if (nestedLoc) {
         outputPath = join(outputDir, nestedLoc, ".idx", ruleRelPath);
       } else {

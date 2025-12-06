@@ -310,10 +310,17 @@ export async function executeSyncWorkflow(
         const { GitIntegration } = await import("@aligntrue/core");
         const gitIntegration = new GitIntegration();
         const perExporterOverrides = config.git?.per_exporter;
+        // Stage exports and lockfile together so drift checks don't fail on partial commits
+        const filesToStage = [...result.written];
+        const lockfilePath = join(cwd, ".aligntrue", "lock.json");
+        if (existsSync(lockfilePath)) {
+          filesToStage.push(".aligntrue/lock.json");
+        }
+
         const gitResult = await gitIntegration.apply({
           mode: gitMode,
           workspaceRoot: cwd,
-          generatedFiles: result.written,
+          generatedFiles: filesToStage,
           ...(perExporterOverrides && { perExporterOverrides }),
         });
 

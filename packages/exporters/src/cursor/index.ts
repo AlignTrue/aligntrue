@@ -10,6 +10,7 @@ import type {
   ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
 import type { RuleFrontmatter } from "@aligntrue/schema";
+import { normalizePath } from "@aligntrue/core";
 import { ExporterBase } from "../base/index.js";
 import { join } from "path";
 import { stringify as stringifyYaml } from "yaml";
@@ -48,7 +49,9 @@ export class CursorExporter extends ExporterBase {
       // Determine output path
       // Use relativePath to preserve source directory structure
       // nested_location is for monorepo scopes (different concept)
-      const nestedLoc = rule.frontmatter.nested_location;
+      const nestedLoc = rule.frontmatter.nested_location
+        ? normalizePath(rule.frontmatter.nested_location)
+        : undefined;
       const ruleRelPath = rule.relativePath || rule.filename;
       const filename = ruleRelPath.replace(/\.md$/, ".mdc");
 

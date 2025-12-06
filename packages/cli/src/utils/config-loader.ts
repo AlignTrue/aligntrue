@@ -7,7 +7,22 @@
 
 import { loadConfig, type AlignTrueConfig } from "@aligntrue/core";
 import * as clack from "@clack/prompts";
+import { existsSync } from "fs";
+import { dirname, join, resolve } from "path";
 import { exitWithError } from "./command-utilities.js";
+
+function hasPartialState(cwd: string): {
+  hasBackups: boolean;
+  hasCache: boolean;
+} {
+  const aligntrueDir = join(cwd, ".aligntrue");
+  return {
+    hasBackups: existsSync(join(aligntrueDir, ".backups")),
+    hasCache:
+      existsSync(join(aligntrueDir, ".cache")) ||
+      existsSync(join(aligntrueDir, ".last-sync")),
+  };
+}
 
 /**
  * Load and validate AlignTrue configuration with standardized error handling
@@ -28,15 +43,40 @@ export async function loadConfigWithValidation(
     const config = await loadConfig(configPath);
     return config;
   } catch (_error) {
+    const errno = _error as NodeJS.ErrnoException;
+
+    // Let main() handle system-level permission errors (exit code 3 + permission hint)
+    if (errno?.code === "EACCES" || errno?.code === "EPERM") {
+      throw _error;
+    }
+
+    const message = _error instanceof Error ? _error.message : String(_error);
+    const isValidationError =
+      message.includes("Invalid config") || message.includes("Invalid YAML");
+
     // Standardized error handling for config loading failures
+    const configDir = dirname(resolve(configPath));
+    const partial = hasPartialState(configDir);
+    let hint = isValidationError
+      ? "Fix the errors above and try again."
+      : "Run 'aligntrue init' to create a valid config";
+
+    if (!isValidationError) {
+      if (partial.hasBackups) {
+        hint =
+          "Previous backups found. Run 'aligntrue backup list' to restore, or 'aligntrue init' for a fresh start.";
+      } else if (partial.hasCache) {
+        hint =
+          "Cached AlignTrue state found but config is missing. Run 'aligntrue init' to recreate configuration.";
+      }
+    }
+
     clack.log.error("Failed to load configuration");
     console.error(`\nFile: ${configPath}`);
-    console.error(
-      `Error: ${_error instanceof Error ? _error.message : String(_error)}`,
-    );
-    console.error(`\nHint: Run 'aligntrue init' to create a valid config`);
-    exitWithError(2, "Failed to load configuration", {
-      hint: "Run 'aligntrue init' to create a valid config",
+    console.error(`Error: ${message}`);
+    console.error(`\nHint: ${hint}`);
+    exitWithError(isValidationError ? 1 : 2, "Failed to load configuration", {
+      hint,
     });
   }
 }

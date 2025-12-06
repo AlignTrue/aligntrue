@@ -6,7 +6,14 @@
  */
 
 import { join, dirname } from "path";
-import { existsSync, mkdirSync, rmSync, readdirSync, cpSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  rmSync,
+  readdirSync,
+  cpSync,
+  writeFileSync,
+} from "fs";
 import simpleGit, { type SimpleGit } from "simple-git";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import type { RemoteDestination } from "../config/types.js";
@@ -238,6 +245,23 @@ export async function pushToRemote(
       await repoGit.push(["--set-upstream", "origin", branch]);
     } else {
       await repoGit.push("origin", branch);
+    }
+
+    // Ensure bare repos have HEAD set when pushing to local/file URLs
+    if (
+      isEmptyRemote &&
+      (config.url.startsWith("file://") || config.url.startsWith("/"))
+    ) {
+      const bareRepoPath = config.url.replace("file://", "");
+      try {
+        writeFileSync(
+          join(bareRepoPath, "HEAD"),
+          `ref: refs/heads/${branch}\n`,
+          "utf-8",
+        );
+      } catch {
+        // Non-fatal: leave as-is if we cannot set HEAD
+      }
     }
 
     progress(`Successfully pushed ${files.length} files`);
