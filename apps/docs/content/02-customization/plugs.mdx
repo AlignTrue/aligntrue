@@ -5,9 +5,20 @@ description: Dynamic configuration slots for stack-specific and project-specific
 
 # Plugs guide
 
+<Callout type="warning">
+  **Experimental feature.** Plugs are functional but under active development.
+  APIs may change. Most solo developers can skip this feature entirely.
+</Callout>
+
 <Callout type="info">
   **Solo developer?** You can skip this page unless you're using rule aligns
   that require project-specific values. Most solo workflows don't need plugs.
+</Callout>
+
+<Callout type="warning">
+  Fills are set only in `.aligntrue/config.yaml` (IR fills are ignored).
+  Supported formats: `command`, `text`. `file` and `url` are deprecated and
+  treated as `text`. Sync fails if required plugs are missing.
 </Callout>
 
 Plugs provide template-based customization for rules that need different values across projects, stacks, or teams. Instead of forking rules to change test commands or file paths, you declare slots and fill them with project-specific values.

@@ -16,9 +16,6 @@ describe("resolvePlugsForAlign", () => {
             required: true,
           },
         },
-        fills: {
-          "test.cmd": "npm test",
-        },
       },
       sections: [
         {
@@ -36,7 +33,7 @@ describe("resolvePlugsForAlign", () => {
       ],
     };
 
-    const result = resolvePlugsForAlign(align);
+    const result = resolvePlugsForAlign(align, { "test.cmd": "npm test" });
 
     expect(result.success).toBe(true);
     expect(result.rules).toHaveLength(2);
@@ -243,9 +240,6 @@ describe("resolvePlugsForAlign", () => {
             required: true,
           },
         },
-        fills: {
-          "test.file": "/absolute/path", // Invalid
-        },
       },
       sections: [
         {
@@ -257,10 +251,12 @@ describe("resolvePlugsForAlign", () => {
       ],
     };
 
-    const result = resolvePlugsForAlign(align);
+    const result = resolvePlugsForAlign(align, {
+      "test.file": "/absolute/path",
+    });
 
-    expect(result.success).toBe(false);
-    expect(result.errors).toBeDefined();
-    expect(result.errors![0]).toContain("repo-relative");
+    expect(result.success).toBe(true);
+    expect(result.errors).toBeUndefined();
+    expect(result.rules[0].content).toContain("/absolute/path");
   });
 });

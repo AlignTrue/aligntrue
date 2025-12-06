@@ -6,12 +6,12 @@
 import {
   ValidationResult,
   validateRelativePath,
-  validateUrl as validateUrlFramework,
   valid,
   invalid,
 } from "../validation/index.js";
 
-export type PlugFormat = "command" | "file" | "url" | "text";
+// Supported formats.
+export type PlugFormat = "command" | "text" | "file" | "url";
 export type { ValidationResult };
 
 /**
@@ -25,21 +25,19 @@ export function validateCommand(value: string): ValidationResult {
 }
 
 /**
- * Validate a file format fill
- * - Must be relative path
- * - No absolute paths
- * - No parent directory traversal
+ * Validate a file format fill (deprecated)
+ * - Treated as text for backward compatibility
  */
 export function validateFile(value: string): ValidationResult {
-  return validateRelativePath(value, "File path");
+  return validateText(value);
 }
 
 /**
- * Validate a URL format fill
- * - Must be a valid URL with protocol
+ * Validate a URL format fill (deprecated)
+ * - Treated as text for backward compatibility
  */
 export function validateUrl(value: string): ValidationResult {
-  return validateUrlFramework(value);
+  return validateText(value);
 }
 
 /**
@@ -68,7 +66,6 @@ export function validateFill(
       return validateFile(value);
     case "url":
       return validateUrl(value);
-    case "text":
     default:
       return validateText(value);
   }

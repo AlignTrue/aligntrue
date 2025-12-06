@@ -87,7 +87,8 @@ describe("mergePlugs", () => {
       },
     ];
 
-    expect(() => mergePlugs(sources)).toThrow("repo-relative");
+    const merged = mergePlugs(sources);
+    expect(merged.fills?.["test.file"]).toBe("/absolute/path");
   });
 
   it("rejects invalid plug keys", () => {

@@ -57,7 +57,7 @@ EXECUTION PROTOCOL:
 4. Execute new feature workflows:
    - Ignore file management (auto-detection of format conflicts)
    - Backup creation and restoration on destructive operations
-   - Config-based plugs fills (set/unset/validate formats)
+   - Config-based plugs fills (config-only fills; set/unset; formats: command/text, file/url deprecated and treated as text; sync fails if required plugs unresolved)
 5. For each workflow:
    - Run exact commands
    - Capture stdout, stderr, exit codes

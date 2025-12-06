@@ -9,7 +9,6 @@ import { tmpdir } from "os";
 import {
   isTeamModeActive,
   hasTeamModeOffMarker,
-  isLegacyTeamConfig,
   loadMergedConfig,
   mergeConfigs,
   TEAM_MODE_OFF_MARKER,
@@ -74,40 +73,6 @@ describe("Mode detection", () => {
         "utf-8",
       );
       expect(hasTeamModeOffMarker(testDir)).toBe(false);
-    });
-  });
-
-  describe("isLegacyTeamConfig", () => {
-    it("returns false in solo mode", () => {
-      writeFileSync(
-        join(testDir, ".aligntrue", "config.yaml"),
-        "mode: solo\n",
-        "utf-8",
-      );
-      expect(isLegacyTeamConfig(testDir)).toBe(false);
-    });
-
-    it("returns true when mode: team in config.yaml with no team config", () => {
-      writeFileSync(
-        join(testDir, ".aligntrue", "config.yaml"),
-        "mode: team\n",
-        "utf-8",
-      );
-      expect(isLegacyTeamConfig(testDir)).toBe(true);
-    });
-
-    it("returns false when config.team.yaml exists (new two-file system)", () => {
-      writeFileSync(
-        join(testDir, ".aligntrue", "config.yaml"),
-        "mode: team\n",
-        "utf-8",
-      );
-      writeFileSync(
-        join(testDir, ".aligntrue", "config.team.yaml"),
-        "mode: team\n",
-        "utf-8",
-      );
-      expect(isLegacyTeamConfig(testDir)).toBe(false);
     });
   });
 });
@@ -284,25 +249,6 @@ exporters:
       const { config, isTeamMode } = await loadMergedConfig(testDir);
       expect(isTeamMode).toBe(true);
       expect(config.mode).toBe("team");
-    });
-
-    it("legacy team config: emits deprecation warning", async () => {
-      writeFileSync(
-        join(testDir, ".aligntrue", "config.yaml"),
-        `version: "1"
-mode: team
-exporters:
-  - cursor
-`,
-        "utf-8",
-      );
-
-      const { warnings, isLegacyTeamConfig } = await loadMergedConfig(testDir);
-      expect(isLegacyTeamConfig).toBe(true);
-      const hasLegacyWarning = warnings.some((w) =>
-        w.message.includes("migrate"),
-      );
-      expect(hasLegacyWarning).toBe(true);
     });
   });
 });

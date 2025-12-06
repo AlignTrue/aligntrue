@@ -38,7 +38,6 @@ export async function loadIRAndResolvePlugs(
     maxFileSizeMb?: number;
     force?: boolean;
     config?: AlignTrueConfig;
-    strictPlugs?: boolean;
     plugFills?: Record<string, string>;
   },
 ): Promise<IRResult> {
@@ -54,7 +53,7 @@ export async function loadIRAndResolvePlugs(
       const plugsResult = resolvePlugsForAlign(
         ir,
         options?.plugFills, // Pass config fills so they're available during resolution
-        options?.strictPlugs ? { failOnUnresolved: true } : {},
+        { failOnUnresolved: true },
       );
 
       if (!plugsResult.success) {

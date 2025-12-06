@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Plugs and overlays simplified (experimental)** - Plugs now take fills only from `.aligntrue/config.yaml`, deprecated `file`/`url` formats are treated as `text`, unresolved required plugs fail sync by default, and the plugs CLI is reduced to a single status view plus `set`/`unset`. Overlays now support only `rule[id=...]` and `sections[index]` selectors, use `set: { key: null }` for removals, fail on conflicts by default (opt-in flag to allow), and remove unused merge/patch code. CLI commands collapsed to `override` (status/diff), `override add`, and `override selectors`.
 - **Team mode simplified** - Removed `lockfile.mode` soft/strict options; lockfile is now enabled via `modules.lockfile: true` and drift enforcement happens via `aligntrue drift --gates` in CI. Lockfile generation now runs once after exports and respects `--dry-run`
 - **Git sources in team mode warn instead of block** - Sync now continues with cached git sources when updates are available; add `--strict-sources` to block until updates are approved
 - **BREAKING: Team lockfile simplified to bundle hash only** - Lockfile v2 now contains only `version` and `bundle_hash` (hash of team rules + `config.team.yaml`). Per-rule sections, timestamps, mode fields, and provenance were removed. Drift detection compares only the bundle hash for reliability and easier Git-based review

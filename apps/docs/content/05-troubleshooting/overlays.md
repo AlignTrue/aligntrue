@@ -14,18 +14,18 @@ Common issues when working with overlays and their solutions.
 ### Diagnosis
 
 ```bash
-# Apply overlays and rebuild IR/exports
+# Apply overlays and rebuild IR/exports (conflicts now fail by default)
 aligntrue sync
-# Output shows: ✓ Applied N overlays
+# Output shows: ✓ Applied N overlays (or errors if conflicts/deprecated selectors)
 
 # Confirm selector health against the current IR
-aligntrue override status
+aligntrue override
 
 # Inspect the change the overlay applies
 aligntrue override diff 'rule[id=your-rule-id]'
 
 # Look for issues
-aligntrue override status --json
+aligntrue override --json
 ```
 
 ### Common causes
@@ -57,7 +57,7 @@ aligntrue override add \
 
 #### 2. Selector doesn't match
 
-**Problem:** Selector doesn't match any rules in the IR.
+**Problem:** Selector doesn't match any rules in the IR, or uses a deprecated selector type. Supported selectors: `rule[id=...]`, `sections[index]`.
 
 **Error message:**
 
@@ -114,43 +114,31 @@ aligntrue override add \
 
 ## Overlay conflicts
 
-**Symptom:** Multiple overlays target the same check.
+**Default:** Conflicts now fail sync. If multiple overlays target the same property, `aligntrue sync` exits with errors.
 
-### Multiple overlays for same check
+**Allow conflicts (last-writer-wins):**
 
-**Problem:**
+```bash
+aligntrue sync --allow-overlay-conflicts
+```
+
+or in config:
 
 ```yaml
 overlays:
-  overrides:
-    - selector: "rule[id=no-console-log]"
-      set:
-        severity: "error"
-
-    - selector: "rule[id=no-console-log]"
-      set:
-        severity: "warning" # Conflicts with above
+  allow_overlay_conflicts: true
 ```
 
-**Behavior:** Last matching overlay wins. The second overlay overrides the first.
+**Fix conflicts (recommended):**
 
-**Solution (if unintended):**
-
-```bash
-# Remove duplicate overlay
-aligntrue override remove 'rule[id=no-console-log]'
-
-# Choose which one to keep and re-add
-aligntrue override add \
-  --selector 'rule[id=no-console-log]' \
-  --set severity=error
-```
+1. Remove duplicate/overlapping overlays so each property is set once.
+2. Prefer `rule[id=...]` selectors for clarity.
 
 ## Overlay status
 
 **Symptom:** Overlays don't seem to be taking effect.
 
-### Verify overlays are active
+### Verify overlays are active (and conflict-free)
 
 ```bash
 # 1. Apply overlays (required for IR/exports)

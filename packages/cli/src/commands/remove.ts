@@ -137,29 +137,22 @@ export async function remove(args: string[]): Promise<void> {
     // Check if anything was removed
     if (config.sources.length === originalLength) {
       spinner.stop("Source not found", 1);
-
-      if (isTTY()) {
-        clack.log.warn(`No source found matching: ${urlToRemove}`);
-        clack.log.info("Current sources:");
-        for (const source of config.sources) {
-          if (source.type === "git") {
-            clack.log.info(`  - ${source.type}: ${source.url}`);
-          } else if (source.type === "local") {
-            clack.log.info(`  - local: ${source.path}`);
-          }
-        }
-      } else {
-        console.log(`\nWarning: No source found matching: ${urlToRemove}`);
-        console.log("Current sources:");
-        for (const source of config.sources) {
-          if (source.type === "git") {
-            console.log(`  - ${source.type}: ${source.url}`);
-          } else if (source.type === "local") {
-            console.log(`  - local: ${source.path}`);
-          }
-        }
-      }
-      return;
+      const sourcesList = config.sources.map((source) =>
+        source.type === "git" ? `git: ${source.url}` : `local: ${source.path}`,
+      );
+      exitWithError(
+        {
+          title: "Source not found",
+          message: `No source found matching: ${urlToRemove}`,
+          details:
+            sourcesList.length > 0
+              ? ["Current sources:", ...sourcesList]
+              : ["No sources are configured."],
+          hint: "Check the URL and run 'aligntrue sources list' to view configured sources.",
+          code: "ERR_SOURCE_NOT_FOUND",
+        },
+        2,
+      );
     }
 
     // Patch config - only update sources, preserve everything else
@@ -177,6 +170,10 @@ export async function remove(args: string[]): Promise<void> {
     }
   } catch (error) {
     spinner.stop("Remove failed", 1);
+
+    if (error instanceof Error && error.message?.startsWith("process.exit")) {
+      throw error;
+    }
 
     if (error && typeof error === "object" && "code" in error) {
       throw error;

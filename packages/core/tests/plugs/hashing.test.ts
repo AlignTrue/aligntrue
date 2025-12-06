@@ -157,7 +157,7 @@ describe("plugs hashing", () => {
       expect(hash1).not.toBe(hash2);
     });
 
-    it("returns undefined if resolution fails", () => {
+    it("returns hash even when legacy file/url formats are provided", () => {
       const align: Align = {
         id: "test/align",
         version: "1.0.0",
@@ -186,7 +186,8 @@ describe("plugs hashing", () => {
 
       const hash = computePostResolutionHash(align);
 
-      expect(hash).toBeUndefined();
+      expect(hash).toBeDefined();
+      expect(hash).toMatch(/^[a-f0-9]{64}$/);
     });
   });
 

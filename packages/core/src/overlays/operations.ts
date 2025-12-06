@@ -152,7 +152,12 @@ export function applySetOperations(
   const sortedKeys = Object.keys(operations).sort();
 
   for (const key of sortedKeys) {
-    setProperty(target, key, operations[key]);
+    const value = operations[key];
+    if (value === null) {
+      removeProperty(target, key);
+    } else {
+      setProperty(target, key, value);
+    }
   }
 }
 

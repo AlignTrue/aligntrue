@@ -1,15 +1,15 @@
 # Plugs commands
 
-Manage dynamic configuration slots and fills in rule aligns. Plugs allow template-based customization for stack-specific values.
+Manage dynamic configuration slots and fills in rule aligns.
 
-## `aligntrue plugs list`
+## `aligntrue plugs`
 
-List all declared slots, current fills, and resolution status.
+Show plug status (list + resolve + validate).
 
 **Usage:**
 
 ```bash
-aligntrue plugs list [--config <path>]
+aligntrue plugs [--config <path>]
 ```
 
 **Options:**
@@ -18,150 +18,17 @@ aligntrue plugs list [--config <path>]
 | ----------------- | ----------------------- | ------------------------ |
 | `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
 
-**What it shows:**
+**Behavior:**
 
-- Declared slots with descriptions, formats, and requirements
-- Current fill values for each slot
-- Resolution status (filled, required, optional)
-- Orphan fills (fills without declared slots)
-- Summary of required vs filled slots
-
-**Example output:**
-
-```
-📌 Plugs Audit
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Slots declared:
-
-  test.cmd
-    Description: Command to run the project's tests
-    Format:      command
-    Required:    true
-    Example:     pytest -q
-    Status:      ✓ filled
-    Fill:        pnpm test
-
-  docs.url
-    Description: Documentation website URL
-    Format:      url
-    Required:    false
-    Example:     https://example.com/docs
-    Status:      ○ optional
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Summary:
-  Total slots:      2
-  Required slots:   1
-  Filled required:  1
-```
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Rules file not found or parsing error
-
-**See also:** [Plugs Guide](/docs/02-customization/plugs) for detailed plug usage
-
----
-
-## `aligntrue plugs resolve`
-
-Preview plug resolution with current fills (dry-run mode).
-
-**Usage:**
-
-```bash
-aligntrue plugs resolve [--config <path>]
-```
-
-**Options:**
-
-| Flag              | Description             | Default                  |
-| ----------------- | ----------------------- | ------------------------ |
-| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
-
-**What it does:**
-
-1. Loads rules from `.aligntrue/rules/` using the provided config
-2. Resolves all `[[plug:key]]` references with current fills
-3. Inserts TODO blocks for unresolved required plugs
-4. Displays resolved text and unresolved plug list
-5. Does NOT write changes (preview only)
-
-**Example output:**
-
-```
-✓ Resolved 2 plugs
-
-Resolved text preview:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Run tests with: pnpm test
-
-Documentation: https://example.com/docs
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Unresolved required plugs: 0
-```
-
-**With unresolved required plugs:**
-
-```
-⚠ Unresolved required plugs: 1
-  - author.name
-
-Resolved text will contain TODO blocks:
-
-TODO(plug:author.name): Provide a value for this plug.
-Examples: John Doe
-```
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Rules file not found or parsing error
-
-**See also:** [Plugs Guide](/docs/02-customization/plugs) for resolution algorithm
-
----
-
-## `aligntrue plugs validate`
-
-Validate plugs: required slots without fills, undeclared slots, and unresolved references.
-
-**Usage:**
-
-```bash
-aligntrue plugs validate [--config <path>]
-```
-
-**Options:**
-
-| Flag              | Description             | Default                  |
-| ----------------- | ----------------------- | ------------------------ |
-| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
-
-**What it does:**
-
-- Fails if required slots lack fills
-- Warns when fills have no declared slots
-- Fails on `[[plug:key]]` references without declared slots
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Validation failed or config load error
+- Fills only come from `.aligntrue/config.yaml` (IR fills are ignored)
+- Supported formats: `command`, `text` (`file` and `url` are deprecated and treated as `text`)
+- Sync fails if required plugs are unresolved
 
 ---
 
 ## `aligntrue plugs set`
 
-Set a repo-local fill value with format validation.
-Set a repo-local fill value with format validation.
+Set a repo-local fill value with validation.
 
 **Usage:**
 
@@ -180,74 +47,23 @@ aligntrue plugs set <key> <value> [--config <path>]
 | ----------------- | ----------------------- | ------------------------ |
 | `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
 
-**What it does:**
-
-1. Validates key exists as declared slot
-2. Validates value matches slot format (command, text, file, url)
-3. Writes fill to `plugs.fills` in `.aligntrue/config.yaml`
-4. Preserves existing file structure and formatting
-
-**Format validation:**
+**Validation:**
 
 - `command` - Single-line command, no environment variable interpolation (except `CI=true`)
-- `text` - Any single-line UTF-8 string
-- `file` - Repo-relative POSIX path, no `..` segments, no absolute paths
-- `url` - Must start with `http://` or `https://`
+- `text` (and deprecated `file`/`url`) - Any single-line string
 
 **Examples:**
 
 ```bash
-# Set test command
 aligntrue plugs set test.cmd "pnpm test"
-
-# Set author name
 aligntrue plugs set author.name "Jane Smith"
-
-# Set documentation URL
-aligntrue plugs set docs.url "https://docs.example.com"
-
-# Set relative file path
-aligntrue plugs set config.file "config/settings.json"
 ```
-
-**Example output:**
-
-```
-✓ Set plug fill: test.cmd = "pnpm test"
-
-Updated: .aligntrue/config.yaml
-
-Next step:
-  Run: aligntrue sync
-```
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - Validation error (invalid key, format mismatch, file not found)
-- `2` - Usage error (missing arguments)
-
-**Common errors:**
-
-```
-✗ Slot not declared: unknown.key
-  Hint: Run 'aligntrue plugs list' to see declared slots
-
-✗ Format validation failed: file
-  Value contains '..' segments (not allowed)
-  Hint: Use repo-relative paths without parent directory traversal
-
-✗ Format validation failed: url
-  Value must start with http:// or https://
-```
-
-**See also:** [Plugs Guide](/docs/02-customization/plugs) for format requirements
 
 ---
 
 ## `aligntrue plugs unset`
 
-Remove a configured plug fill from `.aligntrue/config.yaml`.
+Remove a repo-local fill value.
 
 **Usage:**
 
@@ -255,20 +71,12 @@ Remove a configured plug fill from `.aligntrue/config.yaml`.
 aligntrue plugs unset <key> [--config <path>]
 ```
 
-**Options:**
+**Arguments:**
 
-| Flag              | Description             | Default                  |
-| ----------------- | ----------------------- | ------------------------ |
-| `--config <path>` | Custom config file path | `.aligntrue/config.yaml` |
+- `key` - Plug slot key
 
-**What it does:**
+**Example:**
 
-1. Validates the fill exists
-2. Removes the fill (or the entire plugs section if it was the last fill)
-3. Preserves other configuration
-
-**Exit codes:**
-
-- `0` - Success
-- `1` - No fill found for the slot
-- `2` - Usage error (missing slot name)
+```bash
+aligntrue plugs unset test.cmd
+```

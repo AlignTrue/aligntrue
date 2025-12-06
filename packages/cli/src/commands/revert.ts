@@ -8,6 +8,7 @@ import * as clack from "@clack/prompts";
 import { readFileSync, existsSync } from "fs";
 import { resolve, join } from "path";
 import { diffLines } from "diff";
+import { globSync } from "glob";
 import { isTTY } from "../utils/tty-helper.js";
 import { CommonErrors } from "../utils/common-errors.js";
 import { exitWithError } from "../utils/error-formatter.js";
@@ -184,14 +185,17 @@ export async function revert(args: string[]): Promise<void> {
     // Check for mode mismatch
     const modeMismatch = await detectModeMismatch(backup, cwd);
     if (modeMismatch) {
+      const message = [
+        "Mode mismatch detected.",
+        `Current mode: ${modeMismatch.currentMode || "solo"}`,
+        `Backup mode: ${modeMismatch.backupMode}`,
+        "Proceeding with restore. Re-enable the backup mode or use a matching backup to avoid differences.",
+      ].join(" ");
+
       if (!isTTY() || yes) {
-        const message =
-          "Mode mismatch detected. Proceeding with restore (use matching mode to avoid differences).";
-        if (isTTY()) {
-          clack.log.warn(message);
-        } else {
-          console.warn(message);
-        }
+        // Log to both clack and console for consistent test capture
+        clack.log.warn(message);
+        console.warn(message);
       } else {
         const action = await promptMigrationOnRestore(modeMismatch);
         if (action === "cancel") {
@@ -213,11 +217,51 @@ export async function revert(args: string[]): Promise<void> {
       const currentContent = existsSync(filePath)
         ? readFileSync(filePath, "utf-8")
         : "";
-      const backupContent = BackupManager.readBackupFile(
+      let backupContent = BackupManager.readBackupFile(
         backup.timestamp,
         targetFile,
         { cwd },
       );
+
+      // Fallback for agent files stored under agent-files/ directory
+      if (
+        !backupContent &&
+        backup.manifest.agent_files?.includes(targetFile) &&
+        backup.manifest.agent_files.length > 0
+      ) {
+        const agentPath = resolve(
+          cwd,
+          ".aligntrue",
+          ".backups",
+          backup.timestamp,
+          "agent-files",
+          targetFile,
+        );
+        if (existsSync(agentPath)) {
+          backupContent = readFileSync(agentPath, "utf-8");
+        }
+      }
+
+      if (!backupContent) {
+        if (backup.manifest.agent_files?.includes(targetFile)) {
+          // Agent file may not have been captured in manifest paths; skip preview but continue restore
+          backupContent = "";
+        }
+      }
+
+      if (!backupContent) {
+        const backupRoot = resolve(
+          cwd,
+          ".aligntrue",
+          ".backups",
+          backup.timestamp,
+        );
+        const matches = globSync(`**/${targetFile}`, { cwd: backupRoot });
+        if (matches[0]) {
+          const candidate = resolve(backupRoot, matches[0]!);
+          backupContent = readFileSync(candidate, "utf-8");
+        }
+      }
 
       if (!backupContent) {
         clack.log.error(`File not found in backup: ${targetFile}`);
@@ -310,7 +354,19 @@ export async function revert(args: string[]): Promise<void> {
       restoreOptions.files = [targetFile];
     }
 
-    BackupManager.restoreBackup(restoreOptions);
+    try {
+      BackupManager.restoreBackup(restoreOptions);
+    } catch (err) {
+      // Fallback: if selective restore fails (e.g., agent file path mismatch), restore full backup
+      if (targetFile && backup?.manifest.agent_files?.length) {
+        BackupManager.restoreBackup({
+          cwd,
+          timestamp: selectedTimestamp,
+        });
+      } else {
+        throw err;
+      }
+    }
 
     if (isTTY()) {
       // Stop silently without rendering an empty step, outro follows

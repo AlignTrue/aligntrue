@@ -22,6 +22,7 @@ import {
   type ArgDefinition,
 } from "../utils/command-utilities.js";
 import { withSpinner } from "../utils/spinner.js";
+import { exitWithError } from "../utils/error-formatter.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -121,6 +122,36 @@ export async function uninstall(args: string[]): Promise<void> {
     deleteSource: Boolean(parsed.flags["delete-source"]),
     keepSource: Boolean(parsed.flags["keep-source"]),
   };
+
+  const exportFlagCount =
+    Number(flags.convertExports) +
+    Number(flags.deleteExports) +
+    Number(flags.keepExports);
+  if (exportFlagCount > 1) {
+    exitWithError(
+      {
+        title: "Invalid flag combination",
+        message:
+          "Choose only one of --convert-exports, --delete-exports, or --keep-exports.",
+        hint: "Remove conflicting export flags and rerun uninstall.",
+        code: "ERR_UNINSTALL_FLAG_CONFLICT",
+      },
+      2,
+    );
+  }
+
+  const sourceFlagCount = Number(flags.deleteSource) + Number(flags.keepSource);
+  if (sourceFlagCount > 1) {
+    exitWithError(
+      {
+        title: "Invalid flag combination",
+        message: "Choose only one of --delete-source or --keep-source.",
+        hint: "Remove conflicting source flags and rerun uninstall.",
+        code: "ERR_UNINSTALL_FLAG_CONFLICT",
+      },
+      2,
+    );
+  }
 
   const cwd = process.cwd();
 

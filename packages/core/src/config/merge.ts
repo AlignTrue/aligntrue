@@ -34,7 +34,6 @@ export interface ConfigMergeResult {
   sources: ConfigSources;
   warnings: ConfigWarning[];
   isTeamMode: boolean;
-  isLegacyTeamConfig: boolean;
 }
 
 /**
@@ -101,28 +100,6 @@ export function hasTeamModeOffMarker(cwd: string = process.cwd()): boolean {
 /**
  * Check if this is a legacy team config (mode: team in config.yaml, no config.team.yaml)
  */
-export function isLegacyTeamConfig(cwd: string = process.cwd()): boolean {
-  const paths = getAlignTruePaths(cwd);
-
-  // If team config exists (and is active), it's not legacy
-  if (existsSync(paths.teamConfig) && isTeamModeActive(cwd)) {
-    return false;
-  }
-
-  // Check if personal config has mode: team
-  if (!existsSync(paths.config)) {
-    return false;
-  }
-
-  try {
-    const content = readFileSync(paths.config, "utf-8");
-    const config = parseYaml(content) as Record<string, unknown>;
-    return config?.["mode"] === "team";
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Load raw config from a YAML file without validation or defaults
  */
@@ -452,17 +429,6 @@ export async function loadMergedConfig(
 
   // Check for team mode
   const teamModeActive = isTeamModeActive(cwd);
-  const legacyTeamConfig = isLegacyTeamConfig(cwd);
-
-  // Add legacy warning
-  if (legacyTeamConfig) {
-    warnings.push({
-      field: "mode",
-      message:
-        "Legacy team config detected. Run 'aligntrue migrate config' to split into personal/team files.",
-      level: "warn",
-    });
-  }
 
   // Load raw configs
   const personalRaw = loadRawConfig(paths.config);
@@ -506,8 +472,7 @@ export async function loadMergedConfig(
     config,
     sources,
     warnings,
-    isTeamMode: teamModeActive || legacyTeamConfig,
-    isLegacyTeamConfig: legacyTeamConfig,
+    isTeamMode: teamModeActive,
   };
 }
 

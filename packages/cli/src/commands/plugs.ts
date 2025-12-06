@@ -48,20 +48,16 @@ function showHelp() {
   showStandardHelp({
     name: "plugs",
     description: "Experimental: list, resolve, and validate plugs in rules",
-    usage: "aligntrue plugs <list|resolve|validate|set|unset> [options]",
+    usage: "aligntrue plugs [set|unset] [options]",
     args: ARG_DEFINITIONS,
     examples: [
-      "aligntrue plugs list                      # List all slots and fills",
-      "aligntrue plugs resolve                   # Resolve plugs and show output",
-      "aligntrue plugs validate                  # Validate plugs",
+      "aligntrue plugs                           # Show status (list + resolve + validate)",
       'aligntrue plugs set test.cmd "pnpm test" # Set a fill value',
       "aligntrue plugs unset test.cmd           # Remove a fill value",
     ],
     notes: [
       "Subcommands:",
-      "  list      - List declared slots and fills",
-      "  resolve   - Resolve plugs in rules and show output",
-      "  validate  - Check for undeclared or unresolved plugs",
+      "  (none)    - Show plugs status (list + resolve + validate)",
       "  set       - Set a fill value for a slot",
       "  unset     - Remove a fill value for a slot",
     ],
@@ -81,35 +77,21 @@ export async function plugsCommand(args: string[]): Promise<void> {
   }
 
   const subcommand = positional[0];
-  if (!subcommand) {
-    console.error("Error: Subcommand required\n");
-    showHelp();
-    exitWithError(
-      {
-        title: "Subcommand required",
-        message: "Provide one of: list, resolve, validate, set, unset",
-        hint: "Run 'aligntrue plugs --help' for usage",
-      },
-      2,
-    );
-  }
+  const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
 
-  const validSubcommands = ["list", "resolve", "validate", "set", "unset"];
-  if (!validSubcommands.includes(subcommand)) {
-    console.error(`Error: Unknown subcommand "${subcommand}"\n`);
-    console.error("Valid subcommands: list, resolve, validate, set, unset\n");
-    console.error("Run 'aligntrue plugs --help' for more information\n");
+  if (
+    subcommand &&
+    !["set", "unset", "list", "resolve", "validate"].includes(subcommand)
+  ) {
     exitWithError(
       {
         title: "Unknown subcommand",
         message: `Unknown subcommand "${subcommand}"`,
-        hint: "Valid: list, resolve, validate, set, unset",
+        hint: "Valid: set, unset, list, resolve, validate",
       },
       2,
     );
   }
-
-  const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
 
   try {
     // Handle set/unset commands separately (don't need align)
@@ -121,7 +103,6 @@ export async function plugsCommand(args: string[]): Promise<void> {
       await unsetPlugFill(positional.slice(1), configPath);
       return;
     }
-
     // Load config
     const config = await tryLoadConfig(configPath);
 
@@ -184,19 +165,16 @@ export async function plugsCommand(args: string[]): Promise<void> {
       );
     }
 
-    // Execute subcommand
-    switch (subcommand) {
-      case "list":
-        await listPlugs(align, config);
-        break;
-      case "resolve":
-        await resolvePlugs(align, config);
-        break;
-      case "validate":
-        await validatePlugs(align, config);
-        break;
-    }
+    // Default: combined status view (list + resolve + validate)
+    await showPlugsStatus(align, config);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message &&
+      error.message.startsWith("process.exit")
+    ) {
+      throw error;
+    }
     exitWithError(
       Errors.fileWriteFailed(
         "plugs command",
@@ -355,6 +333,15 @@ async function listPlugs(
   }
 
   console.log("└  ✓ Complete\n");
+}
+
+async function showPlugsStatus(
+  align: Align,
+  config: AlignTrueConfig | null | undefined,
+): Promise<void> {
+  await listPlugs(align, config);
+  await resolvePlugs(align, config);
+  await validatePlugs(align, config);
 }
 
 /**
@@ -620,17 +607,40 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
       };
     }
 
-    // Validate slot format if slot is declared
-    if (align.plugs?.slots?.[slotName]) {
-      const slotDef = align.plugs.slots[slotName];
-      const format = (slotDef.format || "text") as PlugFormat;
+    const slotDef = align.plugs?.slots?.[slotName];
+    const format =
+      (slotDef?.format as PlugFormat | undefined) ??
+      (slotName.endsWith(".url") ||
+      slotName.endsWith("Url") ||
+      slotName.endsWith("_url")
+        ? ("url" as PlugFormat)
+        : slotName.endsWith(".cmd") ||
+            slotName.endsWith("Cmd") ||
+            slotName.endsWith("_cmd") ||
+            slotName.endsWith(".command") ||
+            slotName.endsWith("_command")
+          ? ("command" as PlugFormat)
+          : slotName.endsWith(".file") ||
+              slotName.endsWith("File") ||
+              slotName.endsWith("_file") ||
+              slotName.endsWith(".path") ||
+              slotName.endsWith("_path")
+            ? ("file" as PlugFormat)
+            : undefined);
 
+    if (!slotDef) {
+      console.warn(
+        `Warning: Slot "${slotName}" is not declared in your rules. Set the slot in plugs.slots to enable validation.`,
+      );
+    }
+
+    if (format) {
       const validation = validateFill(fillValue, format);
       if (!validation.valid) {
         console.error(`✗ Validation failed for slot "${slotName}"\n`);
         console.error(`  ${validation.errors?.[0]?.message}\n`);
         console.error(`  Expected format: ${format}\n`);
-        if (slotDef.example) {
+        if (slotDef?.example) {
           console.error(`  Example: ${slotDef.example}\n`);
         }
         exitWithError(
@@ -641,88 +651,6 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
           },
           1,
         );
-      }
-    } else {
-      // Even if slot is not declared, validate format based on slot name conventions
-      // This prevents storing invalid values that would fail later during sync
-
-      // URL format validation for slots ending in .url, Url, or _url
-      if (
-        slotName.endsWith(".url") ||
-        slotName.endsWith("Url") ||
-        slotName.endsWith("_url")
-      ) {
-        const validation = validateFill(fillValue, "url");
-        if (!validation.valid) {
-          console.error(`✗ Validation failed for slot "${slotName}"\n`);
-          console.error(`  ${validation.errors?.[0]?.message}\n`);
-          console.error(`  Expected format: url\n`);
-          console.error(
-            `  Tip: URLs must include protocol (e.g., https://example.com)\n`,
-          );
-          exitWithError(
-            {
-              title: `Validation failed for slot "${slotName}"`,
-              message: validation.errors?.[0]?.message || "Invalid URL",
-              hint: "URLs must include protocol (e.g., https://example.com)",
-            },
-            1,
-          );
-        }
-      }
-
-      // Command format validation for slots ending in .cmd, Cmd, _cmd, .command, or _command
-      if (
-        slotName.endsWith(".cmd") ||
-        slotName.endsWith("Cmd") ||
-        slotName.endsWith("_cmd") ||
-        slotName.endsWith(".command") ||
-        slotName.endsWith("_command")
-      ) {
-        const validation = validateFill(fillValue, "command");
-        if (!validation.valid) {
-          console.error(`✗ Validation failed for slot "${slotName}"\n`);
-          console.error(`  ${validation.errors?.[0]?.message}\n`);
-          console.error(`  Expected format: command\n`);
-          console.error(
-            `  Tip: Commands must be relative paths (no absolute paths like /usr/bin/...)\n`,
-          );
-          exitWithError(
-            {
-              title: `Validation failed for slot "${slotName}"`,
-              message: validation.errors?.[0]?.message || "Invalid command",
-              hint: "Commands must be relative paths (no absolute paths)",
-            },
-            1,
-          );
-        }
-      }
-
-      // File format validation for slots ending in .file, File, _file, .path, or _path
-      if (
-        slotName.endsWith(".file") ||
-        slotName.endsWith("File") ||
-        slotName.endsWith("_file") ||
-        slotName.endsWith(".path") ||
-        slotName.endsWith("_path")
-      ) {
-        const validation = validateFill(fillValue, "file");
-        if (!validation.valid) {
-          console.error(`✗ Validation failed for slot "${slotName}"\n`);
-          console.error(`  ${validation.errors?.[0]?.message}\n`);
-          console.error(`  Expected format: file\n`);
-          console.error(
-            `  Tip: File paths must be relative (no absolute paths)\n`,
-          );
-          exitWithError(
-            {
-              title: `Validation failed for slot "${slotName}"`,
-              message: validation.errors?.[0]?.message || "Invalid file path",
-              hint: "File paths must be relative (no absolute paths)",
-            },
-            1,
-          );
-        }
       }
     }
 

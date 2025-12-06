@@ -57,9 +57,9 @@ export interface RemoveOperation {
 export interface OverlayDefinition {
   /** Deterministic selector string */
   selector: string;
-  /** Set operation (optional) */
+  /** Set operation (optional). Use null values to remove properties. */
   set?: Record<string, unknown>;
-  /** Remove operation (optional) */
+  /** Remove operation (optional, deprecated). Prefer set: { key: null }. */
   remove?: string[];
 }
 

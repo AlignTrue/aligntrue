@@ -296,7 +296,7 @@ Complete each area sequentially. After finishing each area, record findings befo
    - Shows all scopes?
    - Paths correct?
 
-3. Test plugs (if rules have slots):
+3. Test plugs (config-only fills, strict required plugs):
 
    ```bash
    cat > .aligntrue/rules/with-plugs.md <<'EOF'
@@ -307,33 +307,31 @@ Complete each area sequentially. After finishing each area, record findings befo
        test.cmd:
          description: Test command
          format: command
+         required: true
    ---
 
    ## Testing
 
    Run: [[plug:test.cmd]]
    EOF
+   $CLI sync && echo "FAIL: sync should fail when required plug missing"
+
+   # Fill required plug (formats: command, text; file/url deprecated and treated as text)
+   $CLI plugs set test.cmd "pnpm test"
+   $CLI plugs
    $CLI sync
-   $CLI plugs validate
    ```
 
-   - Does `validate` find unresolved plugs?
+   - Does status show required plugs filled? Does sync succeed after fill?
 
-4. Fill a plug:
+4. Test overlays (selectors limited, conflicts fail by default):
 
    ```bash
-   $CLI plugs set test.cmd "pnpm test" --yes
+   $CLI override add --selector "rule[id=some-rule]" --set "severity=error"
+   $CLI override  # default status + diff
    ```
 
-   - Is fill stored in config?
-
-5. Test overlays:
-
-   ```bash
-   $CLI override add --selector "rule[id=some-rule]" --set "severity=error" --yes
-   ```
-
-   - Does it apply without error?
+   - Conflicts should fail unless `--allow-overlay-conflicts` is provided.
 
 **Report findings:**
 

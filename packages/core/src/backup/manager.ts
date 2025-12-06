@@ -17,6 +17,7 @@ import {
   statSync,
 } from "fs";
 import micromatch from "micromatch";
+import { globSync } from "glob";
 import type {
   BackupManifest,
   BackupInfo,
@@ -251,14 +252,19 @@ export class BackupManager {
   ): string | null {
     const cwd = options.cwd || process.cwd();
     const backupDir = join(cwd, ".aligntrue", ".backups", timestamp);
-    const backupFilePath = join(backupDir, filePath);
+    const primaryPath = join(backupDir, filePath);
+    const agentPath = join(backupDir, "agent-files", filePath);
 
-    if (!existsSync(backupFilePath)) {
-      return null;
-    }
+    const candidatePath = existsSync(primaryPath)
+      ? primaryPath
+      : existsSync(agentPath)
+        ? agentPath
+        : null;
+
+    if (!candidatePath) return null;
 
     try {
-      return readFileSync(backupFilePath, "utf-8");
+      return readFileSync(candidatePath, "utf-8");
     } catch {
       return null;
     }
@@ -357,14 +363,24 @@ export class BackupManager {
 
     try {
       // Determine which files to restore
-      const filesToRestore = options.files || backup.manifest.files;
+      const agentFileSet = new Set(backup.manifest.agent_files || []);
+      const requestedFiles = options.files || [
+        ...backup.manifest.files,
+        ...(backup.manifest.agent_files || []),
+      ];
+      const filesToRestore: string[] = [];
+      const agentFilesToRestore: string[] = [];
 
-      // Validate requested files exist in backup
-      if (options.files) {
-        for (const file of options.files) {
-          if (!backup.manifest.files.includes(file)) {
-            throw new Error(`File not found in backup: ${file}`);
-          }
+      for (const file of requestedFiles) {
+        if (agentFileSet.has(file)) {
+          agentFilesToRestore.push(file);
+        } else if (backup.manifest.files.includes(file)) {
+          filesToRestore.push(file);
+        } else if (backup.manifest.agent_files?.includes(file)) {
+          agentFilesToRestore.push(file);
+        } else {
+          // Unknown file request - attempt restore as agent file fallback
+          agentFilesToRestore.push(file);
         }
       }
 
@@ -391,21 +407,24 @@ export class BackupManager {
         cpSync(srcPath, destPath);
       }
 
-      // Restore agent files if present in backup
-      if (
-        backup.manifest.agent_files &&
-        backup.manifest.agent_files.length > 0
-      ) {
+      // Restore agent files requested explicitly or present in manifest
+      if (agentFilesToRestore.length > 0) {
         const agentFilesDir = join(backup.path, "agent-files");
 
         if (existsSync(agentFilesDir)) {
-          for (const agentFile of backup.manifest.agent_files) {
+          for (const agentFile of agentFilesToRestore) {
             const srcPath = join(agentFilesDir, agentFile);
             const destPath = join(cwd, agentFile);
 
-            // Skip if file doesn't exist in backup (safety check)
+            let effectiveSrc = srcPath;
             if (!existsSync(srcPath)) {
-              continue;
+              // Fallback: search for file anywhere in backup (handles legacy paths)
+              const matches = globSync(`**/${agentFile}`, {
+                cwd: agentFilesDir,
+              });
+              if (matches[0]) {
+                effectiveSrc = join(agentFilesDir, matches[0]!);
+              }
             }
 
             const destDir = dirname(destPath);
@@ -416,7 +435,9 @@ export class BackupManager {
             }
 
             try {
-              cpSync(srcPath, destPath);
+              if (existsSync(effectiveSrc)) {
+                cpSync(effectiveSrc, destPath);
+              }
             } catch {
               // Log but don't fail entire restore if one agent file fails
               console.warn(
