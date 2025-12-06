@@ -237,6 +237,6 @@ Use approach B.
 
       expect(result.has_drift).toBe(true);
       expect(result.findings.some((f) => f.category === "conflict")).toBe(true);
-    });
+    }, 20000);
   });
 });

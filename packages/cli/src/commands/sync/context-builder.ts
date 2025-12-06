@@ -7,7 +7,6 @@ import {
   writeFileSync,
   statSync,
   readdirSync,
-  readFileSync,
   realpathSync,
 } from "fs";
 import { dirname, join, resolve } from "path";
@@ -21,7 +20,6 @@ import {
   getExporterNames,
   loadMergedConfig,
   type ConfigWarning,
-  detectNestedAgentFiles,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
@@ -209,83 +207,6 @@ export async function buildSyncContext(
         clack.log.warn(warning.message);
       } else {
         clack.log.info(warning.message);
-      }
-    }
-  }
-
-  // Auto-import detected agent files outside .aligntrue/rules by extracting content
-  // Skip entirely in dry-run to avoid side effects
-  if (!options.dryRun) {
-    const detectedAgentFiles = await detectNestedAgentFiles(cwd);
-    const rulesDir = paths.rules;
-    const extractedRulesPath = join(rulesDir, "extracted-rules.md");
-    const rulesMarker = "/.aligntrue/rules/";
-
-    for (const file of detectedAgentFiles) {
-      const normalizedPath = file.path.replace(/\\/g, "/");
-      // Skip files already under the managed rules directory
-      if (normalizedPath.includes(rulesMarker)) continue;
-
-      try {
-        const content = readFileSync(file.path, "utf-8").trim();
-        if (!content) continue;
-
-        ensureDirectoryExists(rulesDir);
-
-        const header = [
-          "\n",
-          "## Extracted from: ",
-          file.relativePath,
-          "\n\n",
-          content,
-          content.endsWith("\n") ? "" : "\n",
-        ].join("");
-
-        let existingExtracted = "# Extracted Rules\n";
-        try {
-          existingExtracted = readFileSync(extractedRulesPath, "utf-8");
-        } catch (error) {
-          const err = error as NodeJS.ErrnoException;
-          if (err.code === "ENOENT") {
-            existingExtracted = "# Extracted Rules\n";
-          } else {
-            throw error;
-          }
-        }
-
-        // Ensure header is present even if file existed without it
-        if (!existingExtracted.startsWith("# Extracted Rules")) {
-          existingExtracted = `# Extracted Rules\n${existingExtracted}`;
-        }
-
-        // Deduplicate by source path while preserving insertion order
-        const sections = new Map<string, string>();
-        const order: string[] = [];
-        const sectionRegex =
-          /\n## Extracted from: ([^\n]+)\n[\s\S]*?(?=\n## Extracted from: |\s*$)/g;
-        let match: RegExpExecArray | null;
-        while ((match = sectionRegex.exec(existingExtracted))) {
-          const path = (match[1] || "").trim();
-          if (!path) continue;
-          if (!sections.has(path)) {
-            order.push(path);
-          }
-          sections.set(path, match[0]);
-        }
-
-        if (!sections.has(file.relativePath)) {
-          order.push(file.relativePath);
-        }
-        sections.set(file.relativePath, header);
-
-        const rebuilt = [
-          "# Extracted Rules\n",
-          ...order.map((path) => sections.get(path) ?? ""),
-        ].join("");
-
-        writeFileSync(extractedRulesPath, rebuilt, "utf-8");
-      } catch {
-        // Non-fatal: continue to next file
       }
     }
   }
