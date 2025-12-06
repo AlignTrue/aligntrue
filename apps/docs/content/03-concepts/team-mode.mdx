@@ -140,6 +140,60 @@ Settings are split between two configuration files:
 
 When loading configuration, personal settings are merged on top of team settings, allowing local overrides while maintaining team standards.
 
+## Personal + shared + custom in team mode
+
+- **Single scope per rule:** Each rule frontmatter has one `scope`: `team` (default), `personal`, or `shared`. Use custom remotes for extra copies; do not set multiple scopes.
+- **Routing:** Scope decides the default push target; custom remotes add extra destinations.
+
+| Scope in rule | Default push (team mode) | Lockfile | Typical config file               |
+| ------------- | ------------------------ | -------- | --------------------------------- |
+| `team`        | Stays in main repo       | Included | Team                              |
+| `shared`      | `remotes.shared`         | Included | Team (or personal if you publish) |
+| `personal`    | `remotes.personal`       | Excluded | Personal                          |
+
+Additional routing:
+
+- `remotes.custom[]` patterns are additive. Files matching an `include` pattern also push to that custom remote, on top of the scope target.
+- Team and personal configs both contribute to `remotes.custom`; lists are concatenated.
+- Sources marked `personal: true` tag all rules from that source as `scope: personal` (and gitignore them).
+
+### Minimal examples
+
+Team config (`config.team.yaml`):
+
+```yaml
+remotes:
+  shared: git@github.com:org/shared-rules.git
+  custom:
+    - id: lint-pack
+      url: git@github.com:org/lint-rules.git
+      include: ["lint*.md"]
+```
+
+Personal config (`config.yaml`):
+
+```yaml
+remotes:
+  personal: git@github.com:me/personal-rules.git
+  custom:
+    - id: my-a11y-pack
+      url: git@github.com:me/a11y-rules.git
+      include: ["a11y*.md"]
+```
+
+Resulting pushes (team mode):
+
+- `scope: team` → main repo only (never pushed).
+- `scope: shared` → shared remote; also to any matching custom remotes.
+- `scope: personal` → personal remote; also to any matching custom remotes.
+
+## FAQs
+
+- **Can a rule be both personal and shared?** No. A rule has a single `scope`. Use `scope: personal` or `scope: shared` and add `remotes.custom` entries for extra destinations.
+- **Can the team set the shared remote?** Yes. `remotes.shared` naturally lives in `config.team.yaml`. Personal config can set it too if you’re publishing your own shared pack.
+- **Where do personal remotes live?** In your personal `config.yaml` (gitignored). They merge with team remotes but only personal rules route there.
+- **Do custom remotes conflict between team and personal?** No—arrays concatenate. Use distinct `id` values.
+
 ## Workflows
 
 ### Initial team setup

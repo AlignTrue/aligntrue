@@ -46,6 +46,19 @@ This separation means:
 
 New team members: run `aligntrue team join` to create your personal (gitignored) `config.yaml`.
 
+### Routing cheatsheet (team mode)
+
+| Rule scope | Default push target | Lockfile | Config file for remote |
+| ---------- | ------------------- | -------- | ---------------------- |
+| `team`     | Stays in repo       | Included | n/a (not pushed)       |
+| `shared`   | `remotes.shared`    | Included | Team (or personal if you publish) |
+| `personal` | `remotes.personal`  | Excluded | Personal               |
+
+Notes:
+
+- One scope per rule. Use `remotes.custom[]` for extra destinations; custom remotes are additive to scope routing and concatenate across team + personal configs.
+- Sources with `personal: true` mark all imported rules as `scope: personal` and gitignore them.
+
 ## Team mode features
 
 **What you get:**
