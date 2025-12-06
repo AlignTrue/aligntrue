@@ -13,9 +13,11 @@ vi.mock("@clack/prompts");
 
 let project: TestProjectContext;
 let exitSpy: ReturnType<typeof vi.spyOn>;
+let originalCwd: string;
 
 beforeEach(() => {
   project = setupTestProject({ skipFiles: true });
+  originalCwd = process.cwd();
   process.chdir(project.projectDir);
 
   exitSpy = vi
@@ -38,6 +40,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   exitSpy.mockRestore();
+  process.chdir(originalCwd);
   await project.cleanup();
 });
 
