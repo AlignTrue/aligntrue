@@ -44,7 +44,7 @@ function detectDirtyExports(context: SyncContext): string[] {
   for (const [relPath, storedHash] of Object.entries(hashes.files)) {
     const absPath = join(context.cwd, relPath);
     if (!existsSync(absPath)) {
-      dirty.push(relPath);
+      // File was removed; treat as absent rather than a local edit
       continue;
     }
     try {
