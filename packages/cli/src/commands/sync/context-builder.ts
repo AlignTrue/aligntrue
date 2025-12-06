@@ -242,13 +242,49 @@ export async function buildSyncContext(
           content.endsWith("\n") ? "" : "\n",
         ].join("");
 
-        writeFileSync(
-          extractedRulesPath,
-          existsSync(extractedRulesPath)
-            ? readFileSync(extractedRulesPath, "utf-8") + header
-            : `# Extracted Rules\n${header}`,
-          "utf-8",
-        );
+        let existingExtracted = "# Extracted Rules\n";
+        try {
+          existingExtracted = readFileSync(extractedRulesPath, "utf-8");
+        } catch (error) {
+          const err = error as NodeJS.ErrnoException;
+          if (err.code === "ENOENT") {
+            existingExtracted = "# Extracted Rules\n";
+          } else {
+            throw error;
+          }
+        }
+
+        // Ensure header is present even if file existed without it
+        if (!existingExtracted.startsWith("# Extracted Rules")) {
+          existingExtracted = `# Extracted Rules\n${existingExtracted}`;
+        }
+
+        // Deduplicate by source path while preserving insertion order
+        const sections = new Map<string, string>();
+        const order: string[] = [];
+        const sectionRegex =
+          /\n## Extracted from: ([^\n]+)\n[\s\S]*?(?=\n## Extracted from: |\s*$)/g;
+        let match: RegExpExecArray | null;
+        while ((match = sectionRegex.exec(existingExtracted))) {
+          const path = (match[1] || "").trim();
+          if (!path) continue;
+          if (!sections.has(path)) {
+            order.push(path);
+          }
+          sections.set(path, match[0]);
+        }
+
+        if (!sections.has(file.relativePath)) {
+          order.push(file.relativePath);
+        }
+        sections.set(file.relativePath, header);
+
+        const rebuilt = [
+          "# Extracted Rules\n",
+          ...order.map((path) => sections.get(path) ?? ""),
+        ].join("");
+
+        writeFileSync(extractedRulesPath, rebuilt, "utf-8");
 
         // Enable matching exporter so future syncs overwrite the source file
         if (file.type === "cursor") exportersToEnable.add("cursor");

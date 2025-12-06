@@ -107,7 +107,7 @@ export async function checkIfSyncNeeded(
 
   // 3. Detect manual edits to exported agent files (AGENTS.md, .cursor/*.mdc, etc.)
   const exportHashes = getExportFileHashes(cwd);
-  if (!exportHashes) {
+  if (!exportHashes || !exportHashes.files) {
     return true; // No baseline -> re-export to establish hashes
   }
 

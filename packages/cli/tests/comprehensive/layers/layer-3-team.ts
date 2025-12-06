@@ -132,16 +132,21 @@ const scenarios: TeamScenario[] = [
         const lockPath = join(userA, ".aligntrue/lock.json");
         const legacyLockPath = join(userA, ".aligntrue.lock.json");
         if (!existsSync(lockPath) && !existsSync(legacyLockPath)) {
-          // Create minimal lockfile to proceed
-          writeFileSync(
-            lockPath,
-            JSON.stringify(
-              { version: "1", bundle_hash: "placeholder" },
-              null,
-              2,
-            ),
-            "utf-8",
-          );
+          // Create minimal lockfile to proceed (fail safely if created elsewhere)
+          try {
+            writeFileSync(
+              lockPath,
+              JSON.stringify(
+                { version: "1", bundle_hash: "placeholder" },
+                null,
+                2,
+              ),
+              { encoding: "utf-8", flag: "wx", mode: 0o600 },
+            );
+          } catch (err) {
+            const nodeErr = err as NodeJS.ErrnoException;
+            if (nodeErr.code !== "EEXIST") throw err;
+          }
         }
         if (existsSync(legacyLockPath) && !existsSync(lockPath)) {
           runCommand("git add .aligntrue .aligntrue.lock.json", userA, {
@@ -621,34 +626,44 @@ function runScenario(
     }
   }
 
-  for (const command of scenario.commands) {
-    console.log(`  Executing: ${command}`);
-    try {
-      execSync(command, {
-        cwd: scenarioWorkspace,
-        encoding: "utf-8",
-        stdio: "pipe",
-        shell: SHELL,
-      });
-      console.log(`  Exit code: 0`);
-    } catch (err) {
-      const execErr = err as ExecException;
-      const exitCode = execErr.status ?? 1;
-      console.log(`  Exit code: ${exitCode}`);
-      // Some commands expected to fail (like drift detection)
-      if (!command.includes("drift")) {
-        const stdout = typeof execErr.stdout === "string" ? execErr.stdout : "";
-        const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
-        console.log(`  Output: ${(stdout + stderr).slice(0, 200)}`);
-        return { passed: false, error: `Command failed: ${command}` };
+  let result: { passed: boolean; error?: string } = { passed: true };
+  try {
+    for (const command of scenario.commands) {
+      console.log(`  Executing: ${command}`);
+      try {
+        execSync(command, {
+          cwd: scenarioWorkspace,
+          encoding: "utf-8",
+          stdio: "pipe",
+          shell: SHELL,
+        });
+        console.log(`  Exit code: 0`);
+      } catch (err) {
+        const execErr = err as ExecException;
+        const exitCode = execErr.status ?? 1;
+        console.log(`  Exit code: ${exitCode}`);
+        // Some commands expected to fail (like drift detection)
+        if (!command.includes("drift")) {
+          const stdout =
+            typeof execErr.stdout === "string" ? execErr.stdout : "";
+          const stderr =
+            typeof execErr.stderr === "string" ? execErr.stderr : "";
+          console.log(`  Output: ${(stdout + stderr).slice(0, 200)}`);
+          result = { passed: false, error: `Command failed: ${command}` };
+          return result;
+        }
       }
     }
-  }
 
-  if (scenario.validation) {
-    return scenario.validation(scenarioWorkspace);
+    if (scenario.validation) {
+      result = scenario.validation(scenarioWorkspace);
+    }
+    return result;
+  } finally {
+    if (scenario.commands && scenarioWorkspace !== workspace) {
+      rmSync(scenarioWorkspace, { recursive: true, force: true });
+    }
   }
-  return { passed: true };
 }
 
 function main() {
