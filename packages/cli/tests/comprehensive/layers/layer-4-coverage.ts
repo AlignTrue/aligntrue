@@ -173,13 +173,13 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue plugs set",
     description: "Plugs set missing slot",
-    expectedExitCode: 0,
+    expectedExitCode: "nonZero",
     requiresSetup: true,
   },
   {
     command: 'aligntrue plugs set test.cmd "/absolute/path"',
     description: "Plugs set invalid format",
-    expectedExitCode: 0,
+    expectedExitCode: "nonZero",
     requiresSetup: true,
   },
   {
@@ -203,7 +203,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue remove",
     description: "Remove missing argument",
-    expectedExitCode: 0,
+    expectedExitCode: "nonZero",
     requiresSetup: true,
   },
   {
@@ -215,7 +215,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue add",
     description: "Add missing URL",
-    expectedExitCode: 0,
+    expectedExitCode: "nonZero",
     requiresSetup: true,
   },
 ];
