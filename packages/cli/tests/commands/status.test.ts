@@ -3,6 +3,8 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import { status } from "../../src/commands/status.js";
 import { mockCommandArgs } from "../utils/command-test-helpers.js";
+import { BackupManager } from "@aligntrue/core";
+import * as clack from "@clack/prompts";
 
 const expectAlignTrueExit = async (
   fn: () => Promise<unknown>,
@@ -112,6 +114,27 @@ describe("status command", () => {
       () => status([]),
       1,
       "Configuration file not found",
+    );
+  });
+
+  it("suggests restoring backup when config is missing but backups exist", async () => {
+    writeBasicProject();
+    BackupManager.createBackup({ cwd: tempDir, notes: "baseline" });
+    rmSync(".aligntrue/config.yaml");
+    vi.mocked(clack.log.info).mockClear();
+
+    await expectAlignTrueExit(
+      () => status([]),
+      1,
+      "Configuration file not found",
+    );
+
+    const infoMessages = vi
+      .mocked(clack.log.info)
+      .mock.calls.map((call) => call[0])
+      .filter((msg): msg is string => typeof msg === "string");
+    expect(infoMessages.some((msg) => msg.includes("backup restore"))).toBe(
+      true,
     );
   });
 });

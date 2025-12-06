@@ -118,10 +118,58 @@ describe("backup command", () => {
     });
   });
 
-  // Note: cleanup subcommand tests removed - they tested the old count-based
-  // cleanup behavior. The current implementation uses time-based retention
-  // (retention_days, minimum_keep) from config, which is hard to test
-  // in unit tests since all backups are created within seconds.
+  describe("cleanup subcommand", () => {
+    it("removes oldest backups when retention_days is 0 and keeps minimum_keep", async () => {
+      // Write config with retention settings
+      writeFileSync(
+        join(aligntrueDir, "config.yaml"),
+        [
+          "mode: solo",
+          "backup:",
+          "  retention_days: 0",
+          "  minimum_keep: 1",
+        ].join("\n"),
+        "utf-8",
+      );
+
+      // Create multiple backups
+      BackupManager.createBackup({ cwd: testDir, notes: "First" });
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      BackupManager.createBackup({ cwd: testDir, notes: "Second" });
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      const newest = BackupManager.createBackup({
+        cwd: testDir,
+        notes: "Third",
+      });
+
+      await backupCommand(["cleanup", "--yes"]);
+
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0]?.timestamp).toBe(newest.timestamp);
+    });
+
+    it("no-ops when already at minimum_keep with retention_days 0", async () => {
+      writeFileSync(
+        join(aligntrueDir, "config.yaml"),
+        [
+          "mode: solo",
+          "backup:",
+          "  retention_days: 0",
+          "  minimum_keep: 2",
+        ].join("\n"),
+        "utf-8",
+      );
+
+      BackupManager.createBackup({ cwd: testDir });
+      BackupManager.createBackup({ cwd: testDir });
+
+      await backupCommand(["cleanup", "--yes"]);
+
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining).toHaveLength(2);
+    });
+  });
 
   describe("error handling", () => {
     it("should show help on missing subcommand", async () => {

@@ -92,7 +92,10 @@ async function handleStatus(cwd: string): Promise<void> {
     clack.log.warn("No remotes configured");
     clack.log.info("Add remotes section to .aligntrue/config.yaml");
     clack.log.info("Or run: aligntrue add remote <url>");
-    return;
+    exitWithError(2, "No remotes configured", {
+      hint: "Add remotes to .aligntrue/config.yaml or run: aligntrue add remote <url>",
+      code: "NO_REMOTES_CONFIGURED",
+    });
   }
 
   const rulesDir = join(cwd, ".aligntrue", "rules");
@@ -137,7 +140,10 @@ async function handlePush(
   if (!config.remotes) {
     clack.log.warn("No remotes configured");
     clack.log.info("Add remotes section to .aligntrue/config.yaml");
-    return;
+    exitWithError(2, "No remotes configured", {
+      hint: "Add remotes to .aligntrue/config.yaml or run: aligntrue add remote <url>",
+      code: "NO_REMOTES_CONFIGURED",
+    });
   }
 
   const rulesDir = join(cwd, ".aligntrue", "rules");

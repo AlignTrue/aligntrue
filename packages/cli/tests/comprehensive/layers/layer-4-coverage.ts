@@ -160,7 +160,7 @@ const commands: CommandTest[] = [
   {
     command: "aligntrue onboard --ci",
     description: "Onboard CI missing SARIF",
-    expectedExitCode: 0,
+    expectedExitCode: "nonZero",
     requiresSetup: true,
     input: "",
   },

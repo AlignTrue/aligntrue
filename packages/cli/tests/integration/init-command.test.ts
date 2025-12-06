@@ -14,6 +14,7 @@ import {
   mkdtempSync,
   mkdirSync,
   rmSync,
+  chmodSync,
 } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -120,6 +121,13 @@ describeSkipWindows("Init Command Integration", () => {
       // Create existing .aligntrue directory
       const aligntrueDir = join(TEST_DIR, ".aligntrue");
       mkdirSync(aligntrueDir, { recursive: true });
+      const rulesDir = join(aligntrueDir, "rules");
+      mkdirSync(rulesDir, { recursive: true });
+      writeFileSync(
+        join(rulesDir, "existing.md"),
+        "# Existing rule\n",
+        "utf-8",
+      );
       writeFileSync(
         join(aligntrueDir, "config.yaml"),
         "exporters:\n  - cursor\n",
@@ -139,6 +147,17 @@ describeSkipWindows("Init Command Integration", () => {
       process.exit = originalExit;
 
       expect(exitCode).toBe(0);
+    });
+
+    it("fails when .aligntrue exists but is partial or not writable", async () => {
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      mkdirSync(aligntrueDir, { recursive: true });
+      chmodSync(aligntrueDir, 0o555); // read/execute only to simulate permission issue
+
+      await expect(init(["--yes"])).rejects.toThrow(/partial AlignTrue setup/i);
+
+      // Restore permissions for cleanup
+      chmodSync(aligntrueDir, 0o755);
     });
   });
 
@@ -316,7 +335,7 @@ describeSkipWindows("Init Command Integration", () => {
       expect(existsSync(join(TEST_DIR, ".aligntrue/lock.json"))).toBe(true);
     });
 
-    it("treats standalone lockfile as already initialized", async () => {
+    it("fails when only lockfile exists without config or rules", async () => {
       // Remove .aligntrue directory to simulate clone missing config files
       rmSync(join(TEST_DIR, ".aligntrue"), { recursive: true, force: true });
 
@@ -338,24 +357,7 @@ describeSkipWindows("Init Command Integration", () => {
         "utf-8",
       );
 
-      const originalExit = process.exit;
-      let exitCode: number | undefined;
-      process.exit = ((code?: number) => {
-        exitCode = code;
-        throw new Error(`EXIT_${code}`);
-      }) as never;
-
-      try {
-        await init(["--yes"]);
-      } catch (err) {
-        if (!(err instanceof Error) || !err.message.startsWith("EXIT_")) {
-          throw err;
-        }
-      } finally {
-        process.exit = originalExit;
-      }
-
-      expect(exitCode).toBe(0);
+      await expect(init(["--yes"])).rejects.toThrow(/partial AlignTrue setup/i);
     });
   });
 

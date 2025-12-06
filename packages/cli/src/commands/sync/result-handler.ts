@@ -19,6 +19,7 @@ import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import type { SyncResult } from "./workflow.js";
 import { exitWithError } from "../../utils/command-utilities.js";
+import { AlignTrueError } from "../../utils/error-types.js";
 
 /**
  * Handle and display sync results
@@ -31,17 +32,19 @@ export async function handleSyncResult(
   const { cwd, registry } = context;
 
   if (!result.success) {
-    // Sync failed
-    clack.log.error("Sync failed");
-
-    if (result.warnings && result.warnings.length > 0) {
-      result.warnings.forEach((warning) => {
-        clack.log.error(`  ${warning}`);
+    const warnings = result.warnings || [];
+    if (warnings.length > 0) {
+      warnings.forEach((warning) => {
+        clack.log.error(warning);
       });
     }
 
-    clack.outro("✗ Sync failed");
-    exitWithError(1, "Sync failed");
+    const hint =
+      warnings.length > 0
+        ? "Resolve the errors above and re-run: aligntrue sync"
+        : undefined;
+
+    exitWithError(1, "Sync failed", hint ? { hint } : undefined);
   }
 
   // Show written files in verbose mode or if quiet is off
@@ -763,44 +766,41 @@ async function displayConflictDetails(
   }
 }
 
+function derivePermissionHint(error: unknown): string | undefined {
+  const err = error as NodeJS.ErrnoException;
+  const code = err?.code;
+  const message = (err as Error)?.message || "";
+  const path = err?.path;
+  const isPermission =
+    code === "EACCES" ||
+    code === "EPERM" ||
+    message.toLowerCase().includes("permission denied");
+
+  if (!isPermission) {
+    return undefined;
+  }
+
+  if (path) {
+    return `Permission denied: Fix write access to ${path} or run from a writable directory.`;
+  }
+
+  return "Permission denied: Fix directory permissions or run from a writable directory.";
+}
+
 /**
  * Handle sync error
  */
-export function handleSyncError(error: Error): void {
-  clack.log.error("Sync failed");
-  clack.log.error(
-    `Sync error: ${error instanceof Error ? error.message : String(error)}`,
-  );
-
-  // Log stack trace in debug mode
-  if (process.env["DEBUG"] === "1" || process.env["ALIGNTRUE_DEBUG"] === "1") {
-    if (error instanceof Error && error.stack) {
-      clack.log.error("\nStack trace:");
-      clack.log.error(error.stack);
+export function handleSyncError(error: Error): never {
+  if (error instanceof AlignTrueError) {
+    const permissionHint = derivePermissionHint(error);
+    if (!error.hint && permissionHint) {
+      error.hint = permissionHint;
     }
+    throw error;
   }
 
-  // Show helpful suggestions
-  if (error instanceof Error) {
-    if (error.message.includes("lockfile")) {
-      clack.log.info("Lockfile drift detected. To approve these changes:");
-      clack.log.info("  1. Review the changes above");
-      clack.log.info("  2. Approve via git PR review workflow");
-      clack.log.info("  3. Commit .aligntrue/lock.json to version control");
-      clack.log.info("");
-      clack.log.info(
-        "Use 'aligntrue drift --gates' in CI to enforce lockfile validation",
-      );
-    } else if (error.message.includes("exporter")) {
-      clack.log.info("Check exporter configuration in .aligntrue/config.yaml");
-    }
-  }
+  const message = error?.message || "Sync failed";
+  const hint = derivePermissionHint(error);
 
-  clack.outro("✗ Sync failed");
-  const hint =
-    error instanceof Error && error.message
-      ? error.message
-      : "Check the sync output above for details";
-
-  exitWithError(2, "Sync failed", { hint });
+  exitWithError(2, message, hint ? { hint } : undefined);
 }

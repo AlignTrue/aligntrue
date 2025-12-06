@@ -3,6 +3,7 @@
  */
 
 import {
+  exitWithError,
   parseCommonArgs,
   showStandardHelp,
   type ArgDefinition,
@@ -176,6 +177,13 @@ export function parseSyncOptions(args: string[]): SyncOptions {
 
   const contentMode = parsed.flags["content-mode"] as string | undefined;
   if (contentMode !== undefined) {
+    const allowedContentModes = new Set(["auto", "inline", "links"]);
+    if (!allowedContentModes.has(contentMode)) {
+      exitWithError(2, `Invalid content-mode: ${contentMode}`, {
+        hint: "Use one of: auto, inline, links",
+        code: "INVALID_CONTENT_MODE",
+      });
+    }
     opts.contentMode = contentMode as "auto" | "inline" | "links";
   }
 

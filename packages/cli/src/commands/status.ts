@@ -24,6 +24,7 @@ import {
   exitWithError,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
+import { buildBackupRestoreHint } from "../utils/backup-hints.js";
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
   {
@@ -114,10 +115,16 @@ export async function status(args: string[]): Promise<void> {
   );
 
   if (!existsSync(configPath)) {
+    const backupHint = buildBackupRestoreHint(cwd);
     clack.log.error(`Configuration file not found: ${configPath}`);
     clack.log.info("Run 'aligntrue init' to create a new configuration.");
+    if (backupHint) {
+      clack.log.info(backupHint);
+    }
     exitWithError(1, `Configuration file not found: ${configPath}`, {
-      hint: "Run 'aligntrue init' to create a new configuration.",
+      hint: ["Run 'aligntrue init' to create a new configuration.", backupHint]
+        .filter(Boolean)
+        .join("\n"),
     });
   }
 
