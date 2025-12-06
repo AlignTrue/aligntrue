@@ -157,6 +157,9 @@ export async function loadIR(
             ? (frontmatterScope as "team" | "personal" | "shared")
             : undefined;
 
+        // Normalize path separators for cross-platform consistency
+        const normalizedRulePath = rule.path.replace(/\\/g, "/");
+
         // Infer nested_location from source path (e.g., apps/docs/.aligntrue/rules/foo.md -> apps/docs)
         let nestedLocation: string | undefined;
         const normalizedRelPath = relative(process.cwd(), rule.path).replace(
@@ -189,7 +192,7 @@ export async function loadIR(
           fingerprint:
             ((rule.frontmatter as Record<string, unknown>)["id"] as string) ||
             rule.filename.replace(/\.md$/, ""),
-          source_file: rule.path,
+          source_file: normalizedRulePath,
           // Store frontmatter in vendor.aligntrue for export fidelity (not directly on section)
           vendor: {
             aligntrue: {
@@ -336,10 +339,17 @@ export async function loadIR(
 
   // Ensure source_file is set for single-file loads (used by exporters and metadata)
   if (align.sections && align.sections.length > 0) {
-    align.sections = align.sections.map((section) => ({
-      ...section,
-      source_file: section.source_file || sourcePath,
-    }));
+    align.sections = align.sections.map((section) => {
+      const source =
+        typeof section.source_file === "string"
+          ? section.source_file
+          : sourcePath;
+
+      return {
+        ...section,
+        source_file: source.replace(/\\/g, "/"),
+      };
+    });
   }
 
   // Inject nested_location for single-file loads when path indicates nested rules

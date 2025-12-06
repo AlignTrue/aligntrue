@@ -91,22 +91,6 @@ packages/**/test-*/
 # Pagefind search index (generated during build)
 apps/docs/public/_pagefind
 
-# START AlignTrue Generated Files
-.aligntrue/.backups/
-.cursor/rules/ci_troubleshooting.mdc
-.cursor/rules/cli_testing_playbook.mdc
-.cursor/rules/debugging.mdc
-.cursor/rules/documentation.mdc
-.cursor/rules/error_lessons_learned.mdc
-.cursor/rules/global.mdc
-.cursor/rules/implementation_specs.mdc
-.cursor/rules/pull_request_standards.mdc
-.cursor/rules/rule_writing.mdc
-.cursor/rules/security_linting_policy.mdc
-.cursor/rules/test_log_template.mdc
-.cursor/rules/testing.mdc
-.cursor/rules/typescript.mdc
-# END AlignTrue Generated Files
 
 # START AlignTrue Private Rules
 # Source: git@github.com:gmays/aligntrue-private-rules (gitignore: true)
@@ -118,3 +102,22 @@ apps/docs/public/_pagefind
 .cursor/rules/potential_future_features.mdc
 .cursor/rules/vision_strategy_roadmap.mdc
 # END AlignTrue Private Rules
+
+# START AlignTrue Generated Files
+.aligntrue/.backups/
+.cursor/rules/*.mdc
+.cursor/rules/ci_troubleshooting.mdc
+.cursor/rules/debugging.mdc
+.cursor/rules/documentation.mdc
+.cursor/rules/extracted-rules.mdc
+.cursor/rules/global.mdc
+.cursor/rules/guardrails.mdc
+.cursor/rules/implementation_specs.mdc
+.cursor/rules/pull_request_standards.mdc
+.cursor/rules/rule_writing.mdc
+.cursor/rules/security_linting_policy.mdc
+.cursor/rules/test_log_template.mdc
+.cursor/rules/testing.mdc
+.cursor/rules/typescript.mdc
+apps/docs/.cursor/rules/web_stack.mdc
+# END AlignTrue Generated Files
