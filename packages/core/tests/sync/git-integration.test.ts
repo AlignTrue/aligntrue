@@ -318,19 +318,46 @@ describe("GitIntegration", () => {
       expect(currentBranch).toBe(firstBranch);
     }, 20000);
 
-    it("throws error when no initial commit exists", async () => {
+    it("creates an initial commit when repository has none", async () => {
       // Create a fresh directory with git init but no commits
       const freshGitDir = join(TEST_DIR, "fresh-git");
       mkdirSync(freshGitDir, { recursive: true });
       execSync("git init", { cwd: freshGitDir, stdio: "pipe" });
+      execSync('git config user.email "test@example.com"', {
+        cwd: freshGitDir,
+        stdio: "pipe",
+      });
+      execSync('git config user.name "Test User"', {
+        cwd: freshGitDir,
+        stdio: "pipe",
+      });
 
-      await expect(
-        gitIntegration.apply({
-          mode: "branch",
-          workspaceRoot: freshGitDir,
-          generatedFiles: ["AGENTS.md"],
-        }),
-      ).rejects.toThrow(/requires at least one commit/);
+      writeFileSync(join(freshGitDir, "AGENTS.md"), "# Agents\n", "utf-8");
+
+      const result = await gitIntegration.apply({
+        mode: "branch",
+        workspaceRoot: freshGitDir,
+        generatedFiles: ["AGENTS.md"],
+      });
+
+      expect(result.action).toBe("created branch and staged files");
+      expect(result.branchCreated).toMatch(/^aligntrue\/sync-/);
+
+      const log = execSync("git log --oneline", {
+        cwd: freshGitDir,
+        encoding: "utf-8",
+      })
+        .trim()
+        .split("\n")
+        .filter(Boolean);
+      expect(log.length).toBeGreaterThan(0);
+      expect(log.some((line) => line.includes("Initial commit"))).toBe(true);
+
+      const stagedFiles = execSync("git diff --cached --name-only", {
+        cwd: freshGitDir,
+        encoding: "utf-8",
+      }).trim();
+      expect(stagedFiles).toContain("AGENTS.md");
     });
   });
 

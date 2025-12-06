@@ -3,7 +3,7 @@
  */
 
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
-import { extname, dirname, sep, relative } from "path";
+import { extname, dirname, relative } from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   validateAlignSchema,
@@ -432,23 +432,29 @@ export async function loadIR(
 
   // Final pass: ensure nested_location is populated from source_file when missing
   if (align.sections) {
+    const rulesMarker = "/.aligntrue/rules/";
+    const normalizedCwd = process.cwd().replace(/\\/g, "/");
+
     align.sections = align.sections.map((section) => {
       const fm = (section.vendor?.aligntrue?.frontmatter ??
         {}) as RuleFrontmatter;
+      const normalizedSource = section.source_file
+        ? section.source_file.replace(/\\/g, "/")
+        : undefined;
+
       if (
         fm["nested_location"] ||
-        !section.source_file ||
-        !section.source_file.includes(`${sep}.aligntrue${sep}rules${sep}`)
+        !normalizedSource ||
+        !normalizedSource.includes(rulesMarker)
       ) {
         return section;
       }
 
-      const relSource = relative(process.cwd(), section.source_file).replace(
+      const relSource = relative(normalizedCwd, normalizedSource).replace(
         /\\/g,
         "/",
       );
-      const marker = "/.aligntrue/rules/";
-      const idx = relSource.indexOf(marker);
+      const idx = relSource.indexOf(rulesMarker);
       if (idx < 0) return section;
 
       const prefix = relSource.slice(0, idx);

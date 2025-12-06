@@ -9,7 +9,7 @@ import {
   readdirSync,
   readFileSync,
 } from "fs";
-import { dirname, join, resolve, sep } from "path";
+import { dirname, join, resolve } from "path";
 import { createHash } from "crypto";
 import * as clack from "@clack/prompts";
 import {
@@ -220,10 +220,12 @@ export async function buildSyncContext(
     const rulesDir = paths.rules;
     const extractedRulesPath = join(rulesDir, "extracted-rules.md");
     const exportersToEnable = new Set<string>();
+    const rulesMarker = "/.aligntrue/rules/";
 
     for (const file of detectedAgentFiles) {
+      const normalizedPath = file.path.replace(/\\/g, "/");
       // Skip files already under the managed rules directory
-      if (file.path.includes(`${sep}.aligntrue${sep}rules${sep}`)) continue;
+      if (normalizedPath.includes(rulesMarker)) continue;
 
       try {
         const content = readFileSync(file.path, "utf-8").trim();
