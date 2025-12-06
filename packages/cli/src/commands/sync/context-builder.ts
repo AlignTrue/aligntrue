@@ -219,7 +219,6 @@ export async function buildSyncContext(
     const detectedAgentFiles = await detectNestedAgentFiles(cwd);
     const rulesDir = paths.rules;
     const extractedRulesPath = join(rulesDir, "extracted-rules.md");
-    const exportersToEnable = new Set<string>();
     const rulesMarker = "/.aligntrue/rules/";
 
     for (const file of detectedAgentFiles) {
@@ -285,32 +284,8 @@ export async function buildSyncContext(
         ].join("");
 
         writeFileSync(extractedRulesPath, rebuilt, "utf-8");
-
-        // Enable matching exporter so future syncs overwrite the source file
-        if (file.type === "cursor") exportersToEnable.add("cursor");
-        if (file.type === "agents") exportersToEnable.add("agents");
-        if (file.type === "claude") exportersToEnable.add("claude");
       } catch {
         // Non-fatal: continue to next file
-      }
-    }
-
-    if (exportersToEnable.size > 0) {
-      const currentExporters = getExporterNames(config.exporters);
-      const updated = [
-        ...currentExporters,
-        ...[...exportersToEnable].filter((e) => !currentExporters.includes(e)),
-      ];
-      if (updated.length !== currentExporters.length) {
-        await patchConfig({ exporters: updated }, configPath, cwd);
-        config.exporters = updated;
-        if (!options.quiet) {
-          clack.log.info(
-            `Auto-enabled exporters for detected agent files: ${[
-              ...exportersToEnable,
-            ].join(", ")}`,
-          );
-        }
       }
     }
   }
