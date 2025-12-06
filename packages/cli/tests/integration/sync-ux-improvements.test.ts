@@ -63,6 +63,10 @@ describeSkipWindows("Sync UX Improvements", () => {
     mkdirSync(rulesDir, { recursive: true });
     writeFileSync(join(rulesDir, "rule-1.md"), "## Rule 1\n\nContent 1\n");
 
+    // Baseline export file to simulate previous successful sync
+    const agentsPath = join(testCtx.projectDir, "AGENTS.md");
+    writeFileSync(agentsPath, "# Agents export\n");
+
     // Ensure timestamp is strictly newer than file creation
     await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -85,6 +89,9 @@ describeSkipWindows("Sync UX Improvements", () => {
       ruleHashes,
       computeHash(configContent),
     );
+    lastSyncTracker.storeExportFileHashes(testCtx.projectDir, {
+      "AGENTS.md": computeHash(readFileSync(agentsPath, "utf-8")),
+    });
 
     // Update last sync timestamp
     lastSyncTracker.updateLastSyncTimestamp(testCtx.projectDir);

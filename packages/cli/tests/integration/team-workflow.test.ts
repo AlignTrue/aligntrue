@@ -48,6 +48,9 @@ describeSkipWindows("Team Mode Workflow", () => {
     env2 = mkdtempSync(join(tmpdir(), "aligntrue-team-env2-"));
     mkdirSync(env1, { recursive: true });
     mkdirSync(env2, { recursive: true });
+    // Team mode now requires a git repository; create minimal git dirs for fixtures
+    mkdirSync(join(env1, ".git"), { recursive: true });
+    mkdirSync(join(env2, ".git"), { recursive: true });
 
     // Mock process.exit to throw for testing
     vi.spyOn(process, "exit").mockImplementation((code?: number) => {
