@@ -601,6 +601,24 @@ function main() {
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-3-log-"));
   try {
     const workspace = process.env.TEST_WORKSPACE || process.cwd();
+
+    // Ensure shared workspace has git initialized for command-based scenarios (1-3)
+    if (!existsSync(join(workspace, ".git"))) {
+      try {
+        runCommand("git init", workspace);
+        setGitIdentity(workspace, "Layer3 Tester", "layer3@example.com");
+        // Seed an initial commit so branch-mode workflows can succeed if reused
+        runCommand("git add .", workspace);
+        runCommand('git commit -m "Initial workspace"', workspace, {
+          allowFail: true,
+        });
+      } catch (error) {
+        console.error(
+          `Warning: failed to initialize git in workspace: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
     const results = scenarios.map((scenario) => {
       const result = runScenario(scenario, workspace);
       console.log(`  ${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);

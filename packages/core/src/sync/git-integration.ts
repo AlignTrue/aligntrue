@@ -242,11 +242,12 @@ export class GitIntegration {
       );
     }
 
-    // Check if there's at least one commit (required for branch creation)
+    // Ensure repository has an initial commit; branch creation fails otherwise.
     if (!this.hasInitialCommit(workspaceRoot)) {
-      throw new Error(
-        "Git branch mode requires at least one commit. Run: git commit --allow-empty -m 'Initial commit'",
-      );
+      execFileSync("git", ["commit", "--allow-empty", "-m", "Initial commit"], {
+        cwd: workspaceRoot,
+        stdio: "pipe",
+      });
     }
 
     // Normalize paths (absolute to relative, backslashes to forward slashes)
