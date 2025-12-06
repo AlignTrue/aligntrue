@@ -70,7 +70,7 @@ const yaml = await provider.fetch();
 - Rejects `file://` protocol
 - Rejects URLs with path traversal (`..`)
 - Validates https/ssh URL formats
-- Privacy TODOs for consent system (implemented)
+- Privacy checks enforce consent system requirements
 
 **Example Config:**
 

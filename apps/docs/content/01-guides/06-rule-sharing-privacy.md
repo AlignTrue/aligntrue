@@ -38,9 +38,8 @@ remotes:
 3. **Push your rules**:
 
 ```bash
-aligntrue sync  # Exports to agents and pushes to backup
-# Or just push:
-aligntrue backup push
+aligntrue sync          # Export to agents
+aligntrue remotes push  # Push rules to configured remotes
 ```
 
 4. **Share the repository URL** with others. They can consume your rules as a source:

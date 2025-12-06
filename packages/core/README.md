@@ -80,7 +80,6 @@ sources:
 
 - `local` - Read from local filesystem (requires `path`)
 - `git` - Clone from git repo (requires `url`, optional `path`)
-- `url` - Fetch from HTTP URL (future enhancement, requires `url`)
 
 **Git Sources:**
 Git sources fetch rules from any git repository:
@@ -100,7 +99,6 @@ Cache location: `.aligntrue/.cache/git/`
 - Clones repository to local cache
 - Extracts specified file path
 - Offline fallback when network unavailable
-- Force refresh with `--force-refresh` flag (future CLI)
 
 ### Scope Resolution
 
@@ -384,7 +382,7 @@ export type { Conflict, ConflictDetectionResult };
 // IR loading
 export { loadIR };
 
-// Bundle and lockfile (stubs for team mode)
+// Bundle and lockfile helpers (team mode)
 export { createBundle };
 export { readLockfile, writeLockfile, verifyLockfile };
 export type { Lockfile, LockfileMode };

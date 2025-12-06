@@ -1,8 +1,7 @@
 /**
  * Remotes command for AlignTrue CLI
  *
- * Manages remote destinations for rule sync.
- * This is an alias/convenience layer over backup remote subcommands.
+ * Manages remote destinations for rule sync (push flows).
  */
 
 import * as clack from "@clack/prompts";

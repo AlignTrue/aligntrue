@@ -243,19 +243,19 @@ After every successful sync, AlignTrue automatically cleans up old backups based
 Use git remotes to mirror `.aligntrue/rules`:
 
 ```bash
-# Configure a remote backup repo
-aligntrue backup setup
+# Configure a remote
+aligntrue add remote git@github.com:username/rules.git
 
 # Push rules to all configured remotes
-aligntrue backup push
+aligntrue remotes push
 
 # See configured remotes and status
-aligntrue backup status
+aligntrue remotes status
 ````
 
 Notes:
 
-- Remote backup pushes the `.aligntrue/rules/` source of truth (agent exports are not pushed).
+- Remotes push the `.aligntrue/rules/` source of truth (agent exports are not pushed).
 - Uses the `remotes` config block.
 - `--dry-run` shows what would be pushed; `--force` pushes even when no changes are detected.
 

@@ -104,19 +104,19 @@ If the same URL appears in both `sources` and `remotes`, the backup for that URL
 Push to all configured backups:
 
 ```bash
-aligntrue backup push
+aligntrue remotes push
 ```
 
 Preview what would be pushed:
 
 ```bash
-aligntrue backup push --dry-run
+aligntrue remotes push --dry-run
 ```
 
 Force push even without changes:
 
 ```bash
-aligntrue backup push --force
+aligntrue remotes push --force
 ```
 
 ### Auto-push on sync
@@ -135,7 +135,7 @@ Disable auto-push for specific backups:
 remotes:
   default:
     url: git@github.com:username/rules.git
-    auto: false # Only push with explicit `aligntrue backup push`
+    auto: false # Only push with explicit `aligntrue remotes push`
 ```
 
 ### Checking status
@@ -143,7 +143,7 @@ remotes:
 See your backup configuration and last push:
 
 ```bash
-aligntrue backup status
+aligntrue remotes status
 ```
 
 Output:

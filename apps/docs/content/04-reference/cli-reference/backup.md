@@ -128,70 +128,13 @@ Uses settings from config:
 - `backup.retention_days` - Remove backups older than N days (default: 30)
 - `backup.minimum_keep` - Always keep at least N backups (default: 3)
 
-## Remote backup subcommands
+## Remote pushes
 
-### push
+Use the `remotes` command to push `.aligntrue/rules` to git remotes:
 
-Push rules to remote backup repositories.
-
-```bash
-aligntrue backup push [--dry-run] [--force]
-```
-
-Options:
-
-- `--dry-run` - Preview changes without pushing
-- `--force` - Force push even if no changes detected
-
-Examples:
-
-```bash
-# Push to all configured remotes
-aligntrue backup push
-
-# Preview what would be pushed
-aligntrue backup push --dry-run
-
-# Force push without changes
-aligntrue backup push --force
-```
-
-### status
-
-Show remote backup configuration and status.
-
-```bash
-aligntrue backup status
-```
-
-Output example:
-
-```
-Backup Configuration:
-  default: github.com/user/all-rules (8 files)
-  public-oss: github.com/user/open-rules (4 files)
-    - typescript.md
-    - testing.md
-    - guides/react.md
-    - guides/vue.md
-
-Last push: 2 hours ago
-```
-
-### setup
-
-Interactive setup for remote backup.
-
-```bash
-aligntrue backup setup
-```
-
-Guides you through:
-
-1. Entering repository URL
-2. Configuring branch
-3. Enabling auto-push
-4. Optional initial push
+- Configure remotes: `aligntrue add remote <url>`
+- Show configured remotes: `aligntrue remotes status`
+- Push to remotes: `aligntrue remotes push [--dry-run] [--force]`
 
 ## Global options
 
