@@ -128,6 +128,25 @@ export async function checkIfSyncNeeded(
     }
   }
 
+  // 4. Check if managed .gitignore section needs restoration
+  const gitMode = config.git?.mode || "ignore";
+  if (gitMode === "ignore") {
+    const gitignorePath = join(cwd, ".gitignore");
+    if (existsSync(gitignorePath)) {
+      try {
+        const gitignoreContent = readFileSync(gitignorePath, "utf-8");
+        const hasManagedSection =
+          gitignoreContent.includes("# START AlignTrue Generated Files") &&
+          gitignoreContent.includes("# END AlignTrue Generated Files");
+        if (!hasManagedSection) {
+          return true; // Restore managed section
+        }
+      } catch {
+        return true; // Can't read gitignore, assume sync needed
+      }
+    }
+  }
+
   // Nothing changed
   return false;
 }

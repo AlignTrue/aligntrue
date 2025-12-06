@@ -242,15 +242,26 @@ export class AgentsExporter extends ExporterBase {
         const conditions = this.formatConditions(rule.frontmatter);
 
         // Compute relative path from AGENTS.md to the rule file
-        const rulesDir =
+        const fallbackRulesDir =
           location === "" ? ".aligntrue/rules" : `${location}/.aligntrue/rules`;
-        // Use relativePath if available (preserves nested structure), fallback to filename
-        // Normalize backslashes to forward slashes for cross-platform compatibility
-        const ruleFileName = (rule.relativePath || rule.filename).replace(
-          /\\/g,
-          "/",
-        );
-        const linkPath = `./${rulesDir}/${ruleFileName}`;
+
+        // Prefer relativePath when available; fall back to rule path or filename
+        const rulePath = rule.relativePath || rule.path || rule.filename;
+        const normalizedRulePath = normalizePath(rulePath);
+
+        // Ensure links point to .aligntrue/rules unless the path already targets it
+        const basePath = normalizedRulePath.includes(".aligntrue/rules")
+          ? normalizedRulePath
+          : normalizePath(
+              `${fallbackRulesDir}/${normalizedRulePath.replace(/^\.\//, "")}`,
+            );
+
+        const linkPath =
+          basePath.startsWith("./") || basePath.startsWith("../")
+            ? basePath
+            : basePath.startsWith(".")
+              ? `./${basePath}`
+              : `./${basePath}`;
 
         // Format: Title (path): description. conditions.
         if (description && conditions) {

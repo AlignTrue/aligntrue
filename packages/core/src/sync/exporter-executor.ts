@@ -75,10 +75,10 @@ export async function executeExporters(
       }),
     };
 
-    // Resolve plugs if config fills are provided
-    if (config.plugs?.fills && Object.keys(config.plugs.fills).length > 0) {
+    // Resolve plugs when slots or fills are present
+    if (scopedAlign.plugs || config.plugs?.fills) {
       const { resolvePlugsForAlign } = await import("../plugs/index.js");
-      const resolved = resolvePlugsForAlign(scopedAlign, config.plugs.fills);
+      const resolved = resolvePlugsForAlign(scopedAlign, config.plugs?.fills);
 
       if (resolved.success && resolved.rules.length > 0) {
         // Update sections with resolved content

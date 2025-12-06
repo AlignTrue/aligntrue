@@ -93,7 +93,12 @@ async function detectNonMdFilesInRulesDir(dir: string): Promise<string[]> {
           scanDir(join(currentDir, entry.name), relativePath);
         } else if (entry.isFile()) {
           const ext = entry.name.split(".").pop()?.toLowerCase();
-          if (ext && ext !== "md" && ext !== entry.name) {
+          if (
+            ext &&
+            ext !== "md" &&
+            ext !== "mdc" &&
+            ext !== entry.name // protect files without extension
+          ) {
             nonMdFiles.push(relativePath);
           }
         }
@@ -138,7 +143,6 @@ export async function buildSyncContext(
     const backupHint = buildBackupRestoreHint(cwd);
     if (backupHint) {
       error.hint = error.hint ? `${error.hint}\n${backupHint}` : backupHint;
-      error.nextSteps = [...(error.nextSteps ?? []), backupHint];
     }
     throw error;
   }

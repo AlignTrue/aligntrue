@@ -281,4 +281,54 @@ describeSkipWindows("Sync UX Improvements", () => {
     await project.cleanup();
     process.chdir(TEST_DIR);
   });
+
+  it("recreates managed .gitignore block when removed", async () => {
+    const project = setupTestProject();
+    process.chdir(project.projectDir);
+
+    await sync([]);
+
+    const gitignorePath = join(project.projectDir, ".gitignore");
+    writeFileSync(gitignorePath, "");
+
+    await sync([]);
+
+    const gitignoreContent = readFileSync(gitignorePath, "utf-8");
+    expect(gitignoreContent).toContain("# START AlignTrue Generated Files");
+    expect(gitignoreContent).toContain(".aligntrue/.backups/");
+    expect(gitignoreContent).toContain("AGENTS.md");
+
+    await project.cleanup();
+  });
+
+  it("warns when rules are removed since last sync", async () => {
+    const rulesDir = join(TEST_DIR, ".aligntrue", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+
+    writeFileSync(
+      join(TEST_DIR, ".aligntrue", "config.yaml"),
+      yaml.stringify({ exporters: ["agents"] }),
+    );
+
+    writeFileSync(join(rulesDir, "keep.md"), "# Keep\n");
+    writeFileSync(join(rulesDir, "remove.md"), "# Remove me\n");
+
+    // First sync to record hashes
+    await sync([]);
+    vi.mocked(clack.log.warn).mockClear();
+
+    // Delete one rule and sync again
+    rmSync(join(rulesDir, "remove.md"));
+    await sync([]);
+
+    const warnings = vi.mocked(clack.log.warn).mock.calls.flat();
+    expect(
+      warnings.some(
+        (msg) =>
+          typeof msg === "string" &&
+          msg.includes("Rules removed since last sync") &&
+          msg.includes("remove.md"),
+      ),
+    ).toBe(true);
+  });
 });

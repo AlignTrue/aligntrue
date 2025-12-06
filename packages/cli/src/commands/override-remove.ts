@@ -37,6 +37,12 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     hasValue: true,
     description: "Custom config file path",
   },
+  {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Skip confirmation (alias for --force, non-interactive safe)",
+  },
 ];
 
 export async function overrideRemove(args: string[]): Promise<void> {
@@ -57,6 +63,7 @@ export async function overrideRemove(args: string[]): Promise<void> {
       notes: [
         "If no selector provided, interactive mode will prompt for selection",
         "Use --selector in scripts or --all --force to remove every overlay",
+        "Removal deletes the entire overlay. To change only a field, add a new overlay with the desired value.",
       ],
     });
     return;
@@ -64,7 +71,9 @@ export async function overrideRemove(args: string[]): Promise<void> {
 
   const selectorFlag = parsed.flags["selector"] as string | undefined;
   const selectorArg = selectorFlag ?? parsed.positional[0];
-  const force = (parsed.flags["force"] as boolean | undefined) || false;
+  const yesFlag = (parsed.flags["yes"] as boolean | undefined) || false;
+  const force =
+    (parsed.flags["force"] as boolean | undefined) || yesFlag || false;
   const removeAll = (parsed.flags["all"] as boolean | undefined) || false;
   const config = parsed.flags["config"] as string | undefined;
 
@@ -228,7 +237,10 @@ async function runOverrideRemove(
     }
 
     if (!isTTY()) {
-      exitWithError(CommonErrors.nonInteractiveConfirmation("--force"), 1);
+      exitWithError(
+        CommonErrors.nonInteractiveConfirmation("--force or --yes"),
+        1,
+      );
     }
 
     const confirmed = await clack.confirm({

@@ -100,14 +100,20 @@ export async function revert(args: string[]): Promise<void> {
       // Use provided timestamp
       const backup = backups.find((b) => b.timestamp === timestamp);
       if (!backup) {
+        const extraHint =
+          timestamp === "files"
+            ? "Hint: '.backups/files' is an internal folder. Run 'aligntrue backup list' to choose a valid timestamp."
+            : "Run 'aligntrue backup list' to view available timestamps.";
         if (isTTY()) {
           clack.log.error(`Backup not found: ${timestamp}`);
+          clack.log.info(extraHint);
           clack.log.info("Available backups:");
           backups.forEach((b) => {
             clack.log.info(`  ${b.timestamp} - ${b.manifest.created_by}`);
           });
         } else {
           console.error(`Error: Backup not found: ${timestamp}`);
+          console.log(extraHint);
           console.log("Available backups:");
           backups.forEach((b) => {
             console.log(`  ${b.timestamp} - ${b.manifest.created_by}`);

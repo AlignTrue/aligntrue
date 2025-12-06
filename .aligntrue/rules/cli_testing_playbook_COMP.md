@@ -1405,11 +1405,15 @@ cd /tmp/test-git-modes
 git init
 aligntrue init --yes --mode team
 
+# Branch mode requires at least one commit before it can create feature branches
+git add .
+git commit -m "Initial commit"
+
 # Test ignore mode (default for personal rules)
 aligntrue config set git.mode ignore
 aligntrue sync
 grep "AGENTS.md" .gitignore || echo "FAIL: AGENTS.md not ignored"
-grep ".cursor/rules" .gitignore || echo "FAIL: .cursor/rules not ignored"
+grep ".cursor/rules/*.mdc" .gitignore || echo "FAIL: .cursor/rules not ignored"
 
 # Test commit mode (for team shared rules)
 aligntrue config set git.mode commit
@@ -1510,7 +1514,8 @@ aligntrue init --yes --mode team
 aligntrue config set git.mode branch
 
 # Make changes and sync (creates feature branch)
-echo "## New Feature Rule" >> AGENTS.md
+# Edit rule sources (AGENTS.md is regenerated on sync)
+echo "## New Feature Rule" >> .aligntrue/rules/testing.md
 aligntrue sync
 
 # Verify branch created
@@ -1519,7 +1524,7 @@ test -n "$BRANCH_NAME" || echo "FAIL: branch not created"
 git checkout "$BRANCH_NAME"
 
 # Verify changes are on branch
-grep "New Feature Rule" AGENTS.md || echo "FAIL: changes not on branch"
+grep "New Feature Rule" .aligntrue/rules/testing.md || echo "FAIL: changes not on branch"
 
 # Simulate PR review: check drift before merge
 aligntrue drift --gates
@@ -1656,8 +1661,16 @@ aligntrue sync
 
 # Verify files were pushed
 git clone /tmp/remote-repo.git /tmp/verify
-ls /tmp/verify/.aligntrue/rules/
-# Should show: typescript.md, guides/react.md
+ls /tmp/verify/
+# Should show: typescript.md, guides/react.md at repo root
+
+# (Optional) Preserve .aligntrue/rules layout by setting a path:
+# remotes:
+#   personal:
+#     url: /tmp/remote-repo.git
+#     branch: main
+#     path: .aligntrue/rules
+#     auto: true
 
 # Test that updates are pushed on subsequent syncs
 echo "Updated" >> .aligntrue/rules/typescript.md
