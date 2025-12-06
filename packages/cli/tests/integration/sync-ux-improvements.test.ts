@@ -109,9 +109,6 @@ describeSkipWindows("Sync UX Improvements", () => {
       ruleHashes,
       computeHash(configContent),
     );
-    lastSyncTracker.storeExportFileHashes(testCtx.projectDir, {
-      "AGENTS.md": computeHash(readFileSync(agentsPath, "utf-8")),
-    });
 
     // Update last sync timestamp
     lastSyncTracker.updateLastSyncTimestamp(testCtx.projectDir);

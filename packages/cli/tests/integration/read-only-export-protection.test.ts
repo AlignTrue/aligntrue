@@ -229,12 +229,6 @@ Original content.
       // (exact behavior depends on implementation)
       expect(afterSyncContent.length).toBeGreaterThan(0);
     });
-
-    it.skip("prompts before overwriting manual edits and cancels when declined", async () => {
-      // TODO: This integration path is fragile; detection/backups are covered
-      // by unit tests (detectDirtyExports). Re-enable after adding a focused
-      // integration harness for manual edit prompts.
-    });
   });
 
   describe("Backup Before Overwrite", () => {

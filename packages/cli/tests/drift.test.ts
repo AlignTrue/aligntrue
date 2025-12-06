@@ -8,7 +8,6 @@ import { mkdtempSync, rmSync, writeFileSync, utimesSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { drift } from "../src/commands/drift.js";
-import { computeHash } from "@aligntrue/schema";
 
 async function runDriftAndCaptureExit(args: string[]): Promise<number> {
   const originalExitCode = process.exitCode;
@@ -158,31 +157,6 @@ modules:
     // Write .last-sync file (for drift detection baseline)
     writeFileSync(join(aligntrueDir, ".last-sync"), pastTime.toString());
 
-    // Write .agent-export-hashes.json with the ORIGINAL content hash (before modification)
-    // This represents the "clean state" after the last sync
-    const originalAgentsContent = `
-# AlignTrue Rules
-
-## Test rule one
-
-Original guidance from IR
-`;
-    const agentsHash = computeHash(originalAgentsContent);
-    writeFileSync(
-      join(aligntrueDir, ".agent-export-hashes.json"),
-      JSON.stringify(
-        {
-          version: "1",
-          exports: {
-            "AGENTS.md": agentsHash,
-          },
-          updated_at: pastTime,
-        },
-        null,
-        2,
-      ),
-    );
-
     // Write AGENTS.md (newer than IR and .last-sync)
     const agentsPath = join(testDir, "AGENTS.md");
     writeFileSync(
@@ -242,9 +216,6 @@ sources:
       console.log = originalLog;
     }
 
-    // Note: With Ruler-style architecture, agent file drift detection is no longer
-    // relevant since agent files are read-only and generated from .aligntrue/rules/
-    // The drift command now only checks rule file drift against lockfile
     expect(output.length).toBeGreaterThan(0);
   });
 

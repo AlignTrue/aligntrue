@@ -8,7 +8,6 @@ import {
   loadMergedConfig,
   getExporterNames,
   isTeamModeActive,
-  getExportFileHashes,
 } from "@aligntrue/core";
 import { detectNewAgents } from "../../utils/detect-agents.js";
 import type { SyncOptions } from "./options.js";
@@ -105,30 +104,7 @@ export async function checkIfSyncNeeded(
     return true; // New agents need to be detected and onboarded
   }
 
-  // 3. Detect manual edits to exported agent files (AGENTS.md, .cursor/*.mdc, etc.)
-  const exportHashes = getExportFileHashes(cwd);
-  if (!exportHashes || !exportHashes.files) {
-    return true; // No baseline -> re-export to establish hashes
-  }
-
-  for (const [relPath, storedHash] of Object.entries(exportHashes.files)) {
-    const absolutePath = join(cwd, relPath);
-    if (!existsSync(absolutePath)) {
-      return true; // Export missing
-    }
-
-    try {
-      const currentContent = readFileSync(absolutePath, "utf-8");
-      const currentHash = computeHash(currentContent);
-      if (currentHash !== storedHash) {
-        return true; // Export drifted
-      }
-    } catch {
-      return true; // Unable to read -> force regen
-    }
-  }
-
-  // 4. Check if managed .gitignore section needs restoration
+  // 3. Check if managed .gitignore section needs restoration
   const gitMode = config.git?.mode || "ignore";
   if (gitMode === "ignore") {
     const gitignorePath = join(cwd, ".gitignore");

@@ -166,7 +166,7 @@ describe("drift command", () => {
       await expect(drift([])).resolves.toBeUndefined();
     });
 
-    it.skip("exits 2 with --gates when drift detected", async () => {
+    it("exits 2 with --gates when drift detected", async () => {
       // Create rules directory with different content than lockfile expects
       mkdirSync(".aligntrue/rules", { recursive: true });
       writeFileSync(

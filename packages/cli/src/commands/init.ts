@@ -965,7 +965,6 @@ aligntrue sync
   // Add .gitignore to .aligntrue directory to ignore local state files
   const aligntrueGitignoreContent = `# Generated state files (local state, not part of source control)
 .source-rule-hashes.json
-.agent-export-hashes.json
 .rules.yaml
 .last-sync
 
