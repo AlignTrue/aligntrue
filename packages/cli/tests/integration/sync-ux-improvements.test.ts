@@ -60,6 +60,20 @@ describeSkipWindows("Sync UX Improvements", () => {
       yaml.stringify(config),
     );
 
+    // Managed .gitignore present (simulates prior sync state)
+    writeFileSync(
+      join(testCtx.projectDir, ".gitignore"),
+      [
+        "# START AlignTrue Generated Files",
+        ".cursor/",
+        "AGENTS.md",
+        ".vscode/",
+        "# END AlignTrue Generated Files",
+        "",
+      ].join("\n"),
+      "utf-8",
+    );
+
     // Create rules directory with markdown file
     const rulesDir = join(testCtx.projectDir, ".aligntrue", "rules");
     mkdirSync(rulesDir, { recursive: true });

@@ -356,12 +356,14 @@ export async function loadIR(
 
   if (singleFileNestedLocation && align.sections) {
     align.sections = align.sections.map((section) => {
-      const existingFrontmatter =
-        (section.vendor?.aligntrue?.frontmatter as
-          | RuleFrontmatter
-          | undefined) ?? {};
+      const existingFrontmatter = (section.vendor?.aligntrue?.frontmatter ??
+        {}) as RuleFrontmatter;
+
       const nestedLocation =
-        existingFrontmatter.nested_location ?? singleFileNestedLocation;
+        typeof existingFrontmatter["nested_location"] === "string"
+          ? existingFrontmatter["nested_location"]
+          : singleFileNestedLocation;
+
       const updatedFrontmatter: RuleFrontmatter =
         nestedLocation === undefined
           ? { ...existingFrontmatter }
@@ -431,12 +433,10 @@ export async function loadIR(
   // Final pass: ensure nested_location is populated from source_file when missing
   if (align.sections) {
     align.sections = align.sections.map((section) => {
-      const fm =
-        (section.vendor?.aligntrue?.frontmatter as
-          | RuleFrontmatter
-          | undefined) ?? {};
+      const fm = (section.vendor?.aligntrue?.frontmatter ??
+        {}) as RuleFrontmatter;
       if (
-        fm.nested_location ||
+        fm["nested_location"] ||
         !section.source_file ||
         !section.source_file.includes(`${sep}.aligntrue${sep}rules${sep}`)
       ) {
