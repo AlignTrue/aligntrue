@@ -744,8 +744,8 @@ async function checkAgentsWithCache(
       !isFirstDetection
     ) {
       clack.log.info(
-        `Configured exporters not detected: ${detection.notFound.join(", ")}\n` +
-          "  (These agents may not be installed)",
+        `Agent not installed locally: ${detection.notFound.join(", ")}\n` +
+          "  (Rules were still exported; install the agent locally to enable previews)",
       );
     }
 

@@ -12,6 +12,7 @@ import type {
   ExporterCapabilities,
 } from "@aligntrue/plugin-contracts";
 import type { RuleFile, RuleFrontmatter } from "@aligntrue/schema";
+import { normalizePath } from "@aligntrue/core";
 import { join } from "path";
 import { ExporterBase } from "./index.js";
 import { getContentMode } from "../utils/config-access.js";
@@ -207,7 +208,9 @@ export class GenericMarkdownExporter extends ExporterBase {
     const byLocation = new Map<string, RuleFile[]>();
 
     for (const rule of rules) {
-      const location = rule.frontmatter.nested_location || "";
+      const location = rule.frontmatter.nested_location
+        ? normalizePath(rule.frontmatter.nested_location)
+        : "";
       if (!byLocation.has(location)) {
         byLocation.set(location, []);
       }

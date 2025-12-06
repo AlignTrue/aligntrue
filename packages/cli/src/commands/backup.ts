@@ -15,6 +15,7 @@ import {
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { join } from "path";
 import {
+  exitWithError,
   parseCommonArgs,
   type ArgDefinition,
 } from "../utils/command-utilities.js";
@@ -166,7 +167,38 @@ Learn more: https://aligntrue.ai/backup
 `;
 
 export async function backupCommand(argv: string[]): Promise<void> {
-  const args = parseCommonArgs(argv, ARG_DEFINITIONS);
+  let args;
+  try {
+    args = parseCommonArgs(argv, ARG_DEFINITIONS);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const hasBackupConfigFlag = argv.some((arg) =>
+      ["--retention_days", "--minimum_keep"].some((flag) =>
+        arg.startsWith(flag),
+      ),
+    );
+
+    if (
+      hasBackupConfigFlag ||
+      /retention_days|minim(um)?_keep/i.test(message)
+    ) {
+      clack.log.error(message);
+      clack.log.info(
+        "These retention settings are configured in .aligntrue/config.yaml, not via CLI flags.",
+      );
+      clack.log.info(
+        "Set them with: aligntrue config set backup.retention_days 30",
+      );
+      clack.log.info(
+        "               aligntrue config set backup.minimum_keep 3",
+      );
+      exitWithError(2, "Invalid flag for backup cleanup", {
+        hint: "Use config keys backup.retention_days and backup.minimum_keep instead of CLI flags.",
+      });
+    }
+
+    throw err;
+  }
 
   if (args.help) {
     console.log(HELP_TEXT);

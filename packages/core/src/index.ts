@@ -117,6 +117,7 @@ export {
   checkBackupExists,
   type BackupResult,
 } from "./utils/overwritten-rules-manager.js";
+export { normalizePath } from "./utils/path.js";
 
 // Rule Management
 export {

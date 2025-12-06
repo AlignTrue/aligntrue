@@ -6,6 +6,7 @@
  * Target agents: Claude, Copilot, Aider, and other AGENTS.md-compatible tools
  */
 
+import { normalizePath } from "@aligntrue/core";
 import type {
   ScopedExportRequest,
   ExportOptions,
@@ -188,7 +189,9 @@ export class AgentsExporter extends ExporterBase {
     const byLocation = new Map<string, RuleFile[]>();
 
     for (const rule of rules) {
-      const location = rule.frontmatter.nested_location || "";
+      const location = rule.frontmatter.nested_location
+        ? normalizePath(rule.frontmatter.nested_location)
+        : "";
       if (!byLocation.has(location)) {
         byLocation.set(location, []);
       }

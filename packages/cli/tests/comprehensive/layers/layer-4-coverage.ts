@@ -12,8 +12,10 @@ import { assertTestSafety } from "../test-safety.js";
 interface CommandTest {
   command: string;
   description: string;
-  expectedExitCode: number;
+  expectedExitCode: number | "nonZero";
   requiresSetup?: boolean;
+  expectedOutputIncludes?: string[];
+  input?: string;
 }
 
 const commands: CommandTest[] = [
@@ -113,6 +115,11 @@ const commands: CommandTest[] = [
     expectedExitCode: 0,
   },
   {
+    command: "aligntrue remotes --help",
+    description: "Remotes help",
+    expectedExitCode: "nonZero",
+  },
+  {
     command: "aligntrue uninstall --help",
     description: "Uninstall help",
     expectedExitCode: 0,
@@ -137,6 +144,80 @@ const commands: CommandTest[] = [
     description: "Migrate help",
     expectedExitCode: 0,
   },
+  {
+    command: "aligntrue status",
+    description: "Status after init",
+    expectedExitCode: 0,
+    requiresSetup: true,
+    expectedOutputIncludes: ["Exporters"],
+  },
+  {
+    command: "aligntrue doctor",
+    description: "Doctor after init",
+    expectedExitCode: 0,
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue onboard --ci",
+    description: "Onboard CI missing SARIF",
+    expectedExitCode: "nonZero",
+    requiresSetup: true,
+    input: "",
+  },
+  {
+    command: "aligntrue plugs list",
+    description: "Plugs list after init",
+    expectedExitCode: 0,
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue plugs set",
+    description: "Plugs set missing slot",
+    expectedExitCode: "nonZero",
+    requiresSetup: true,
+  },
+  {
+    command: 'aligntrue plugs set test.cmd "/absolute/path"',
+    description: "Plugs set invalid format",
+    expectedExitCode: "nonZero",
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue backup list",
+    description: "Backup list after init",
+    expectedExitCode: 0,
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue backup cleanup",
+    description: "Backup cleanup after init",
+    expectedExitCode: 0,
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue rules list",
+    description: "Rules list after init",
+    expectedExitCode: 0,
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue remove",
+    description: "Remove missing argument",
+    expectedExitCode: "nonZero",
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue uninstall --non-interactive",
+    description: "Uninstall non-interactive",
+    expectedExitCode: 0,
+    requiresSetup: true,
+  },
+  {
+    command: "aligntrue add",
+    description: "Add missing URL",
+    expectedExitCode: "nonZero",
+    requiresSetup: true,
+  },
 ];
 
 function testCommand(
@@ -146,6 +227,8 @@ function testCommand(
   passed: boolean;
   output: string;
   exitCode: number;
+  exitCheck: boolean;
+  outputCheck: boolean;
 } {
   let output = "";
   let exitCode = 0;
@@ -165,8 +248,21 @@ function testCommand(
     output = stdout + stderr;
   }
 
-  const passed = exitCode === test.expectedExitCode;
-  return { passed, output, exitCode };
+  const exitPass =
+    test.expectedExitCode === "nonZero"
+      ? exitCode !== 0
+      : exitCode === test.expectedExitCode;
+  const outputPass = (test.expectedOutputIncludes || []).every((needle) =>
+    output.includes(needle),
+  );
+  const passed = exitPass && outputPass;
+  return {
+    passed,
+    output,
+    exitCode,
+    exitCheck: exitPass,
+    outputCheck: outputPass,
+  };
 }
 
 function main() {
@@ -178,17 +274,42 @@ function main() {
   const tempLogDir = mkdtempSync(join(tmpdir(), "aligntrue-layer-4-log-"));
   try {
     const workspace = process.env.TEST_WORKSPACE || process.cwd();
-    const results = commands.map((test) => {
-      console.log(`Testing: ${test.description}`);
-      console.log(`Executing: ${test.command}`);
+    const setupTests = commands.filter((t) => t.requiresSetup);
+    const noSetupTests = commands.filter((t) => !t.requiresSetup);
 
-      const result = testCommand(test, workspace);
+    const runTests = (testList: CommandTest[]) =>
+      testList.map((test) => {
+        console.log(`Testing: ${test.description}`);
+        console.log(`Executing: ${test.command}`);
 
-      console.log(`Exit code: ${result.exitCode}`);
-      console.log(`${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
+        const result = testCommand(test, workspace);
 
-      return { test, result };
-    });
+        console.log(`Exit code: ${result.exitCode}`);
+        if (!result.outputCheck && test.expectedOutputIncludes?.length) {
+          console.log(
+            `Output missing expected substring(s): ${test.expectedOutputIncludes.join(", ")}`,
+          );
+        }
+        console.log(`${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
+
+        return { test, result };
+      });
+
+    const initialResults = runTests(noSetupTests);
+
+    let setupResults: ReturnType<typeof runTests> = [];
+    if (setupTests.length > 0) {
+      console.log("Setting up workspace for setup-dependent tests...");
+      execSync("aligntrue init --yes", {
+        cwd: workspace,
+        stdio: "pipe",
+        encoding: "utf-8",
+        timeout: 10000,
+      });
+      setupResults = runTests(setupTests);
+    }
+
+    const results = [...initialResults, ...setupResults];
 
     const passed = results.filter((r) => r.result.passed).length;
     const failed = results.length - passed;

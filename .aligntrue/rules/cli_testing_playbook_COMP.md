@@ -2393,15 +2393,17 @@ Comprehensive coverage for these commands is provided by dedicated integration t
 - Restore operations recover proper state
 - **Drift log persists across sessions**
 
-### Drift log persistence (statefulness testing)
+### Drift log persistence (statefulness testing — team mode only)
 
 #### Drift log persistence
 
-Test that drift log persists across sessions and sync operations:
+**Note:** Drift log (`.aligntrue/.drift-log.json`) is only created in **team mode**. Solo mode intentionally does not write a drift log.
+
+Test that drift log persists across sessions and sync operations in team mode:
 
 ```bash
 cd /tmp/test-drift-persistence
-aligntrue init --mode solo --yes
+aligntrue init --mode team --yes  # team mode required
 
 # Add untracked files
 echo "## Rule 1" > FILE1.md

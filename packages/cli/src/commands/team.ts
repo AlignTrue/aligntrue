@@ -9,7 +9,7 @@ import {
   renameSync,
   readFileSync,
 } from "fs";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import { stringify as stringifyYaml, parse as parseYaml } from "yaml";
 import * as clack from "@clack/prompts";
 import { tryLoadConfig } from "../utils/config-loader.js";
@@ -260,6 +260,14 @@ async function teamEnable(
   const paths = getAlignTruePaths(process.cwd());
   const configPath = paths.config;
   const teamConfigPath = paths.teamConfig;
+
+  // Team mode requires a git repository to support collaborative workflows.
+  const gitDir = join(process.cwd(), ".git");
+  if (!existsSync(gitDir)) {
+    exitWithError(1, "Team mode requires a git repository", {
+      hint: "Initialize a git repository first: git init",
+    });
+  }
 
   // Check for non-interactive mode
   const nonInteractive =

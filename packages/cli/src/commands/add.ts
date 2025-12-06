@@ -148,12 +148,15 @@ function detectSourceType(url: string): "git" | "local" {
 
     // Plain HTTP/HTTPS URLs are not supported
     if (urlObj.protocol === "https:" || urlObj.protocol === "http:") {
-      exitWithError({
-        title: "Unsupported URL format",
-        message: `Plain HTTP/HTTPS URLs are not supported for remote rules.\n  URL: ${url}`,
-        hint: "Use a git repository instead (GitHub, GitLab, Bitbucket, or self-hosted).\n  Example: https://github.com/org/rules",
-        code: "UNSUPPORTED_URL",
-      });
+      exitWithError(
+        {
+          title: "Unsupported URL format",
+          message: `Plain HTTP/HTTPS URLs are not supported for remote rules.\n  URL: ${url}`,
+          hint: "Use a git repository instead (GitHub, GitLab, Bitbucket, or self-hosted).\n  Example: https://github.com/org/rules",
+          code: "UNSUPPORTED_URL",
+        },
+        2,
+      );
     }
   } catch {
     // If URL parsing fails, might be a local path
@@ -254,12 +257,15 @@ export async function add(args: string[]): Promise<void> {
   } else if (subcommand === "remote") {
     // Validate --shared and --personal are not both set
     if (sharedFlag && personalFlag) {
-      exitWithError({
-        title: "Invalid options",
-        message: "Cannot use both --personal and --shared flags together",
-        hint: "Choose one: --personal (for remotes.personal) or --shared (for remotes.shared)",
-        code: "INVALID_OPTIONS",
-      });
+      exitWithError(
+        {
+          title: "Invalid options",
+          message: "Cannot use both --personal and --shared flags together",
+          hint: "Choose one: --personal (for remotes.personal) or --shared (for remotes.shared)",
+          code: "INVALID_OPTIONS",
+        },
+        2,
+      );
     }
 
     // Add as remote destination
@@ -352,12 +358,15 @@ async function determineTargetConfig(options: {
       ? `Use --personal for personal config, or edit config.team.yaml directly for shared sources`
       : `Use: aligntrue add ${operationType} <url> --personal (or --shared)`;
 
-  exitWithError({
-    title: "Ambiguous target config",
-    message: `In team mode, specify target config for add ${operationType}`,
-    hint: hintMessage,
-    code: "AMBIGUOUS_CONFIG_TARGET",
-  });
+  exitWithError(
+    {
+      title: "Ambiguous target config",
+      message: `In team mode, specify target config for add ${operationType}`,
+      hint: hintMessage,
+      code: "AMBIGUOUS_CONFIG_TARGET",
+    },
+    2,
+  );
 
   // This line is unreachable but TypeScript needs it
   return { targetPath: configPath, isPersonalConfig: true };
@@ -457,16 +466,19 @@ async function addSource(options: {
             ? `${firstError.path}: `
             : "";
 
-        exitWithError({
-          title: "Invalid source path",
-          message: firstError?.message
-            ? `${pathPrefix}${firstError.message}`
-            : "Source path is invalid",
-          hint:
-            firstError?.hint ||
-            "Use a relative path like .aligntrue/rules or ./my-rules",
-          code: "INVALID_SOURCE_PATH",
-        });
+        exitWithError(
+          {
+            title: "Invalid source path",
+            message: firstError?.message
+              ? `${pathPrefix}${firstError.message}`
+              : "Source path is invalid",
+            hint:
+              firstError?.hint ||
+              "Use a relative path like .aligntrue/rules or ./my-rules",
+            code: "INVALID_SOURCE_PATH",
+          },
+          2,
+        );
       }
     }
 
@@ -786,11 +798,14 @@ async function copyRulesToLocal(options: {
 
     if (result.error) {
       spinner.stopSilent(); // Silent stop - exitWithError will show the error
-      exitWithError({
-        title: "Import failed",
-        message: result.error,
-        code: "IMPORT_FAILED",
-      });
+      exitWithError(
+        {
+          title: "Import failed",
+          message: result.error,
+          code: "IMPORT_FAILED",
+        },
+        2,
+      );
       return;
     }
 
@@ -1001,11 +1016,14 @@ async function copyRulesToLocal(options: {
       throw error;
     }
 
-    exitWithError({
-      title: "Import failed",
-      message: `Failed to import rules: ${error instanceof Error ? error.message : String(error)}`,
-      hint: "Check the URL/path format and try again.",
-      code: "IMPORT_FAILED",
-    });
+    exitWithError(
+      {
+        title: "Import failed",
+        message: `Failed to import rules: ${error instanceof Error ? error.message : String(error)}`,
+        hint: "Check the URL/path format and try again.",
+        code: "IMPORT_FAILED",
+      },
+      2,
+    );
   }
 }

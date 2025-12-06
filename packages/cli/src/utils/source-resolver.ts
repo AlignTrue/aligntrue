@@ -252,6 +252,7 @@ export async function resolveSource(
 
   // Build source URL string from config
   let sourceUrl = "";
+  let sourcePath = "";
   if (source.type === "local" && source.path) {
     sourceUrl = source.path;
   } else if (source.type === "git" && source.url) {
@@ -260,7 +261,7 @@ export async function resolveSource(
       sourceUrl += `@${source.ref}`;
     }
     if (source.path) {
-      sourceUrl += `/${source.path}`;
+      sourcePath = source.path;
     }
   }
 
@@ -306,6 +307,9 @@ export async function resolveSource(
   if (source.type === "git" || isGitSource(sourceUrl)) {
     // Git source: resolve directly using GitProvider (CLI has @aligntrue/sources)
     const parsed = parseGitUrlComponents(sourceUrl);
+    if (sourcePath) {
+      parsed.path = sourcePath;
+    }
     resolved = await resolveGitSourceInternal(
       sourceUrl,
       parsed,

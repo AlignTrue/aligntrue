@@ -10,6 +10,7 @@ import * as yaml from "yaml";
 import {
   getAlignTruePaths,
   type AlignTrueConfig,
+  type AlignTrueMode,
   writeRuleFile,
   type RuleFile,
   getBestFormat,
@@ -461,7 +462,7 @@ export async function init(args: string[] = []): Promise<void> {
   const useInteractive = shouldUseInteractive(forceNonInteractive);
   const nonInteractive = !useInteractive;
 
-  const mode = parsed.flags["mode"] as string | undefined;
+  const mode = parsed.flags["mode"] as AlignTrueMode | undefined;
   const exportersArg = parsed.flags["exporters"] as string | undefined;
   const exporters = exportersArg
     ? exportersArg.split(",").map((e) => e.trim())
@@ -787,6 +788,7 @@ export async function init(args: string[] = []): Promise<void> {
 
   // Generate config (personal defaults)
   const config: Partial<AlignTrueConfig> = {
+    mode: mode || "solo",
     sources,
     exporters: finalExporters,
   };
