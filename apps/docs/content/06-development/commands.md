@@ -7,6 +7,14 @@ description: Development commands, testing, and build workflows for AlignTrue.
 
 Common commands and workflows for AlignTrue development.
 
+## Canonical workflow (use these first)
+
+- `pnpm dev` – Runs package builds in watch mode and the docs app together.
+- `pnpm check` – Lint, format check, typecheck, fast tests, and docs/workspace validations.
+- `pnpm ci` – Full CI-parity suite (pre-ci prep, full validation, lint, format check, typecheck, full tests). This is what CI runs; it is slower.
+
+In most cases: keep `pnpm dev` running while coding, run `pnpm check` before pushing, and let CI handle `pnpm ci`.
+
 ## Core commands
 
 ### Run docs locally

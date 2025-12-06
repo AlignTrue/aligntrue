@@ -76,7 +76,7 @@ OUTPUT: Structured report with workflow results and issues found.
 Execute Layer 3 (Team Golden Paths) from .aligntrue/rules/cli_testing_playbook_COMP.md.
 
 **CURRENT IMPLEMENTATION STATUS:**
-The automated test file `packages/cli/tests/comprehensive/layers/layer-3-team.ts` currently implements basic team mode scenarios. The scenarios below (especially A-F) are documented as manual testing procedures in Section 3.1. To complete full Layer 3 testing, the automated test file should be expanded to implement all six git-based scenarios (A-F) using the `TeamScenario` interface and `execSync` for git commands.
+The automated test file `packages/cli/tests/comprehensive/layers/layer-3-team.ts` now implements all six git-based scenarios (A–F) from Section 3.1 using the `TeamScenario` interface and `execSync` for git commands.
 
 EXECUTION PROTOCOL:
 1. Set up git-based test environment:

@@ -257,10 +257,10 @@ export class AgentsExporter extends ExporterBase {
             );
 
         const linkPath =
-          basePath.startsWith("./") || basePath.startsWith("../")
-            ? basePath
-            : basePath.startsWith(".")
-              ? `./${basePath}`
+          basePath === "."
+            ? "./"
+            : basePath.startsWith("./") || basePath.startsWith("../")
+              ? basePath
               : `./${basePath}`;
 
         // Format: Title (path): description. conditions.

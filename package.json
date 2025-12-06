@@ -6,7 +6,7 @@
   "scripts": {
     "build": "turbo run build",
     "build:packages": "turbo run build --filter='./packages/*'",
-    "dev": "pnpm --filter @aligntrue/docs dev",
+    "dev": "node scripts/dev-all.mjs",
     "dev:packages": "pnpm -r --filter ./packages/* --parallel build --watch",
     "start:docs": "node scripts/start-docs.mjs",
     "generate:repo-files": "node scripts/generate-repo-files.mjs",
@@ -27,7 +27,8 @@
     "lint:strict": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "node scripts/check-all.mjs",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:fast && pnpm validate:docs && pnpm validate:workspace && pnpm validate:transpile-packages",
+    "ci": "pnpm run pre-ci && pnpm run validate:all && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
     "ci:errors": "node scripts/check-ci-errors.mjs",
     "codeql:status": "node scripts/check-codeql-status.mjs",
     "dependabot:status": "node scripts/check-dependabot-status.mjs",
@@ -42,7 +43,8 @@
     "bootstrap": "pnpm install && pnpm build",
     "prepare": "husky",
     "release": "node scripts/manual-release.mjs",
-    "release:helper": "bash scripts/release-helper.sh"
+    "release:helper": "bash scripts/release-helper.sh",
+    "aligntrue": "pnpm --filter @aligntrue/cli exec aligntrue"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

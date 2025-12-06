@@ -1,0 +1,35 @@
+id: multi-agent-fixture
+version: 1.0.0
+spec_version: "1"
+sections:
+  - heading: Security Baseline
+    level: 2
+    severity: MUST
+    content: |
+      Enforce least privilege and log all auth failures.
+      Include rationale and a remediation example.
+    fingerprint: security-baseline
+  - heading: Observability Defaults
+    level: 3
+    severity: SHOULD
+    content: |
+      Emit structured logs with request ids and user context.
+      Prefer sampling for noisy components.
+    vendor:
+      cursor:
+        ai_hint: "Prefer structured logging with request ids"
+      vscode:
+        diagnostic_source: "aligntrue"
+    fingerprint: observability-defaults
+  - heading: Scoped Build Hygiene
+    level: 2
+    severity: SHOULD
+    target:
+      include:
+        - "apps/**"
+      exclude:
+        - "**/*.test.ts"
+    content: |
+      Disallow network calls in unit tests; use fixtures instead.
+      Keep build artifacts out of git.
+    fingerprint: scoped-build-hygiene

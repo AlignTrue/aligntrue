@@ -18,6 +18,7 @@ import {
 } from "../utils/command-utilities.js";
 import { loadMergedConfig } from "@aligntrue/core";
 import path from "path";
+import { execSync } from "child_process";
 import {
   detectDriftForConfig,
   type DriftCategory,
@@ -69,6 +70,30 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Path to config file (default: .aligntrue/config.yaml)",
   },
 ];
+
+function detectGitConflicts(cwd: string): string[] {
+  try {
+    const output = execSync("git status --porcelain", {
+      cwd,
+      encoding: "utf-8",
+    });
+    return output
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .filter(
+        (line) =>
+          line.startsWith("UU") ||
+          line.startsWith("AA") ||
+          line.startsWith("DD") ||
+          line.startsWith("AU") ||
+          line.startsWith("UA"),
+      )
+      .map((line) => line.slice(3));
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Help text for drift command
@@ -155,6 +180,18 @@ export async function drift(args: string[]): Promise<void> {
       "Drift detection requires team mode. Run: aligntrue team enable",
     );
     exitWithError(1, "Drift detection requires team mode");
+  }
+
+  const conflicts = detectGitConflicts(process.cwd());
+  if (conflicts.length > 0) {
+    exitWithError(2, "Resolve git conflicts before running drift", {
+      hint: `Conflicts detected in: ${conflicts
+        .slice(0, 5)
+        .join(
+          ", ",
+        )}${conflicts.length > 5 ? "..." : ""}\nResolve conflicts and retry.`,
+      code: "GIT_CONFLICTS",
+    });
   }
 
   // Detect drift (add path properties for drift detection)

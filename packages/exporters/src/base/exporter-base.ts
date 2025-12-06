@@ -184,6 +184,24 @@ export abstract class ExporterBase implements ExporterPlugin {
         content_hash: hash,
       };
 
+      // Derive nested_location from source path when absent
+      if (!frontmatter.nested_location && path) {
+        const normalizedSource = path.replace(/\\/g, "/");
+        const marker = "/.aligntrue/rules/";
+        const idx = normalizedSource.indexOf(marker);
+        if (idx > 0) {
+          const prefix = normalizedSource.slice(0, idx);
+          const parts = prefix.split("/").filter(Boolean);
+          if (parts.length > 1) {
+            frontmatter.nested_location = parts
+              .slice(parts.length - 2)
+              .join("/");
+          } else if (prefix) {
+            frontmatter.nested_location = prefix;
+          }
+        }
+      }
+
       const result: RuleFile = {
         content,
         frontmatter,

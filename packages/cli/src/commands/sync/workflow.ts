@@ -5,12 +5,18 @@
 import { existsSync, readFileSync, unlinkSync } from "fs";
 import { join } from "path";
 import * as clack from "@clack/prompts";
-import { BackupManager, getExporterNames } from "@aligntrue/core";
+import {
+  BackupManager,
+  getExportFileHashes,
+  getExporterNames,
+} from "@aligntrue/core";
+import { computeHash } from "@aligntrue/schema";
 import { clearPromptHandler } from "@aligntrue/plugin-contracts";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
 import { initializePrompts } from "../../utils/prompts.js";
 import { stopSpinnerSilently } from "../../utils/spinner.js";
+import { exitWithError } from "../../utils/command-utilities.js";
 
 /**
  * Get agent file patterns from configured exporters for backup purposes
@@ -28,6 +34,31 @@ function getAgentFilePatterns(context: SyncContext): string[] {
   }
 
   return patterns;
+}
+
+function detectDirtyExports(context: SyncContext): string[] {
+  const hashes = getExportFileHashes(context.cwd);
+  if (!hashes) return [];
+
+  const dirty: string[] = [];
+  for (const [relPath, storedHash] of Object.entries(hashes.files)) {
+    const absPath = join(context.cwd, relPath);
+    if (!existsSync(absPath)) {
+      dirty.push(relPath);
+      continue;
+    }
+    try {
+      const current = readFileSync(absPath, "utf-8");
+      const currentHash = computeHash(current);
+      if (currentHash !== storedHash) {
+        dirty.push(relPath);
+      }
+    } catch {
+      dirty.push(relPath);
+    }
+  }
+
+  return dirty;
 }
 
 /**
@@ -108,6 +139,46 @@ export async function executeSyncWorkflow(
 
   if (options.verbose) {
     clack.log.info("Verbose mode enabled");
+  }
+
+  // Guard against overwriting locally edited exports
+  const dirtyExports = detectDirtyExports(context);
+  if (dirtyExports.length > 0) {
+    const message = [
+      "Detected local edits to generated exports:",
+      ...dirtyExports.slice(0, 5).map((f) => `  - ${f}`),
+      dirtyExports.length > 5
+        ? `  ... and ${dirtyExports.length - 5} more`
+        : "",
+      "",
+      "These files will be overwritten by sync.",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const forced =
+      options.force || options.yes || options.nonInteractive || false;
+
+    if (!forced) {
+      clack.log.warn(message);
+      const shouldContinue = await clack.confirm({
+        message: "Proceed and overwrite these edits?",
+        initialValue: false,
+      });
+      if (clack.isCancel(shouldContinue) || !shouldContinue) {
+        clack.log.info(
+          "Sync cancelled. Re-run with --force to overwrite generated exports.",
+        );
+        exitWithError(1, "Sync cancelled to avoid overwriting local edits", {
+          hint: "Use --force/--yes to overwrite or revert the changes.",
+          code: "DIRTY_EXPORTS",
+        });
+      }
+    } else if (!options.quiet) {
+      clack.log.warn(
+        `${message}\nProceeding because --force/--yes/non-interactive was set.`,
+      );
+    }
   }
 
   // Step 1: Mandatory Safety Backup (if not dry-run)

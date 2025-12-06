@@ -544,7 +544,7 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
  */
 function showHelp(): void {
   console.log(`
-aligntrue sources - Manage multi-file rule organization
+aligntrue sources - Manage multi-file rule organization (experimental)
 
 USAGE
   aligntrue sources <subcommand> [options]

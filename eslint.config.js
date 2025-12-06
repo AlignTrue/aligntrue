@@ -622,6 +622,7 @@ export default [
     },
     plugins: {
       "unused-imports": unusedImports,
+      "@typescript-eslint": typescriptEslint,
       security,
     },
     rules: {

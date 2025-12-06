@@ -47,7 +47,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
 function showHelp() {
   showStandardHelp({
     name: "plugs",
-    description: "List, resolve, and validate plugs in rules",
+    description: "Experimental: list, resolve, and validate plugs in rules",
     usage: "aligntrue plugs <list|resolve|validate|set|unset> [options]",
     args: ARG_DEFINITIONS,
     examples: [
@@ -299,7 +299,8 @@ async function listPlugs(
   if (align.plugs?.slots && Object.keys(align.plugs.slots).length > 0) {
     console.log("◆  Slots\n│");
     for (const [slotName, slotDef] of Object.entries(align.plugs.slots)) {
-      const required = slotDef.required ? "required" : "optional";
+      const isRequired = Boolean(slotDef.required);
+      const required = isRequired ? "required" : "optional";
       const configFill = configFills[slotName];
       const irFill = align.plugs.fills?.[slotName];
       const fill = configFill || irFill;
@@ -313,7 +314,7 @@ async function listPlugs(
       console.log(`│      ${slotDef.description}`);
       if (fill) {
         console.log(`│      Fill: "${fill}" ${fillSource}`);
-      } else if (required) {
+      } else if (isRequired) {
         console.log(`│      ⚠ No fill provided (required)`);
       }
       if (slotDef.example) {

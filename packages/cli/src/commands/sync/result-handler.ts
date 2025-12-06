@@ -563,17 +563,17 @@ export async function handleSyncResult(
             }
           } else {
             message += "Sources (highest priority first):\n";
-            for (let i = 0; i < context.config.sources.length; i++) {
-              const source = context.config.sources[i];
-              if (!source) continue;
+            const sourcesOrdered = [...context.config.sources].reverse();
+            sourcesOrdered.forEach((source, idx) => {
+              if (!source) return;
               const sourceDisplay =
                 source.type === "git"
                   ? `${source.url || ""}${source.path ? `/${source.path}` : ""}`
                   : source.type === "local"
                     ? source.path || "(local)"
                     : source.url || "(unknown)";
-              message += `  ${i + 1}. ${sourceDisplay}\n`;
-            }
+              message += `  ${idx + 1}. ${sourceDisplay}\n`;
+            });
             message += "\n";
           }
         }

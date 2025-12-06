@@ -13,17 +13,62 @@
 
 ## Table of Contents
 
+- [Architecture in 10 minutes](#architecture-in-10-minutes)
 - [Architecture](#architecture)
 - [Archiving components checklist](#archiving-components-checklist)
 - [CI guide](#ci-guide)
 - [Code standards](#code-standards)
 - [Development commands](#development-commands)
 - [Dependabot auto-merge strategy](#dependabot-auto-merge-strategy)
+- [Add a new exporter](#add-a-new-exporter)
 - [Package exports](#package-exports)
 - [Release process](#release-process)
 - [Development setup](#development-setup)
+- [Stability and compatibility](#stability-and-compatibility)
 - [Test maintenance: Core format and path changes](#test-maintenance-core-format-and-path-changes)
 - [Workspace structure](#workspace-structure)
+
+---
+
+# Architecture in 10 minutes
+
+Use this when you need to add a command, change schema/IR, or wire a new exporter.
+
+## System flow (high level)
+
+```mermaid
+graph LR
+  CLI --> Core
+  Core --> Schema
+  Core --> Exporters
+  Core --> Sources
+  Core --> Lockfile
+  Exporters --> Agents
+```
+
+- **CLI (`packages/cli`)**: argument parsing, UX, config editing, orchestration.
+- **Core (`packages/core`)**: IR loading, validation, scopes, overlays/plugs, sync engine.
+- **Schema (`packages/schema`)**: IR/schema typing, canonicalization, hashing.
+- **Exporters (`packages/exporters`)**: IR → agent-specific files (Cursor, AGENTS.md, VS Code/Claude Code, etc.).
+- **Sources (`packages/sources`)**: pulling rules from local/git/catalog inputs.
+
+## Where to change what
+
+- **Add a CLI command**: `packages/cli/src/commands/*` + `manifest.ts` registration. Tests in `packages/cli/tests/commands/`.
+- **Add/adjust schema fields**: `packages/schema/src/*` with canonicalization + validation. Update docs/CHANGELOG and consider migration.
+- **Core sync behavior**: `packages/core/src/sync/*` and `packages/core/src/paths.ts` for layout. Tests mirror folder names.
+- **Exporter logic**: `packages/exporters/src/<agent>/index.ts` and manifest. Register in `packages/exporters/src/registry.ts`.
+- **Team mode/lockfile**: `packages/core/src/lockfile/*` and `packages/core/src/team/*`.
+
+## Tests to run by change type
+
+- CLI command: `pnpm --filter @aligntrue/cli vitest run tests/commands/<file>.test.ts`
+- Schema/IR: `pnpm --filter @aligntrue/schema test`
+- Core sync/pathing: `pnpm --filter @aligntrue/core vitest run tests/sync/*.test.ts`
+- Exporter change: `pnpm --filter @aligntrue/exporters test`
+- Docs accuracy: `pnpm validate:docs`
+
+Keep changes small and update golden tests when exporter or schema outputs move.
 
 ---
 
@@ -1219,6 +1264,14 @@ pnpm validate:docs
 
 Common commands and workflows for AlignTrue development.
 
+## Canonical workflow (use these first)
+
+- `pnpm dev` – Runs package builds in watch mode and the docs app together.
+- `pnpm check` – Lint, format check, typecheck, fast tests, and docs/workspace validations.
+- `pnpm ci` – Full CI-parity suite (pre-ci prep, full validation, lint, format check, typecheck, full tests). This is what CI runs; it is slower.
+
+In most cases: keep `pnpm dev` running while coding, run `pnpm check` before pushing, and let CI handle `pnpm ci`.
+
 ## Core commands
 
 ### Run docs locally
@@ -1642,6 +1695,38 @@ To confirm majors and other risky updates stay manual:
 - [GitHub Dependabot docs](https://docs.github.com/en/code-security/dependabot)
 - [GitHub auto-merge API](https://docs.github.com/en/rest/pulls/merges?apiVersion=2022-11-28#enable-auto-merge-for-a-pull-request)
 - [CI guide](https://aligntrue.ai/docs/06-development/ci)
+
+---
+
+# Add a new exporter
+
+Follow this recipe to add an agent exporter without guesswork.
+
+## Steps
+
+1. **Create the module**
+   - Copy the smallest existing exporter as a starting point (e.g., `packages/exporters/src/cline`).
+   - Add `manifest.json` and `index.ts` under `packages/exporters/src/<agent>/`.
+   - Register it in `packages/exporters/src/registry.ts`.
+2. **Wire outputs**
+   - Decide output paths and filenames; keep them deterministic.
+   - Include fidelity notes if the format is lossy compared to IR.
+3. **Add tests**
+   - Golden determinism: IR fixture → expected files in `packages/exporters/tests/__fixtures__/<agent>/`.
+   - Contract coverage: validate manifest and hash stability if applicable.
+   - Run: `pnpm --filter @aligntrue/exporters test`.
+4. **Docs**
+   - Add the agent to `apps/docs/content/04-reference/agent-support.md` with any fidelity notes.
+   - Update `CHANGELOG.md` under “Added”.
+5. **init detection (optional)**
+   - If the exporter should auto-detect on `aligntrue init`, hook it into the detection logic in `packages/cli/src/commands/init.ts`.
+
+## Checks before opening a PR
+
+- Golden fixtures pass for the new exporter.
+- Manifest fields and outputs are documented.
+- `pnpm check` and `pnpm --filter @aligntrue/exporters test` are green.
+- Docs updated for user-facing behavior.
 
 ---
 
@@ -2289,6 +2374,44 @@ pnpm --filter @aligntrue/schema build
 - Learn about the [workspace structure](https://aligntrue.ai/docs/06-development/workspace)
 - Explore [development commands](https://aligntrue.ai/docs/06-development/commands)
 - Understand [CI validation and troubleshooting](https://aligntrue.ai/docs/06-development/ci)
+
+---
+
+# Stability and compatibility
+
+AlignTrue optimizes for deterministic, reviewable changes. This page documents what is stable, what can change, and how experimental features are treated.
+
+## Versioned contracts
+
+- **Spec version**: The IR/schema version that AlignTrue reads and writes. Minor bumps may add optional fields. Breaking changes require an explicit migration path or a new major spec.
+- **Lock schema version**: The on-disk lockfile schema for team mode. Minor bumps are backward compatible or auto-migratable. Breaking changes ship with a migration command and release notes.
+
+## Change categories
+
+- **Backward compatible**: Additive fields, new optional sections, stricter validation that matches documented behavior. No migration needed.
+- **Auto-migratable**: Structural shifts that the CLI migrates for you (e.g., field moves). Comes with a migration command and release note.
+- **Breaking**: Requires manual action. Documented in changelog and release notes with explicit steps.
+
+## Exporter stability
+
+- Core exporters (Cursor, `AGENTS.md`, VS Code/Claude Code) target byte-stable output for identical inputs. Changes must either be backward compatible or come with a migration + golden test update.
+- New exporters start as experimental until they have golden coverage and documented contracts.
+
+## Experimental surfaces
+
+The following are **experimental** and may change faster than the stable surface:
+
+- **Plugs** (slots/fills)
+- **Overlays** (override/selector flows)
+- **Multi-source** (git/remote source merging)
+
+These are labeled as experimental in CLI help and may introduce breaking changes between minor versions. Use them with caution in CI-critical pipelines.
+
+## Expectations for contributors
+
+- Add or update golden tests when changing exporters or schema-to-IR shaping.
+- Document compatibility impact in `CHANGELOG.md` for any non-trivial change.
+- Gate experimental behavior behind flags or clearly labeled help text; do not silently change stable contracts.
 
 ---
 

@@ -126,7 +126,7 @@ export const COMMANDS: CommandMeta[] = [
   },
   {
     name: "sources",
-    summary: "Manage multi-file rule organization (list, split)",
+    summary: "Manage multi-file rule organization (experimental)",
     category: "source",
     handler: sources,
   },
@@ -152,7 +152,7 @@ export const COMMANDS: CommandMeta[] = [
   // Team Commands
   {
     name: "team",
-    summary: "Team mode management (enable, disable, status)",
+    summary: "Team mode management (enable, join, disable, status)",
     category: "team",
     handler: team,
   },
@@ -164,7 +164,7 @@ export const COMMANDS: CommandMeta[] = [
   },
   {
     name: "override",
-    summary: "Manage overlays for fork-safe customization",
+    summary: "Manage overlays for fork-safe customization (experimental)",
     category: "team",
     handler: override,
   },
@@ -172,7 +172,8 @@ export const COMMANDS: CommandMeta[] = [
   // Plugs Management
   {
     name: "plugs",
-    summary: "Manage plug slots and fills (list, resolve, validate)",
+    summary:
+      "Manage plug slots and fills (list, resolve, validate) (experimental)",
     category: "plugs",
     handler: plugs,
   },
