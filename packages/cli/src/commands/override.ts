@@ -18,7 +18,7 @@ export async function overrideCommand(args: string[]): Promise<void> {
   if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
     showStandardHelp({
       name: "override",
-      description: "Manage overlays for fork-safe customization",
+      description: "Experimental: manage overlays for fork-safe customization",
       usage: "aligntrue override <subcommand> [options]",
       args: [],
       examples: [

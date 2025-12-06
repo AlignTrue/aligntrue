@@ -10,5 +10,8 @@
   "release-process": "Release process",
   "package-exports": "Package exports",
   "archiving-components": "Archiving components",
-  "dependabot": "Dependabot auto-merge"
+  "dependabot": "Dependabot auto-merge",
+  "stability": "Stability and compatibility",
+  "architecture-quick": "Architecture in 10 minutes",
+  "exporter-playbook": "Add a new exporter"
 }

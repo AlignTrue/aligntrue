@@ -1,0 +1,10 @@
+# Default owners
+* @aligntrue/maintainers
+
+# Focused ownership
+packages/schema/ @aligntrue/maintainers
+packages/core/ @aligntrue/maintainers
+packages/exporters/ @aligntrue/maintainers
+packages/cli/ @aligntrue/maintainers
+apps/docs/ @aligntrue/maintainers
+

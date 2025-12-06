@@ -4,15 +4,73 @@
  */
 
 import { execSync, type ExecException } from "node:child_process";
-import { writeFileSync, existsSync, mkdtempSync, rmSync } from "node:fs";
+import {
+  writeFileSync,
+  existsSync,
+  mkdtempSync,
+  rmSync,
+  mkdirSync,
+  readFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { assertTestSafety } from "../test-safety.js";
 
 interface TeamScenario {
   name: string;
-  commands: string[];
-  validation: (workspace: string) => { passed: boolean; error?: string };
+  commands?: string[];
+  validation?: (workspace: string) => { passed: boolean; error?: string };
+  execute?: (workspace: string) => { passed: boolean; error?: string };
+}
+
+const SHELL = "/bin/bash";
+
+function makeTempDir(prefix: string): string {
+  return mkdtempSync(join(tmpdir(), prefix));
+}
+
+function runCommand(
+  command: string,
+  cwd: string,
+  opts?: { allowFail?: boolean; env?: NodeJS.ProcessEnv },
+): { code: number; stdout: string; stderr: string } {
+  try {
+    const stdout = execSync(command, {
+      cwd,
+      encoding: "utf-8",
+      stdio: "pipe",
+      shell: SHELL,
+      env: { ...process.env, ...opts?.env },
+    });
+    return { code: 0, stdout, stderr: "" };
+  } catch (err) {
+    const execErr = err as ExecException;
+    const code = execErr.status ?? 1;
+    const stdout =
+      typeof execErr.stdout === "string" ? execErr.stdout : execErr.message;
+    const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
+    if (opts?.allowFail) {
+      return { code, stdout, stderr };
+    }
+    throw err;
+  }
+}
+
+function setupBareRepo(): string {
+  const repoDir = join(makeTempDir("aligntrue-team-bare-"), "team-repo.git");
+  mkdirSync(repoDir, { recursive: true });
+  runCommand("git init --bare", repoDir);
+  runCommand("git symbolic-ref HEAD refs/heads/main", repoDir);
+  return repoDir;
+}
+
+function setGitIdentity(cwd: string, name: string, email: string): void {
+  runCommand(`git config user.name "${name}"`, cwd);
+  runCommand(`git config user.email "${email}"`, cwd);
+}
+
+function readFile(path: string): string {
+  return readFileSync(path, "utf-8");
 }
 
 const scenarios: TeamScenario[] = [
@@ -52,6 +110,436 @@ const scenarios: TeamScenario[] = [
       return { passed: existsSync(rulesPath) };
     },
   },
+  {
+    name: "A. Git repository setup and team initialization",
+    execute: () => {
+      const tempRoot = makeTempDir("aligntrue-layer3-a-");
+      const bareRepo = setupBareRepo();
+      const userA = join(tempRoot, "team-user-a");
+      const userB = join(tempRoot, "team-user-b");
+      try {
+        mkdirSync(userA, { recursive: true });
+        mkdirSync(userB, { recursive: true });
+        runCommand("git init", userA);
+        setGitIdentity(userA, "Test User A", "test-a@example.com");
+        runCommand(`git remote add origin ${bareRepo}`, userA);
+        runCommand("aligntrue init --yes --mode team", userA);
+        runCommand("aligntrue sync", userA);
+        runCommand("git add .aligntrue .aligntrue/lock.json", userA);
+        runCommand('git commit -m "Enable team mode"', userA);
+        runCommand("git branch -M main", userA);
+        runCommand("git push -u origin main", userA);
+
+        runCommand(`git clone ${bareRepo} ${userB}`, tempRoot);
+        setGitIdentity(userB, "Test User B", "test-b@example.com");
+        runCommand("aligntrue team join --yes", userB);
+        runCommand("aligntrue sync", userB);
+
+        const lockExists = existsSync(join(userB, ".aligntrue/lock.json"));
+        const teamConfig = join(userB, ".aligntrue/config.team.yaml");
+        const configHasTeam =
+          existsSync(teamConfig) && readFile(teamConfig).includes("mode: team");
+        const sharedConfig =
+          existsSync(join(userA, ".aligntrue/config.team.yaml")) &&
+          existsSync(teamConfig);
+
+        if (!lockExists) {
+          return { passed: false, error: "Lockfile missing for user B" };
+        }
+        if (!configHasTeam) {
+          return { passed: false, error: "Team mode not detected in config" };
+        }
+        if (!sharedConfig) {
+          return { passed: false, error: "Team config not shared via git" };
+        }
+        return { passed: true };
+      } catch (error) {
+        return {
+          passed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      } finally {
+        rmSync(tempRoot, { recursive: true, force: true });
+        rmSync(bareRepo, { recursive: true, force: true });
+      }
+    },
+  },
+  {
+    name: "B. Git integration modes (ignore, commit, branch, overrides)",
+    execute: () => {
+      const workspace = makeTempDir("aligntrue-layer3-b-");
+      try {
+        runCommand("git init", workspace);
+        setGitIdentity(workspace, "Git Modes", "modes@example.com");
+        runCommand("aligntrue init --yes --mode team", workspace);
+        runCommand("git add .", workspace);
+        runCommand('git commit -m "Initial commit"', workspace);
+
+        // Ignore mode
+        runCommand("aligntrue config set git.mode ignore", workspace);
+        runCommand("aligntrue sync", workspace);
+        const gitignore = readFile(join(workspace, ".gitignore"));
+        if (!gitignore.includes("AGENTS.md")) {
+          return {
+            passed: false,
+            error: "AGENTS.md not ignored in ignore mode",
+          };
+        }
+
+        // Commit mode
+        runCommand("aligntrue config set git.mode commit", workspace);
+        runCommand("aligntrue sync", workspace);
+        const gitignoreCommit = readFile(join(workspace, ".gitignore"));
+        if (gitignoreCommit.includes("AGENTS.md")) {
+          return {
+            passed: false,
+            error: "AGENTS.md should not be ignored in commit mode",
+          };
+        }
+        const statusCommit = runCommand("git status --porcelain", workspace);
+        if (!statusCommit.stdout.includes("AGENTS.md")) {
+          return {
+            passed: false,
+            error: "AGENTS.md not staged/tracked in commit mode",
+          };
+        }
+
+        // Branch mode
+        runCommand("aligntrue config set git.mode branch", workspace);
+        runCommand("aligntrue sync", workspace);
+        const branches = runCommand(
+          "git branch --list 'aligntrue/sync*'",
+          workspace,
+        );
+        const branchName = branches.stdout
+          .split("\n")
+          .find((b) => b.includes("aligntrue/sync"));
+        if (!branchName) {
+          return {
+            passed: false,
+            error: "Branch mode did not create feature branch",
+          };
+        }
+
+        // Per-exporter override
+        runCommand("aligntrue config set git.mode ignore", workspace);
+        runCommand(
+          "aligntrue config set git.per_exporter.cursor branch",
+          workspace,
+        );
+        runCommand("aligntrue sync", workspace);
+        const gitignoreOverride = readFile(join(workspace, ".gitignore"));
+        const branchesOverride = runCommand(
+          "git branch --list 'aligntrue/sync*'",
+          workspace,
+        );
+        if (!gitignoreOverride.includes("AGENTS.md")) {
+          return {
+            passed: false,
+            error: "AGENTS.md should be ignored with override",
+          };
+        }
+        if (!branchesOverride.stdout.trim()) {
+          return {
+            passed: false,
+            error: "Cursor branch not created with override",
+          };
+        }
+
+        return { passed: true };
+      } catch (error) {
+        return {
+          passed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      } finally {
+        rmSync(workspace, { recursive: true, force: true });
+      }
+    },
+  },
+  {
+    name: "C. Merge conflict handling",
+    execute: () => {
+      const tempRoot = makeTempDir("aligntrue-layer3-c-");
+      const bareRepo = setupBareRepo();
+      const userA = join(tempRoot, "team-user-a");
+      const userB = join(tempRoot, "team-user-b");
+      try {
+        mkdirSync(userA, { recursive: true });
+        mkdirSync(userB, { recursive: true });
+        runCommand("git init", userA);
+        setGitIdentity(userA, "Conflict A", "conflict-a@example.com");
+        runCommand(`git remote add origin ${bareRepo}`, userA);
+        runCommand("aligntrue init --yes --mode team", userA);
+        runCommand('echo "## Team Rule Base" > AGENTS.md', userA);
+        runCommand("aligntrue sync", userA);
+        runCommand("git add .", userA);
+        runCommand('git commit -m "Initial team rules"', userA);
+        runCommand("git branch -M main", userA);
+        runCommand("git push -u origin main", userA);
+
+        runCommand(`git clone ${bareRepo} ${userB}`, tempRoot);
+        setGitIdentity(userB, "Conflict B", "conflict-b@example.com");
+        runCommand('echo "## Team Rule B" > AGENTS.md', userB);
+        runCommand("aligntrue sync", userB);
+        runCommand("git add .", userB);
+        runCommand('git commit -m "Add rule B"', userB);
+        runCommand("git push origin main", userB);
+
+        // User A makes conflicting change without pulling
+        runCommand('echo "## Team Rule C" > AGENTS.md', userA);
+        runCommand("aligntrue sync", userA);
+        runCommand("git add .", userA);
+        const pushResult = runCommand("git push origin main", userA, {
+          allowFail: true,
+        });
+        if (pushResult.code === 0) {
+          return {
+            passed: false,
+            error: "Expected push to be rejected (conflict)",
+          };
+        }
+
+        // Pull and resolve conflict
+        const pullResult = runCommand("git pull --no-edit", userA, {
+          allowFail: true,
+        });
+        const agentsPath = join(userA, "AGENTS.md");
+        const hasConflict =
+          pullResult.code !== 0 && readFile(agentsPath).includes("<<<<<<<");
+        if (!hasConflict) {
+          return { passed: false, error: "Merge conflict not detected" };
+        }
+
+        writeFileSync(agentsPath, "## Team Rule B\n## Team Rule C\n");
+        runCommand("git add AGENTS.md", userA);
+        runCommand('git commit -m "Resolve conflict"', userA);
+        runCommand("git push origin main", userA);
+
+        // User B pulls resolved changes and validates lockfile
+        runCommand("git pull", userB);
+        const lockExists = existsSync(join(userB, ".aligntrue/lock.json"));
+        if (!lockExists) {
+          return { passed: false, error: "Lockfile missing after merge" };
+        }
+        const driftResult = runCommand("aligntrue drift --gates", userB, {
+          allowFail: true,
+        });
+        if (driftResult.code !== 0) {
+          return {
+            passed: false,
+            error: `Drift check failed: ${driftResult.stdout}${driftResult.stderr}`,
+          };
+        }
+
+        return { passed: true };
+      } catch (error) {
+        return {
+          passed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      } finally {
+        rmSync(tempRoot, { recursive: true, force: true });
+        rmSync(bareRepo, { recursive: true, force: true });
+      }
+    },
+  },
+  {
+    name: "D. PR workflow with branch mode",
+    execute: () => {
+      const workspace = makeTempDir("aligntrue-layer3-d-");
+      try {
+        runCommand("git init", workspace);
+        setGitIdentity(workspace, "PR Workflow", "pr@example.com");
+        runCommand("aligntrue init --yes --mode team", workspace);
+        runCommand("aligntrue config set git.mode branch", workspace);
+        mkdirSync(join(workspace, ".aligntrue/rules"), { recursive: true });
+        writeFileSync(
+          join(workspace, ".aligntrue/rules/testing.md"),
+          "# New Feature Rule\n",
+        );
+        runCommand("aligntrue sync", workspace);
+
+        const branches = runCommand(
+          "git branch --list 'aligntrue/sync*'",
+          workspace,
+        );
+        const branchName = branches.stdout
+          .split("\n")
+          .find((b) => b.includes("aligntrue/sync"))
+          ?.trim()
+          .replace(/^\*\s*/, "");
+        if (!branchName) {
+          return { passed: false, error: "Feature branch not created" };
+        }
+
+        runCommand(`git checkout ${branchName}`, workspace);
+        const ruleContent = readFile(
+          join(workspace, ".aligntrue/rules/testing.md"),
+        );
+        if (!ruleContent.includes("New Feature Rule")) {
+          return { passed: false, error: "Rule change not present on branch" };
+        }
+
+        const driftBranch = runCommand("aligntrue drift --gates", workspace, {
+          allowFail: true,
+        });
+        if (driftBranch.code !== 0) {
+          return {
+            passed: false,
+            error: `Drift failed on branch: ${driftBranch.stdout}${driftBranch.stderr}`,
+          };
+        }
+
+        runCommand("git checkout main", workspace);
+        runCommand(
+          `git merge ${branchName} --no-ff -m "Merge feature branch"`,
+          workspace,
+        );
+        runCommand("aligntrue sync", workspace);
+        const driftMain = runCommand("aligntrue drift --gates", workspace, {
+          allowFail: true,
+        });
+        if (driftMain.code !== 0) {
+          return {
+            passed: false,
+            error: `Drift failed after merge: ${driftMain.stdout}${driftMain.stderr}`,
+          };
+        }
+
+        return { passed: true };
+      } catch (error) {
+        return {
+          passed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      } finally {
+        rmSync(workspace, { recursive: true, force: true });
+      }
+    },
+  },
+  {
+    name: "E. Git source update workflow",
+    execute: () => {
+      if (process.env.SKIP_GIT_SOURCE_TESTS === "1") {
+        return { passed: true };
+      }
+      const workspace = makeTempDir("aligntrue-layer3-e-");
+      try {
+        runCommand("aligntrue init --yes --mode team", workspace);
+        runCommand(
+          "aligntrue add source https://github.com/AlignTrue/examples --personal",
+          workspace,
+        );
+        runCommand("aligntrue sync", workspace);
+        const firstLock = readFile(join(workspace, ".aligntrue/lock.json"));
+        runCommand("aligntrue sync --force-refresh", workspace);
+        const refreshedLock = readFile(join(workspace, ".aligntrue/lock.json"));
+
+        const hasHash = refreshedLock.toLowerCase().includes("hash");
+        const changed = firstLock !== refreshedLock;
+        if (!hasHash) {
+          return {
+            passed: false,
+            error: "Lockfile missing source hash after refresh",
+          };
+        }
+        if (!changed) {
+          return {
+            passed: false,
+            error: "Lockfile did not update after force-refresh",
+          };
+        }
+        return { passed: true };
+      } catch (error) {
+        return {
+          passed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      } finally {
+        rmSync(workspace, { recursive: true, force: true });
+      }
+    },
+  },
+  {
+    name: "F. Remotes auto-push",
+    execute: () => {
+      const workspace = makeTempDir("aligntrue-layer3-f-");
+      const remoteRepo = setupBareRepo();
+      try {
+        runCommand("aligntrue init --mode solo --yes", workspace);
+        mkdirSync(join(workspace, ".aligntrue/rules/guides"), {
+          recursive: true,
+        });
+        writeFileSync(
+          join(workspace, ".aligntrue/rules/typescript.md"),
+          [
+            "---",
+            "scope: personal",
+            "---",
+            "# TypeScript",
+            "TypeScript coding standards.",
+          ].join("\n"),
+        );
+        writeFileSync(
+          join(workspace, ".aligntrue/rules/guides/react.md"),
+          [
+            "---",
+            "scope: personal",
+            "---",
+            "# React",
+            "React development guide.",
+          ].join("\n"),
+        );
+        writeFileSync(
+          join(workspace, ".aligntrue/config.yaml"),
+          readFile(join(workspace, ".aligntrue/config.yaml")) +
+            "\nremotes:\n  personal:\n    url: " +
+            remoteRepo +
+            "\n    branch: main\n    auto: true\n",
+        );
+
+        runCommand("aligntrue sync", workspace);
+        const verifyDir = makeTempDir("aligntrue-remote-verify-");
+        runCommand(`git clone ${remoteRepo} ${verifyDir}`, workspace);
+        const files = runCommand("ls", verifyDir).stdout;
+        if (!files.includes("typescript.md") || !files.includes("react.md")) {
+          return {
+            passed: false,
+            error: "Remote push did not include expected files",
+          };
+        }
+
+        writeFileSync(
+          join(workspace, ".aligntrue/rules/typescript.md"),
+          readFile(join(workspace, ".aligntrue/rules/typescript.md")) +
+            "\nUpdated\n",
+        );
+        runCommand("aligntrue sync", workspace);
+        const verifyDir2 = makeTempDir("aligntrue-remote-verify-");
+        runCommand(`git clone ${remoteRepo} ${verifyDir2}`, workspace);
+        const updated = readFile(join(verifyDir2, "typescript.md")).includes(
+          "Updated",
+        );
+        if (!updated) {
+          return {
+            passed: false,
+            error: "Remote did not receive updated content",
+          };
+        }
+
+        return { passed: true };
+      } catch (error) {
+        return {
+          passed: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      } finally {
+        rmSync(workspace, { recursive: true, force: true });
+        rmSync(remoteRepo, { recursive: true, force: true });
+      }
+    },
+  },
 ];
 
 function runScenario(
@@ -63,6 +551,17 @@ function runScenario(
 } {
   console.log(`  Running: ${scenario.name}`);
 
+  if (scenario.execute) {
+    try {
+      return scenario.execute(workspace);
+    } catch (error) {
+      return {
+        passed: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
   for (const command of scenario.commands) {
     console.log(`  Executing: ${command}`);
     try {
@@ -70,7 +569,7 @@ function runScenario(
         cwd: workspace,
         encoding: "utf-8",
         stdio: "pipe",
-        shell: "/bin/bash",
+        shell: SHELL,
       });
       console.log(`  Exit code: 0`);
     } catch (err) {
@@ -87,7 +586,10 @@ function runScenario(
     }
   }
 
-  return scenario.validation(workspace);
+  if (scenario.validation) {
+    return scenario.validation(workspace);
+  }
+  return { passed: true };
 }
 
 function main() {

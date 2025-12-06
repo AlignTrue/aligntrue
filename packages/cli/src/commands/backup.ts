@@ -62,6 +62,8 @@ async function getAgentFilePatterns(cwd: string): Promise<string[]> {
 interface BackupArgs {
   // Common
   help?: boolean;
+  flags?: Record<string, boolean | string | undefined>;
+  positional?: string[];
   config?: string;
   yes?: boolean; // Non-interactive mode - skip confirmation prompts
   latest?: boolean; // Restore most recent backup
@@ -78,6 +80,12 @@ interface BackupArgs {
   // Push subcommand
   dryRun?: boolean;
   force?: boolean;
+
+  // Setup subcommand
+  remote?: string;
+  branch?: string;
+  auto?: boolean;
+  "no-auto"?: boolean;
 }
 
 const ARG_DEFINITIONS: ArgDefinition[] = [
@@ -105,6 +113,26 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     flag: "--force",
     hasValue: false,
     description: "Force push even if no changes detected (push subcommand)",
+  },
+  {
+    flag: "--remote",
+    hasValue: true,
+    description: "Remote repository URL (setup subcommand, non-interactive)",
+  },
+  {
+    flag: "--branch",
+    hasValue: true,
+    description: "Remote branch name (setup subcommand, default: main)",
+  },
+  {
+    flag: "--auto",
+    hasValue: false,
+    description: "Enable auto push on sync (setup subcommand)",
+  },
+  {
+    flag: "--no-auto",
+    hasValue: false,
+    description: "Disable auto push on sync (setup subcommand)",
   },
   {
     flag: "--config",
@@ -251,7 +279,7 @@ export async function backupCommand(argv: string[]): Promise<void> {
         break;
 
       case "setup":
-        await handleRemoteSetup(cwd);
+        await handleRemoteSetup(cwd, args);
         break;
 
       default:
@@ -335,6 +363,9 @@ async function handleList(cwd: string): Promise<void> {
 
   if (backups.length === 0) {
     clack.log.warn("No backups found");
+    clack.log.info(
+      'Backups are local to this machine and are not cloned with the repo.\nCreate one with: aligntrue backup create --notes "initial"',
+    );
     return;
   }
 
@@ -643,12 +674,18 @@ async function handleRemoteStatus(cwd: string): Promise<void> {
   console.log(summary);
 }
 
-async function handleRemoteSetup(cwd: string): Promise<void> {
+async function handleRemoteSetup(cwd: string, args: BackupArgs): Promise<void> {
   const { loadConfig, patchConfig, getAlignTruePaths } = await import(
     "@aligntrue/core"
   );
   const paths = getAlignTruePaths(cwd);
   const config = await loadConfig(paths.config);
+
+  const nonInteractive =
+    Boolean(args.yes) ||
+    process.env["CI"] === "true" ||
+    !process.stdout.isTTY ||
+    false;
 
   clack.intro("Remote sync setup");
 
@@ -663,41 +700,55 @@ async function handleRemoteSetup(cwd: string): Promise<void> {
   if (existing) {
     clack.log.info(`Current remote: ${existing}`);
 
-    const change = await clack.confirm({
-      message: "Do you want to change the remote configuration?",
-      initialValue: false,
-    });
+    if (!nonInteractive) {
+      const change = await clack.confirm({
+        message: "Do you want to change the remote configuration?",
+        initialValue: false,
+      });
 
-    if (clack.isCancel(change) || !change) {
-      clack.outro("Setup cancelled");
-      return;
+      if (clack.isCancel(change) || !change) {
+        clack.outro("Setup cancelled");
+        return;
+      }
     }
   }
 
   // Get repository URL
-  const url = await clack.text({
-    message: "Enter remote repository URL:",
-    placeholder: "git@github.com:username/rules-backup.git",
-    validate: (value) => {
-      if (!value) return "URL is required";
-      if (!value.startsWith("https://") && !value.startsWith("git@")) {
-        return "URL must start with https:// or git@";
-      }
-      return undefined;
-    },
-  });
+  const flags = args.flags || {};
+  const remoteFlag = flags["remote"] as string | undefined;
+  const url =
+    remoteFlag ??
+    (await clack.text({
+      message: "Enter remote repository URL:",
+      placeholder: "git@github.com:username/rules-backup.git",
+      validate: (value) => {
+        if (!value) return "URL is required";
+        if (!value.startsWith("https://") && !value.startsWith("git@")) {
+          return "URL must start with https:// or git@";
+        }
+        return undefined;
+      },
+    }));
 
-  if (clack.isCancel(url)) {
+  if (clack.isCancel(url) || !url) {
+    if (nonInteractive && !remoteFlag) {
+      exitWithError(2, "Remote URL is required for non-interactive setup", {
+        hint: "Pass --remote <url> (and optional --branch, --auto/--no-auto)",
+        code: "REMOTE_URL_REQUIRED",
+      });
+    }
     clack.outro("Setup cancelled");
     return;
   }
 
   // Get branch
-  const branch = await clack.text({
-    message: "Branch name:",
-    placeholder: "main",
-    initialValue: "main",
-  });
+  const branch =
+    flags["branch"] ??
+    (await clack.text({
+      message: "Branch name:",
+      placeholder: "main",
+      initialValue: "main",
+    }));
 
   if (clack.isCancel(branch)) {
     clack.outro("Setup cancelled");
@@ -705,10 +756,15 @@ async function handleRemoteSetup(cwd: string): Promise<void> {
   }
 
   // Get auto setting
-  const auto = await clack.confirm({
-    message: "Push automatically on sync?",
-    initialValue: true,
-  });
+  const auto =
+    flags["auto"] === true
+      ? true
+      : flags["no-auto"] === true
+        ? false
+        : await clack.confirm({
+            message: "Push automatically on sync?",
+            initialValue: true,
+          });
 
   if (clack.isCancel(auto)) {
     clack.outro("Setup cancelled");
@@ -748,17 +804,24 @@ async function handleRemoteSetup(cwd: string): Promise<void> {
   clack.log.info(`Branch: ${branch || "main"}`);
   clack.log.info(`Auto-push: ${auto ? "enabled" : "disabled"}`);
 
-  const pushNow = await clack.confirm({
-    message: "Push to remote now?",
-    initialValue: true,
-  });
+  if (!nonInteractive) {
+    const pushNow = await clack.confirm({
+      message: "Push to remote now?",
+      initialValue: true,
+    });
 
-  if (clack.isCancel(pushNow) || !pushNow) {
-    clack.outro("Setup complete. Run 'aligntrue backup push' to push.");
+    if (clack.isCancel(pushNow) || !pushNow) {
+      clack.outro("Setup complete. Run 'aligntrue backup push' to push.");
+      return;
+    }
+
+    // Push immediately
+    await handleRemotePush(cwd, {}, []);
+    clack.outro("Setup and push complete");
     return;
   }
 
-  // Push immediately
-  await handleRemotePush(cwd, {}, []);
-  clack.outro("Setup and push complete");
+  clack.outro(
+    "Remote sync configured (non-interactive). Run 'aligntrue backup push' to push.",
+  );
 }

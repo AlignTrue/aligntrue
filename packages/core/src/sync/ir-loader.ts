@@ -3,9 +3,14 @@
  */
 
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
-import { extname, dirname } from "path";
+import { extname, dirname, sep, relative } from "path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { validateAlignSchema, type Align, type Plugs } from "@aligntrue/schema";
+import {
+  validateAlignSchema,
+  type Align,
+  type Plugs,
+  type RuleFrontmatter,
+} from "@aligntrue/schema";
 import { checkFileSize } from "../performance/index.js";
 import type { AlignTrueMode, AlignTrueConfig } from "../config/index.js";
 import { resolvePlugsForAlign, mergePlugs } from "../plugs/index.js";
@@ -57,18 +62,22 @@ export async function loadIRAndResolvePlugs(
           ir, // Return partial IR for context
           success: false,
           warnings: plugsResult.errors || ["Plugs resolution failed"],
-          unresolvedPlugsCount: 0,
+          unresolvedPlugsCount: plugsResult.unresolvedRequired.length,
         };
       }
 
       // Update sections with resolved guidance (only if sections exist)
-      if (ir.sections) {
-        // Guidance in sections is embedded in content, resolution updates content implicitly?
-        // resolvePlugsForAlign logic likely handles the substitution if modifying align in place
-        // Let's verify if resolvePlugsForAlign modifies ir in place.
-        // Looking at usage in SyncEngine, it seems it returns resolved rules but doesn't modify IR structure?
-        // SyncEngine: "Update sections with resolved guidance... This is a no-op for sections format"
-        // So we just checking resolution success.
+      if (ir.sections && plugsResult.rules.length === ir.sections.length) {
+        ir.sections = ir.sections.map((section, idx) => {
+          const resolvedRule = plugsResult.rules[idx];
+          if (resolvedRule?.content) {
+            return {
+              ...section,
+              content: resolvedRule.content,
+            };
+          }
+          return section;
+        });
       }
 
       // Add unresolved plugs as warnings and track count
@@ -149,6 +158,31 @@ export async function loadIR(
             ? (frontmatterScope as "team" | "personal" | "shared")
             : undefined;
 
+        // Infer nested_location from source path (e.g., apps/docs/.aligntrue/rules/foo.md -> apps/docs)
+        let nestedLocation: string | undefined;
+        const normalizedRelPath = relative(process.cwd(), rule.path).replace(
+          /\\/g,
+          "/",
+        );
+        const marker = "/.aligntrue/rules/";
+        const markerIndex = normalizedRelPath.indexOf(marker);
+        if (markerIndex > 0) {
+          const prefix = normalizedRelPath.slice(0, markerIndex);
+          if (prefix) {
+            const parts = prefix.split("/").filter(Boolean);
+            // Use the deepest two path segments to keep nested location concise
+            nestedLocation =
+              parts.length > 1
+                ? parts.slice(parts.length - 2).join("/")
+                : prefix;
+          }
+        }
+
+        const frontmatterWithNested =
+          nestedLocation && !rule.frontmatter.nested_location
+            ? { ...rule.frontmatter, nested_location: nestedLocation }
+            : rule.frontmatter;
+
         return {
           heading: rule.frontmatter.title || rule.filename.replace(/\.md$/, ""),
           content: rule.content,
@@ -160,7 +194,7 @@ export async function loadIR(
           // Store frontmatter in vendor.aligntrue for export fidelity (not directly on section)
           vendor: {
             aligntrue: {
-              frontmatter: rule.frontmatter,
+              frontmatter: frontmatterWithNested,
             },
           },
           // Only include scope if it's a valid approval scope (exactOptionalPropertyTypes requires this)
@@ -301,6 +335,66 @@ export async function loadIR(
     align.sections = [];
   }
 
+  // Ensure source_file is set for single-file loads (used by exporters and metadata)
+  if (align.sections && align.sections.length > 0) {
+    align.sections = align.sections.map((section) => ({
+      ...section,
+      source_file: section.source_file || sourcePath,
+    }));
+  }
+
+  // Inject nested_location for single-file loads when path indicates nested rules
+  const singleFileNestedLocation = (() => {
+    const parts = sourcePath.replace(/\\/g, "/").split("/");
+    const alignIdx = parts.findIndex((p) => p === ".aligntrue");
+    if (alignIdx > 0) {
+      const prefixParts = parts.slice(Math.max(0, alignIdx - 2), alignIdx);
+      return prefixParts.join("/");
+    }
+    return undefined;
+  })();
+
+  if (singleFileNestedLocation && align.sections) {
+    align.sections = align.sections.map((section) => {
+      const existingFrontmatter =
+        (section.vendor?.aligntrue?.frontmatter as
+          | RuleFrontmatter
+          | undefined) ?? {};
+      const nestedLocation =
+        existingFrontmatter.nested_location ?? singleFileNestedLocation;
+      const updatedFrontmatter: RuleFrontmatter =
+        nestedLocation === undefined
+          ? { ...existingFrontmatter }
+          : { ...existingFrontmatter, nested_location: nestedLocation };
+
+      const hasFrontmatter =
+        Object.keys(updatedFrontmatter).length > 0 &&
+        Object.values(updatedFrontmatter).some((v) => v !== undefined);
+
+      return {
+        ...section,
+        source_file: section.source_file || sourcePath,
+        vendor: {
+          ...section.vendor,
+          ...(hasFrontmatter
+            ? {
+                aligntrue: {
+                  ...(section.vendor?.aligntrue || {}),
+                  frontmatter: updatedFrontmatter,
+                },
+              }
+            : section.vendor?.aligntrue
+              ? {
+                  aligntrue: {
+                    ...(section.vendor?.aligntrue || {}),
+                  },
+                }
+              : {}),
+        },
+      };
+    });
+  }
+
   const validation = validateAlignSchema(align);
   if (!validation.valid) {
     const errorList =
@@ -332,6 +426,51 @@ export async function loadIR(
         `${errorList}\n\n` +
         `Fix: Edit ${sourcePath} to add missing fields, or run 'aligntrue init' to regenerate the IR.`,
     );
+  }
+
+  // Final pass: ensure nested_location is populated from source_file when missing
+  if (align.sections) {
+    align.sections = align.sections.map((section) => {
+      const fm =
+        (section.vendor?.aligntrue?.frontmatter as
+          | RuleFrontmatter
+          | undefined) ?? {};
+      if (
+        fm.nested_location ||
+        !section.source_file ||
+        !section.source_file.includes(`${sep}.aligntrue${sep}rules${sep}`)
+      ) {
+        return section;
+      }
+
+      const relSource = relative(process.cwd(), section.source_file).replace(
+        /\\/g,
+        "/",
+      );
+      const marker = "/.aligntrue/rules/";
+      const idx = relSource.indexOf(marker);
+      if (idx < 0) return section;
+
+      const prefix = relSource.slice(0, idx);
+      if (!prefix) return section;
+      const parts = prefix.split("/").filter(Boolean);
+      const nestedLoc =
+        parts.length > 1 ? parts.slice(parts.length - 2).join("/") : prefix;
+
+      return {
+        ...section,
+        vendor: {
+          ...section.vendor,
+          aligntrue: {
+            ...(section.vendor?.aligntrue || {}),
+            frontmatter: {
+              ...fm,
+              nested_location: nestedLoc,
+            },
+          },
+        },
+      };
+    });
   }
 
   return align;

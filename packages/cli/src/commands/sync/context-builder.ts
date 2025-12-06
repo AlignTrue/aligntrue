@@ -2,8 +2,14 @@
  * Sync context builder - loads config, sources, exporters, and detects agents
  */
 
-import { existsSync, writeFileSync, statSync, readdirSync } from "fs";
-import { dirname, join, resolve } from "path";
+import {
+  existsSync,
+  writeFileSync,
+  statSync,
+  readdirSync,
+  readFileSync,
+} from "fs";
+import { dirname, join, resolve, sep } from "path";
 import { createHash } from "crypto";
 import * as clack from "@clack/prompts";
 import {
@@ -15,6 +21,7 @@ import {
   loadMergedConfig,
   isLegacyTeamConfig,
   type ConfigWarning,
+  detectNestedAgentFiles,
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
@@ -206,6 +213,70 @@ export async function buildSyncContext(
     }
   }
 
+  // Auto-import detected agent files outside .aligntrue/rules by extracting content
+  // Skip entirely in dry-run to avoid side effects
+  if (!options.dryRun) {
+    const detectedAgentFiles = await detectNestedAgentFiles(cwd);
+    const rulesDir = paths.rules;
+    const extractedRulesPath = join(rulesDir, "extracted-rules.md");
+    const exportersToEnable = new Set<string>();
+
+    for (const file of detectedAgentFiles) {
+      // Skip files already under the managed rules directory
+      if (file.path.includes(`${sep}.aligntrue${sep}rules${sep}`)) continue;
+
+      try {
+        const content = readFileSync(file.path, "utf-8").trim();
+        if (!content) continue;
+
+        ensureDirectoryExists(rulesDir);
+
+        const header = [
+          "\n",
+          "## Extracted from: ",
+          file.relativePath,
+          "\n\n",
+          content,
+          content.endsWith("\n") ? "" : "\n",
+        ].join("");
+
+        writeFileSync(
+          extractedRulesPath,
+          existsSync(extractedRulesPath)
+            ? readFileSync(extractedRulesPath, "utf-8") + header
+            : `# Extracted Rules\n${header}`,
+          "utf-8",
+        );
+
+        // Enable matching exporter so future syncs overwrite the source file
+        if (file.type === "cursor") exportersToEnable.add("cursor");
+        if (file.type === "agents") exportersToEnable.add("agents");
+        if (file.type === "claude") exportersToEnable.add("claude");
+      } catch {
+        // Non-fatal: continue to next file
+      }
+    }
+
+    if (exportersToEnable.size > 0) {
+      const currentExporters = getExporterNames(config.exporters);
+      const updated = [
+        ...currentExporters,
+        ...[...exportersToEnable].filter((e) => !currentExporters.includes(e)),
+      ];
+      if (updated.length !== currentExporters.length) {
+        await patchConfig({ exporters: updated }, configPath, cwd);
+        config.exporters = updated;
+        if (!options.quiet) {
+          clack.log.info(
+            `Auto-enabled exporters for detected agent files: ${[
+              ...exportersToEnable,
+            ].join(", ")}`,
+          );
+        }
+      }
+    }
+  }
+
   // Check for new team member needing personal config
   if (isTeamMode && existsSync(paths.teamConfig) && !existsSync(paths.config)) {
     throw ErrorFactory.invalidConfig(
@@ -358,10 +429,13 @@ export async function buildSyncContext(
         { seen: new Set<string>(), list: [] as typeof bundleResult.sources },
       ).list;
 
-      clack.log.info("Sources merged (later sources override earlier):");
-      uniqueSources.forEach((src, idx) => {
+      const orderedSources = [...uniqueSources].reverse();
+      clack.log.info(
+        "Sources merged (highest priority first, last source wins on conflicts):",
+      );
+      orderedSources.forEach((src, idx) => {
         const priority =
-          idx === 0 ? "base" : idx === uniqueSources.length - 1 ? "wins" : "";
+          idx === 0 ? "wins" : idx === orderedSources.length - 1 ? "base" : "";
         const priorityLabel = priority ? ` [${priority}]` : "";
         clack.log.info(
           `  ${idx + 1}. ${src.sourcePath}${src.commitSha ? ` (${src.commitSha.slice(0, 7)})` : ""}${priorityLabel}`,
@@ -704,6 +778,9 @@ async function checkAgentsWithCache(
   configPath: string,
   options: SyncOptions,
 ): Promise<void> {
+  if (options.dryRun) {
+    return;
+  }
   const { loadDetectionCache, saveDetectionCache } = await import(
     "@aligntrue/core"
   );
@@ -715,12 +792,29 @@ async function checkAgentsWithCache(
     cwd,
     getExporterNames(config.exporters),
   );
+  const ignoredSet = new Set(config.detection?.ignored_agents || []);
+
+  detection.missing = detection.missing.filter(
+    (agent) => !ignoredSet.has(agent),
+  );
+  detection.detected = detection.detected.filter(
+    (agent) => !ignoredSet.has(agent),
+  );
+  detection.notFound = detection.notFound.filter(
+    (agent) => !ignoredSet.has(agent),
+  );
   const cache = loadDetectionCache(cwd);
 
+  if (detection.missing.length === 0) {
+    return;
+  }
+
   if (shouldWarnAboutDetection(detection, cache)) {
-    if (detection.missing.length > 0) {
+    const agentsToAdd = detection.missing;
+
+    if (agentsToAdd.length > 0) {
       clack.log.warn(
-        `Unconfigured agent files detected: ${detection.missing.join(", ")}`,
+        `Unconfigured agent files detected: ${agentsToAdd.join(", ")}`,
       );
 
       let shouldAdd = false;
@@ -740,7 +834,7 @@ async function checkAgentsWithCache(
         // Always use array format for simplicity
         const updatedExporters = [
           ...getExporterNames(config.exporters),
-          ...detection.missing,
+          ...agentsToAdd,
         ];
         // Patch config - only update exporters, preserve everything else
         await patchConfig({ exporters: updatedExporters }, configPath, cwd);

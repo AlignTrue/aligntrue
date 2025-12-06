@@ -26,6 +26,11 @@ export abstract class BaseMcpTransformer {
    * Format JSON with standard options (2-space indent, trailing newline)
    */
   formatJson(obj: unknown): string {
-    return JSON.stringify(obj, null, 2) + "\n";
+    const formatted = JSON.stringify(obj, null, 2);
+
+    // Inline single-element arrays to match prettier style used in goldens
+    const compactArrays = formatted.replace(/\[\n\s+(".*?")\n\s+\]/g, "[$1]");
+
+    return `${compactArrays}\n`;
   }
 }
