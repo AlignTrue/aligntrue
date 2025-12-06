@@ -21,12 +21,12 @@ New to AlignTrue? Start here:
 
 Browse commands by category:
 
-- **[Core commands](./core)** - Essential daily workflow (init, sync, check, status, watch, doctor)
-- **[Sources](./sources)** - Manage rule imports and git sources (add, remove, sources)
+- **[Core commands](./core)** - Essential daily workflow (init, sync, check, status, doctor)
+- **[Sources](./sources)** - Manage rule imports and git sources (add, add source, add remote, remove, sources)
 - **[Exporters](./exporters)** - Manage agents (list, enable, disable, detect, ignore)
 - **[Plugs](./plugs)** - Stack-agnostic variable management (list, resolve, set)
 - **[Overlays](./overlays)** - Customize rules without forking (add, status, diff, remove)
-- **[Team mode](./team)** - Collaboration and governance (drift, onboard, team, scopes)
+- **[Team mode](./team)** - Collaboration and governance (drift, onboard, team, scopes, team join)
 - **[Backups](./backup)** - Backup and recovery (create, list, restore, cleanup, revert)
 - **[Settings](./settings)** - Configuration and privacy (config, privacy)
 - **[Migration](./migrate)** - Schema migration and imports (migrate)
@@ -35,33 +35,36 @@ Browse commands by category:
 
 ## All commands quick reference
 
-| Command                     | Description                             | Category                                             |
-| --------------------------- | --------------------------------------- | ---------------------------------------------------- |
-| `aligntrue init`            | Initialize project with agent detection | [Core](./core#aligntrue-init)                        |
-| `aligntrue sync`            | Sync rules to agents                    | [Core](./core#aligntrue-sync)                        |
-| `aligntrue check`           | Validate rules                          | [Core](./core#aligntrue-check)                       |
-| `aligntrue status`          | Show current status and exporters       | [Core](./core#aligntrue-status)                      |
-| `aligntrue doctor`          | Run health checks and verification      | [Core](./core#aligntrue-doctor)                      |
-| `aligntrue add`             | Add rules from URL or path              | [Sources](./sources#aligntrue-add)                   |
-| `aligntrue remove`          | Remove a source                         | [Sources](./sources#aligntrue-remove)                |
-| `aligntrue sources`         | Manage rule sources                     | [Sources](./sources#aligntrue-sources)               |
-| `aligntrue exporters`       | Manage exporters                        | [Exporters](./exporters#aligntrue-exporters)         |
-| `aligntrue plugs list`      | List slots and fills                    | [Plugs](./plugs#aligntrue-plugs-list)                |
-| `aligntrue plugs resolve`   | Preview resolution                      | [Plugs](./plugs#aligntrue-plugs-resolve)             |
-| `aligntrue plugs set`       | Set fill value                          | [Plugs](./plugs#aligntrue-plugs-set)                 |
-| `aligntrue override add`    | Create overlay                          | [Overlays](./overlays#aligntrue-override-add)        |
-| `aligntrue override status` | View overlays                           | [Overlays](./overlays#aligntrue-override-status)     |
-| `aligntrue override diff`   | Show overlay effects                    | [Overlays](./overlays#aligntrue-override-diff)       |
-| `aligntrue override remove` | Remove overlay                          | [Overlays](./overlays#aligntrue-override-remove)     |
-| `aligntrue drift`           | Detect drift                            | [Team](./team#aligntrue-drift)                       |
-| `aligntrue onboard`         | Developer onboarding                    | [Team](./team#aligntrue-onboard)                     |
-| `aligntrue team enable`     | Enable team mode                        | [Team](./team#aligntrue-team-enable)                 |
-| `aligntrue scopes`          | List scopes                             | [Team](./team#aligntrue-scopes)                      |
-| `aligntrue backup`          | Backup management                       | [Backups](./backup#aligntrue-backup)                 |
-| `aligntrue revert`          | Restore files from backup               | [Backups](./backup#aligntrue-revert)                 |
-| `aligntrue config`          | View or edit configuration              | [Settings](./settings#aligntrue-config-showedit)     |
-| `aligntrue privacy`         | Privacy consents                        | [Settings](./settings#aligntrue-privacy-auditrevoke) |
-| `aligntrue migrate`         | Schema migration                        | [Migration](./migrate)                               |
+| Command                     | Description                                | Category                                             |
+| --------------------------- | ------------------------------------------ | ---------------------------------------------------- |
+| `aligntrue init`            | Initialize project with agent detection    | [Core](./core#aligntrue-init)                        |
+| `aligntrue sync`            | Sync rules to agents                       | [Core](./core#aligntrue-sync)                        |
+| `aligntrue check`           | Validate rules                             | [Core](./core#aligntrue-check)                       |
+| `aligntrue status`          | Show current status and exporters          | [Core](./core#aligntrue-status)                      |
+| `aligntrue doctor`          | Run health checks and verification         | [Core](./core#aligntrue-doctor)                      |
+| `aligntrue add`             | One-time import from git URL or local path | [Sources](./sources#aligntrue-add)                   |
+| `aligntrue add source`      | Keep a git source connected for updates    | [Sources](./sources#aligntrue-add-source)            |
+| `aligntrue add remote`      | Add a push destination for rules           | [Sources](./sources#aligntrue-add-remote)            |
+| `aligntrue remove`          | Remove a source                            | [Sources](./sources#aligntrue-remove)                |
+| `aligntrue sources`         | Manage rule sources                        | [Sources](./sources#aligntrue-sources)               |
+| `aligntrue exporters`       | Manage exporters                           | [Exporters](./exporters#aligntrue-exporters)         |
+| `aligntrue plugs list`      | List slots and fills                       | [Plugs](./plugs#aligntrue-plugs-list)                |
+| `aligntrue plugs resolve`   | Preview resolution                         | [Plugs](./plugs#aligntrue-plugs-resolve)             |
+| `aligntrue plugs set`       | Set fill value                             | [Plugs](./plugs#aligntrue-plugs-set)                 |
+| `aligntrue override add`    | Create overlay                             | [Overlays](./overlays#aligntrue-override-add)        |
+| `aligntrue override status` | View overlays                              | [Overlays](./overlays#aligntrue-override-status)     |
+| `aligntrue override diff`   | Show overlay effects                       | [Overlays](./overlays#aligntrue-override-diff)       |
+| `aligntrue override remove` | Remove overlay                             | [Overlays](./overlays#aligntrue-override-remove)     |
+| `aligntrue drift`           | Detect drift                               | [Team](./team#aligntrue-drift)                       |
+| `aligntrue onboard`         | Developer onboarding                       | [Team](./team#aligntrue-onboard)                     |
+| `aligntrue team enable`     | Enable team mode                           | [Team](./team#aligntrue-team-enable)                 |
+| `aligntrue team join`       | Create personal config in team repo        | [Team](./team#aligntrue-team-join)                   |
+| `aligntrue scopes`          | List scopes                                | [Team](./team#aligntrue-scopes)                      |
+| `aligntrue backup`          | Backup management                          | [Backups](./backup#aligntrue-backup)                 |
+| `aligntrue revert`          | Restore files from backup                  | [Backups](./backup#aligntrue-revert)                 |
+| `aligntrue config`          | View or edit configuration                 | [Settings](./settings#aligntrue-config-showedit)     |
+| `aligntrue privacy`         | Privacy consents                           | [Settings](./settings#aligntrue-privacy-auditrevoke) |
+| `aligntrue migrate`         | Schema migration                           | [Migration](./migrate)                               |
 
 ---
 

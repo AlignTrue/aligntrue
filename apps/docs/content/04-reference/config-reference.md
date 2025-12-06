@@ -454,7 +454,7 @@ remotes:
   shared:
     url: git@github.com:org/shared-rules.git
     branch: main
-    auto: true
+    # Optional: set auto: true to push during sync; default is manual via `aligntrue remotes push`
   custom:
     - id: security
       url: git@github.com:org/security-rules.git

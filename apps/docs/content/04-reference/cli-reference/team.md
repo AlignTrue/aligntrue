@@ -201,6 +201,31 @@ exporters:
 
 ---
 
+## `aligntrue team join`
+
+Create a personal (gitignored) config in a team repo without changing shared files.
+
+**Usage:**
+
+```bash
+aligntrue team join
+```
+
+**What it does:**
+
+1. Detects team mode repo (`config.team.yaml` present).
+2. Creates `.aligntrue/config.yaml` (gitignored) if missing.
+3. Copies hints from team config to guide personal settings.
+
+**Notes:**
+
+- No changes to `config.team.yaml`.
+- Safe to rerun; noop if personal config already exists.
+
+**Exit codes:** `0` success/noop, `2` system error
+
+---
+
 ## `aligntrue scopes`
 
 List and discover scopes in your workspace.

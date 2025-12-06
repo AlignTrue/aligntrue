@@ -36,7 +36,7 @@ describe("GitIntegration", () => {
 
   describe("ignore mode", () => {
     it("adds generated files to .gitignore", async () => {
-      const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
+      const files = [".cursor/rules/testing.mdc", "AGENTS.md"];
 
       const result = await gitIntegration.apply({
         mode: "ignore",
@@ -52,12 +52,12 @@ describe("GitIntegration", () => {
       expect(existsSync(gitignorePath)).toBe(true);
 
       const content = readFileSync(gitignorePath, "utf-8");
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
       expect(content).toContain("AGENTS.md");
     });
 
     it("is idempotent (does not duplicate entries)", async () => {
-      const files = [".cursor/rules/aligntrue.mdc"];
+      const files = [".cursor/rules/testing.mdc"];
 
       // First call
       await gitIntegration.apply({
@@ -77,7 +77,7 @@ describe("GitIntegration", () => {
       const content = readFileSync(gitignorePath, "utf-8");
 
       // Count occurrences
-      const matches = content.match(/\.cursor\/rules\/aligntrue\.mdc/g);
+      const matches = content.match(/\.cursor\/rules\/testing\.mdc/g);
       expect(matches).toHaveLength(1);
     });
 
@@ -89,24 +89,24 @@ describe("GitIntegration", () => {
       await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+        generatedFiles: [".cursor/rules/testing.mdc"],
       });
 
       const content = readFileSync(gitignorePath, "utf-8");
       expect(content).toContain("node_modules/");
       expect(content).toContain("dist/");
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
     });
 
     it("normalizes patterns (removes leading ./)", async () => {
       await gitIntegration.apply({
         mode: "ignore",
         workspaceRoot: TEST_DIR,
-        generatedFiles: ["./.cursor/rules/aligntrue.mdc"],
+        generatedFiles: ["./.cursor/rules/testing.mdc"],
       });
 
       const content = readFileSync(join(TEST_DIR, ".gitignore"), "utf-8");
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
       expect(content).not.toContain("./.cursor/");
     });
   });
@@ -129,10 +129,10 @@ describe("GitIntegration", () => {
       // Create files to stage
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
       mkdirSync(cursorDir, { recursive: true });
-      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
+      writeFileSync(join(cursorDir, "testing.mdc"), "# Test Rule\n", "utf-8");
       writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Test Agents\n", "utf-8");
 
-      const files = [".cursor/rules/aligntrue.mdc", "AGENTS.md"];
+      const files = [".cursor/rules/testing.mdc", "AGENTS.md"];
 
       const result = await gitIntegration.apply({
         mode: "commit",
@@ -150,7 +150,7 @@ describe("GitIntegration", () => {
         encoding: "utf-8",
       }).trim();
       expect(stagedFiles).toContain("AGENTS.md");
-      expect(stagedFiles).toContain(".cursor/rules/aligntrue.mdc");
+      expect(stagedFiles).toContain(".cursor/rules/testing.mdc");
     });
 
     it("does not modify .gitignore", async () => {
@@ -161,7 +161,7 @@ describe("GitIntegration", () => {
       // Create directory and file to stage
       mkdirSync(join(TEST_DIR, ".cursor", "rules"), { recursive: true });
       writeFileSync(
-        join(TEST_DIR, ".cursor", "rules", "aligntrue.mdc"),
+        join(TEST_DIR, ".cursor", "rules", "testing.mdc"),
         "# Test\n",
         "utf-8",
       );
@@ -169,7 +169,7 @@ describe("GitIntegration", () => {
       await gitIntegration.apply({
         mode: "commit",
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+        generatedFiles: [".cursor/rules/testing.mdc"],
       });
 
       const content = readFileSync(gitignorePath, "utf-8");
@@ -221,13 +221,13 @@ describe("GitIntegration", () => {
       // Create files to stage
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
       mkdirSync(cursorDir, { recursive: true });
-      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
+      writeFileSync(join(cursorDir, "testing.mdc"), "# Test Rule\n", "utf-8");
       writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Test Agents\n", "utf-8");
 
       const result = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
+        generatedFiles: [".cursor/rules/testing.mdc", "AGENTS.md"],
       });
 
       expect(result.mode).toBe("branch");
@@ -248,14 +248,14 @@ describe("GitIntegration", () => {
     it("accepts custom branch name", async () => {
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
       mkdirSync(cursorDir, { recursive: true });
-      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
+      writeFileSync(join(cursorDir, "testing.mdc"), "# Test Rule\n", "utf-8");
 
       const customBranch = "feature/custom-rules-sync";
 
       const result = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+        generatedFiles: [".cursor/rules/testing.mdc"],
         branchName: customBranch,
       });
 
@@ -279,13 +279,13 @@ describe("GitIntegration", () => {
       // Create files to stage
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
       mkdirSync(cursorDir, { recursive: true });
-      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Test Rule\n", "utf-8");
+      writeFileSync(join(cursorDir, "testing.mdc"), "# Test Rule\n", "utf-8");
 
       // First sync - creates a branch
       const result1 = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+        generatedFiles: [".cursor/rules/testing.mdc"],
       });
 
       expect(result1.branchCreated).toBeDefined();
@@ -294,7 +294,7 @@ describe("GitIntegration", () => {
 
       // Update the file
       writeFileSync(
-        join(cursorDir, "aligntrue.mdc"),
+        join(cursorDir, "testing.mdc"),
         "# Updated Rule\n",
         "utf-8",
       );
@@ -303,7 +303,7 @@ describe("GitIntegration", () => {
       const result2 = await gitIntegration.apply({
         mode: "branch",
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc"],
+        generatedFiles: [".cursor/rules/testing.mdc"],
       });
 
       // Should not create a new branch
@@ -379,13 +379,13 @@ describe("GitIntegration", () => {
       // Create files
       const cursorDir = join(TEST_DIR, ".cursor", "rules");
       mkdirSync(cursorDir, { recursive: true });
-      writeFileSync(join(cursorDir, "aligntrue.mdc"), "# Cursor\n", "utf-8");
+      writeFileSync(join(cursorDir, "testing.mdc"), "# Cursor\n", "utf-8");
       writeFileSync(join(TEST_DIR, "AGENTS.md"), "# Agents\n", "utf-8");
 
       const _result = await gitIntegration.apply({
         mode: "ignore", // default
         workspaceRoot: TEST_DIR,
-        generatedFiles: [".cursor/rules/aligntrue.mdc", "AGENTS.md"],
+        generatedFiles: [".cursor/rules/testing.mdc", "AGENTS.md"],
         perExporterOverrides: {
           agents: "commit", // AGENTS.md should be committed
         },
@@ -396,7 +396,7 @@ describe("GitIntegration", () => {
       expect(existsSync(gitignorePath)).toBe(true);
 
       const content = readFileSync(gitignorePath, "utf-8");
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
       // AGENTS.md should NOT be in .gitignore (commit mode)
       expect(content).not.toContain("AGENTS.md");
 
@@ -552,7 +552,7 @@ describe("GitIntegration", () => {
 
     it("normalizes absolute paths to relative paths", async () => {
       const absolutePaths = [
-        join(TEST_DIR, ".cursor/rules/aligntrue.mdc"),
+        join(TEST_DIR, ".cursor/rules/testing.mdc"),
         join(TEST_DIR, "AGENTS.md"),
       ];
 
@@ -566,7 +566,7 @@ describe("GitIntegration", () => {
       const content = readFileSync(gitignorePath, "utf-8");
 
       // Should contain relative paths, not absolute
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
       expect(content).toContain("AGENTS.md");
       // Should NOT contain absolute paths
       expect(content).not.toContain(TEST_DIR);
@@ -574,7 +574,7 @@ describe("GitIntegration", () => {
 
     it("normalizes windows-style backslashes to forward slashes", async () => {
       // Simulate windows paths (which exporters might return)
-      const windowsPaths = [".cursor\\rules\\aligntrue.mdc", "AGENTS.md"];
+      const windowsPaths = [".cursor\\rules\\testing.mdc", "AGENTS.md"];
 
       await gitIntegration.apply({
         mode: "ignore",
@@ -586,13 +586,13 @@ describe("GitIntegration", () => {
       const content = readFileSync(gitignorePath, "utf-8");
 
       // Should normalize to forward slashes
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
       expect(content).not.toContain("\\");
     });
 
     it("handles mixed absolute and relative paths", async () => {
       const mixedPaths = [
-        join(TEST_DIR, ".cursor/rules/aligntrue.mdc"), // absolute
+        join(TEST_DIR, ".cursor/rules/testing.mdc"), // absolute
         "AGENTS.md", // relative
         join(TEST_DIR, "apps/docs/.cursor/rules/web.mdc"), // absolute nested
       ];
@@ -607,7 +607,7 @@ describe("GitIntegration", () => {
       const content = readFileSync(gitignorePath, "utf-8");
 
       // All should be normalized to relative paths
-      expect(content).toContain(".cursor/rules/aligntrue.mdc");
+      expect(content).toContain(".cursor/rules/testing.mdc");
       expect(content).toContain("AGENTS.md");
       expect(content).toContain("apps/docs/.cursor/rules/web.mdc");
       // Should NOT contain absolute paths

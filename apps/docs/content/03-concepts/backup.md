@@ -1,10 +1,10 @@
 ---
-description: Understanding local and remote backups in AlignTrue
+description: Understanding local backups in AlignTrue
 ---
 
 # Backup
 
-AlignTrue provides two types of backup functionality: local backups for safety snapshots, and remote backups for pushing rules to git repositories.
+AlignTrue provides local backups for safety snapshots. To publish or mirror rules to git remotes, use the `remotes` commands (separate from backups).
 
 ## Local backups
 
@@ -38,127 +38,9 @@ backup:
 
 Set `retention_days: 0` to disable automatic cleanup.
 
-## Remote backups
+## Publishing to remotes (separate from backups)
 
-Remote backups push your local rules to git repositories. This is unidirectional: your `.aligntrue/rules/` directory is the source of truth, and changes are pushed to remote.
-
-### Why use remote backup?
-
-- Backup your rules to a private repository
-- Share rules with yourself across machines
-- Publish rules for others to consume as a source
-- Separate public and private rules to different repositories
-
-### Configuration
-
-Add a `remotes` section to your config:
-
-```yaml
-remotes:
-  default:
-    url: git@github.com:username/rules-backup.git
-    branch: main
-    auto: true # Push on every sync
-```
-
-### Multiple backup destinations
-
-You can push different files to different repositories:
-
-```yaml
-remotes:
-  default:
-    url: git@github.com:username/all-rules.git
-    # Gets all files NOT assigned to additional backups
-
-  custom:
-    - id: public-oss
-      url: git@github.com:username/public-rules.git
-      include:
-        - typescript.md
-        - testing.md
-        - "guides/*.md"
-
-    - id: company
-      url: git@github.com:company/standards.git
-      include:
-        - security.md
-        - compliance.md
-```
-
-Each file belongs to exactly one backup destination. The first matching `include` pattern wins.
-
-### Source vs backup
-
-A URL cannot be both a source and a backup in the same project:
-
-| Role   | Direction | You are...                             |
-| ------ | --------- | -------------------------------------- |
-| Source | Pull      | Consumer (receive updates from remote) |
-| Backup | Push      | Maintainer (send updates to remote)    |
-
-If the same URL appears in both `sources` and `remotes`, the backup for that URL is skipped with a warning.
-
-### Pushing manually
-
-Push to all configured backups:
-
-```bash
-aligntrue remotes push
-```
-
-Preview what would be pushed:
-
-```bash
-aligntrue remotes push --dry-run
-```
-
-Force push even without changes:
-
-```bash
-aligntrue remotes push --force
-```
-
-### Auto-push on sync
-
-When `auto: true` (the default), remote backups are pushed automatically after every successful sync:
-
-```bash
-aligntrue sync
-# ✓ Synced to agents (4 exporters)
-# ✓ Backed up to github.com/user/rules (12 files)
-```
-
-Disable auto-push for specific backups:
-
-```yaml
-remotes:
-  default:
-    url: git@github.com:username/rules.git
-    auto: false # Only push with explicit `aligntrue remotes push`
-```
-
-### Checking status
-
-See your backup configuration and last push:
-
-```bash
-aligntrue remotes status
-```
-
-Output:
-
-```
-Backup Configuration:
-  default: github.com/user/all-rules (8 files)
-  public-oss: github.com/user/open-rules (4 files)
-    - typescript.md
-    - testing.md
-    - guides/react.md
-    - guides/vue.md
-
-Last push: 2 hours ago
-```
+To publish or mirror rules to git remotes, configure `remotes` and use `aligntrue remotes push` (manual). This is distinct from local backups. See the Remotes section in CLI reference for usage and options.
 
 ## Personal sources and team mode
 
@@ -180,7 +62,7 @@ This lets team members have personal rules that:
 
 - Update without team approval
 - Are not committed to the shared repository
-- Are backed up to their own private repository
+- Can be pushed to their own private repository via `aligntrue remotes push`
 
 ## Gitignored rules
 
@@ -208,5 +90,6 @@ SSH URLs (`git@...`) automatically set `gitignore: true`.
 ## Related
 
 - [CLI reference: backup](/reference/cli/backup)
+- [CLI reference: remotes](/reference/cli/remotes)
 - [Sharing rules with others](/guides/sharing-rules)
 - [Team mode](/concepts/team-mode)

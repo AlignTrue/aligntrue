@@ -47,7 +47,7 @@ When you first sync in a team repo, AlignTrue creates an empty `.aligntrue/confi
 
 - Add personal rule sources
 - Override team settings locally (e.g., for testing)
-- Configure personal remote backup
+- Configure personal remotes (manual push via `aligntrue remotes push`)
 
 ---
 
@@ -75,7 +75,7 @@ gitignore: true
 
 These rules will be gitignored and won't require team approval.
 
-**Option 3: Personal rules (with remote backup)**
+**Option 3: Personal rules (with personal remote)**
 
 For personal rules that sync across your machines:
 
@@ -87,7 +87,7 @@ aligntrue add https://github.com/yourusername/personal-rules
 aligntrue add remote https://github.com/yourusername/personal-rules --personal
 ```
 
-Now rules with `scope: personal` will push to your personal repo on sync.
+Now rules with `scope: personal` can be pushed to your personal repo with `aligntrue remotes push`.
 
 See [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for complete details on personal rule workflows.
 

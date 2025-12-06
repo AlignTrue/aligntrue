@@ -1,11 +1,11 @@
 ---
 title: Personal repository setup
-description: Guide for setting up remote sources and backup for personal rules
+description: Guide for setting up remote sources and personal remotes (push)
 ---
 
 # Personal repository setup
 
-Set up remote git repositories to pull and backup personal rules across machines.
+Set up remote git repositories to pull and push personal rules across machines.
 
 > **Conceptual overview:** For detailed information about rule privacy, sharing, and remote routing, see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
 
@@ -36,7 +36,7 @@ sources:
 remotes:
   personal:
     url: git@github.com:yourusername/personal-rules.git
-    auto: true # push on sync; set false to review before pushing
+    # Optional: set auto: true to push during sync; default is manual via `aligntrue remotes push`
     branch: main # default; change if your remote uses another branch
 ```
 
@@ -46,7 +46,7 @@ remotes:
 aligntrue sync
 ```
 
-Remotes push automatically unless `auto: false` is set for that destination. Use HTTPS if SSH is blocked in your environment.
+Use `aligntrue remotes push` to publish. Set `auto: true` on a remote only if you want to push during `aligntrue sync`. Use HTTPS if SSH is blocked in your environment.
 
 ## Prerequisites
 
@@ -118,7 +118,7 @@ Use the git source from the quick start. `personal: true` scopes imported rules 
 
 ### To sync local rules to a remote
 
-- `auto: true` (default) pushes on every `aligntrue sync`; set `auto: false` to defer pushing until you re-enable it.
+- Push is manual by default (`aligntrue remotes push`). Set `auto: true` on a remote only if you want to push during `aligntrue sync`.
 - `branch` defaults to `main`; set it if your remote uses another branch.
 - Mark rules with a scope so they route to the right remote:
 
@@ -142,18 +142,13 @@ remotes:
 
 Custom remotes are additive - files can go to multiple destinations.
 
-## Step 4: Sync
+## Step 4: Sync and publish
 
 ```bash
 aligntrue sync
 ```
 
-This will:
-
-- Pull rules from configured git sources
-- Push rules to configured remotes based on their scope (if `auto: true`, the default)
-
-Set `auto: false` on a remote to skip pushing during sync; re-enable and rerun `aligntrue sync` when ready to publish.
+This will pull rules from configured git sources. Publish to remotes with `aligntrue remotes push` (or set `auto: true` on specific remotes to push during sync).
 
 ## Troubleshooting
 

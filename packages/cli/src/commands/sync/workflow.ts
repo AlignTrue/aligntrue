@@ -2,7 +2,7 @@
  * Sync workflow execution - handles unidirectional sync from .aligntrue/rules/ to agents
  */
 
-import { existsSync, readFileSync, unlinkSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import * as clack from "@clack/prompts";
 import { BackupManager, getExporterNames } from "@aligntrue/core";
@@ -195,21 +195,7 @@ export async function executeSyncWorkflow(
     stopSpinnerSilently(spinner);
   }
 
-  // Step 3: Remove starter file after first successful sync
-  if (!options.dryRun && result.success) {
-    const starterPath = join(cwd, ".cursor/rules/aligntrue-starter.mdc");
-    const syncedPath = join(cwd, ".cursor/rules/aligntrue.mdc");
-    try {
-      unlinkSync(starterPath);
-      if (existsSync(syncedPath) && !options.quiet) {
-        clack.log.info("Removed starter file (replaced by synced rules)");
-      }
-    } catch {
-      // File may not exist or delete failed - not critical
-    }
-  }
-
-  // Step 4: Auto-cleanup old backups
+  // Step 3: Auto-cleanup old backups
   if (!options.dryRun) {
     const retentionDays = config.backup?.retention_days ?? 30;
     const minimumKeep = config.backup?.minimum_keep ?? 3;

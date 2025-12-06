@@ -1,10 +1,10 @@
 ---
-description: CLI reference for the aligntrue backup command
+description: CLI reference for the aligntrue backup and revert commands (local only)
 ---
 
 # Backups
 
-Manage local and remote backups of your `.aligntrue/` directory.
+Manage local backups of your `.aligntrue/` directory. For pushing rules to git remotes, use the `remotes` commands.
 
 ## Usage
 
@@ -128,14 +128,6 @@ Uses settings from config:
 - `backup.retention_days` - Remove backups older than N days (default: 30)
 - `backup.minimum_keep` - Always keep at least N backups (default: 3)
 
-## Remote pushes
-
-Use the `remotes` command to push `.aligntrue/rules` to git remotes:
-
-- Configure remotes: `aligntrue add remote <url>`
-- Show configured remotes: `aligntrue remotes status`
-- Push to remotes: `aligntrue remotes push [--dry-run] [--force]`
-
 ## Global options
 
 - `--config <path>` - Path to config file
@@ -149,23 +141,6 @@ Use the `remotes` command to push `.aligntrue/rules` to git remotes:
 backup:
   retention_days: 30 # 0 = disable auto-cleanup
   minimum_keep: 3 # Safety floor
-```
-
-### Remote config
-
-```yaml
-remotes:
-  personal:
-    url: git@github.com:user/rules.git
-    branch: main
-    auto: true # Push on sync
-  shared: git@github.com:user/rules.git
-  custom:
-    - id: public
-      url: git@github.com:user/public-rules.git
-      include:
-        - typescript.md
-        - "guides/*.md"
 ```
 
 ## Exit codes
