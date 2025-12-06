@@ -438,7 +438,7 @@ sources:
 
 ## Personal rules across machines
 
-Use remote backup to sync your personal rules across multiple machines:
+Use remotes to sync your personal rules across multiple machines (push from one, pull as a source on another):
 
 ### Machine A (primary)
 
