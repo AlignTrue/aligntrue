@@ -445,60 +445,33 @@ async function handleCleanup(
   const minimumKeep = config.backup?.minimum_keep ?? 3;
 
   const backups = BackupManager.listBackups(cwd);
+  const cleanupTargets = BackupManager.computeCleanupTargets(
+    backups,
+    retentionDays,
+    minimumKeep,
+  );
 
-  if (backups.length <= minimumKeep) {
-    clack.log.info(
-      `No cleanup needed (${backups.length} backups, minimum keep: ${minimumKeep})`,
-    );
-    return;
-  }
-
-  let plannedRemoval = 0;
-
-  if (retentionDays === 0) {
-    plannedRemoval = Math.max(0, backups.length - minimumKeep);
-    if (plannedRemoval === 0) {
+  if (cleanupTargets.length === 0) {
+    if (backups.length <= minimumKeep) {
       clack.log.info(
-        `No cleanup needed (retention_days: 0, keeping ${minimumKeep} newest backups)`,
+        `No cleanup needed (${backups.length} backups, minimum keep: ${minimumKeep})`,
       );
-      return;
-    }
-
-    clack.log.warn(
-      `Will remove ${plannedRemoval} backup${plannedRemoval === 1 ? "" : "s"} to keep only the ${minimumKeep} most recent (retention_days: 0)`,
-    );
-  } else {
-    const now = Date.now();
-    const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
-    const oldBackups = backups.filter((backup) => {
-      const backupTime = new Date(backup.manifest.timestamp).getTime();
-      return now - backupTime > retentionMs;
-    });
-
-    if (oldBackups.length === 0) {
+    } else if (retentionDays <= 0) {
+      clack.log.info(
+        `No cleanup needed (retention_days: 0, already at minimum keep: ${minimumKeep})`,
+      );
+    } else {
       clack.log.info(
         `No old backups to remove (retention: ${retentionDays} days, minimum keep: ${minimumKeep})`,
       );
-      return;
     }
-
-    plannedRemoval = Math.max(
-      0,
-      oldBackups.length - (backups.length - minimumKeep),
-    );
-
-    if (plannedRemoval === 0) {
-      clack.log.info(
-        `No backups to remove (all within minimum keep: ${minimumKeep})`,
-      );
-      return;
-    }
-
-    clack.log.warn(
-      `Will remove ${plannedRemoval} backup${plannedRemoval === 1 ? "" : "s"} older than ${retentionDays} days`,
-    );
-    clack.log.info(`Keeping minimum ${minimumKeep} most recent backups`);
+    return;
   }
+
+  clack.log.warn(
+    `Will remove ${cleanupTargets.length} backup${cleanupTargets.length === 1 ? "" : "s"}${retentionDays > 0 ? ` older than ${retentionDays} days` : ""}`,
+  );
+  clack.log.info(`Keeping minimum ${minimumKeep} most recent backups`);
 
   // Check for --yes flag to skip confirmation
   const yesFlag = argv.includes("--yes") || argv.includes("-y");
@@ -553,7 +526,10 @@ async function handleRemotePush(
   if (!config.remotes) {
     clack.log.warn("No remotes configured");
     clack.log.info("Add remotes section to .aligntrue/config.yaml");
-    return;
+    exitWithError(2, "No remotes configured", {
+      hint: "Add remotes to .aligntrue/config.yaml or run: aligntrue add remote <url>",
+      code: "NO_REMOTES_CONFIGURED",
+    });
   }
 
   const rulesDir = join(cwd, ".aligntrue", "rules");
@@ -624,7 +600,10 @@ async function handleRemoteStatus(cwd: string): Promise<void> {
   if (!config.remotes) {
     clack.log.warn("No remotes configured");
     clack.log.info("Add remotes section to .aligntrue/config.yaml");
-    return;
+    exitWithError(2, "No remotes configured", {
+      hint: "Add remotes to .aligntrue/config.yaml or run: aligntrue add remote <url>",
+      code: "NO_REMOTES_CONFIGURED",
+    });
   }
 
   const rulesDir = join(cwd, ".aligntrue", "rules");

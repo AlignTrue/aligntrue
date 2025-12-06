@@ -211,62 +211,44 @@ describe("BackupManager", () => {
   });
 
   describe("cleanupOldBackups", () => {
-    it("should not cleanup when retentionDays is 0 (manual only)", async () => {
-      // Create 3 backups
+    it("removes oldest backups when retentionDays is 0 while keeping minimumKeep", async () => {
+      // Create 3 backups (newest last)
       BackupManager.createBackup({
         cwd: testDir,
         notes: "Backup 1",
       });
-
+      await new Promise((resolve) => setTimeout(resolve, 2));
       BackupManager.createBackup({
         cwd: testDir,
         notes: "Backup 2",
       });
-
-      BackupManager.createBackup({
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      const newest = BackupManager.createBackup({
         cwd: testDir,
         notes: "Backup 3",
       });
 
-      // With retentionDays: 0, no cleanup happens
       const removed = BackupManager.cleanupOldBackups({
         cwd: testDir,
-        retentionDays: 0, // Manual cleanup only
-        minimumKeep: 2,
-      });
-
-      expect(removed).toBe(0);
-      const remaining = BackupManager.listBackups(testDir);
-      expect(remaining).toHaveLength(3);
-    });
-
-    it("should respect minimum_keep safety floor", async () => {
-      // Create 5 backups
-      for (let i = 0; i < 5; i++) {
-        BackupManager.createBackup({ cwd: testDir, notes: `Backup ${i}` });
-        if (i < 4) await new Promise((resolve) => setTimeout(resolve, 5));
-      }
-
-      // Even with cleanup, should keep at least minimumKeep backups
-      BackupManager.cleanupOldBackups({
-        cwd: testDir,
-        retentionDays: 30,
-        minimumKeep: 3,
-      });
-
-      // Should keep at least 3 backups (minimum_keep floor)
-      const remaining = BackupManager.listBackups(testDir);
-      expect(remaining.length).toBeGreaterThanOrEqual(3);
-    });
-
-    it("should return 0 when retentionDays is 0 (manual only)", async () => {
-      BackupManager.createBackup({ cwd: testDir });
-      BackupManager.createBackup({ cwd: testDir });
-
-      const removed = BackupManager.cleanupOldBackups({
-        cwd: testDir,
-        retentionDays: 0, // Manual only - no auto cleanup
+        retentionDays: 0, // keep only minimum_keep newest
         minimumKeep: 1,
+      });
+
+      expect(removed).toBe(2);
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0]?.timestamp).toBe(newest.timestamp);
+    });
+
+    it("respects minimum_keep safety floor when nothing to delete", async () => {
+      // Create 2 backups, minimum_keep equals count
+      BackupManager.createBackup({ cwd: testDir, notes: "Backup 1" });
+      BackupManager.createBackup({ cwd: testDir, notes: "Backup 2" });
+
+      const removed = BackupManager.cleanupOldBackups({
+        cwd: testDir,
+        retentionDays: 0,
+        minimumKeep: 2,
       });
 
       expect(removed).toBe(0);
@@ -274,7 +256,40 @@ describe("BackupManager", () => {
       expect(remaining).toHaveLength(2);
     });
 
-    it("should apply defaults (retentionDays: 30, minimumKeep: 3)", async () => {
+    it("removes only old backups beyond minimum_keep when using age-based retention", async () => {
+      // Create 3 backups and make the oldest exceed retention window
+      const oldBackup = BackupManager.createBackup({ cwd: testDir });
+      // Rewrite manifest timestamp to be old enough for retention
+      const oldManifestPath = join(oldBackup.path, "manifest.json");
+      const oldManifest = {
+        ...oldBackup.manifest,
+        timestamp: new Date(
+          Date.now() - 40 * 24 * 60 * 60 * 1000,
+        ).toISOString(), // 40 days ago
+      };
+      writeFileSync(oldManifestPath, JSON.stringify(oldManifest, null, 2));
+
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      BackupManager.createBackup({ cwd: testDir });
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      BackupManager.createBackup({ cwd: testDir });
+
+      const removed = BackupManager.cleanupOldBackups({
+        cwd: testDir,
+        retentionDays: 30,
+        minimumKeep: 1,
+      });
+
+      expect(removed).toBe(1);
+      const remaining = BackupManager.listBackups(testDir);
+      expect(remaining.length).toBe(2);
+      // Old backup should be gone
+      expect(
+        remaining.find((b) => b.timestamp === oldBackup.timestamp),
+      ).toBeUndefined();
+    });
+
+    it("applies defaults (retentionDays: 30, minimumKeep: 3)", async () => {
       for (let i = 0; i < 5; i++) {
         BackupManager.createBackup({ cwd: testDir });
         if (i < 4) await new Promise((resolve) => setTimeout(resolve, 5));

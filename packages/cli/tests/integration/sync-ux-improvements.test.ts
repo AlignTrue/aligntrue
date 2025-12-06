@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { writeFileSync, mkdirSync, readFileSync } from "fs";
+import { writeFileSync, mkdirSync, readFileSync, chmodSync, rmSync } from "fs";
 import { join } from "path";
 import { sync } from "../../src/commands/sync/index.js";
 import * as clack from "@clack/prompts";
@@ -7,6 +7,8 @@ import * as yaml from "yaml";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
 import * as lastSyncTracker from "@aligntrue/core/sync/tracking";
 import { computeHash } from "@aligntrue/schema";
+import { AlignTrueError } from "../../src/utils/error-types.js";
+import { BackupManager } from "@aligntrue/core";
 
 vi.mock("@clack/prompts");
 
@@ -229,5 +231,54 @@ describeSkipWindows("Sync UX Improvements", () => {
     expect(clack.log.success).not.toHaveBeenCalledWith(
       "Everything already in sync",
     );
+  });
+
+  it("surfaces a single permission error with path when project root is read-only", async () => {
+    const projectDir = testProjectContext.projectDir;
+
+    try {
+      chmodSync(projectDir, 0o555); // remove write permission at root
+      await expect(sync([])).rejects.toBeInstanceOf(AlignTrueError);
+    } finally {
+      chmodSync(projectDir, 0o755); // restore for cleanup
+    }
+  });
+
+  it("shows concise missing-config error and hint", async () => {
+    const bareProject = setupTestProject({ skipFiles: true });
+    process.chdir(bareProject.projectDir);
+
+    await expect(sync([])).rejects.toMatchObject({
+      message: expect.stringContaining("Configuration file not found"),
+      hint: expect.stringContaining("aligntrue init"),
+    });
+
+    await bareProject.cleanup();
+    process.chdir(TEST_DIR);
+  });
+
+  it("includes backup restore hint when config is missing but backups exist", async () => {
+    const project = await setupTestProject({ skipFiles: true });
+    process.chdir(project.projectDir);
+
+    // Create minimal config + rules to allow a backup, then delete config
+    const configPath = join(project.projectDir, ".aligntrue", "config.yaml");
+    mkdirSync(join(project.projectDir, ".aligntrue", "rules"), {
+      recursive: true,
+    });
+    writeFileSync(
+      configPath,
+      yaml.stringify({ mode: "solo", exporters: ["agents"] }),
+    );
+    BackupManager.createBackup({ cwd: project.projectDir, notes: "baseline" });
+    rmSync(configPath);
+
+    await expect(sync([])).rejects.toMatchObject({
+      message: expect.stringContaining("Configuration file not found"),
+      hint: expect.stringContaining("backup restore"),
+    });
+
+    await project.cleanup();
+    process.chdir(TEST_DIR);
   });
 });

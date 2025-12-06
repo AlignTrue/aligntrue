@@ -37,7 +37,7 @@ type MigrationFlags = Record<string, string | boolean | undefined>;
 export async function migrate(args: string[]): Promise<void> {
   const parsed = parseCommonArgs(args, ARG_DEFINITIONS);
 
-  if (parsed.help || parsed.positional.length === 0) {
+  if (parsed.help) {
     showStandardHelp({
       name: "migrate",
       description: "Migrate from other tools or upgrade config formats",
@@ -58,6 +58,32 @@ export async function migrate(args: string[]): Promise<void> {
       ],
     });
     return;
+  }
+
+  if (parsed.positional.length === 0) {
+    showStandardHelp({
+      name: "migrate",
+      description: "Migrate from other tools or upgrade config formats",
+      usage: "aligntrue migrate <subcommand> [options]",
+      args: ARG_DEFINITIONS,
+      examples: [
+        "aligntrue migrate config",
+        "aligntrue migrate config --dry-run",
+        "aligntrue migrate ruler",
+      ],
+      notes: [
+        "Subcommands:",
+        "  config - Split legacy team config into personal/team files",
+        "  ruler  - Migrate from Ruler to AlignTrue",
+        "",
+        "The 'config' migration is needed if you have mode: team in config.yaml",
+        "from before the two-file config system was introduced.",
+      ],
+    });
+    exitWithError(2, "Missing subcommand for migrate", {
+      hint: "Use one of: config, ruler",
+      code: "MISSING_MIGRATE_SUBCOMMAND",
+    });
   }
 
   const subcommand = parsed.positional[0];

@@ -63,6 +63,7 @@ import type { GitProgressUpdate } from "../../utils/git-progress.js";
 import { createManagedSpinner, type SpinnerLike } from "../../utils/spinner.js";
 import type { SyncOptions } from "./options.js";
 import { getInvalidExporters } from "../../utils/exporter-validation.js";
+import { buildBackupRestoreHint } from "../../utils/backup-hints.js";
 
 /**
  * Generate fingerprint for section (matching schema behavior)
@@ -133,7 +134,13 @@ export async function buildSyncContext(
 
   // Step 1: Check if AlignTrue is initialized
   if (!existsSync(configPath)) {
-    throw ErrorFactory.configNotFound(configPath);
+    const error = ErrorFactory.configNotFound(configPath);
+    const backupHint = buildBackupRestoreHint(cwd);
+    if (backupHint) {
+      error.hint = error.hint ? `${error.hint}\n${backupHint}` : backupHint;
+      error.nextSteps = [...(error.nextSteps ?? []), backupHint];
+    }
+    throw error;
   }
 
   // Step 2: Load config (with two-file config support)

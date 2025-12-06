@@ -3,7 +3,14 @@
  * Handles fresh starts, imports, and team joins with smart context detection
  */
 
-import { existsSync, mkdirSync, writeFileSync, cpSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  cpSync,
+  accessSync,
+  constants as fsConstants,
+} from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
@@ -424,6 +431,15 @@ function logMessage(
   }
 }
 
+function isWritable(path: string): boolean {
+  try {
+    accessSync(path, fsConstants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Init command implementation
  */
@@ -491,6 +507,41 @@ export async function init(args: string[] = []): Promise<void> {
 
   // Handle already-initialized case
   if (contextResult.context === "already-initialized") {
+    const aligntrueDir = paths.aligntrueDir;
+    const configPath = paths.config;
+    const teamConfigPath = paths.teamConfig;
+    const rulesDir = join(aligntrueDir, "rules");
+
+    const hasConfig = existsSync(configPath) || existsSync(teamConfigPath);
+    const hasRulesDir = existsSync(rulesDir);
+    const dirWritable = existsSync(aligntrueDir)
+      ? isWritable(aligntrueDir)
+      : false;
+    const configWritable =
+      existsSync(configPath) && dirWritable
+        ? isWritable(configPath)
+        : dirWritable;
+
+    const partialIssues: string[] = [];
+    if (!hasConfig) partialIssues.push("missing config.yaml");
+    if (!hasRulesDir) partialIssues.push("missing rules directory");
+    if (!dirWritable) partialIssues.push("directory not writable");
+    if (hasConfig && !configWritable) {
+      partialIssues.push("config.yaml not writable");
+    }
+
+    if (partialIssues.length > 0) {
+      const issueSummary = partialIssues.join("; ");
+      const nextSteps = [
+        `Fix permissions on ${aligntrueDir} (e.g., chmod u+w ${aligntrueDir})`,
+        "Or remove .aligntrue and re-run: aligntrue init --yes",
+      ];
+      exitWithError(1, `Found partial AlignTrue setup (${issueSummary}).`, {
+        hint: "Recover by fixing permissions or reinitializing .aligntrue",
+        nextSteps,
+      });
+    }
+
     const message =
       "AlignTrue already initialized in this project.\n" +
       "Your rules are in .aligntrue/rules/ - run 'aligntrue sync' to update agents.\n" +
@@ -509,6 +560,8 @@ export async function init(args: string[] = []): Promise<void> {
   if (!sourceArg && detectRulerProject(cwd)) {
     rulerConfig = await promptRulerMigration(cwd);
   }
+
+  const finalMode: AlignTrueMode = mode ?? rulerConfig?.mode ?? "solo";
 
   // Step 2: Get rules - either from --source or by scanning
   const scanner = createSpinner({ disabled: nonInteractive });
@@ -788,7 +841,7 @@ export async function init(args: string[] = []): Promise<void> {
 
   // Generate config (personal defaults)
   const config: Partial<AlignTrueConfig> = {
-    mode: mode || "solo",
+    mode: finalMode,
     sources,
     exporters: finalExporters,
   };
@@ -798,13 +851,10 @@ export async function init(args: string[] = []): Promise<void> {
     if (rulerConfig.git) {
       config.git = rulerConfig.git;
     }
-    if (rulerConfig.mode) {
-      config.mode = rulerConfig.mode;
-    }
   }
 
   // Team mode: write split configs (team + personal)
-  if (mode === "team") {
+  if (finalMode === "team") {
     const teamConfigPath = paths.teamConfig;
 
     const teamConfig: Partial<AlignTrueConfig> = {

@@ -10,6 +10,7 @@ import { sync } from "../../src/commands/sync/index.js";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import { setupTestProject, TestProjectContext } from "../helpers/test-setup.js";
+import { AlignTrueError } from "../../src/utils/error-types.js";
 
 vi.mock("@clack/prompts");
 
@@ -156,6 +157,33 @@ Content of rule 2.
   });
 
   describe("CLI flag --content-mode", () => {
+    it("fails fast on invalid content-mode value", async () => {
+      const config = {
+        sources: [{ type: "local", path: ".aligntrue/rules" }],
+        exporters: ["agents"],
+      };
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "config.yaml"),
+        yaml.stringify(config),
+        "utf-8",
+      );
+
+      mkdirSync(join(TEST_DIR, ".aligntrue", "rules"), { recursive: true });
+      writeFileSync(
+        join(TEST_DIR, ".aligntrue", "rules", "rule.md"),
+        "# Rule\n\nBody\n",
+        "utf-8",
+      );
+
+      await expect(sync(["--content-mode", "foo"])).rejects.toBeInstanceOf(
+        AlignTrueError,
+      );
+      await expect(sync(["--content-mode", "foo"])).rejects.toMatchObject({
+        exitCode: 2,
+        message: "Invalid content-mode: foo",
+      });
+    });
+
     it("forces inline mode with --content-mode=inline", async () => {
       // Setup: Create config with agents exporter
       const config = {

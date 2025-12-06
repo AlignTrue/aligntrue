@@ -6,6 +6,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
+import { migrate } from "../../src/commands/migrate.js";
+import { AlignTrueError } from "../../src/utils/error-types.js";
 import { parse as parseYaml } from "yaml";
 
 const TEST_DIR = join(process.cwd(), "tests", "tmp", "migrate-config-test");
@@ -30,6 +32,22 @@ describe("Migrate Config Command", () => {
     if (existsSync(TEST_DIR)) {
       rmSync(TEST_DIR, { recursive: true, force: true });
     }
+  });
+
+  it("fails with exit code 2 when subcommand is missing", async () => {
+    writeFileSync(
+      join(TEST_DIR, ".aligntrue", "config.yaml"),
+      `version: "1"
+exporters:
+  - agents
+`,
+      "utf-8",
+    );
+
+    await expect(migrate([])).rejects.toMatchObject({
+      exitCode: 2,
+      message: "Missing subcommand for migrate",
+    } satisfies Partial<AlignTrueError>);
   });
 
   describe("migrate config", () => {

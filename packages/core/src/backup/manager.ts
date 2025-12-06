@@ -442,8 +442,53 @@ export class BackupManager {
   }
 
   /**
+   * Compute which backups should be removed based on retention + minimum_keep.
+   * Returns backups to delete ordered from oldest -> newest.
+   */
+  static computeCleanupTargets(
+    backups: BackupInfo[],
+    retentionDays: number,
+    minimumKeep: number,
+  ): BackupInfo[] {
+    if (backups.length <= minimumKeep) {
+      return [];
+    }
+
+    // retentionDays <= 0 means "keep only minimum_keep newest"
+    if (retentionDays <= 0) {
+      return backups.slice(minimumKeep); // backups are sorted newest -> oldest
+    }
+
+    const now = Date.now();
+    const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
+
+    const oldBackups = backups.filter((backup) => {
+      const backupTime = new Date(backup.manifest.timestamp).getTime();
+      return now - backupTime > retentionMs;
+    });
+
+    if (oldBackups.length === 0) {
+      return [];
+    }
+
+    const maxRemovable = Math.max(0, backups.length - minimumKeep);
+    if (maxRemovable === 0) {
+      return [];
+    }
+
+    // Oldest first to delete oldest backups first
+    const oldestFirst = [...oldBackups].sort(
+      (a, b) =>
+        new Date(a.manifest.timestamp).getTime() -
+        new Date(b.manifest.timestamp).getTime(),
+    );
+
+    return oldestFirst.slice(0, maxRemovable);
+  }
+
+  /**
    * Clean up old backups using age-based retention with count safety floor
-   * Age-based: removes backups older than retentionDays
+   * Age-based: removes backups older than retentionDays (or all but minimum_keep when retentionDays <= 0)
    * Safety floor: never removes more than (total - minimumKeep) backups
    */
   static cleanupOldBackups(options: CleanupOptions = {}): number {
@@ -457,32 +502,18 @@ export class BackupManager {
       return 0;
     }
 
-    // If retentionDays is 0, automatic cleanup is disabled (manual only)
-    if (retentionDays === 0) {
-      return 0;
-    }
-
-    const now = Date.now();
-    const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
-
-    // Identify old backups
-    const oldBackups = backups.filter((backup) => {
-      const backupTime = new Date(backup.manifest.timestamp).getTime();
-      return now - backupTime > retentionMs;
-    });
-
-    if (oldBackups.length === 0) {
-      return 0;
-    }
-
-    // Apply safety floor: keep at least minimumKeep most recent backups
-    const backupsToDelete = oldBackups.slice(
-      0,
-      Math.max(0, backups.length - minimumKeep),
+    const targets = this.computeCleanupTargets(
+      backups,
+      retentionDays,
+      minimumKeep,
     );
 
+    if (targets.length === 0) {
+      return 0;
+    }
+
     let removed = 0;
-    for (const backup of backupsToDelete) {
+    for (const backup of targets) {
       try {
         rmSync(backup.path, { recursive: true, force: true });
         removed++;

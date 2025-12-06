@@ -48,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Sync now rejects invalid `--content-mode` values with exit code 2 and guidance
+- `aligntrue migrate` without a subcommand exits non-zero instead of silently showing help
+- `aligntrue remotes push`, `backup push`, and `sources split` fail fast in non-interactive/no-remote scenarios for CI-friendly gating
 - **CRITICAL: Config data loss when adding remotes or sources** - Fixed destructive bug where `aligntrue add remote` and other CLI commands would delete user configuration (sources, exporters, plugs, etc.) when updating config. The old `saveMinimalConfig` function incorrectly dropped user values that matched defaults. Replaced with `patchConfig` which surgically updates only the specified keys, preserving all other user configuration exactly as written
 - **`enabled: false` frontmatter now prevents rule export** - Rules with `enabled: false` in frontmatter are now correctly excluded from all agent exports. Previously the field existed in schema but was not enforced
 - **Disabled rules flagged as stale** - When a rule is disabled, existing multi-file exports (e.g., `.cursor/rules/*.mdc`) are now reported as stale so they can be cleaned with `aligntrue sync --clean`

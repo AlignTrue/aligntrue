@@ -23,6 +23,8 @@ import {
   formatDiscoveredFiles,
   exitWithError,
 } from "../utils/command-utilities.js";
+import { isTTY } from "../utils/tty-helper.js";
+import { AlignTrueError } from "../utils/error-types.js";
 
 /**
  * Main sources command handler
@@ -219,6 +221,13 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
     }
     console.log("");
 
+    if (!yes && !isTTY()) {
+      exitWithError(2, "Non-interactive environment: use --yes for split", {
+        hint: "Re-run with --yes to confirm splitting AGENTS.md in CI/non-TTY",
+        code: "SOURCES_SPLIT_NONINTERACTIVE",
+      });
+    }
+
     // Ask for confirmation
     if (!yes) {
       const confirm = await clack.confirm({
@@ -401,6 +410,9 @@ async function splitSources(flags: Record<string, unknown>): Promise<void> {
       );
     }
   } catch (error) {
+    if (error instanceof AlignTrueError) {
+      throw error;
+    }
     clack.log.error(
       `Failed to split sources: ${error instanceof Error ? error.message : String(error)}`,
     );
