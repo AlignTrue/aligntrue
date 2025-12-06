@@ -6,9 +6,7 @@
  *
  * Plugin types:
  * - Exporters: Convert IR to agent-specific formats
- * - Importers: Convert agent formats back to IR (future)
- * - Sources: Fetch rules from various locations (future)
- * - MCP Servers: Model Context Protocol integrations (future)
+ * - MCP Servers: Model Context Protocol integrations
  */
 
 // Exporter plugin contracts

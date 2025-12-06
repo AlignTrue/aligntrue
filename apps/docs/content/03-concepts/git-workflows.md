@@ -113,7 +113,7 @@ Git clone requires network access. Grant consent? (y/n)
 
 - Granted once per machine
 - Stored in `.aligntrue/privacy-consent.json` (git-ignored)
-- Applies to all future git operations
+- Applies to all git operations
 
 **Manage consent:**
 

@@ -28,9 +28,9 @@ export interface AlignCustomization {
 export interface AlignIncludes {
   /** Relative paths to rule .md files to include */
   rules?: string[];
-  /** Relative paths to skill .md files to include (future) */
+  /** Relative paths to skill .md files to include */
   skills?: string[];
-  /** Relative paths to MCP configuration files (future) */
+  /** Relative paths to MCP configuration files */
   mcp?: string[];
 }
 

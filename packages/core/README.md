@@ -196,11 +196,7 @@ lockfile:
 
 ### Bundle file generation
 
-`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `Align`. The merge happens in memory today—the CLI does **not** persist `.aligntrue/bundle.yaml` yet. The path exists so future releases can emit a fully materialized bundle without breaking configs. Until then:
-
-- Continue committing `.aligntrue/rules` (IR) and `.aligntrue/lock.json`.
-- Leave `modules.bundle: true` enabled so your repo stays compatible when disk bundles arrive.
-- If you need a bundle artifact today, call the merge helpers directly from `@aligntrue/core/src/bundle.ts` in your own tooling.
+`modules.bundle` toggles the merge pipeline that combines multiple sources into a single `Align`. The merge happens in memory—the CLI does **not** persist `.aligntrue/bundle.yaml`. Commit `.aligntrue/rules` (IR) and `.aligntrue/lock.json`; use the bundle helpers in `@aligntrue/core/src/bundle.ts` if you need an artifact in your own tooling.
 
 ### Conflict Detection
 
@@ -271,7 +267,7 @@ Main sync orchestration class.
 
 - `registerExporter(exporter: ExporterPlugin)` - Register an exporter plugin
 - `syncToAgents(irPath, options)` - Sync IR to agents (returns SyncResult)
-- `syncFromAgent(agent, irPath, options)` - Sync from agent to IR (TODO: Step 17)
+- `syncFromAgent(agent, irPath, options)` - Sync from agent to IR (not available; inbound sync is intentionally disabled)
 - `detectConflicts(agent, irRules, agentRules)` - Detect conflicts
 - `clear()` - Clear internal state
 

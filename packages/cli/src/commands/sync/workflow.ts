@@ -482,13 +482,13 @@ export async function executeSyncWorkflow(
         }
       }
     } catch (_error) {
-      // Silent failure on remote backup - not critical for sync success
+      // Silent failure on remotes push - not critical for sync success
       if (!options.quiet) {
         stopSpinnerSilently(spinner);
       }
       if (options.verbose) {
         clack.log.warn(
-          `Remote backup failed: ${_error instanceof Error ? _error.message : String(_error)}`,
+          `Remote push failed: ${_error instanceof Error ? _error.message : String(_error)}`,
         );
       }
     }

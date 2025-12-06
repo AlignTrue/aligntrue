@@ -74,7 +74,7 @@ export class NotImplementedError extends AlignTrueError {
       `Feature not yet implemented: ${feature}`,
       "NOT_IMPLEMENTED",
       1,
-      hint || "This feature is planned for a future release",
+      hint || "This feature is intentionally unavailable in this build",
     );
     this.name = "NotImplementedError";
   }

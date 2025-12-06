@@ -246,7 +246,7 @@ function detectConflicts(overlays: OverlayDefinition[]): string[] {
         );
       }
 
-      // Add new properties to the existing list for future checks
+      // Add new properties to the existing list for subsequent checks
       prevProps.push(...properties);
     } else {
       // First time seeing this selector
