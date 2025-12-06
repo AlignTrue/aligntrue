@@ -79,15 +79,12 @@ export async function plugsCommand(args: string[]): Promise<void> {
   const subcommand = positional[0];
   const configPath = (flags["--config"] as string) || ".aligntrue/config.yaml";
 
-  if (
-    subcommand &&
-    !["set", "unset", "list", "resolve", "validate"].includes(subcommand)
-  ) {
+  if (subcommand && !["set", "unset"].includes(subcommand)) {
     exitWithError(
       {
         title: "Unknown subcommand",
         message: `Unknown subcommand "${subcommand}"`,
-        hint: "Valid: set, unset, list, resolve, validate",
+        hint: "Valid: set, unset (or run without subcommand for status)",
       },
       2,
     );

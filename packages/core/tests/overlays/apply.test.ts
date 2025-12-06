@@ -161,7 +161,7 @@ describe("applyOverlays", () => {
     expect(result.errors?.[0]).toContain("25 operations");
   });
 
-  it("warns on overlapping overlays", () => {
+  it("fails on overlapping overlays by default", () => {
     const overlays: OverlayDefinition[] = [
       {
         selector: "rule[id=rule-one]",
@@ -174,6 +174,25 @@ describe("applyOverlays", () => {
     ];
 
     const result = applyOverlays(mockIR, overlays);
+    expect(result.success).toBe(false);
+    expect(result.errors?.[0]).toContain(
+      "Multiple overlays modify same properties",
+    );
+  });
+
+  it("allows overlapping overlays when allowConflicts=true", () => {
+    const overlays: OverlayDefinition[] = [
+      {
+        selector: "rule[id=rule-one]",
+        set: { severity: "warn" },
+      },
+      {
+        selector: "rule[id=rule-one]",
+        set: { severity: "info" },
+      },
+    ];
+
+    const result = applyOverlays(mockIR, overlays, { allowConflicts: true });
     expect(result.success).toBe(true);
     expect(result.warnings?.[0]).toContain(
       "Multiple overlays modify same properties",
