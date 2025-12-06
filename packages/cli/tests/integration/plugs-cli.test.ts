@@ -133,18 +133,17 @@ describeSkipWindows("Plugs CLI Integration", () => {
       expect(exitCode).toBe(0);
       const output = consoleOutput.join("\n");
       expect(output).toContain("plugs");
-      expect(output).toContain("list");
       expect(output).toContain("set");
       expect(output).toContain("unset");
     });
   });
 
-  describe("plugs list", () => {
+  describe("plugs status (default)", () => {
     it("shows message when no plugs defined", async () => {
       createConfig();
       createRuleWithPlugs("simple.md", "Simple Rule", "No plugs here.");
 
-      await executePlugs(["list"]);
+      await executePlugs([]);
 
       const output = consoleOutput.join("\n");
       expect(output).toContain("No plugs defined");
@@ -156,7 +155,7 @@ describeSkipWindows("Plugs CLI Integration", () => {
       });
       createRuleWithPlugs("testing.md", "Testing", "Run [[plug:test.cmd]]");
 
-      await executePlugs(["list"]);
+      await executePlugs([]);
 
       const output = consoleOutput.join("\n");
       expect(output).toContain("test.cmd");
@@ -170,7 +169,7 @@ describeSkipWindows("Plugs CLI Integration", () => {
       });
       createRuleWithPlugs("testing.md", "Testing", "Run tests and check docs.");
 
-      await executePlugs(["list"]);
+      await executePlugs([]);
 
       const output = consoleOutput.join("\n");
       expect(output).toContain("test.cmd");
@@ -343,33 +342,19 @@ describeSkipWindows("Plugs CLI Integration", () => {
     });
   });
 
-  describe("plugs resolve", () => {
-    it("shows resolved rules count", async () => {
-      createConfig({
-        "test.cmd": "pnpm test",
-      });
-      createRuleWithPlugs("testing.md", "Testing", "Run [[plug:test.cmd]]");
-
-      await executePlugs(["resolve"]);
-
-      const output = consoleOutput.join("\n");
-      // Check for successful resolution indicators
-      expect(output).toMatch(/Resolved|Complete|successfully/i);
-    });
-
-    it("handles rules without plugs", async () => {
+  describe("deprecated subcommands error", () => {
+    it("errors on resolve", async () => {
       createConfig();
       createRuleWithPlugs("simple.md", "Simple", "No plugs here.");
 
       await executePlugs(["resolve"]);
 
+      expect(exitCode).toBe(2);
       const output = consoleOutput.join("\n");
-      expect(output).toMatch(/No plugs to resolve|Complete/i);
+      expect(output).toContain("Unknown subcommand");
     });
-  });
 
-  describe("plugs validate", () => {
-    it("completes validation with fills provided", async () => {
+    it("errors on validate", async () => {
       createConfig({
         "test.cmd": "pnpm test",
       });
@@ -377,32 +362,9 @@ describeSkipWindows("Plugs CLI Integration", () => {
 
       await executePlugs(["validate"]);
 
+      expect(exitCode).toBe(2);
       const output = consoleOutput.join("\n");
-      // Should complete validation
-      expect(output).toMatch(/Validation|Complete/i);
-    });
-
-    it("completes validation for rules without plugs", async () => {
-      createConfig();
-      createRuleWithPlugs("simple.md", "Simple", "No plugs here.");
-
-      await executePlugs(["validate"]);
-
-      const output = consoleOutput.join("\n");
-      expect(output).toMatch(/No plugs to validate|Complete/i);
-    });
-
-    it("shows fills without declared slots in output", async () => {
-      createConfig({
-        "undeclared.fill": "some value",
-      });
-      createRuleWithPlugs("rule.md", "Rule", "Content without plugs.");
-
-      await executePlugs(["validate"]);
-
-      // Should complete (fills without slots just show info, not error)
-      const output = consoleOutput.join("\n");
-      expect(output).toMatch(/Validation|Complete/i);
+      expect(output).toContain("Unknown subcommand");
     });
   });
 
@@ -418,7 +380,7 @@ describeSkipWindows("Plugs CLI Integration", () => {
       expect(output).toContain("Unknown subcommand");
     });
 
-    it("errors when no subcommand provided", async () => {
+    it("shows status when no subcommand provided", async () => {
       createConfig();
       createRuleWithPlugs("test.md", "Test", "Content");
 
@@ -443,8 +405,8 @@ describeSkipWindows("Plugs CLI Integration", () => {
       consoleOutput = [];
       exitCode = undefined;
 
-      // List should show the fill
-      await executePlugs(["list"]);
+      // Status should show the fill
+      await executePlugs([]);
       const listOutput = consoleOutput.join("\n");
       expect(listOutput).toContain("workflow.test");
       expect(listOutput).toContain("test-value");

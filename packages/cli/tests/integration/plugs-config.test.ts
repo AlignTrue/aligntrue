@@ -208,7 +208,7 @@ sections: []
     expect(logOutput.join("\n")).toContain("test.cmd");
   });
 
-  it("shows config fills in list command", async () => {
+  it("shows config fills in status output", async () => {
     // Create config with fill
     const configPath = join(testDir, ".aligntrue/config.yaml");
     writeFileSync(
@@ -241,9 +241,9 @@ Run tests with: {{test.cmd}}
 `,
     );
 
-    // List plugs
+    // Status (default)
     try {
-      await plugsCommand(["list"]);
+      await plugsCommand([]);
     } catch (err) {
       // Ignore process.exit error
       if (!(err instanceof Error && err.message.includes("process.exit"))) {
