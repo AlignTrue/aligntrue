@@ -4,11 +4,14 @@
 .aligntrue/.agent-export-hashes.json
 
 # START AlignTrue Generated Files
-/examples/golden-repo/.cursor/rules/ai-guidance.mdc
-/examples/golden-repo/.cursor/rules/code-review.mdc
-/examples/golden-repo/.cursor/rules/documentation.mdc
-/examples/golden-repo/.cursor/rules/global.mdc
-/examples/golden-repo/.cursor/rules/security.mdc
-/examples/golden-repo/.cursor/rules/testing.mdc
-/examples/golden-repo/AGENTS.md
+.aligntrue/.backups/
+.cursor/rules/*.mdc
+.cursor/rules/ai-guidance.mdc
+.cursor/rules/code-review.mdc
+.cursor/rules/documentation.mdc
+.cursor/rules/extracted-rules.mdc
+.cursor/rules/global.mdc
+.cursor/rules/security.mdc
+.cursor/rules/testing.mdc
+AGENTS.md
 # END AlignTrue Generated Files

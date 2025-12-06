@@ -9,11 +9,14 @@
 This file contains links to the canonical rules in `.aligntrue/rules/`.
 AI agents should follow these linked guidelines.
 
+How to switch from links to inline rules: https://aligntrue.ai/export-content-mode
+
 ## General
 
-- [testing](./.aligntrue/rules/testing.md)
-- [security](./.aligntrue/rules/security.md)
-- [global](./.aligntrue/rules/global.md)
-- [documentation](./.aligntrue/rules/documentation.md)
-- [code-review](./.aligntrue/rules/code-review.md)
-- [ai-guidance](./.aligntrue/rules/ai-guidance.md)
+- Testing (./.aligntrue/rules/testing.md)
+- Security (./.aligntrue/rules/security.md)
+- Global (./.aligntrue/rules/global.md)
+- Extracted Rules (./.aligntrue/rules/extracted-rules.md)
+- Documentation (./.aligntrue/rules/documentation.md)
+- Code Review (./.aligntrue/rules/code-review.md)
+- AI Guidance (./.aligntrue/rules/ai-guidance.md)

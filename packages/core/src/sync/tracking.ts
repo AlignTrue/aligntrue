@@ -197,7 +197,20 @@ export function getExportFileHashes(cwd: string): ExportFileHashes | null {
 
   try {
     const content = readFileSync(hashFile, "utf-8");
-    return JSON.parse(content) as ExportFileHashes;
+    const parsed = JSON.parse(content) as ExportFileHashes & {
+      exports?: Record<string, string>;
+    };
+
+    // Backward compatibility: older versions stored hashes under "exports"
+    if (!parsed.files && parsed.exports) {
+      return {
+        version: parsed.version || "1",
+        files: parsed.exports,
+        updated_at: parsed.updated_at || Date.now(),
+      };
+    }
+
+    return parsed;
   } catch {
     return null;
   }

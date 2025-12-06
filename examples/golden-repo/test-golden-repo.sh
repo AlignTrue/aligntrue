@@ -129,7 +129,7 @@ echo "Test 7: Verifying file sizes..."
 CURSOR_SIZE=$(cat .cursor/rules/*.mdc 2>/dev/null | wc -c | tr -d ' ')
 AGENTS_SIZE=$(wc -c < AGENTS.md | tr -d ' ')
 
-if [ $CURSOR_SIZE -gt 500 ] && [ $CURSOR_SIZE -lt 10000 ]; then
+if [ $CURSOR_SIZE -gt 500 ] && [ $CURSOR_SIZE -lt 25000 ]; then
   pass "Cursor output size reasonable (${CURSOR_SIZE} bytes)"
 else
   fail "Cursor output size unexpected: ${CURSOR_SIZE} bytes"
