@@ -16,15 +16,48 @@ export class KvAlignStore implements AlignStore {
   }
 
   async upsert(align: AlignRecord): Promise<void> {
-    await kv.set(alignKey(align.id), align);
+    const key = alignKey(align.id);
+    const [existing, zsetScore] = await Promise.all([
+      kv.get<AlignRecord>(key),
+      kv.zscore<number>(INSTALLS_ZSET, align.id),
+    ]);
+
+    const mergedInstallCount = Math.max(
+      align.installClickCount ?? 0,
+      existing?.installClickCount ?? 0,
+      zsetScore ?? 0,
+    );
+
+    const merged: AlignRecord = {
+      ...align,
+      createdAt: existing?.createdAt ?? align.createdAt,
+      viewCount: existing?.viewCount ?? align.viewCount,
+      installClickCount: mergedInstallCount,
+    };
+
+    await kv.set(key, merged);
     await kv.zadd(CREATED_ZSET, {
-      score: new Date(align.createdAt).getTime(),
+      score: new Date(merged.createdAt).getTime(),
       member: align.id,
     });
-    await kv.zadd(INSTALLS_ZSET, {
-      score: align.installClickCount,
-      member: align.id,
-    });
+
+    if (!existing) {
+      await kv.zadd(INSTALLS_ZSET, {
+        score: mergedInstallCount,
+        member: align.id,
+      });
+      return;
+    }
+
+    const currentInstallScore =
+      zsetScore ?? existing.installClickCount ?? mergedInstallCount;
+    if (mergedInstallCount > currentInstallScore) {
+      await kv.zincrby(
+        INSTALLS_ZSET,
+        mergedInstallCount - currentInstallScore,
+        align.id,
+      );
+    }
   }
 
   async increment(

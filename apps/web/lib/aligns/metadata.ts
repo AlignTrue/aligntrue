@@ -9,17 +9,25 @@ export type ExtractedMetadata = {
   kind: AlignKind;
 };
 
-function safeFrontmatterTitle(md: string): string | null {
+function safeFrontmatterMetadata(md: string): {
+  title: string | null;
+  description: string | null;
+} {
   const { data, content } = matter(md);
-  if (typeof data?.title === "string") return data.title;
-  if (typeof data?.description === "string") return data.description;
+  const title =
+    (typeof data?.title === "string" && data.title) ||
+    (typeof data?.description === "string" && data.description) ||
+    (() => {
+      const lines = content.split("\n");
+      const heading = lines.find((line) => line.trim().startsWith("#"));
+      if (heading) return heading.replace(/^#+\s*/, "").trim() || null;
+      return null;
+    })();
 
-  const lines = content.split("\n");
-  const heading = lines.find((line) => line.trim().startsWith("#"));
-  if (heading) {
-    return heading.replace(/^#+\s*/, "").trim() || null;
-  }
-  return null;
+  const description =
+    typeof data?.description === "string" ? data.description : null;
+
+  return { title: title ?? null, description };
 }
 
 function safeYamlTitle(text: string): {
@@ -58,10 +66,10 @@ export function extractMetadata(
     };
   }
 
-  const title = safeFrontmatterTitle(content);
+  const { title, description } = safeFrontmatterMetadata(content);
   return {
     title,
-    description: null,
+    description,
     fileType: "markdown",
     kind: "rule",
   };
