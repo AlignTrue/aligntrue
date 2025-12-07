@@ -1,8 +1,15 @@
 import { kv } from "@vercel/kv";
 import { githubBlobToRawUrl } from "./normalize";
+import { hasKvEnv } from "./storeFactory";
 
 const CONTENT_TTL_SECONDS = 3600; // 1 hour
 const MAX_BYTES = 256 * 1024;
+
+// In-memory content cache for local dev
+const localContentCache = new Map<
+  string,
+  { content: string; expiresAt: number }
+>();
 
 async function fetchWithLimit(url: string): Promise<string | null> {
   const response = await fetch(url);
@@ -37,13 +44,36 @@ async function fetchWithLimit(url: string): Promise<string | null> {
   return new TextDecoder().decode(combined);
 }
 
+export async function setCachedContent(
+  id: string,
+  content: string,
+): Promise<void> {
+  const cacheKey = `v1:align:content:${id}`;
+  if (!hasKvEnv()) {
+    localContentCache.set(cacheKey, {
+      content,
+      expiresAt: Date.now() + CONTENT_TTL_SECONDS * 1000,
+    });
+    return;
+  }
+  await kv.set(cacheKey, content, { ex: CONTENT_TTL_SECONDS });
+}
+
 export async function getCachedContent(
   id: string,
   normalizedUrl: string,
 ): Promise<string | null> {
   const cacheKey = `v1:align:content:${id}`;
-  const cached = await kv.get<string>(cacheKey);
-  if (cached) return cached;
+
+  if (!hasKvEnv()) {
+    const entry = localContentCache.get(cacheKey);
+    if (entry && entry.expiresAt > Date.now()) {
+      return entry.content;
+    }
+  } else {
+    const cached = await kv.get<string>(cacheKey);
+    if (cached) return cached;
+  }
 
   const rawUrl = githubBlobToRawUrl(normalizedUrl);
   if (!rawUrl) return null;
@@ -51,6 +81,6 @@ export async function getCachedContent(
   const content = await fetchWithLimit(rawUrl);
   if (!content) return null;
 
-  await kv.set(cacheKey, content, { ex: CONTENT_TTL_SECONDS });
+  await setCachedContent(id, content);
   return content;
 }

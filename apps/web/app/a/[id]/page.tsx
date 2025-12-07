@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { KvAlignStore } from "@/lib/aligns/kvStore";
+import { getAlignStore } from "@/lib/aligns/storeFactory";
 import { getCachedContent } from "@/lib/aligns/content-cache";
 import { AlignDetailClient } from "./AlignDetailClient";
 
 export const dynamic = "force-dynamic";
 
-const store = new KvAlignStore();
+const store = getAlignStore();
 
 export default async function AlignDetailPage(props: {
   params: Promise<{ id: string }>;

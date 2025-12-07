@@ -1,5 +1,6 @@
 import { kv } from "@vercel/kv";
-import { getAlignStore } from "@/lib/aligns/storeFactory";
+import { getAlignStore, hasKvEnv } from "@/lib/aligns/storeFactory";
+import { setCachedContent } from "@/lib/aligns/content-cache";
 import { extractMetadata } from "@/lib/aligns/metadata";
 import {
   alignIdFromNormalizedUrl,
@@ -12,9 +13,23 @@ export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
 const MAX_BYTES = 256 * 1024;
-const CONTENT_TTL_SECONDS = 3600;
+
+// In-memory rate limit for local dev (no persistence across restarts)
+const localRateLimits = new Map<string, { count: number; expiresAt: number }>();
 
 async function rateLimit(ip: string): Promise<boolean> {
+  if (!hasKvEnv()) {
+    // In-memory rate limiting for local dev
+    const now = Date.now();
+    const entry = localRateLimits.get(ip);
+    if (!entry || entry.expiresAt < now) {
+      localRateLimits.set(ip, { count: 1, expiresAt: now + 60_000 });
+      return true;
+    }
+    entry.count += 1;
+    return entry.count <= 10;
+  }
+
   const key = `v1:ratelimit:submit:${ip}`;
   const count = await kv.incr(key);
   if (count === 1) {
@@ -113,9 +128,7 @@ export async function POST(req: Request) {
     };
 
     await store.upsert(record);
-    await kv.set(`v1:align:content:${id}`, content, {
-      ex: CONTENT_TTL_SECONDS,
-    });
+    await setCachedContent(id, content);
 
     return Response.json({ id });
   } catch (error) {
