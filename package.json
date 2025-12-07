@@ -7,6 +7,8 @@
     "build": "turbo run build",
     "build:packages": "turbo run build --filter='./packages/*'",
     "dev": "node scripts/dev-all.mjs",
+    "dev:web": "pnpm --filter @aligntrue/web dev",
+    "dev:docs": "pnpm --filter @aligntrue/docs dev",
     "dev:packages": "pnpm -r --filter ./packages/* --parallel build --watch",
     "start:docs": "node scripts/start-docs.mjs",
     "generate:repo-files": "node scripts/generate-repo-files.mjs",
