@@ -21,7 +21,6 @@ function safeFrontmatterMetadata(md: string): {
   });
   const title =
     (typeof data?.title === "string" && data.title) ||
-    (typeof data?.description === "string" && data.description) ||
     (() => {
       const lines = content.split("\n");
       const heading = lines.find((line) => line.trim().startsWith("#"));

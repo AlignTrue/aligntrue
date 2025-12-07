@@ -1,8 +1,6 @@
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    typedRoutes: true,
-  },
+  typedRoutes: true,
   transpilePackages: ["@aligntrue/ui"],
 };
 

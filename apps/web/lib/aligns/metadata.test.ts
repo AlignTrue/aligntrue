@@ -1,0 +1,44 @@
+import { describe, expect, it } from "vitest";
+import { extractMetadata } from "./metadata";
+
+describe("extractMetadata (markdown)", () => {
+  const normalizedUrl = "https://github.com/org/repo/blob/main/file.md";
+
+  it("uses frontmatter title when present", () => {
+    const content = `---
+title: Frontmatter Title
+description: A description
+---
+# Heading Title
+
+Body text.`;
+
+    const meta = extractMetadata(normalizedUrl, content);
+    expect(meta.title).toBe("Frontmatter Title");
+    expect(meta.description).toBe("A description");
+  });
+
+  it("falls back to first heading when title is absent", () => {
+    const content = `---
+description: Only description
+---
+# Heading Fallback
+
+Body text.`;
+
+    const meta = extractMetadata(normalizedUrl, content);
+    expect(meta.title).toBe("Heading Fallback");
+    expect(meta.description).toBe("Only description");
+  });
+
+  it("returns null title when no title or heading is present", () => {
+    const content = `---
+description: Only description
+---
+Body text without heading.`;
+
+    const meta = extractMetadata(normalizedUrl, content);
+    expect(meta.title).toBeNull();
+    expect(meta.description).toBe("Only description");
+  });
+});
