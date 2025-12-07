@@ -16,7 +16,7 @@ function safeFrontmatterMetadata(md: string): {
   // gray-matter defaults to js-yaml safeLoad (removed in js-yaml@4); provide a custom engine
   const { data, content } = matter(md, {
     engines: {
-      yaml: (s) => yaml.load(s) as Record<string, unknown>,
+      yaml: (s: string) => yaml.load(s) as Record<string, unknown>,
     },
   });
   const title =
