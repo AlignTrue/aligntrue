@@ -3,7 +3,9 @@ import { MockAlignStore } from "./mockStore";
 import type { AlignStore } from "./store";
 
 export function hasKvEnv(): boolean {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
+  );
 }
 
 let singleton: AlignStore | null = null;
@@ -15,7 +17,7 @@ export function getAlignStore(): AlignStore {
     return singleton;
   }
   console.warn(
-    "[aligns] Using in-memory mock store (KV_REST_API_URL/KV_REST_API_TOKEN not set). Data will reset on restart.",
+    "[aligns] Using in-memory mock store (UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN not set). Data will reset on restart.",
   );
   singleton = new MockAlignStore();
   return singleton;

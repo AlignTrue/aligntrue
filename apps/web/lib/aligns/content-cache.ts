@@ -1,9 +1,11 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 import { githubBlobToRawUrl } from "./normalize";
 import { hasKvEnv } from "./storeFactory";
 
 const CONTENT_TTL_SECONDS = 3600; // 1 hour
 const MAX_BYTES = 256 * 1024;
+
+const redis = Redis.fromEnv();
 
 // In-memory content cache for local dev
 const localContentCache = new Map<
@@ -60,7 +62,7 @@ export async function setCachedContent(
     });
     return;
   }
-  await kv.set(cacheKey, content, { ex: CONTENT_TTL_SECONDS });
+  await redis.set(cacheKey, content, { ex: CONTENT_TTL_SECONDS });
 }
 
 export async function getCachedContent(
@@ -75,7 +77,7 @@ export async function getCachedContent(
       return entry.content;
     }
   } else {
-    const cached = await kv.get<string>(cacheKey);
+    const cached = await redis.get<string>(cacheKey);
     if (cached) return cached;
   }
 

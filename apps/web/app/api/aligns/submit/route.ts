@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 import { getAlignStore, hasKvEnv } from "@/lib/aligns/storeFactory";
 import { setCachedContent } from "@/lib/aligns/content-cache";
 import { extractMetadata } from "@/lib/aligns/metadata";
@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
 const MAX_BYTES = 256 * 1024;
+const redis = Redis.fromEnv();
 
 // In-memory rate limit for local dev (no persistence across restarts)
 const localRateLimits = new Map<string, { count: number; expiresAt: number }>();
@@ -31,9 +32,9 @@ async function rateLimit(ip: string): Promise<boolean> {
   }
 
   const key = `v1:ratelimit:submit:${ip}`;
-  const count = await kv.incr(key);
+  const count = await redis.incr(key);
   if (count === 1) {
-    await kv.expire(key, 60);
+    await redis.expire(key, 60);
   }
   return count <= 10;
 }
