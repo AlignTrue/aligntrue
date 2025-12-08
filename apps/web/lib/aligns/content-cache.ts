@@ -12,36 +12,40 @@ const localContentCache = new Map<
 >();
 
 async function fetchWithLimit(url: string): Promise<string | null> {
-  const response = await fetch(url);
-  if (!response.ok) return null;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
 
-  const reader = response.body?.getReader();
-  if (!reader) {
+    const reader = response.body?.getReader();
+    if (!reader) {
+      return null;
+    }
+
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        total += value.byteLength;
+        if (total > MAX_BYTES) {
+          reader.cancel();
+          return null;
+        }
+        chunks.push(value);
+      }
+    }
+
+    const combined = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      combined.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return new TextDecoder().decode(combined);
+  } catch {
     return null;
   }
-
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (value) {
-      total += value.byteLength;
-      if (total > MAX_BYTES) {
-        reader.cancel();
-        return null;
-      }
-      chunks.push(value);
-    }
-  }
-
-  const combined = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    combined.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder().decode(combined);
 }
 
 export async function setCachedContent(
