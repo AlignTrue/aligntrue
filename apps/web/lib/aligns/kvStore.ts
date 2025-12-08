@@ -19,7 +19,7 @@ export class KvAlignStore implements AlignStore {
     const key = alignKey(align.id);
     const [existing, zsetScore] = await Promise.all([
       kv.get<AlignRecord>(key),
-      kv.zscore<number>(INSTALLS_ZSET, align.id as unknown as number),
+      kv.zscore(INSTALLS_ZSET, align.id),
     ]);
 
     const mergedInstallCount = Math.max(
@@ -87,20 +87,24 @@ export class KvAlignStore implements AlignStore {
   }
 
   async listRecent(limit: number): Promise<AlignRecord[]> {
-    const ids = await kv.zrange<string[]>(CREATED_ZSET, 0, limit - 1, {
+    const ids = (await kv.zrange(CREATED_ZSET, 0, limit - 1, {
       rev: true,
-    });
+    })) as string[];
     if (!ids.length) return [];
-    const records = await kv.mget<AlignRecord[]>(ids.map((id) => alignKey(id)));
+    const records = (await kv.mget(
+      ids.map((id) => alignKey(id)),
+    )) as AlignRecord[];
     return records.filter(Boolean) as AlignRecord[];
   }
 
   async listPopular(limit: number): Promise<AlignRecord[]> {
-    const ids = await kv.zrange<string[]>(INSTALLS_ZSET, 0, limit - 1, {
+    const ids = (await kv.zrange(INSTALLS_ZSET, 0, limit - 1, {
       rev: true,
-    });
+    })) as string[];
     if (!ids.length) return [];
-    const records = await kv.mget<AlignRecord[]>(ids.map((id) => alignKey(id)));
+    const records = (await kv.mget(
+      ids.map((id) => alignKey(id)),
+    )) as AlignRecord[];
     return records.filter(Boolean) as AlignRecord[];
   }
 }

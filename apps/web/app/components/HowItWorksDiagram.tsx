@@ -4,14 +4,6 @@ import { useEffect, useRef } from "react";
 import mermaid from "mermaid";
 import { useTheme } from "next-themes";
 
-/**
- * HowItWorksDiagram Component
- *
- * Renders a Mermaid diagram showing the AlignTrue workflow:
- * AGENTS.md → aligntrue sync → Multiple agent outputs
- *
- * Dynamically updates based on light/dark theme.
- */
 export function HowItWorksDiagram() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme, resolvedTheme } = useTheme();
@@ -20,14 +12,12 @@ export function HowItWorksDiagram() {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Configure Mermaid with AlignTrue branding
     mermaid.initialize({
       startOnLoad: false,
       theme: "base",
       themeVariables:
         currentTheme === "dark"
           ? {
-              // Dark mode - AlignTrue orange
               primaryColor: "#F5A623",
               primaryTextColor: "#e5e5e5",
               primaryBorderColor: "#F5A623",
@@ -42,7 +32,6 @@ export function HowItWorksDiagram() {
               edgeLabelBackground: "#1a1a1a",
             }
           : {
-              // Light mode - AlignTrue orange
               primaryColor: "#F5A623",
               primaryTextColor: "#1a1a1a",
               primaryBorderColor: "#F5A623",
@@ -82,7 +71,6 @@ graph TD
     style G fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
 `;
 
-    // Render the diagram
     const render = async () => {
       try {
         const { svg } = await mermaid.render(
