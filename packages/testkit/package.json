@@ -29,7 +29,7 @@
     "@aligntrue/schema": "workspace:*"
   },
   "devDependencies": {
-    "tsx": "^4.20.6",
+    "tsx": "^4.21.0",
     "yaml": "^2.8.2"
   },
   "keywords": [
