@@ -1,6 +1,6 @@
 ---
 title: Agent support
-description: Complete compatibility matrix for AlignTrue's 50 exporters supporting 28+ AI coding agents
+description: Complete compatibility matrix for AlignTrue's 51 exporters supporting 33 AI coding agents
 ---
 
 import { Callout } from "nextra/components";
@@ -15,13 +15,13 @@ import { Callout } from "nextra/components";
 
 # Agent support
 
-AlignTrue supports **32 AI coding agents** through **50 exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
+AlignTrue supports **33 AI coding agents** through **51 exporters**. Each exporter generates agent-specific configuration files from your AlignTrue rules, ensuring your AI assistants stay aligned across your entire development workflow.
 
 ## Coverage statistics
 
-- **50 exporters** supporting **32 agents**
+- **51 exporters** supporting **33 agents**
 - **14 MCP configurations** for protocol-based agents
-- **24 agent-specific format exporters** for native configurations
+- **25 agent-specific format exporters** for native configurations
 - **12 universal format exporters** using AGENTS.md
 - **1 dual-output exporter** with both universal + specific formats
 
@@ -50,7 +50,7 @@ Some agents (like Aider) use both a universal format (AGENTS.md) AND their own s
 - **Fidelity Notes**: Each exporter documents what information may be lost when converting from AlignTrue's IR format
 - **Vendor Metadata**: Agent-specific extensions are preserved in `vendor.*` namespaces
 - **Version Control**: All exporters are versioned and follow semantic versioning
-- **Comprehensive Coverage**: Supports 28+ agents including Cursor, Claude, GitHub Copilot, Aider, and many others
+- **Comprehensive Coverage**: Supports 33 agents including Cursor, Claude, GitHub Copilot, Aider, and many others
 - **Multi-File Adaptation**: AlignTrue automatically adapts exports based on each agent's capabilities—merging for single-file agents, preserving structure for multi-file agents
 
 ## Multi-file organization support
@@ -60,6 +60,7 @@ When you organize your rules across multiple files, AlignTrue adapts exports bas
 **Native multi-file support** (preserves your file organization):
 
 - Cursor (`.cursor/rules/*.mdc`)
+- Antigravity (`.agent/rules/*.md`)
 - Amazon Q (`.amazonq/rules/*.md`)
 - KiloCode (`.kilocode/rules/*.md`)
 - Augment Code (`.augment/rules/*.md`)

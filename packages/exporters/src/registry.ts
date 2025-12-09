@@ -148,7 +148,8 @@ export class ExporterRegistry {
         module.default ||
         module.CursorExporter ||
         module.AgentsExporter ||
-        module.VsCodeMcpExporter;
+        module.VsCodeMcpExporter ||
+        module.AntigravityExporter;
 
       if (!ExporterClass) {
         throw new Error(
