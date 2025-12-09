@@ -14,4 +14,5 @@ declare module "gray-matter" {
 
 declare module "js-yaml" {
   export function load(str: string, options?: Record<string, unknown>): unknown;
+  export function dump(obj: unknown, options?: Record<string, unknown>): string;
 }

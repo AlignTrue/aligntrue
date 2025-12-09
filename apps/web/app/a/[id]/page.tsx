@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
-import { getCachedContent } from "@/lib/aligns/content-cache";
+import {
+  getCachedContent,
+  fetchRawWithCache,
+  type CachedContent,
+} from "@/lib/aligns/content-cache";
+import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import { AlignDetailClient } from "./AlignDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +21,15 @@ export default async function AlignDetailPage(props: {
     notFound();
   }
 
-  const content = await getCachedContent(align.id, align.normalizedUrl);
+  let content: CachedContent | null = null;
+  if (align.kind === "pack" && align.pack) {
+    content = await getCachedContent(align.id, async () => {
+      const pack = await fetchPackForWeb(align.url);
+      return { kind: "pack", files: pack.files };
+    });
+  } else {
+    content = await fetchRawWithCache(align.id, align.normalizedUrl);
+  }
 
   return <AlignDetailClient align={align} content={content} />;
 }

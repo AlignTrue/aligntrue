@@ -12,6 +12,11 @@ describe("normalizeGitUrl", () => {
     expect(result).toEqual({
       provider: "github",
       normalizedUrl: "https://github.com/org/repo/blob/main/path/to/file.md",
+      kind: "single",
+      owner: "org",
+      repo: "repo",
+      ref: "main",
+      path: "path/to/file.md",
     });
   });
 
@@ -22,19 +27,32 @@ describe("normalizeGitUrl", () => {
     expect(result).toEqual({
       provider: "github",
       normalizedUrl: "https://github.com/org/repo/blob/main/path/to/file.md",
+      kind: "single",
+      owner: "org",
+      repo: "repo",
+      ref: "main",
+      path: "path/to/file.md",
     });
   });
 
   it("returns unknown for invalid URLs", () => {
     const result = normalizeGitUrl("not a url");
-    expect(result).toEqual({ provider: "unknown", normalizedUrl: null });
+    expect(result).toEqual({
+      provider: "unknown",
+      normalizedUrl: null,
+      kind: "unknown",
+    });
   });
 
   it("returns unknown for non-GitHub URLs", () => {
     const result = normalizeGitUrl(
       "https://gitlab.com/org/repo/blob/main/file.md",
     );
-    expect(result).toEqual({ provider: "unknown", normalizedUrl: null });
+    expect(result).toEqual({
+      provider: "unknown",
+      normalizedUrl: null,
+      kind: "unknown",
+    });
   });
 });
 

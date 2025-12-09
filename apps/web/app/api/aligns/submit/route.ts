@@ -1,18 +1,20 @@
 import { Redis } from "@upstash/redis";
 import { getAlignStore, hasKvEnv } from "@/lib/aligns/storeFactory";
-import { setCachedContent } from "@/lib/aligns/content-cache";
 import { extractMetadata } from "@/lib/aligns/metadata";
 import {
   alignIdFromNormalizedUrl,
-  githubBlobToRawUrl,
   normalizeGitUrl,
 } from "@/lib/aligns/normalize";
+import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
+import {
+  fetchRawWithCache,
+  setCachedContent,
+} from "@/lib/aligns/content-cache";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
-const MAX_BYTES = 256 * 1024;
 const redis = Redis.fromEnv();
 
 // In-memory rate limit for local dev (no persistence across restarts)
@@ -39,35 +41,12 @@ async function rateLimit(ip: string): Promise<boolean> {
   return count <= 10;
 }
 
-async function fetchWithLimit(url: string): Promise<string | null> {
-  const response = await fetch(url);
-  if (!response.ok) return null;
-
-  const reader = response.body?.getReader();
-  if (!reader) return null;
-
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (value) {
-      total += value.byteLength;
-      if (total > MAX_BYTES) {
-        reader.cancel();
-        return null;
-      }
-      chunks.push(value);
-    }
-  }
-
-  const combined = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    combined.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder().decode(combined);
+function isPackNotFoundError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("no .align.yaml") || message.includes("manifest not found")
+  );
 }
 
 export async function POST(req: Request) {
@@ -83,6 +62,45 @@ export async function POST(req: Request) {
       return Response.json({ error: "Missing url" }, { status: 400 });
     }
 
+    // 1) Try pack (.align.yaml) first
+    try {
+      const pack = await fetchPackForWeb(body.url);
+      const id = alignIdFromNormalizedUrl(pack.manifestUrl);
+      const existing = await store.get(id);
+      const now = new Date().toISOString();
+
+      const record: AlignRecord = {
+        schemaVersion: 1,
+        id,
+        url: body.url,
+        normalizedUrl: pack.manifestUrl,
+        provider: "github",
+        kind: "pack",
+        title: pack.info.manifestSummary ?? pack.info.manifestId,
+        description: pack.info.manifestSummary ?? null,
+        fileType: "markdown",
+        createdAt: existing?.createdAt ?? now,
+        lastViewedAt: now,
+        viewCount: existing?.viewCount ?? 0,
+        installClickCount: existing?.installClickCount ?? 0,
+        pack: pack.info,
+      };
+
+      await store.upsert(record);
+      await setCachedContent(id, { kind: "pack", files: pack.files });
+
+      return Response.json({ id });
+    } catch (packError) {
+      if (!isPackNotFoundError(packError)) {
+        const message =
+          packError instanceof Error ? packError.message : "Pack import failed";
+        console.error("submit pack error", packError);
+        return Response.json({ error: message }, { status: 400 });
+      }
+      // Otherwise fall through to single-file handling
+    }
+
+    // 2) Single file fallback
     const { provider, normalizedUrl } = normalizeGitUrl(body.url);
     if (provider !== "github" || !normalizedUrl) {
       return Response.json(
@@ -92,23 +110,15 @@ export async function POST(req: Request) {
     }
 
     const id = alignIdFromNormalizedUrl(normalizedUrl);
-    const rawUrl = githubBlobToRawUrl(normalizedUrl);
-    if (!rawUrl) {
-      return Response.json(
-        { error: "Unable to derive raw URL" },
-        { status: 400 },
-      );
-    }
-
-    const content = await fetchWithLimit(rawUrl);
-    if (!content) {
+    const cached = await fetchRawWithCache(id, normalizedUrl);
+    if (!cached || cached.kind !== "single") {
       return Response.json(
         { error: "Failed to fetch content or file too large (>256KB)" },
         { status: 413 },
       );
     }
 
-    const meta = extractMetadata(normalizedUrl, content);
+    const meta = extractMetadata(normalizedUrl, cached.content);
     const existing = await store.get(id);
     const now = new Date().toISOString();
 
@@ -129,7 +139,8 @@ export async function POST(req: Request) {
     };
 
     await store.upsert(record);
-    await setCachedContent(id, content);
+    // Ensure cache refreshed (fetchRawWithCache already populated)
+    await setCachedContent(id, cached);
 
     return Response.json({ id });
   } catch (error) {

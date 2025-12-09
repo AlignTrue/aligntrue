@@ -1,4 +1,26 @@
-export type AlignKind = "rule" | "rule_group" | "skill" | "mcp" | "other";
+export type AlignKind =
+  | "rule"
+  | "rule_group"
+  | "skill"
+  | "mcp"
+  | "other"
+  | "pack";
+
+export type AlignPackFile = {
+  path: string;
+  size: number;
+};
+
+export type AlignPackInfo = {
+  manifestPath: string;
+  manifestId: string;
+  manifestVersion: string;
+  manifestSummary?: string | null;
+  manifestAuthor?: string | null;
+  ref: string;
+  files: AlignPackFile[];
+  totalBytes: number;
+};
 
 export type AlignRecord = {
   schemaVersion: 1;
@@ -14,4 +36,5 @@ export type AlignRecord = {
   lastViewedAt: string;
   viewCount: number;
   installClickCount: number;
+  pack?: AlignPackInfo;
 };

@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
-import { githubBlobToRawUrl } from "./normalize";
 import { hasKvEnv } from "./storeFactory";
+import { githubBlobToRawUrl } from "./normalize";
 
 const CONTENT_TTL_SECONDS = 3600; // 1 hour
 const MAX_BYTES = 256 * 1024;
@@ -10,10 +10,23 @@ const redis = Redis.fromEnv();
 // In-memory content cache for local dev
 const localContentCache = new Map<
   string,
-  { content: string; expiresAt: number }
+  { payload: CachedContent; expiresAt: number }
 >();
 
-async function fetchWithLimit(url: string): Promise<string | null> {
+export type CachedPackFile = {
+  path: string;
+  size: number;
+  content: string;
+};
+
+export type CachedContent =
+  | { kind: "single"; content: string }
+  | { kind: "pack"; files: CachedPackFile[] };
+
+async function fetchWithLimit(
+  url: string,
+  maxBytes: number = MAX_BYTES,
+): Promise<string | null> {
   try {
     const response = await fetch(url);
     if (!response.ok) return null;
@@ -30,7 +43,7 @@ async function fetchWithLimit(url: string): Promise<string | null> {
       if (done) break;
       if (value) {
         total += value.byteLength;
-        if (total > MAX_BYTES) {
+        if (total > maxBytes) {
           reader.cancel();
           return null;
         }
@@ -52,41 +65,62 @@ async function fetchWithLimit(url: string): Promise<string | null> {
 
 export async function setCachedContent(
   id: string,
-  content: string,
+  payload: CachedContent,
 ): Promise<void> {
   const cacheKey = `v1:align:content:${id}`;
   if (!hasKvEnv()) {
     localContentCache.set(cacheKey, {
-      content,
+      payload,
       expiresAt: Date.now() + CONTENT_TTL_SECONDS * 1000,
     });
     return;
   }
-  await redis.set(cacheKey, content, { ex: CONTENT_TTL_SECONDS });
+  await redis.set(cacheKey, JSON.stringify(payload), {
+    ex: CONTENT_TTL_SECONDS,
+  });
 }
 
 export async function getCachedContent(
   id: string,
-  normalizedUrl: string,
-): Promise<string | null> {
+  fallback?: () => Promise<CachedContent | null>,
+): Promise<CachedContent | null> {
   const cacheKey = `v1:align:content:${id}`;
 
   if (!hasKvEnv()) {
     const entry = localContentCache.get(cacheKey);
     if (entry && entry.expiresAt > Date.now()) {
-      return entry.content;
+      return entry.payload;
     }
   } else {
     const cached = await redis.get<string>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      try {
+        return JSON.parse(cached) as CachedContent;
+      } catch {
+        // fall through to fetch
+      }
+    }
   }
 
-  const rawUrl = githubBlobToRawUrl(normalizedUrl);
-  if (!rawUrl) return null;
+  if (!fallback) return null;
 
-  const content = await fetchWithLimit(rawUrl);
-  if (!content) return null;
+  const fetched = await fallback();
+  if (!fetched) return null;
 
-  await setCachedContent(id, content);
-  return content;
+  await setCachedContent(id, fetched);
+  return fetched;
+}
+
+export async function fetchRawWithCache(
+  id: string,
+  normalizedUrl: string,
+  maxBytes: number = MAX_BYTES,
+): Promise<CachedContent | null> {
+  return await getCachedContent(id, async () => {
+    const rawUrl = githubBlobToRawUrl(normalizedUrl);
+    if (!rawUrl) return null;
+    const content = await fetchWithLimit(rawUrl, maxBytes);
+    if (!content) return null;
+    return { kind: "single", content };
+  });
 }

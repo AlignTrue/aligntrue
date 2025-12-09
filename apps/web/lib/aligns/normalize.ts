@@ -3,6 +3,11 @@ import crypto from "node:crypto";
 export type NormalizedGitSource = {
   provider: "github" | "unknown";
   normalizedUrl: string | null; // canonical blob URL for GitHub
+  kind: "single" | "directory" | "unknown";
+  owner?: string;
+  repo?: string;
+  ref?: string;
+  path?: string;
 };
 
 /**
@@ -17,19 +22,52 @@ export function normalizeGitUrl(input: string): NormalizedGitSource {
   try {
     url = new URL(trimmed);
   } catch {
-    return { provider: "unknown", normalizedUrl: null };
+    return { provider: "unknown", normalizedUrl: null, kind: "unknown" };
   }
 
   // GitHub blob URLs
   if (url.hostname === "github.com") {
     const parts = url.pathname.split("/").filter(Boolean);
     const [owner, repo, maybeBlob, branch, ...rest] = parts;
-    if (owner && repo && maybeBlob === "blob" && branch && rest.length > 0) {
-      const path = rest.join("/");
-      const normalized = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
-      return { provider: "github", normalizedUrl: normalized };
+    if (owner && repo) {
+      if (maybeBlob === "blob" && branch && rest.length > 0) {
+        const path = rest.join("/");
+        const normalized = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
+        return {
+          provider: "github",
+          normalizedUrl: normalized,
+          kind: "single",
+          owner,
+          repo,
+          ref: branch,
+          path,
+        };
+      }
+      if (maybeBlob === "tree" && branch) {
+        const path = rest.join("/");
+        const normalized = `https://github.com/${owner}/${repo}/tree/${branch}/${path}`;
+        return {
+          provider: "github",
+          normalizedUrl: normalized,
+          kind: "directory",
+          owner,
+          repo,
+          ref: branch,
+          path,
+        };
+      }
+      // Repo root or unspecified path - treat as directory
+      return {
+        provider: "github",
+        normalizedUrl: null,
+        kind: "directory",
+        owner,
+        repo,
+        ref: branch,
+        path: rest.join("/"),
+      };
     }
-    return { provider: "github", normalizedUrl: null };
+    return { provider: "github", normalizedUrl: null, kind: "unknown" };
   }
 
   // GitHub raw URLs
@@ -39,13 +77,21 @@ export function normalizeGitUrl(input: string): NormalizedGitSource {
     if (owner && repo && branch && rest.length > 0) {
       const path = rest.join("/");
       const normalized = `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
-      return { provider: "github", normalizedUrl: normalized };
+      return {
+        provider: "github",
+        normalizedUrl: normalized,
+        kind: "single",
+        owner,
+        repo,
+        ref: branch,
+        path,
+      };
     }
-    return { provider: "github", normalizedUrl: null };
+    return { provider: "github", normalizedUrl: null, kind: "unknown" };
   }
 
   // v1: treat everything else as unsupported
-  return { provider: "unknown", normalizedUrl: null };
+  return { provider: "unknown", normalizedUrl: null, kind: "unknown" };
 }
 
 /**

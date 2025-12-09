@@ -4,11 +4,11 @@ This guide covers deploying the AlignTrue documentation site to Vercel.
 
 ## Architecture
 
-The site is a unified Next.js application with:
+The site is a unified static-export Next.js application with:
 
-- **Homepage** at `/` (root)
+- **Root route** at `/` that client-redirects to `/docs` (no separate marketing landing page)
 - **Documentation** at `/docs/*`
-- **Sitemap** at `/sitemap.xml` (includes both homepage and docs)
+- **Sitemap** at `/sitemap.xml` (lists docs and the root redirect entry)
 - **Robots.txt** at `/robots.txt`
 
 ## Vercel Project Configuration
@@ -72,17 +72,18 @@ vercel link
 cd apps/docs
 pnpm build
 
-# 2. Test production build
-pnpm start
-# Visit http://localhost:3000
+# 2. Serve the static export locally
+# (Next.js output is static; use any static file server)
+pnpm dlx serve@latest out -l 3000
+# Visit http://localhost:3000 (should redirect you to /docs)
 
-# 3. Verify homepage
-curl -I http://localhost:3000
+# 3. Verify root redirect renders the fallback link to /docs
+curl -s http://localhost:3000 | head -20
 
-# 4. Verify docs section
+# 4. Verify docs section responds
 curl -I http://localhost:3000/docs
 
-# 5. Verify sitemap
+# 5. Verify sitemap includes docs and the root entry
 curl http://localhost:3000/sitemap.xml | head -30
 
 # 6. Verify robots.txt
@@ -92,13 +93,13 @@ curl http://localhost:3000/robots.txt
 ## Post-Deploy Verification
 
 ```bash
-# 1. Homepage loads
-curl -I https://aligntrue.ai
+# 1. Root responds and shows redirect copy (JS redirect)
+curl -s https://aligntrue.ai | head -20
 
 # 2. Docs section loads
 curl -I https://aligntrue.ai/docs
 
-# 3. Sitemap is accessible and includes both homepage and docs
+# 3. Sitemap is accessible and includes both the root entry and docs
 curl https://aligntrue.ai/sitemap.xml | grep -E "<loc>|</loc>" | head -20
 
 # 4. Robots.txt points to sitemap
@@ -152,7 +153,7 @@ The site includes the following security headers (configured in `vercel.json`):
 This site was previously split into separate catalog and docs apps. As of the current architecture:
 
 - ✅ Unified single Next.js app at `apps/docs`
-- ✅ Homepage at root (`/`) with marketing content
+- ✅ Root route at `/` redirects to `/docs`
 - ✅ Documentation at `/docs/*` with Nextra
 - ✅ Single sitemap at `/sitemap.xml`
 - ✅ No rewrites or middleware needed

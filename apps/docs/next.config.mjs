@@ -14,13 +14,4 @@ export default withNextra({
   // Transpile workspace packages that export TypeScript source directly
   // Required for @aligntrue/ui which has no build step
   transpilePackages: ["@aligntrue/ui"],
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/docs",
-        permanent: true,
-      },
-    ];
-  },
 });

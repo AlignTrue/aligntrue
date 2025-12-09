@@ -9,7 +9,9 @@
  */
 
 import { existsSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { basename, join, resolve } from "path";
+import matter from "gray-matter";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   resolveSource as coreResolveSource,
   mergeAligns,
@@ -22,9 +24,15 @@ import {
   logImport,
   type ConflictInfo,
 } from "@aligntrue/core";
-import { computeHash, type Align, type RuleFile } from "@aligntrue/schema";
+import {
+  computeContentHash,
+  computeHash,
+  type Align,
+  type RuleFile,
+  type RuleFrontmatter,
+} from "@aligntrue/schema";
 import type { AlignTrueConfig } from "@aligntrue/core";
-import { GitProvider } from "@aligntrue/sources";
+import { GitProvider, resolvePackFromGithub } from "@aligntrue/sources";
 import type { GitProgressUpdate } from "./git-progress.js";
 
 /**
@@ -196,6 +204,74 @@ function parseGitUrlComponents(source: string): {
     result.path = parsed.path;
   }
   return result;
+}
+
+const matterOptions = {
+  engines: {
+    yaml: {
+      parse: (str: string) => parseYaml(str) as object,
+      stringify: (obj: object) => stringifyYaml(obj),
+    },
+  },
+};
+
+function titleFromFilename(filename: string): string {
+  const base = filename.replace(/\.(md|mdc)$/i, "");
+  return base
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function ruleFromPackFile(file: { path: string; content: string }): RuleFile {
+  const parsed = matter(file.content, matterOptions);
+  const frontmatter = parsed.data as RuleFrontmatter;
+  const filename = basename(file.path);
+
+  const finalFrontmatter: RuleFrontmatter = {
+    ...frontmatter,
+    title: frontmatter.title || titleFromFilename(filename),
+  };
+
+  return {
+    content: parsed.content,
+    frontmatter: finalFrontmatter,
+    path: file.path,
+    filename,
+    relativePath: file.path,
+    hash: computeContentHash(file.content),
+  };
+}
+
+async function tryResolvePackSource(
+  source: string,
+  ref: string | undefined,
+): Promise<InternalResolvedSource | null> {
+  try {
+    const pack = await resolvePackFromGithub(source, ref ? { ref } : {});
+    const rules = pack.files.map((file) =>
+      ruleFromPackFile({ path: file.path, content: file.content }),
+    );
+
+    return {
+      rules,
+      sourceUrl: source,
+      fromCache: false,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (
+      message.includes("No .align.yaml") ||
+      message.includes("Manifest not found")
+    ) {
+      return null;
+    }
+    if (message.includes("Only GitHub is supported")) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export interface ResolvedSource {
@@ -653,13 +729,18 @@ export async function importRules(
     }
 
     if (sourceType === "git") {
-      const parsed = parseGitUrlComponents(fullSource);
-      resolved = await resolveGitSourceInternal(
-        fullSource,
-        parsed,
-        cwd,
-        importResolveOpts,
-      );
+      const packResolved = await tryResolvePackSource(fullSource, ref);
+      if (packResolved) {
+        resolved = packResolved;
+      } else {
+        const parsed = parseGitUrlComponents(fullSource);
+        resolved = await resolveGitSourceInternal(
+          fullSource,
+          parsed,
+          cwd,
+          importResolveOpts,
+        );
+      }
     } else {
       resolved = await coreResolveSource(fullSource, {
         cwd,
