@@ -97,7 +97,7 @@ export function BetaBanner() {
             }}
             aria-label="Follow updates on GitHub"
           >
-            Follow on GitHub
+            Star on GitHub
             <GitHubIcon size={16} style={{ display: "inline" }} />
           </a>
         </div>

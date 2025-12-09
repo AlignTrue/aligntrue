@@ -175,12 +175,9 @@ function CopyButton({
           console.error("copy failed", err);
         }
       }}
-      className={cn(
-        "min-w-[120px] font-semibold",
-        variant === "primary"
-          ? "bg-primary text-primary-foreground hover:brightness-110 shadow-md"
-          : "border-border text-foreground",
-      )}
+      className={cn("min-w-[120px] font-semibold", {
+        "border-border": variant !== "primary",
+      })}
       variant={variant === "primary" ? "default" : "outline"}
     >
       {copied ? "✓ Copied" : (label ?? "Copy")}
@@ -408,7 +405,7 @@ export function AlignDetailClient({ align, content }: Props) {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-        <Card className="border-border shadow-sm">
+        <Card>
           <CardContent className="p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
               <div className="flex flex-wrap items-center gap-2">
@@ -490,7 +487,7 @@ export function AlignDetailClient({ align, content }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm">
+        <Card>
           <CardContent className="p-0">
             <Tabs
               value={actionTab}
@@ -674,7 +671,7 @@ export function AlignDetailClient({ align, content }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm">
+        <Card>
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
             <CardTitle className="text-xl">Rule File Preview</CardTitle>
             {isPack && packFiles.length > 0 && (

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { AlignTrueLogo } from "@aligntrue/ui";
 import { Menu, Moon, Sun, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { GitHubIcon } from "./GitHubIcon";
 
 function ThemeToggle() {
@@ -23,13 +24,15 @@ function ThemeToggle() {
   };
 
   return (
-    <button
+    <Button
       onClick={handleClick}
-      className="p-1.5 border border-border rounded-md bg-transparent cursor-pointer inline-flex items-center justify-center text-foreground"
+      variant="outline"
+      size="icon"
       aria-label="Toggle theme"
+      className="border-border"
     >
       {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
+    </Button>
   );
 }
 
@@ -105,16 +108,17 @@ export function SiteHeader() {
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-3 md:hidden">
               <ThemeToggle />
-              <button
+              <Button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 border border-border rounded-md bg-transparent cursor-pointer inline-flex items-center justify-center text-foreground"
+                variant="outline"
+                size="icon"
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-menu"
-                className="mobile-menu-button"
+                className="mobile-menu-button border-border"
               >
                 {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
+              </Button>
             </div>
           </>
         </div>

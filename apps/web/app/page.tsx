@@ -137,7 +137,7 @@ export default function HomePage() {
           const isPack = item.title?.toLowerCase().includes("pack");
           return (
             <Link key={item.id} href={`/a/${item.id}`}>
-              <Card className="h-full transition hover:shadow-md border border-border">
+              <Card className="h-full transition hover:shadow-md">
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm text-muted-foreground">{owner}</p>
@@ -156,7 +156,7 @@ export default function HomePage() {
   };
 
   const renderRulesTab = () => (
-    <Card className="max-w-5xl mx-auto shadow-sm border border-border">
+    <Card className="max-w-5xl mx-auto">
       <CardContent className="p-6 md:p-7 space-y-6">
         <div className="space-y-3">
           <label className="font-semibold text-foreground">
@@ -173,7 +173,7 @@ export default function HomePage() {
             <Button
               onClick={() => void handleSubmit()}
               disabled={submitting}
-              className="h-12 px-5 font-semibold bg-primary text-primary-foreground hover:brightness-110"
+              className="h-12 px-5 font-semibold"
             >
               {submitting ? "Generating..." : "Generate Align"}
             </Button>
@@ -196,7 +196,7 @@ export default function HomePage() {
   );
 
   const renderScratchTab = () => (
-    <Card className="max-w-5xl mx-auto shadow-sm border border-border">
+    <Card className="max-w-5xl mx-auto">
       <CardContent className="p-6 md:p-7">
         <div className="grid gap-4 sm:grid-cols-2">
           {[
@@ -223,10 +223,7 @@ export default function HomePage() {
               ),
             },
           ].map((card) => (
-            <Card
-              key={card.step}
-              className="h-full border border-border shadow-sm"
-            >
+            <Card key={card.step} className="h-full">
               <CardHeader className="space-y-2 text-center">
                 <div className="flex items-center justify-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
@@ -298,10 +295,7 @@ export default function HomePage() {
             </Tabs>
 
             <div className="hero-buttons flex flex-wrap justify-center gap-3 mt-8">
-              <Button
-                asChild
-                className="bg-primary hover:brightness-110 text-primary-foreground px-5 py-2.5"
-              >
+              <Button asChild className="px-5 py-2.5">
                 <Link
                   href={
                     "/docs/00-getting-started/00-quickstart" as unknown as Route
@@ -310,11 +304,7 @@ export default function HomePage() {
                   Quickstart Guide
                 </Link>
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="border-primary text-primary hover:bg-secondary px-5 py-2.5"
-              >
+              <Button asChild variant="outline" className="px-5 py-2.5">
                 <Link href={"/docs" as unknown as Route}>Read Docs</Link>
               </Button>
             </div>
@@ -369,10 +359,7 @@ export default function HomePage() {
                   text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
                 },
               ].map((feature) => (
-                <Card
-                  key={feature.title}
-                  className="h-full border border-border shadow-sm"
-                >
+                <Card key={feature.title} className="h-full">
                   <CardContent className="p-5 space-y-3">
                     <feature.icon
                       size={32}

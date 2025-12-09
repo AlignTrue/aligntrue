@@ -268,7 +268,7 @@ async function tryResolvePackSource(
     ) {
       return null;
     }
-    if (message.includes("Only GitHub is supported")) {
+    if (lower.includes("only github is supported")) {
       return null;
     }
     throw error;

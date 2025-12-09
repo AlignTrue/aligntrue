@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { GitHubIcon } from "./GitHubIcon";
 
 export function BetaBanner() {
@@ -43,17 +44,19 @@ export function BetaBanner() {
           className="inline-flex items-center gap-1 underline text-primary-foreground/80 hover:text-primary-foreground font-semibold"
           aria-label="Follow updates on GitHub"
         >
-          Follow on GitHub
+          Star on GitHub
           <GitHubIcon size={16} className="inline" />
         </a>
       </div>
-      <button
+      <Button
         onClick={handleDismiss}
-        className="bg-transparent border-none text-primary-foreground cursor-pointer inline-flex items-center justify-center p-1"
+        variant="ghost"
+        size="icon"
         aria-label="Dismiss beta banner"
+        className="text-primary-foreground hover:text-primary-foreground"
       >
         <X size={18} />
-      </button>
+      </Button>
     </div>
   );
 }
