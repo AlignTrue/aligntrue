@@ -33,85 +33,27 @@ export function BetaBanner() {
   if (!mounted || dismissed) return null;
 
   return (
-    <>
-      <style>{`
-        @media (max-width: 768px) {
-          .beta-banner {
-            flex-direction: column !important;
-            align-items: stretch !important;
-          }
-          .beta-banner-content {
-            flex: none !important;
-            min-width: auto !important;
-            width: 100% !important;
-            flex-wrap: wrap !important;
-          }
-        }
-      `}</style>
-      <div
-        className="beta-banner"
-        style={{
-          backgroundColor: "#0d47a1",
-          color: "white",
-          padding: "0.75rem 1.5rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1rem",
-          flexWrap: "wrap",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-          fontSize: "0.875rem",
-          fontWeight: "500",
-        }}
-      >
-        <div
-          className="beta-banner-content"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            flex: 1,
-            minWidth: "200px",
-            justifyContent: "center",
-          }}
+    <div className="w-full bg-primary text-primary-foreground border-b border-primary px-6 py-3 flex flex-wrap items-center justify-center gap-3 text-sm font-medium">
+      <div className="flex items-center gap-2 min-w-[200px] justify-center flex-1 flex-wrap">
+        <span>🚀 AlignTrue is in beta.</span>
+        <a
+          href="https://github.com/AlignTrue/aligntrue"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 underline text-primary-foreground/80 hover:text-primary-foreground font-semibold"
+          aria-label="Follow updates on GitHub"
         >
-          <span>🚀 AlignTrue is in beta. </span>
-          <a
-            href="https://github.com/AlignTrue/aligntrue"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#64b5f6",
-              textDecoration: "underline",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.375rem",
-              fontWeight: "600",
-            }}
-            aria-label="Follow updates on GitHub"
-          >
-            Follow on GitHub
-            <GitHubIcon size={16} style={{ display: "inline" }} />
-          </a>
-        </div>
-        <button
-          onClick={handleDismiss}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "white",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "0.25rem",
-            flexShrink: 0,
-          }}
-          aria-label="Dismiss beta banner"
-        >
-          <X size={18} />
-        </button>
+          Follow on GitHub
+          <GitHubIcon size={16} className="inline" />
+        </a>
       </div>
-    </>
+      <button
+        onClick={handleDismiss}
+        className="bg-transparent border-none text-primary-foreground cursor-pointer inline-flex items-center justify-center p-1"
+        aria-label="Dismiss beta banner"
+      >
+        <X size={18} />
+      </button>
+    </div>
   );
 }

@@ -2,6 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import {
@@ -16,6 +26,7 @@ import {
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
+import { cn } from "@/lib/utils";
 
 type Props = {
   align: AlignRecord;
@@ -153,7 +164,7 @@ function CopyButton({
 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <button
+    <Button
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
@@ -164,27 +175,16 @@ function CopyButton({
           console.error("copy failed", err);
         }
       }}
-      style={{
-        padding: variant === "primary" ? "0.85rem 1.3rem" : "0.65rem 1rem",
-        background:
-          variant === "primary"
-            ? "var(--brand-accent, #F5A623)"
-            : "var(--bg-default)",
-        color: variant === "primary" ? "#fff" : "var(--fg-default)",
-        border:
-          variant === "primary" ? "none" : "1px solid var(--border-color)",
-        borderRadius: "0.75rem",
-        cursor: "pointer",
-        fontWeight: 600,
-        boxShadow:
-          variant === "primary"
-            ? "0 4px 10px rgba(0,0,0,0.18)"
-            : "0 1px 3px rgba(0,0,0,0.08)",
-        minWidth: "120px",
-      }}
+      className={cn(
+        "min-w-[120px] font-semibold",
+        variant === "primary"
+          ? "bg-primary text-primary-foreground hover:brightness-110 shadow-md"
+          : "border-border text-foreground",
+      )}
+      variant={variant === "primary" ? "default" : "outline"}
     >
       {copied ? "✓ Copied" : (label ?? "Copy")}
-    </button>
+    </Button>
   );
 }
 
@@ -209,6 +209,17 @@ function formatBytes(bytes: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
   return `${bytes} B`;
+}
+
+function filenameFromUrl(url: string | undefined): string {
+  if (!url) return "rules.md";
+  try {
+    const parsed = new URL(url);
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    return parts.pop() ?? "rules.md";
+  } catch {
+    return "rules.md";
+  }
 }
 
 export function AlignDetailClient({ align, content }: Props) {
@@ -271,6 +282,38 @@ export function AlignDetailClient({ align, content }: Props) {
     return "";
   }, [content, isPack, selectedFile]);
 
+  const fileNameLabel = useMemo(
+    () =>
+      isPack
+        ? ".align.yaml"
+        : filenameFromUrl(align.normalizedUrl || align.url),
+    [align.normalizedUrl, align.url, isPack],
+  );
+
+  const fileCountLabel = useMemo(() => {
+    if (!isPack) return null;
+    const count = packFiles.length;
+    return count ? `${count} files` : null;
+  }, [isPack, packFiles.length]);
+
+  const totalBytes = useMemo(() => {
+    if (isPack) {
+      return (
+        align.pack?.totalBytes ??
+        packFiles.reduce((sum, file) => sum + (file.size ?? 0), 0)
+      );
+    }
+    if (selectedContent) {
+      return new TextEncoder().encode(selectedContent).length;
+    }
+    return null;
+  }, [align.pack?.totalBytes, isPack, packFiles, selectedContent]);
+
+  const sizeLabel = useMemo(
+    () => (totalBytes ? formatBytes(totalBytes) : null),
+    [totalBytes],
+  );
+
   const commands = useMemo(() => {
     const selected =
       agentOptions.find((a) => a.id === agent) ?? agentOptions[0];
@@ -291,11 +334,11 @@ export function AlignDetailClient({ align, content }: Props) {
   // Live conversion (client-side using convertContent for now)
   useEffect(() => {
     if (!selectedContent) return;
-    if (convertedCache.get(cacheKey)) return;
     setConverting(true);
     try {
-      const converted = convertContent(selectedContent, agent);
       setConvertedCache((prev) => {
+        if (prev.get(cacheKey)) return prev;
+        const converted = convertContent(selectedContent, agent);
         const next = new Map(prev);
         next.set(cacheKey, converted);
         return next;
@@ -303,7 +346,7 @@ export function AlignDetailClient({ align, content }: Props) {
     } finally {
       setConverting(false);
     }
-  }, [agent, cacheKey, convertedCache, selectedContent]);
+  }, [agent, cacheKey, selectedContent]);
 
   const cachedConverted = convertedCache.get(cacheKey);
 
@@ -362,650 +405,310 @@ export function AlignDetailClient({ align, content }: Props) {
   };
 
   return (
-    <div style={{ background: "var(--bg-default)", minHeight: "100vh" }}>
-      <style jsx global>{`
-        @media (max-width: 640px) {
-          .align-detail-main {
-            padding: 1rem !important;
-          }
-          .align-detail-header {
-            padding: 1.25rem !important;
-          }
-          .align-detail-tabs button {
-            padding: 0.5rem 0.75rem !important;
-            font-size: 0.9rem !important;
-          }
-          .align-header-row {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 0.5rem !important;
-          }
-          .align-title-row {
-            flex-direction: column;
-            align-items: flex-start !important;
-          }
-          .align-title-right {
-            width: 100%;
-            align-items: flex-start !important;
-          }
-          .align-title-right select {
-            width: 100%;
-          }
-          .align-tabs-wrap {
-            overflow-x: auto;
-            flex-wrap: nowrap !important;
-          }
-          .align-action-card {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-          }
-          .align-action-card code {
-            width: 100%;
-          }
-          .align-download-card {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-          }
-          .align-download-card > span,
-          .align-download-card > button {
-            width: 100%;
-            text-align: left;
-          }
-          .align-preview-header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-          }
-        }
-      `}</style>
+    <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main
-        className="align-detail-main"
-        style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.5rem" }}
-      >
-        <div
-          className="align-detail-header"
-          style={{
-            background: "var(--bg-default)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "1rem",
-            padding: "1.75rem",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            marginTop: "1rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <div
-            className="align-header-row"
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "0.75rem",
-              alignItems: "center",
-              color: "var(--fg-muted)",
-              fontSize: "0.95rem",
-              justifyContent: "space-between",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.75rem",
-                alignItems: "center",
-              }}
-            >
-              <span>Align ID: {align.id}</span>
-              <span>•</span>
-              <span>
-                {owner}/{repo}
-              </span>
-              <span>•</span>
-              <a
-                href={align.normalizedUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: "var(--fg-default)" }}
-              >
-                View on GitHub
-              </a>
-            </div>
-            {isPack && (
-              <a
-                href="/docs/concepts/align-yaml-packs"
-                style={{
-                  color: "var(--fg-default)",
-                  fontWeight: 600,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  textDecoration: "none",
-                }}
-              >
-                <HelpCircle size={16} />
-                How .align.yaml files work
-              </a>
-            )}
-          </div>
-          <div
-            style={{
-              margin: "1rem 0 1.25rem",
-              borderBottom: "1px solid var(--border-color)",
-            }}
-          />
-
-          <div
-            className="align-title-row"
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "1rem",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              marginTop: "1rem",
-            }}
-          >
-            <div style={{ minWidth: "240px", flex: "1 1 420px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.75rem",
-                  alignItems: "baseline",
-                }}
-              >
-                <h1
-                  style={{
-                    margin: 0,
-                    fontSize: "2.1rem",
-                    color: "var(--fg-default)",
-                  }}
-                >
-                  {align.title || "Untitled align"}
-                </h1>
-                {isPack && align.pack && (
-                  <span
-                    style={{
-                      color: "var(--fg-muted)",
-                      fontSize: "0.95rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    (.align.yaml) · {packFiles.length} files ·{" "}
-                    {formatBytes(align.pack.totalBytes)}
-                  </span>
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2">
+                <span>{fileNameLabel}</span>
+                {fileCountLabel && (
+                  <>
+                    <span>•</span>
+                    <span>{fileCountLabel}</span>
+                  </>
                 )}
-              </div>
-              {align.description && (
-                <p
-                  style={{
-                    margin: "0.35rem 0 0",
-                    color: "var(--fg-muted)",
-                    lineHeight: 1.6,
-                  }}
+                {sizeLabel && (
+                  <>
+                    <span>•</span>
+                    <span>{sizeLabel}</span>
+                  </>
+                )}
+                <span>•</span>
+                <span>Align ID: {align.id}</span>
+                <span>•</span>
+                <span>
+                  {owner}/{repo}
+                </span>
+                <span>•</span>
+                <a
+                  href={align.normalizedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-foreground hover:underline"
                 >
-                  {align.description}
-                </p>
+                  View on GitHub
+                </a>
+              </div>
+              {isPack && (
+                <a
+                  href="/docs/concepts/align-yaml-packs"
+                  className="inline-flex items-center gap-1 font-semibold text-foreground hover:underline"
+                >
+                  <HelpCircle size={16} />
+                  How .align.yaml files work
+                </a>
               )}
             </div>
-            <div
-              className="align-title-right"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: "0.4rem",
-                minWidth: "240px",
-              }}
-            >
-              <span style={{ fontWeight: 700, color: "var(--fg-default)" }}>
-                Agent export format
-              </span>
-              <select
-                value={agent}
-                onChange={(e) => setAgent(e.target.value as AgentId)}
-                style={{
-                  padding: "0.65rem 0.75rem",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "0.75rem",
-                  background: "var(--bg-default)",
-                  color: "var(--fg-default)",
-                  fontWeight: 600,
-                  minWidth: "240px",
-                }}
-              >
-                {agentOptions.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+            <div className="border-t border-border" />
 
-        <div
-          style={{
-            marginTop: "1rem",
-            border: "1px solid var(--border-color)",
-            borderRadius: "1rem",
-            background: "var(--bg-default)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          <div
-            className="align-detail-tabs align-tabs-wrap"
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "0.5rem",
-              borderBottom: "1px solid var(--border-color)",
-              padding: "0.75rem 1rem 0 1rem",
-            }}
-          >
-            {[
-              { id: "share", label: "Share Link" },
-              { id: "global", label: "Global Install" },
-              { id: "temp", label: "Temp Install" },
-              { id: "source", label: "Add Source" },
-              {
-                id: "download",
-                label: isPack ? "Download" : "Copy / Download",
-              },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActionTab(tab.id as typeof actionTab)}
-                style={{
-                  padding: "0.65rem 1rem",
-                  borderRadius: "0.75rem 0.75rem 0 0",
-                  border: "1px solid var(--border-color)",
-                  borderBottom:
-                    actionTab === tab.id
-                      ? "2px solid var(--fg-default)"
-                      : "none",
-                  background:
-                    actionTab === tab.id
-                      ? "var(--bg-default)"
-                      : "var(--bg-muted)",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ padding: "1rem 1.25rem" }}>
-            {actionTab === "share" && (
-              <>
-                <p style={{ margin: "0 0 0.5rem", color: "var(--fg-muted)" }}>
-                  Make it easy for others to use these rules. Copy this link to
-                  share.
-                </p>
-                <div
-                  className="align-action-card"
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    background: "var(--bg-muted)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "0.75rem",
-                    padding: "0.75rem",
-                  }}
-                >
-                  <code
-                    style={{
-                      flex: "1 1 320px",
-                      padding: "0.75rem",
-                      borderRadius: "0.5rem",
-                      background: "var(--bg-default)",
-                      border: "1px solid var(--border-color)",
-                      whiteSpace: "nowrap",
-                      overflowX: "auto",
-                    }}
-                  >
-                    {shareText}
-                  </code>
-                  <CopyButton text={shareText} label="Copy" variant="primary" />
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-2 min-w-[240px] flex-1">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <h1 className="text-3xl font-bold text-foreground m-0">
+                    {align.title || "Untitled align"}
+                  </h1>
                 </div>
-              </>
-            )}
+                {align.description && (
+                  <p className="text-muted-foreground leading-relaxed m-0">
+                    {align.description}
+                  </p>
+                )}
+              </div>
+              <div className="w-full sm:w-auto flex flex-col gap-1 min-w-[240px]">
+                <span className="font-semibold text-foreground">
+                  Agent export format
+                </span>
+                <Select
+                  value={agent}
+                  onValueChange={(value) => setAgent(value as AgentId)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select agent" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agentOptions.map((opt) => (
+                      <SelectItem key={opt.id} value={opt.id}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            {actionTab === "global" && (
-              <>
-                <p style={{ margin: "0 0 0.75rem", color: "var(--fg-muted)" }}>
-                  New to AlignTrue? Install globally to manage rules across all
-                  your projects. Copy and run both commands together.
-                  <span style={{ marginLeft: "0.35rem" }}>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-0">
+            <Tabs
+              value={actionTab}
+              onValueChange={(v) => setActionTab(v as typeof actionTab)}
+            >
+              <TabsList className="w-full inline-flex h-10 items-center gap-2 border-b border-border px-4">
+                {[
+                  { id: "share", label: "Share Link" },
+                  { id: "global", label: "Global Install" },
+                  { id: "temp", label: "Temp Install" },
+                  { id: "source", label: "Add Source" },
+                  {
+                    id: "download",
+                    label: isPack ? "Download" : "Copy / Download",
+                  },
+                ].map((tab) => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="font-semibold"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              <div className="p-5 space-y-4">
+                <TabsContent value="share" className="space-y-3">
+                  <p className="text-muted-foreground">
+                    Make it easy for others to use these rules. Copy this link
+                    to share.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 bg-muted border border-border rounded-lg p-4">
+                    <code className="flex-1 min-w-[280px] bg-background border border-border rounded-md p-3 font-mono text-sm whitespace-nowrap overflow-x-auto">
+                      {shareText}
+                    </code>
+                    <CopyButton
+                      text={shareText}
+                      label="Copy"
+                      variant="primary"
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="global" className="space-y-3">
+                  <p className="text-muted-foreground">
+                    New to AlignTrue? Install globally to manage rules across
+                    all your projects. Copy and run both commands together.{" "}
                     <a
                       href="/docs"
-                      style={{ color: "var(--fg-default)", fontWeight: 600 }}
+                      className="text-foreground font-semibold hover:underline"
                     >
                       Learn more about AlignTrue
                     </a>
-                  </span>
-                </p>
-                <div
-                  className="align-action-card"
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    background: "var(--bg-muted)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "0.75rem",
-                    padding: "0.75rem",
-                  }}
-                >
-                  <code
-                    style={{
-                      flex: "1 1 320px",
-                      padding: "0.75rem",
-                      borderRadius: "0.5rem",
-                      background: "var(--bg-default)",
-                      border: "1px solid var(--border-color)",
-                      whiteSpace: "pre-wrap",
-                      overflowX: "auto",
-                    }}
-                  >
-                    {`$ ${commands.globalInstall}\n$ ${commands.globalInit}`}
-                  </code>
-                  <CopyButton
-                    text={`$ ${commands.globalInstall}\n$ ${commands.globalInit}`}
-                    label="Copy"
-                    variant="primary"
-                  />
-                </div>
-              </>
-            )}
-
-            {actionTab === "temp" && (
-              <div
-                className="align-action-card"
-                style={{
-                  display: "flex",
-                  gap: "0.75rem",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  background: "var(--bg-muted)",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "0.75rem",
-                  padding: "0.75rem",
-                }}
-              >
-                <div style={{ flex: "1 1 320px" }}>
-                  <p
-                    style={{ margin: "0 0 0.35rem", color: "var(--fg-muted)" }}
-                  >
-                    Quick one-off install. No global install required.
                   </p>
-                  <code
-                    style={{
-                      display: "block",
-                      padding: "0.75rem",
-                      borderRadius: "0.5rem",
-                      background: "var(--bg-default)",
-                      border: "1px solid var(--border-color)",
-                      whiteSpace: "nowrap",
-                      overflowX: "auto",
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    {commands.tempInstall}
-                  </code>
-                </div>
-                <CopyButton
-                  text={commands.tempInstall}
-                  label="Copy"
-                  variant="primary"
-                  onCopied={() => void postEvent(align.id, "install")}
-                />
-              </div>
-            )}
+                  <div className="flex flex-wrap items-center gap-3 bg-muted border border-border rounded-lg p-4">
+                    <code className="flex-1 min-w-[280px] bg-background border border-border rounded-md p-3 font-mono text-sm whitespace-pre-wrap overflow-x-auto">
+                      {`$ ${commands.globalInstall}\n$ ${commands.globalInit}`}
+                    </code>
+                    <CopyButton
+                      text={`$ ${commands.globalInstall}\n$ ${commands.globalInit}`}
+                      label="Copy"
+                      variant="primary"
+                    />
+                  </div>
+                </TabsContent>
 
-            {actionTab === "source" && (
-              <div
-                className="align-action-card"
-                style={{
-                  display: "flex",
-                  gap: "0.75rem",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  background: "var(--bg-muted)",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "0.75rem",
-                  padding: "0.75rem",
-                }}
-              >
-                <div style={{ flex: "1 1 320px" }}>
-                  <p
-                    style={{ margin: "0 0 0.35rem", color: "var(--fg-muted)" }}
-                  >
-                    Already using AlignTrue? Add these rules as a connected
-                    source.{" "}
-                    <button
-                      type="button"
-                      onClick={() => setActionTab("global")}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--fg-default)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        padding: 0,
-                        textDecoration: "underline",
-                      }}
-                    >
-                      New here? Use Global Install instead.
-                    </button>
-                  </p>
-                  <code
-                    style={{
-                      display: "block",
-                      padding: "0.75rem",
-                      borderRadius: "0.5rem",
-                      background: "var(--bg-default)",
-                      border: "1px solid var(--border-color)",
-                      whiteSpace: "pre-wrap",
-                      overflowX: "auto",
-                      fontSize: "0.95rem",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {commands.addSource
-                      .split("\n")
-                      .map((line) => `$ ${line}`)
-                      .join("\n")}
-                  </code>
-                </div>
-                <CopyButton
-                  text={commands.addSource
-                    .split("\n")
-                    .map((line) => `$ ${line}`)
-                    .join("\n")}
-                  label="Copy"
-                  variant="primary"
-                />
-              </div>
-            )}
+                <TabsContent value="temp" className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-3 bg-muted border border-border rounded-lg p-4">
+                    <div className="flex-1 min-w-[280px] space-y-2">
+                      <p className="text-muted-foreground m-0">
+                        Quick one-off install. No global install required.
+                      </p>
+                      <code className="block bg-background border border-border rounded-md p-3 font-mono text-sm whitespace-nowrap overflow-x-auto">
+                        {commands.tempInstall}
+                      </code>
+                    </div>
+                    <CopyButton
+                      text={commands.tempInstall}
+                      label="Copy"
+                      variant="primary"
+                      onCopied={() => void postEvent(align.id, "install")}
+                    />
+                  </div>
+                </TabsContent>
 
-            {actionTab === "download" && !isPack && (
-              <>
-                <p style={{ margin: "0 0 0.5rem", color: "var(--fg-muted)" }}>
-                  Copy the rules to your clipboard or download the file to add
-                  manually.
-                </p>
-                <div
-                  className="align-action-card"
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    background: "var(--bg-muted)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "0.75rem",
-                    padding: "0.75rem",
-                  }}
-                >
-                  <span
-                    style={{
-                      flex: "1 1 320px",
-                      padding: "0.75rem",
-                      borderRadius: "0.5rem",
-                      background: "var(--bg-default)",
-                      border: "1px solid var(--border-color)",
-                      fontWeight: 600,
-                      color: "var(--fg-default)",
-                    }}
-                  >
-                    {format === "align-md" ? "Align (.md)" : "Cursor (.mdc)"}
-                  </span>
-                  <CopyButton
-                    text={
-                      cachedConverted?.text ||
-                      (selectedContent
-                        ? convertAlignContentForFormat(selectedContent, format)
-                            .text
-                        : "")
-                    }
-                    label="Copy"
-                    variant="primary"
-                  />
-                  {selectedContent && (
-                    <button
-                      onClick={handleDownload}
-                      style={{
-                        padding: "0.85rem 1.3rem",
-                        borderRadius: "0.75rem",
-                        border: "1px solid var(--border-color)",
-                        background: "var(--bg-default)",
-                        cursor: "pointer",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Download ({downloadFilename})
-                    </button>
+                <TabsContent value="source" className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-3 bg-muted border border-border rounded-lg p-4">
+                    <div className="flex-1 min-w-[280px] space-y-2">
+                      <p className="text-muted-foreground m-0">
+                        Already using AlignTrue? Add these rules as a connected
+                        source.{" "}
+                        <button
+                          type="button"
+                          onClick={() => setActionTab("global")}
+                          className="text-foreground font-semibold underline"
+                        >
+                          New here? Use Global Install instead.
+                        </button>
+                      </p>
+                      <code className="block bg-background border border-border rounded-md p-3 font-mono text-sm whitespace-pre-wrap overflow-x-auto leading-relaxed">
+                        {commands.addSource
+                          .split("\n")
+                          .map((line) => `$ ${line}`)
+                          .join("\n")}
+                      </code>
+                    </div>
+                    <CopyButton
+                      text={commands.addSource
+                        .split("\n")
+                        .map((line) => `$ ${line}`)
+                        .join("\n")}
+                      label="Copy"
+                      variant="primary"
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="download" className="space-y-3">
+                  {!isPack && (
+                    <>
+                      <p className="text-muted-foreground">
+                        Copy the rules to your clipboard or download the file to
+                        add manually.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3 bg-muted border border-border rounded-lg p-4">
+                        <span className="flex-1 min-w-[280px] bg-background border border-border rounded-md p-3 font-semibold text-foreground">
+                          {format === "align-md"
+                            ? "Align (.md)"
+                            : "Cursor (.mdc)"}
+                        </span>
+                        <CopyButton
+                          text={
+                            cachedConverted?.text ||
+                            (selectedContent
+                              ? convertAlignContentForFormat(
+                                  selectedContent,
+                                  format,
+                                ).text
+                              : "")
+                          }
+                          label="Copy"
+                          variant="primary"
+                        />
+                        {selectedContent && (
+                          <Button
+                            onClick={handleDownload}
+                            variant="outline"
+                            className="font-semibold border-border"
+                          >
+                            Download ({downloadFilename})
+                          </Button>
+                        )}
+                      </div>
+                    </>
                   )}
-                </div>
-              </>
-            )}
-            {actionTab === "download" && isPack && align.pack && (
-              <>
-                <p style={{ margin: "0 0 0.5rem", color: "var(--fg-muted)" }}>
-                  Download all rules as a zip to add them to your project.
-                </p>
-                <div
-                  className="align-download-card"
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    background: "var(--bg-muted)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "0.75rem",
-                    padding: "0.75rem",
-                  }}
-                >
-                  <span
-                    style={{
-                      flex: "1 1 320px",
-                      padding: "0.75rem",
-                      borderRadius: "0.5rem",
-                      background: "var(--bg-default)",
-                      border: "1px solid var(--border-color)",
-                      fontWeight: 600,
-                      color: "var(--fg-default)",
-                    }}
-                  >
-                    {align.pack.manifestId} ({packFiles.length} rule files)
-                  </span>
-                  <button
-                    onClick={handleDownloadAll}
-                    style={{
-                      padding: "0.85rem 1.3rem",
-                      borderRadius: "0.75rem",
-                      border: "1px solid var(--border-color)",
-                      background: "var(--bg-default)",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Download All (.zip)
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
 
-        <div
-          style={{
-            marginTop: "1.5rem",
-            border: "1px solid var(--border-color)",
-            borderRadius: "1rem",
-            padding: "1.25rem",
-            background: "var(--bg-default)",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}
-        >
-          <div
-            className="align-preview-header"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "0.75rem",
-              flexWrap: "wrap",
-            }}
-          >
-            <h2 style={{ margin: "0 0 0.5rem" }}>Preview</h2>
+                  {isPack && align.pack && (
+                    <>
+                      <p className="text-muted-foreground">
+                        Download all rules as a zip to add them to your project.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3 bg-muted border border-border rounded-lg p-4">
+                        <span className="flex-1 min-w-[280px] bg-background border border-border rounded-md p-3 font-semibold text-foreground">
+                          {align.pack.manifestId} ({packFiles.length} rule
+                          files)
+                        </span>
+                        <Button
+                          onClick={handleDownloadAll}
+                          variant="outline"
+                          className="font-semibold border-border"
+                        >
+                          Download All (.zip)
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </TabsContent>
+              </div>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
+            <CardTitle className="text-xl">Rule File Preview</CardTitle>
             {isPack && packFiles.length > 0 && (
-              <select
+              <Select
                 value={selectedPath}
-                onChange={(e) => setSelectedPath(e.target.value)}
-                style={{
-                  padding: "0.6rem 0.8rem",
-                  borderRadius: "0.6rem",
-                  border: "1px solid var(--border-color)",
-                  minWidth: "260px",
-                }}
+                onValueChange={(value) => setSelectedPath(value)}
               >
-                {packFiles.map((file) => (
-                  <option key={file.path} value={file.path}>
-                    {file.path} ({formatBytes(file.size)})
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full sm:w-auto sm:min-w-[260px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {packFiles.map((file) => (
+                    <SelectItem key={file.path} value={file.path}>
+                      {file.path} ({formatBytes(file.size)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-          </div>
-          {!previewText && (
-            <p style={{ color: "var(--fg-muted)" }}>
-              Content unavailable. Try refreshing; the source may be temporarily
-              unreachable.
-            </p>
-          )}
-          {previewText && (
-            <pre
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: "0.75rem",
-                padding: "1rem",
-                overflowX: "auto",
-                background: "var(--bg-muted)",
-                whiteSpace: "pre-wrap",
-                fontFamily:
-                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas",
-              }}
-            >
-              {converting ? "Converting..." : previewText}
-            </pre>
-          )}
-        </div>
+          </CardHeader>
+          <CardContent>
+            {!previewText && (
+              <p className="text-muted-foreground">
+                Content unavailable. Try refreshing; the source may be
+                temporarily unreachable.
+              </p>
+            )}
+            {previewText && (
+              <pre className="bg-muted border border-border rounded-lg p-4 font-mono text-sm whitespace-pre-wrap overflow-auto max-h-[600px]">
+                {converting ? "Converting..." : previewText}
+              </pre>
+            )}
+          </CardContent>
+        </Card>
       </main>
       <SiteFooter />
     </div>

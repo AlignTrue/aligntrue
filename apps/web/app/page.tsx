@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -16,6 +17,11 @@ import { BetaBanner } from "./components/BetaBanner";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { getSubmittedUrlFromSearch } from "@/lib/aligns/urlFromSearch";
 import type { AlignRecord } from "@/lib/aligns/types";
 
@@ -49,27 +55,14 @@ function CopyButton({ text }: { text: string }) {
   };
 
   return (
-    <button
+    <Button
       onClick={handleCopy}
-      style={{
-        padding: "0.5rem 1rem",
-        backgroundColor: "transparent",
-        border: "1px solid var(--border-color)",
-        borderRadius: "0.375rem",
-        cursor: "pointer",
-        fontSize: "0.875rem",
-        color: "var(--text-secondary)",
-        fontWeight: 500,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "transparent";
-      }}
+      variant="outline"
+      size="sm"
+      className="text-sm"
     >
       {copied ? "✓ Copied" : "Copy"}
-    </button>
+    </Button>
   );
 }
 
@@ -136,39 +129,25 @@ export default function HomePage() {
 
   const renderCards = (items: AlignSummary[]) => {
     const limited = items.slice(0, 6);
-    if (!limited.length) {
-      return <p style={{ color: "var(--fg-muted)" }}>Nothing yet.</p>;
-    }
+    if (!limited.length) return null;
     return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-          gap: "1rem",
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {limited.map((item) => {
           const owner = ownerFromUrl(item.normalizedUrl);
+          const isPack = item.title?.toLowerCase().includes("pack");
           return (
-            <Link
-              key={item.id}
-              href={`/a/${item.id}`}
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: "10px",
-                padding: "0.75rem",
-                textDecoration: "none",
-                color: "var(--fg-default)",
-                background: "var(--bg-default)",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-              }}
-            >
-              <p style={{ fontSize: "0.9rem", color: "var(--fg-muted)" }}>
-                {owner}
-              </p>
-              <h3 style={{ margin: "0 0 0.25rem 0" }}>
-                {item.title || "Untitled align"}
-              </h3>
+            <Link key={item.id} href={`/a/${item.id}`}>
+              <Card className="h-full transition hover:shadow-md border border-border">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm text-muted-foreground">{owner}</p>
+                    {isPack && <Badge variant="secondary">Pack</Badge>}
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {item.title || "Untitled align"}
+                  </h3>
+                </CardContent>
+              </Card>
             </Link>
           );
         })}
@@ -176,424 +155,187 @@ export default function HomePage() {
     );
   };
 
-  const TabButton = ({
-    id,
-    label,
-  }: {
-    id: "rules" | "scratch";
-    label: string;
-  }) => {
-    const isActive = activeTab === id;
-    return (
-      <button
-        onClick={() => setActiveTab(id)}
-        style={{
-          padding: "0.75rem 1rem",
-          border: "1px solid var(--border-color)",
-          borderBottom: isActive
-            ? "2px solid var(--fg-default)"
-            : "1px solid var(--border-color)",
-          borderRadius: "0.5rem 0.5rem 0 0",
-          backgroundColor: isActive ? "var(--bg-default)" : "var(--bg-muted)",
-          color: "var(--fg-default)",
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-        aria-pressed={isActive}
-      >
-        {label}
-      </button>
-    );
-  };
-
   const renderRulesTab = () => (
-    <div
-      style={{
-        maxWidth: "52rem",
-        margin: "0 auto",
-        border: "1px solid var(--border-color)",
-        borderRadius: "0.75rem",
-        padding: "1.5rem",
-        background: "var(--bg-default)",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.25rem",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-        }}
-      >
-        <label style={{ fontWeight: 600, color: "var(--fg-default)" }}>
-          Enter a GitHub URL with AI rules (.mdc, .md, etc.)
-        </label>
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "stretch",
-            flexWrap: "wrap",
-          }}
-        >
-          <input
-            type="url"
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="Paste a GitHub URL, supports blob and raw URLs."
-            style={{
-              padding: "1rem",
-              borderRadius: "10px",
-              border: "2px solid var(--border-color)",
-              fontSize: "1.1rem",
-              background: "var(--bg-default)",
-              color: "var(--fg-default)",
-              flex: "1 1 360px",
-              minWidth: "0",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-            }}
-          />
-          <button
-            onClick={() => void handleSubmit()}
-            disabled={submitting}
-            style={{
-              padding: "0.95rem 1.4rem",
-              borderRadius: "10px",
-              border: "none",
-              background: "var(--brand-accent, #F5A623)",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: "pointer",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-              minWidth: "140px",
-            }}
-          >
-            {submitting ? "Generating..." : "Generate Align"}
-          </button>
+    <Card className="max-w-5xl mx-auto shadow-sm border border-border">
+      <CardContent className="p-6 md:p-7 space-y-6">
+        <div className="space-y-3">
+          <label className="font-semibold text-foreground">
+            Enter a GitHub URL with AI rules (.mdc, .md, etc.)
+          </label>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="Paste a GitHub URL, supports blob and raw URLs."
+              className="h-12 text-base flex-1"
+            />
+            <Button
+              onClick={() => void handleSubmit()}
+              disabled={submitting}
+              className="h-12 px-5 font-semibold bg-primary text-primary-foreground hover:brightness-110"
+            >
+              {submitting ? "Generating..." : "Generate Align"}
+            </Button>
+          </div>
+          {error && (
+            <p className="text-sm font-semibold text-red-600 m-0">{error}</p>
+          )}
         </div>
-        {error && (
-          <p style={{ color: "#b91c1c", margin: 0, fontWeight: 600 }}>
-            {error}
-          </p>
-        )}
-      </div>
 
-      <section style={{ marginTop: "1.5rem" }}>
-        <h3 style={{ marginBottom: "0.5rem", color: "var(--fg-default)" }}>
-          Recent Aligns
-        </h3>
-        {renderCards(recent)}
-      </section>
-    </div>
+        {recent.length > 0 && (
+          <section className="pt-2 space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">
+              Recent Aligns
+            </h3>
+            {renderCards(recent)}
+          </section>
+        )}
+      </CardContent>
+    </Card>
   );
 
   const renderScratchTab = () => (
-    <div
-      style={{
-        maxWidth: "52rem",
-        margin: "0 auto",
-        backgroundColor: "var(--bg-default)",
-        border: "1px solid var(--border-color)",
-        borderRadius: "0.75rem",
-        padding: "1.5rem",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      }}
-    >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "1.25rem",
-        }}
-      >
-        {[
-          {
-            step: "1",
-            title: "Install",
-            command: "npm install -g aligntrue",
-            text: (
-              <>
-                Install to manage agent rules (Cursor <code>.mdc</code>,{" "}
-                <code>AGENTS.md</code>, <code>CLAUDE.md</code>, etc.).
-              </>
-            ),
-          },
-          {
-            step: "2",
-            title: "Init & Sync",
-            command: "aligntrue init",
-            text: (
-              <>
-                Auto-detects, imports, and syncs existing rules or creates smart
-                defaults if needed.
-              </>
-            ),
-          },
-        ].map((card) => (
-          <div
-            key={card.step}
-            style={{
-              backgroundColor: "var(--bg-default)",
-              border: "1px solid var(--border-color)",
-              borderRadius: "0.75rem",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-              padding: "1.5rem",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.75rem",
-                marginBottom: "1rem",
-              }}
+    <Card className="max-w-5xl mx-auto shadow-sm border border-border">
+      <CardContent className="p-6 md:p-7">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[
+            {
+              step: "1",
+              title: "Install",
+              command: "npm install -g aligntrue",
+              text: (
+                <>
+                  Install to manage agent rules (Cursor <code>.mdc</code>,{" "}
+                  <code>AGENTS.md</code>, <code>CLAUDE.md</code>, etc.).
+                </>
+              ),
+            },
+            {
+              step: "2",
+              title: "Init & Sync",
+              command: "aligntrue init",
+              text: (
+                <>
+                  Auto-detects, imports, and syncs existing rules or creates
+                  smart defaults if needed.
+                </>
+              ),
+            },
+          ].map((card) => (
+            <Card
+              key={card.step}
+              className="h-full border border-border shadow-sm"
             >
-              <div
-                style={{
-                  width: "2rem",
-                  height: "2rem",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--brand-accent, #F5A623)",
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  flexShrink: 0,
-                }}
-              >
-                {card.step}
-              </div>
-              <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>
-                {card.title}
-              </h3>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.5rem",
-                marginBottom: "0.75rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <code
-                style={{
-                  padding: "0.625rem 1rem",
-                  backgroundColor: "var(--bg-muted)",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "0.375rem",
-                  fontSize: "0.95rem",
-                  display: "inline-block",
-                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-                  fontWeight: 500,
-                }}
-              >
-                {card.command}
-              </code>
-              <CopyButton text={card.command} />
-            </div>
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "var(--fg-muted)",
-                margin: 0,
-                lineHeight: 1.5,
-              }}
-            >
-              {card.text}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
+              <CardHeader className="space-y-2 text-center">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                    {card.step}
+                  </div>
+                  <CardTitle className="text-lg">{card.title}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 text-center">
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <code className="px-3 py-2 bg-muted border border-border rounded-md text-sm font-medium">
+                    {card.command}
+                  </code>
+                  <CopyButton text={card.command} />
+                </div>
+                <p className="text-sm text-muted-foreground leading-6">
+                  {card.text}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-default)" }}>
-      <style jsx global>{`
-        .hero-title {
-          text-wrap: balance;
-          max-width: 48ch;
-          margin-left: auto;
-          margin-right: auto;
-          text-wrap: pretty;
-        }
-        .hero-description {
-          text-wrap: pretty;
-          max-width: 65ch;
-        }
-        .sr-only {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-          white-space: nowrap;
-          border-width: 0;
-        }
-        @media (max-width: 768px) {
-          section {
-            padding: 3rem 1rem !important;
-          }
-          .hero-title {
-            font-size: 2rem !important;
-            line-height: 1.25;
-            letter-spacing: -0.02em;
-          }
-          .hero-description {
-            font-size: 1rem !important;
-            line-height: 1.65;
-          }
-        }
-      `}</style>
-
+    <div className="min-h-screen bg-background">
       <a href="#main-content" className="sr-only">
         Skip to main content
       </a>
       <BetaBanner />
       <SiteHeader />
 
-      <main id="main-content">
+      <main id="main-content" className="text-foreground">
         <section
-          style={{ textAlign: "center", padding: "4rem 1.5rem 3rem" }}
+          className="text-center px-4 py-12 md:py-16"
           aria-labelledby="hero-heading"
         >
-          <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+          <div className="max-w-6xl mx-auto">
             <h1
               id="hero-heading"
-              className="hero-title"
-              style={{
-                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                fontWeight: "bold",
-                marginBottom: "2rem",
-                lineHeight: "1.2",
-                color: "var(--fg-default)",
-                textWrap: "balance",
-              }}
+              className="text-4xl md:text-5xl font-bold leading-tight text-foreground mb-6 max-w-[48ch] mx-auto text-balance"
             >
               Sync + manage rules across AI agents, projects & teams.
             </h1>
-            <p
-              className="hero-description"
-              style={{
-                fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
-                color: "var(--fg-muted)",
-                marginBottom: "2.5rem",
-                maxWidth: "48rem",
-                marginInline: "auto",
-                lineHeight: 1.6,
-              }}
-            >
+            <p className="text-lg md:text-xl text-muted-foreground leading-7 md:leading-8 max-w-[65ch] md:max-w-3xl mx-auto mb-8 text-pretty">
               Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
               <strong>Start in 60 seconds.</strong>
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "0.5rem",
-                marginBottom: "0",
-                flexWrap: "wrap",
-              }}
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as "rules" | "scratch")}
+              className="w-full mt-2"
             >
-              <TabButton id="rules" label="Start with rules" />
-              <TabButton id="scratch" label="Start from scratch" />
-            </div>
+              <TabsList className="max-w-xl mx-auto flex justify-center gap-1">
+                <TabsTrigger value="rules" className="text-base">
+                  Start with rules
+                </TabsTrigger>
+                <TabsTrigger value="scratch" className="text-base">
+                  Start from scratch
+                </TabsTrigger>
+              </TabsList>
+              <div className="mt-4">
+                <TabsContent value="rules">{renderRulesTab()}</TabsContent>
+                <TabsContent value="scratch">{renderScratchTab()}</TabsContent>
+              </div>
+            </Tabs>
 
-            <div style={{ marginTop: "-1px" }}>
-              {activeTab === "rules" ? renderRulesTab() : renderScratchTab()}
-            </div>
-
-            <div
-              className="hero-buttons"
-              style={{
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                marginTop: "2.5rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <a
-                href="/docs/00-getting-started/00-quickstart"
-                style={{
-                  padding: "0.75rem 1.5rem",
-                  backgroundColor: "var(--brand-accent, #F5A623)",
-                  color: "white",
-                  borderRadius: "0.5rem",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  display: "inline-block",
-                }}
+            <div className="hero-buttons flex flex-wrap justify-center gap-3 mt-8">
+              <Button
+                asChild
+                className="bg-primary hover:brightness-110 text-primary-foreground px-5 py-2.5"
               >
-                Quickstart Guide
-              </a>
-              <a
-                href="/docs"
-                style={{
-                  padding: "0.75rem 1.5rem",
-                  border: "1px solid var(--brand-accent, #F5A623)",
-                  borderRadius: "0.5rem",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  color: "var(--brand-accent, #F5A623)",
-                  display: "inline-block",
-                }}
+                <Link
+                  href={
+                    "/docs/00-getting-started/00-quickstart" as unknown as Route
+                  }
+                >
+                  Quickstart Guide
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="border-primary text-primary hover:bg-secondary px-5 py-2.5"
               >
-                Read Docs
-              </a>
+                <Link href={"/docs" as unknown as Route}>Read Docs</Link>
+              </Button>
             </div>
           </div>
         </section>
 
         <section
-          style={{
-            backgroundColor: "var(--bg-muted)",
-            padding: "4rem 1.5rem",
-            borderTop: "1px solid var(--border-color)",
-            borderBottom: "1px solid var(--border-color)",
-          }}
+          className="bg-muted border-y border-border px-4 py-12"
           aria-labelledby="how-it-works-heading"
         >
-          <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+          <div className="max-w-6xl mx-auto">
             <h2
               id="how-it-works-heading"
-              style={{
-                fontSize: "2rem",
-                fontWeight: "bold",
-                textAlign: "center",
-                marginTop: "0.5rem",
-                marginBottom: "1.25rem",
-                color: "var(--fg-default)",
-              }}
+              className="text-2xl font-bold text-center mt-2 mb-5 text-foreground"
             >
               How it works
             </h2>
-            <div style={{ maxWidth: "56rem", margin: "0 auto" }}>
+            <div className="max-w-4xl mx-auto">
               <HowItWorksDiagram />
             </div>
-            <p
-              style={{
-                textAlign: "center",
-                marginTop: "1.5rem",
-                fontSize: "1rem",
-                color: "var(--fg-muted)",
-                maxWidth: "36rem",
-                marginInline: "auto",
-              }}
-            >
+            <p className="text-center mt-6 text-base text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
               Write your rules once & run <code>aligntrue sync</code>. AlignTrue
               automatically generates agent-specific formats for all your AI
               tools or team members.
@@ -602,263 +344,102 @@ export default function HomePage() {
         </section>
 
         <section
-          style={{
-            backgroundColor: "var(--bg-default)",
-            borderBottom: "1px solid var(--border-color)",
-            padding: "4rem 1.5rem",
-          }}
+          className="bg-background border-b border-border px-4 py-12"
           aria-labelledby="features-heading"
         >
-          <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+          <div className="max-w-6xl mx-auto">
             <h2 id="features-heading" className="sr-only">
               Key Features
             </h2>
-            <div
-              className="features-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "2rem",
-              }}
-            >
-              <div
-                className="feature-card"
-                style={{
-                  backgroundColor: "var(--bg-default)",
-                  borderRadius: "0.5rem",
-                  padding: "1.5rem",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  className="feature-icon"
-                  style={{ marginBottom: "0.75rem" }}
+            <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+              {[
+                {
+                  icon: Zap,
+                  title: "60-second setup",
+                  text: "Auto-detects agents & generates rules in under a minute. No config required.",
+                },
+                {
+                  icon: RefreshCw,
+                  title: "Automatic sync",
+                  text: "Edit rules once & sync to all agents. No more manual copying or outdated rules.",
+                },
+                {
+                  icon: Globe,
+                  title: "20+ agents supported",
+                  text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
+                },
+              ].map((feature) => (
+                <Card
+                  key={feature.title}
+                  className="h-full border border-border shadow-sm"
                 >
-                  <Zap
-                    size={32}
-                    stroke="var(--brand-accent, #F5A623)"
-                    aria-hidden="true"
-                  />
-                </div>
-                <h3
-                  style={{
-                    fontSize: "1.125rem",
-                    fontWeight: 600,
-                    marginBottom: "0.5rem",
-                    color: "var(--fg-default)",
-                  }}
-                >
-                  60-second setup
-                </h3>
-                <p
-                  style={{
-                    fontSize: "0.9rem",
-                    color: "var(--fg-muted)",
-                    textWrap: "pretty",
-                  }}
-                >
-                  Auto-detects your agents & creates starter rules in under a
-                  minute. No config required.
-                </p>
-              </div>
-
-              <div
-                className="feature-card"
-                style={{
-                  backgroundColor: "var(--bg-default)",
-                  borderRadius: "0.5rem",
-                  padding: "1.5rem",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  className="feature-icon"
-                  style={{ marginBottom: "0.75rem" }}
-                >
-                  <RefreshCw
-                    size={32}
-                    stroke="var(--brand-accent, #F5A623)"
-                    aria-hidden="true"
-                  />
-                </div>
-                <h3
-                  style={{
-                    fontSize: "1.125rem",
-                    fontWeight: 600,
-                    marginBottom: "0.5rem",
-                    color: "var(--fg-default)",
-                  }}
-                >
-                  Automatic sync
-                </h3>
-                <p style={{ fontSize: "0.9rem", color: "var(--fg-muted)" }}>
-                  Edit rules once, sync to all agents automatically. No manual
-                  copying or outdated rules.
-                </p>
-              </div>
-
-              <div
-                className="feature-card"
-                style={{
-                  backgroundColor: "var(--bg-default)",
-                  borderRadius: "0.5rem",
-                  padding: "1.5rem",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <div
-                  className="feature-icon"
-                  style={{ marginBottom: "0.75rem" }}
-                >
-                  <Globe
-                    size={32}
-                    stroke="var(--brand-accent, #F5A623)"
-                    aria-hidden="true"
-                  />
-                </div>
-                <h3
-                  style={{
-                    fontSize: "1.125rem",
-                    fontWeight: 600,
-                    marginBottom: "0.5rem",
-                    color: "var(--fg-default)",
-                  }}
-                >
-                  20+ agents supported
-                </h3>
-                <p
-                  style={{
-                    fontSize: "0.9rem",
-                    color: "var(--fg-muted)",
-                    textWrap: "pretty",
-                  }}
-                >
-                  Cursor, Codex, Claude Code, Copilot, Claude, Aider, Windsurf,
-                  VS Code MCP & more.
-                </p>
-              </div>
+                  <CardContent className="p-5 space-y-3">
+                    <feature.icon
+                      size={32}
+                      className="text-primary"
+                      aria-hidden="true"
+                    />
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-6">
+                      {feature.text}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
 
         <section
-          style={{
-            maxWidth: "72rem",
-            margin: "0 auto",
-            padding: "4rem 1.5rem",
-          }}
+          className="max-w-6xl mx-auto px-6 py-16"
           aria-labelledby="rule-wrangling-heading"
         >
           <h2
             id="rule-wrangling-heading"
-            style={{
-              fontSize: "clamp(1.5rem, 4vw, 2rem)",
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: "3rem",
-              color: "var(--fg-default)",
-            }}
+            className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
           >
             Rule-wrangling, solved.
           </h2>
-          <div
-            className="steps-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "1.5rem",
-            }}
-          >
-            <div style={{ textAlign: "center" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: FileText,
+                title: "Central rule management",
+                text: "Write AI rules once & automatically sync everywhere for everyone.",
+              },
+              {
+                icon: Shuffle,
+                title: "Agent exporters",
+                text: "Generates rule files in each agent's native format & keeps existing settings.",
+              },
+              {
+                icon: Users,
+                title: "Solo & team modes",
+                text: "Local-first for individuals. PR-friendly for team collaboration. Better for everyone.",
+              },
+              {
+                icon: Settings,
+                title: "Built-in customizability",
+                text: "Use variables, path selectors & overlays for sharing + team friendly customization.",
+              },
+            ].map((item) => (
               <div
-                style={{
-                  width: "3rem",
-                  height: "3rem",
-                  borderRadius: "50%",
-                  margin: "0 auto 1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "var(--brand-accent, #F5A623)",
-                }}
+                key={item.title}
+                className="text-center bg-muted rounded-lg p-5 border border-border"
               >
-                <FileText size={24} stroke="white" aria-hidden="true" />
+                <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-primary text-primary-foreground">
+                  <item.icon size={24} aria-hidden="true" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-6">
+                  {item.text}
+                </p>
               </div>
-              <h3 style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                Centralized rule management
-              </h3>
-              <p style={{ fontSize: "0.9rem", color: "var(--fg-muted)" }}>
-                Write AI rules once & automatically sync everywhere for
-                everyone.
-              </p>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: "3rem",
-                  height: "3rem",
-                  borderRadius: "50%",
-                  margin: "0 auto 1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "var(--brand-accent, #F5A623)",
-                }}
-              >
-                <Shuffle size={24} stroke="white" aria-hidden="true" />
-              </div>
-              <h3 style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                Agent exporters
-              </h3>
-              <p style={{ fontSize: "0.9rem", color: "var(--fg-muted)" }}>
-                Generates each agent's native formats & keeps existing settings.
-              </p>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: "3rem",
-                  height: "3rem",
-                  borderRadius: "50%",
-                  margin: "0 auto 1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "var(--brand-accent, #F5A623)",
-                }}
-              >
-                <Users size={24} stroke="white" aria-hidden="true" />
-              </div>
-              <h3 style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                Solo & team modes
-              </h3>
-              <p style={{ fontSize: "0.9rem", color: "var(--fg-muted)" }}>
-                Local-first for individuals. PR-friendly for team collaboration.
-              </p>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: "3rem",
-                  height: "3rem",
-                  borderRadius: "50%",
-                  margin: "0 auto 1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "var(--brand-accent, #F5A623)",
-                }}
-              >
-                <Settings size={24} stroke="white" aria-hidden="true" />
-              </div>
-              <h3 style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                Built-in customizability
-              </h3>
-              <p style={{ fontSize: "0.9rem", color: "var(--fg-muted)" }}>
-                Variables, path selectors & overlays for fork-safe upstream
-                updates.
-              </p>
-            </div>
+            ))}
           </div>
         </section>
       </main>

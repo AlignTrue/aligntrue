@@ -2,96 +2,73 @@ export function SiteFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer
-      style={{
-        borderTop: "1px solid var(--border-color)",
-        marginTop: "4rem",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "72rem",
-          margin: "0 auto",
-          padding: "2rem 1.5rem",
-          textAlign: "center",
-          fontSize: "0.875rem",
-          color: "var(--fg-muted)",
-        }}
-      >
+    <footer className="border-t border-border mt-16">
+      <div className="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-muted-foreground">
         <p>
           © {currentYear} AlignTrue.{" "}
           <a
             href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
             target="_blank"
             rel="noreferrer"
-            style={{ textDecoration: "underline" }}
+            className="underline"
           >
             MIT License
           </a>
           .
         </p>
-        <p style={{ marginTop: "0.5rem" }}>Made with ❤️ + hash determinism.</p>
+        <p className="mt-2">Made with ❤️ + hash determinism.</p>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            marginTop: "1.5rem",
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
+        <div className="flex justify-center gap-4 mt-6 flex-wrap items-center">
           <a
             href="https://github.com/AlignTrue/aligntrue/actions"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
+            className="no-underline"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI&logo=github"
               alt="CI status"
-              style={{ height: "20px", display: "block" }}
+              className="h-5 block"
             />
           </a>
           <a
             href="https://www.npmjs.com/package/aligntrue"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
+            className="no-underline"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://img.shields.io/npm/v/aligntrue.svg"
               alt="npm version"
-              style={{ height: "20px", display: "block" }}
+              className="h-5 block"
             />
           </a>
           <a
             href="https://nodejs.org/"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
+            className="no-underline"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://img.shields.io/badge/node-%3E%3D20-brightgreen"
               alt="Node 20+"
-              style={{ height: "20px", display: "block" }}
+              className="h-5 block"
             />
           </a>
           <a
             href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
+            className="no-underline"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://img.shields.io/badge/license-MIT-blue"
               alt="MIT License"
-              style={{ height: "20px", display: "block" }}
+              className="h-5 block"
             />
           </a>
         </div>

@@ -12,37 +12,43 @@ export function HowItWorksDiagram() {
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const bluePrimary = "#3b82f6"; // blue-500, matches --primary
+    const lightMuted = "#f1f5f9"; // slate-100
+    const darkMuted = "#1e293b"; // slate-800
+    const textLight = "#e2e8f0"; // slate-200
+    const textDark = "#0f172a"; // slate-900
+
     mermaid.initialize({
       startOnLoad: false,
       theme: "base",
       themeVariables:
         currentTheme === "dark"
           ? {
-              primaryColor: "#F5A623",
-              primaryTextColor: "#e5e5e5",
-              primaryBorderColor: "#F5A623",
-              lineColor: "#999",
-              secondaryColor: "#2a2a2a",
-              tertiaryColor: "#1a1a1a",
-              mainBkg: "#1a1a1a",
-              textColor: "#e5e5e5",
-              nodeBorder: "#F5A623",
-              clusterBkg: "#2a2a2a",
-              clusterBorder: "#444",
-              edgeLabelBackground: "#1a1a1a",
+              primaryColor: bluePrimary,
+              primaryTextColor: textLight,
+              primaryBorderColor: bluePrimary,
+              lineColor: "#94a3b8", // slate-400
+              secondaryColor: darkMuted,
+              tertiaryColor: "#0b1220", // near background dark
+              mainBkg: "#0b1220",
+              textColor: textLight,
+              nodeBorder: bluePrimary,
+              clusterBkg: darkMuted,
+              clusterBorder: "#334155", // slate-700
+              edgeLabelBackground: "#0b1220",
             }
           : {
-              primaryColor: "#F5A623",
-              primaryTextColor: "#1a1a1a",
-              primaryBorderColor: "#F5A623",
-              lineColor: "#666",
-              secondaryColor: "#f5f5f5",
+              primaryColor: bluePrimary,
+              primaryTextColor: textDark,
+              primaryBorderColor: bluePrimary,
+              lineColor: "#94a3b8", // slate-400
+              secondaryColor: lightMuted,
               tertiaryColor: "#fff",
               mainBkg: "#fff",
-              textColor: "#1a1a1a",
-              nodeBorder: "#F5A623",
-              clusterBkg: "#f5f5f5",
-              clusterBorder: "#ddd",
+              textColor: textDark,
+              nodeBorder: bluePrimary,
+              clusterBkg: lightMuted,
+              clusterBorder: "#cbd5e1", // slate-300
               edgeLabelBackground: "#fff",
             },
       flowchart: {
@@ -62,14 +68,14 @@ graph TD
     B --> G[20+ other agents]
     B --> H[All team members]
     
-    style A fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
-    style B fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px,font-family:monospace,font-size:15px,font-weight:600
-    style C fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
-    style D fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
-    style E fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
-    style F fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
-    style G fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
-    style H fill:${currentTheme === "dark" ? "#2a2a2a" : "#f5f5f5"},stroke:#666,stroke-width:1px
+    style A fill:${bluePrimary},stroke:${bluePrimary},color:#fff,stroke-width:2px
+    style B fill:${bluePrimary},stroke:${bluePrimary},color:#fff,stroke-width:2px,font-family:monospace,font-size:15px,font-weight:600
+    style C fill:${currentTheme === "dark" ? darkMuted : lightMuted},stroke:#64748b,stroke-width:1px
+    style D fill:${currentTheme === "dark" ? darkMuted : lightMuted},stroke:#64748b,stroke-width:1px
+    style E fill:${currentTheme === "dark" ? darkMuted : lightMuted},stroke:#64748b,stroke-width:1px
+    style F fill:${currentTheme === "dark" ? darkMuted : lightMuted},stroke:#64748b,stroke-width:1px
+    style G fill:${currentTheme === "dark" ? darkMuted : lightMuted},stroke:#64748b,stroke-width:1px
+    style H fill:${currentTheme === "dark" ? darkMuted : lightMuted},stroke:#64748b,stroke-width:1px
 `;
 
     const render = async () => {
@@ -92,13 +98,7 @@ graph TD
   return (
     <div
       ref={containerRef}
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "2rem 0",
-        overflow: "auto",
-      }}
+      className="flex justify-center items-center py-8 overflow-auto"
       aria-label="Diagram showing AlignTrue workflow from centralized AI rules to multiple agent outputs and team members"
     />
   );
