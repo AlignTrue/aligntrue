@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { convertContent } from "@/lib/aligns/convert";
+import { convertContent, isAgentId, type AgentId } from "@/lib/aligns/convert";
 
 export const dynamic = "force-dynamic";
-
-type AgentId = "all" | "cursor" | "claude" | "windsurf" | "copilot";
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +14,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    const targetAgent = body.targetAgent as AgentId;
+    if (!isAgentId(body.targetAgent)) {
+      return NextResponse.json({ error: "Unsupported agent" }, { status: 400 });
+    }
+
+    const targetAgent: AgentId = body.targetAgent;
     const { text, filename, extension } = convertContent(
       body.content,
       targetAgent,

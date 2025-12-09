@@ -8,7 +8,11 @@ import {
   convertAlignContentForFormat,
   type TargetFormat,
 } from "@/lib/aligns/format";
-import { convertContent, type ConvertedContent } from "@/lib/aligns/convert";
+import {
+  convertContent,
+  type AgentId,
+  type ConvertedContent,
+} from "@/lib/aligns/convert";
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
@@ -17,21 +21,6 @@ type Props = {
   align: AlignRecord;
   content: CachedContent | null;
 };
-
-type AgentId =
-  | "all"
-  | "cursor"
-  | "claude"
-  | "windsurf"
-  | "copilot"
-  | "gemini"
-  | "zed"
-  | "warp"
-  | "cline"
-  | "augmentcode"
-  | "amazonq"
-  | "openhands"
-  | "kiro";
 
 const agentOptions: Array<{
   id: AgentId;

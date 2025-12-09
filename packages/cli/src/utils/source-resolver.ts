@@ -261,9 +261,10 @@ async function tryResolvePackSource(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const lower = message.toLowerCase();
     if (
-      message.includes("No .align.yaml") ||
-      message.includes("Manifest not found")
+      lower.includes("no .align.yaml") ||
+      lower.includes("manifest not found")
     ) {
       return null;
     }

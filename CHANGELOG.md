@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Convert API validates the full set of supported agents to prevent unknown agent selections from slipping through UI options
 - Override removal now respects `--yes`/non-interactive runs and clarifies full-overlay deletion
 - Sync warns when rules disappear since the last successful run to catch accidental deletions
 - Backup restore accepts `--latest` for restoring the most recent snapshot and rejects conflicting flags

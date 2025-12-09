@@ -1,26 +1,33 @@
 import matter from "gray-matter";
 import yaml from "js-yaml";
 
-type AgentId =
-  | "all"
-  | "cursor"
-  | "claude"
-  | "windsurf"
-  | "copilot"
-  | "gemini"
-  | "zed"
-  | "warp"
-  | "cline"
-  | "augmentcode"
-  | "amazonq"
-  | "openhands"
-  | "kiro";
+export const SUPPORTED_AGENT_IDS = [
+  "all",
+  "cursor",
+  "claude",
+  "windsurf",
+  "copilot",
+  "gemini",
+  "zed",
+  "warp",
+  "cline",
+  "augmentcode",
+  "amazonq",
+  "openhands",
+  "kiro",
+] as const;
+
+export type AgentId = (typeof SUPPORTED_AGENT_IDS)[number];
 
 export type ConvertedContent = {
   text: string;
   filename: string;
   extension: string;
 };
+
+export function isAgentId(value: string): value is AgentId {
+  return (SUPPORTED_AGENT_IDS as readonly string[]).includes(value);
+}
 
 type Frontmatter = Record<string, unknown>;
 
