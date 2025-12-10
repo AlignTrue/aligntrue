@@ -8,4 +8,14 @@ describe("agentOptions", () => {
     const optionIds = agentOptions.map((opt) => opt.id);
     expect(optionIds).toEqual(SUPPORTED_AGENT_IDS);
   });
+
+  it("marks aligntrue as non-CLI-exportable", () => {
+    const aligntrue = agentOptions.find((opt) => opt.id === "aligntrue");
+    expect(aligntrue?.capabilities.cliExport).toBe(false);
+  });
+
+  it("defaults other agents to cliExport true", () => {
+    const others = agentOptions.filter((opt) => opt.id !== "aligntrue");
+    expect(others.every((opt) => opt.capabilities.cliExport)).toBe(true);
+  });
 });

@@ -155,17 +155,29 @@ export function AlignDetailClient({ align, content }: Props) {
     [totalBytes],
   );
 
+  const selectedAgent = useMemo(
+    () => agentOptions.find((a) => a.id === agent),
+    [agent],
+  );
+  const canExport = selectedAgent?.capabilities?.cliExport !== false;
+
+  useEffect(() => {
+    if (!canExport && actionTab !== "share") {
+      setActionTab("share");
+    }
+  }, [actionTab, canExport]);
+
   const commands = useMemo(() => {
-    const selected =
-      agentOptions.find((a) => a.id === agent) ?? agentOptions[0];
+    const selected = selectedAgent ?? agentOptions[0];
     const exporter = selected.exporter;
-    const exporterFlag = exporter ? ` --exporters ${exporter}` : "";
+    const exporterFlag =
+      canExport && exporter ? ` --exporters ${exporter}` : "";
     const globalInstall = "npm install -g aligntrue";
     const globalInit = `aligntrue init --source ${align.url}${exporterFlag}`;
     const tempInstall = `npx aligntrue init --source ${align.url}${exporterFlag}`;
     const addSource = `aligntrue add source ${align.url}\naligntrue sync${exporterFlag}`;
     return { globalInstall, globalInit, tempInstall, addSource, selected };
-  }, [agent, align.url]);
+  }, [align.url, canExport, selectedAgent]);
 
   const cacheKey = useMemo(() => {
     const fileKey = isPack ? (selectedFile?.path ?? "single") : "single";
@@ -342,27 +354,40 @@ export function AlignDetailClient({ align, content }: Props) {
                   <SelectContent>
                     {agentOptions.map((opt) => (
                       <SelectItem key={opt.id} value={opt.id}>
-                        {opt.label}
+                        <span className="flex items-center gap-2">
+                          {opt.name}
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-mono"
+                          >
+                            {opt.path}
+                          </Badge>
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
                 <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm sm:ml-auto sm:justify-end">
-                  {[
-                    { id: "share", label: "Share Link" },
-                    { id: "global", label: "Global Install" },
-                    { id: "temp", label: "Temp Install" },
-                    { id: "source", label: "Add Source" },
-                  ].map((tab) => (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      className="font-semibold rounded-lg px-4 py-2 text-sm"
-                    >
-                      {tab.label}
-                    </TabsTrigger>
-                  ))}
+                  {[{ id: "share", label: "Share Link" }]
+                    .concat(
+                      canExport
+                        ? [
+                            { id: "global", label: "Global Install" },
+                            { id: "temp", label: "Temp Install" },
+                            { id: "source", label: "Add Source" },
+                          ]
+                        : [],
+                    )
+                    .map((tab) => (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="font-semibold rounded-lg px-4 py-2 text-sm"
+                      >
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
                 </TabsList>
               </div>
 
@@ -381,49 +406,55 @@ export function AlignDetailClient({ align, content }: Props) {
                   />
                 </TabsContent>
 
-                <TabsContent value="global" className="space-y-3">
-                  <p className="text-muted-foreground">
-                    New to AlignTrue? Install globally to manage rules across
-                    all your projects. Copy and run both commands together.{" "}
-                    <a
-                      href="/docs"
-                      className="text-foreground font-semibold hover:underline"
-                    >
-                      Learn more about AlignTrue
-                    </a>
-                  </p>
-                  <CommandBlock
-                    code={`${commands.globalInstall}\n${commands.globalInit}`}
-                    copyLabel="Copy"
-                  />
-                </TabsContent>
+                {canExport && (
+                  <TabsContent value="global" className="space-y-3">
+                    <p className="text-muted-foreground">
+                      New to AlignTrue? Install globally to manage rules across
+                      all your projects. Copy and run both commands together.{" "}
+                      <a
+                        href="/docs"
+                        className="text-foreground font-semibold hover:underline"
+                      >
+                        Learn more about AlignTrue
+                      </a>
+                    </p>
+                    <CommandBlock
+                      code={`${commands.globalInstall}\n${commands.globalInit}`}
+                      copyLabel="Copy"
+                    />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="temp" className="space-y-3">
-                  <p className="text-muted-foreground">
-                    Quick one-off install. No global install required.
-                  </p>
-                  <CommandBlock
-                    code={commands.tempInstall}
-                    copyLabel="Copy"
-                    onCopy={() => void postEvent(align.id, "install")}
-                  />
-                </TabsContent>
+                {canExport && (
+                  <TabsContent value="temp" className="space-y-3">
+                    <p className="text-muted-foreground">
+                      Quick one-off install. No global install required.
+                    </p>
+                    <CommandBlock
+                      code={commands.tempInstall}
+                      copyLabel="Copy"
+                      onCopy={() => void postEvent(align.id, "install")}
+                    />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="source" className="space-y-3">
-                  <p className="m-0 text-muted-foreground">
-                    Already using AlignTrue? Add these rules as a connected
-                    source.{" "}
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="p-0 h-auto"
-                      onClick={() => setActionTab("global")}
-                    >
-                      New here? Use Global Install instead.
-                    </Button>
-                  </p>
-                  <CommandBlock code={commands.addSource} copyLabel="Copy" />
-                </TabsContent>
+                {canExport && (
+                  <TabsContent value="source" className="space-y-3">
+                    <p className="m-0 text-muted-foreground">
+                      Already using AlignTrue? Add these rules as a connected
+                      source.{" "}
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto"
+                        onClick={() => setActionTab("global")}
+                      >
+                        New here? Use Global Install instead.
+                      </Button>
+                    </p>
+                    <CommandBlock code={commands.addSource} copyLabel="Copy" />
+                  </TabsContent>
+                )}
               </div>
             </Tabs>
           </div>
