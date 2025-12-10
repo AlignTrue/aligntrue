@@ -67,7 +67,7 @@ export function BetaBanner() {
           gap: "1rem",
           flexWrap: "wrap",
           borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-          fontSize: "0.875rem",
+          fontSize: "1rem",
           fontWeight: "500",
         }}
       >

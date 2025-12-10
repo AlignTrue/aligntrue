@@ -12,6 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { CodePreview } from "@/components/CodePreview";
@@ -28,6 +35,7 @@ import {
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
+import { downloadFile } from "@/lib/download";
 
 type Props = {
   align: AlignRecord;
@@ -162,11 +170,25 @@ function formatBytes(bytes: number): string {
   return `${bytes} B`;
 }
 
+function filenameFromUrl(url: string): string {
+  if (!url) return "rules.md";
+  try {
+    const parsed = new URL(url);
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last) return last;
+  } catch {
+    // fall through to string fallback
+  }
+  const fallbackParts = url.split("/").filter(Boolean);
+  return fallbackParts[fallbackParts.length - 1] || "rules.md";
+}
+
 export function AlignDetailClient({ align, content }: Props) {
   const [agent, setAgent] = useState<AgentId>("all");
   const [format, setFormat] = useState<TargetFormat>("align-md");
   const [actionTab, setActionTab] = useState<
-    "share" | "global" | "temp" | "source" | "download"
+    "share" | "global" | "temp" | "source"
   >("share");
   const [convertedCache, setConvertedCache] = useState<
     Map<string, ConvertedContent>
@@ -306,29 +328,12 @@ export function AlignDetailClient({ align, content }: Props) {
     [align.id, align.pack?.manifestId],
   );
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!selectedContent) return;
-    const source =
-      cachedConverted?.text ??
-      convertAlignContentForFormat(selectedContent, format).text;
-    const filename =
-      cachedConverted?.filename ||
-      convertAlignContentForFormat(selectedContent, format).filename;
-    if (!source) return;
-    const ext = filename.split(".").pop() ?? "md";
-    const mime =
-      ext === "mdc"
-        ? "text/markdown"
-        : ext === "md"
-          ? "text/markdown"
-          : "text/plain";
-    const blob = new Blob([source], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    const converted =
+      cachedConverted ?? convertAlignContentForFormat(selectedContent, format);
+    if (!converted.text) return;
+    await downloadFile(converted.text, converted.filename);
   };
 
   const handleDownloadAll = async () => {
@@ -343,13 +348,34 @@ export function AlignDetailClient({ align, content }: Props) {
       return { path: zipPath, size, content: converted.text };
     });
     const zipBlob = await buildPackZip(zipFiles);
-    const url = URL.createObjectURL(zipBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = buildZipFilename(align.pack?.manifestId ?? align.id);
-    link.click();
-    URL.revokeObjectURL(url);
+    const zipWithMime =
+      zipBlob.type === "application/zip"
+        ? zipBlob
+        : zipBlob.slice(0, zipBlob.size, "application/zip");
+    await downloadFile(zipWithMime, downloadAllFilename);
   };
+
+  const downloadButton = isPack ? (
+    packFiles.length ? (
+      <Button
+        onClick={handleDownloadAll}
+        variant="outline"
+        size="sm"
+        className="font-semibold w-full sm:w-auto sm:min-w-[140px] h-10 text-sm"
+      >
+        Download All (.zip)
+      </Button>
+    ) : null
+  ) : selectedContent ? (
+    <Button
+      onClick={handleDownload}
+      variant="outline"
+      size="sm"
+      className="font-semibold w-full sm:w-auto sm:min-w-[140px] h-10 text-sm"
+    >
+      Download ({downloadFilename})
+    </Button>
+  ) : null;
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -358,26 +384,46 @@ export function AlignDetailClient({ align, content }: Props) {
         <Card variant="surface">
           <CardContent className="p-6 space-y-4">
             <div className="flex flex-col gap-4">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
-                  {align.title || "Untitled align"}
-                </h1>
-                {align.description && (
-                  <p className="text-muted-foreground leading-relaxed m-0">
-                    {align.description}
-                  </p>
-                )}
-              </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
+                      {align.title || "Untitled align"}
+                    </h1>
+                    {isPack && (
+                      <TooltipProvider delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a
+                              href="/docs/concepts/align-yaml-packs"
+                              className="text-muted-foreground hover:text-foreground"
+                              aria-label="Learn how Align packs work"
+                            >
+                              <HelpCircle size={20} />
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Learn how Align packs work
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                  {align.description && (
+                    <p className="text-muted-foreground leading-relaxed m-0">
+                      {align.description}
+                    </p>
+                  )}
+                </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:justify-end">
                   <a
                     href={align.normalizedUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="font-semibold text-foreground hover:underline"
                   >
-                    {fileNameLabel} ↗
+                    {fileNameLabel}
                   </a>
                   <span className="text-xs text-muted-foreground">by</span>
                   {ownerUrl ? (
@@ -394,46 +440,29 @@ export function AlignDetailClient({ align, content }: Props) {
                       {owner}
                     </span>
                   )}
-                  {fileCountLabel && (
-                    <>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-sm font-semibold text-foreground">
-                        {fileCountLabel}
-                      </span>
-                    </>
-                  )}
-                  {sizeLabel && (
-                    <>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-sm font-semibold text-foreground">
-                        {sizeLabel}
-                      </span>
-                    </>
-                  )}
-                  {isPack && (
-                    <>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <a
-                        href="/docs/concepts/align-yaml-packs"
-                        className="inline-flex items-center gap-1 text-sm font-semibold text-foreground hover:underline"
-                      >
-                        <HelpCircle size={16} />
-                        How Aligns work
-                      </a>
-                    </>
+                  {(fileCountLabel || sizeLabel) && (
+                    <Badge variant="outline" className="font-semibold">
+                      {fileCountLabel}
+                      {fileCountLabel && sizeLabel ? " · " : ""}
+                      {sizeLabel}
+                    </Badge>
                   )}
                 </div>
+              </div>
 
-                <div className="w-full sm:w-auto flex flex-col gap-1">
-                  <span className="font-semibold text-foreground">
-                    Agent export format
-                  </span>
+              <hr className="border-t border-border" />
+
+              <Tabs
+                value={actionTab}
+                onValueChange={(v) => setActionTab(v as typeof actionTab)}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <Select
                     value={agent}
                     onValueChange={(value) => setAgent(value as AgentId)}
                   >
-                    <SelectTrigger className="w-full sm:min-w-[240px]">
-                      <SelectValue placeholder="Select agent" />
+                    <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px]">
+                      <SelectValue placeholder="Select agent format" />
                     </SelectTrigger>
                     <SelectContent>
                       {agentOptions.map((opt) => (
@@ -443,168 +472,94 @@ export function AlignDetailClient({ align, content }: Props) {
                       ))}
                     </SelectContent>
                   </Select>
+
+                  <TabsList className="flex flex-wrap gap-2 rounded-xl bg-secondary/80 border border-border p-2 shadow-sm sm:ml-auto sm:justify-end">
+                    {[
+                      { id: "share", label: "Share Link" },
+                      { id: "global", label: "Global Install" },
+                      { id: "temp", label: "Temp Install" },
+                      { id: "source", label: "Add Source" },
+                    ].map((tab) => (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="font-semibold rounded-lg px-4 py-2 text-sm"
+                      >
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
                 </div>
-              </div>
+
+                <div className="pt-4 space-y-4">
+                  <TabsContent value="share" className="space-y-3">
+                    <p className="text-muted-foreground">
+                      Make it easy for others to use these rules. Copy this link
+                      to share.
+                    </p>
+                    <CommandBlock
+                      code={shareText}
+                      copyLabel="Copy"
+                      variant="terminal"
+                      promptSymbol=">"
+                      showPrompt
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="global" className="space-y-3">
+                    <p className="text-muted-foreground">
+                      New to AlignTrue? Install globally to manage rules across
+                      all your projects. Copy and run both commands together.{" "}
+                      <a
+                        href="/docs"
+                        className="text-foreground font-semibold hover:underline"
+                      >
+                        Learn more about AlignTrue
+                      </a>
+                    </p>
+                    <CommandBlock
+                      code={`${commands.globalInstall}\n${commands.globalInit}`}
+                      copyLabel="Copy"
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="temp" className="space-y-3">
+                    <p className="text-muted-foreground">
+                      Quick one-off install. No global install required.
+                    </p>
+                    <CommandBlock
+                      code={commands.tempInstall}
+                      copyLabel="Copy"
+                      onCopy={() => void postEvent(align.id, "install")}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="source" className="space-y-3">
+                    <p className="m-0 text-muted-foreground">
+                      Already using AlignTrue? Add these rules as a connected
+                      source.{" "}
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto"
+                        onClick={() => setActionTab("global")}
+                      >
+                        New here? Use Global Install instead.
+                      </Button>
+                    </p>
+                    <CommandBlock code={commands.addSource} copyLabel="Copy" />
+                  </TabsContent>
+                </div>
+              </Tabs>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <Tabs
-              value={actionTab}
-              onValueChange={(v) => setActionTab(v as typeof actionTab)}
-            >
-              <TabsList className="w-full max-w-4xl mx-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-start sm:gap-2 rounded-xl bg-secondary/80 border border-border p-2 shadow-sm">
-                {[
-                  { id: "share", label: "Share Link" },
-                  { id: "global", label: "Global Install" },
-                  { id: "temp", label: "Temp Install" },
-                  { id: "source", label: "Add Source" },
-                  {
-                    id: "download",
-                    label: isPack ? "Download" : "Copy / Download",
-                  },
-                ].map((tab) => (
-                  <TabsTrigger
-                    key={tab.id}
-                    value={tab.id}
-                    className="font-semibold rounded-lg px-4 py-2 text-sm"
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              <div className="pt-4 space-y-4">
-                <TabsContent value="share" className="space-y-3">
-                  <p className="text-muted-foreground">
-                    Make it easy for others to use these rules. Copy this link
-                    to share.
-                  </p>
-                  <CommandBlock
-                    code={shareText}
-                    copyLabel="Copy"
-                    variant="terminal"
-                    promptSymbol=">"
-                    showPrompt
-                  />
-                </TabsContent>
-
-                <TabsContent value="global" className="space-y-3">
-                  <p className="text-muted-foreground">
-                    New to AlignTrue? Install globally to manage rules across
-                    all your projects. Copy and run both commands together.{" "}
-                    <a
-                      href="/docs"
-                      className="text-foreground font-semibold hover:underline"
-                    >
-                      Learn more about AlignTrue
-                    </a>
-                  </p>
-                  <CommandBlock
-                    code={`${commands.globalInstall}\n${commands.globalInit}`}
-                    copyLabel="Copy"
-                  />
-                </TabsContent>
-
-                <TabsContent value="temp" className="space-y-3">
-                  <p className="text-muted-foreground">
-                    Quick one-off install. No global install required.
-                  </p>
-                  <CommandBlock
-                    code={commands.tempInstall}
-                    copyLabel="Copy"
-                    onCopy={() => void postEvent(align.id, "install")}
-                  />
-                </TabsContent>
-
-                <TabsContent value="source" className="space-y-3">
-                  <p className="m-0 text-muted-foreground">
-                    Already using AlignTrue? Add these rules as a connected
-                    source.{" "}
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="p-0 h-auto"
-                      onClick={() => setActionTab("global")}
-                    >
-                      New here? Use Global Install instead.
-                    </Button>
-                  </p>
-                  <CommandBlock code={commands.addSource} copyLabel="Copy" />
-                </TabsContent>
-
-                <TabsContent value="download" className="space-y-3">
-                  {!isPack && (
-                    <>
-                      <p className="text-muted-foreground">
-                        Copy the rules to your clipboard or download the file to
-                        add manually.
-                      </p>
-                      <CommandBlock
-                        code={
-                          cachedConverted?.text ||
-                          (selectedContent
-                            ? convertAlignContentForFormat(
-                                selectedContent,
-                                format,
-                              ).text
-                            : "")
-                        }
-                        copyLabel="Copy"
-                        variant="terminal"
-                        promptSymbol=">"
-                        showPrompt
-                        secondaryAction={
-                          selectedContent ? (
-                            <Button
-                              onClick={handleDownload}
-                              variant="default"
-                              size="sm"
-                              className="font-semibold w-full sm:w-auto sm:min-w-[140px] h-10 text-sm"
-                            >
-                              Download ({downloadFilename})
-                            </Button>
-                          ) : undefined
-                        }
-                      />
-                    </>
-                  )}
-
-                  {isPack && align.pack && (
-                    <>
-                      <p className="text-muted-foreground">
-                        Download all rules as a zip to add them to your project.
-                      </p>
-                      <CommandBlock
-                        code={downloadAllFilename}
-                        hideCopy
-                        variant="terminal"
-                        promptSymbol=">"
-                        showPrompt
-                        secondaryAction={
-                          <Button
-                            onClick={handleDownloadAll}
-                            variant="default"
-                            size="sm"
-                            className="font-semibold w-full sm:w-auto sm:min-w-[140px] h-10 text-sm"
-                          >
-                            Download All (.zip)
-                          </Button>
-                        }
-                      />
-                    </>
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <Card>
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
-            <CardTitle className="text-xl">Rule File Preview</CardTitle>
+            <CardTitle className="text-xl">
+              {isPack ? "Rule Files Preview" : "Rule File Preview"}
+            </CardTitle>
             {isPack && packFiles.length > 0 && (
               <Select
                 value={selectedPath}
@@ -635,6 +590,7 @@ export function AlignDetailClient({ align, content }: Props) {
                 filename={previewFilename}
                 content={converting ? "Converting..." : previewText}
                 loading={converting}
+                secondaryAction={downloadButton}
               />
             )}
           </CardContent>

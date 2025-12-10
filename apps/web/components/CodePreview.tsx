@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 type CodePreviewProps = {
   filename?: string;
   content: string;
   loading?: boolean;
+  secondaryAction?: ReactNode;
 };
 
 export function CodePreview({
   filename = "rules.md",
   content,
   loading,
+  secondaryAction,
 }: CodePreviewProps) {
   const [copied, setCopied] = useState(false);
 
@@ -38,14 +40,17 @@ export function CodePreview({
           </span>
           <span className="ml-2">{filename}</span>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleCopy}
-          className="h-8 px-3 text-xs font-semibold"
-        >
-          {copied ? "✓ Copied" : "Copy"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="default"
+            onClick={handleCopy}
+            className="font-semibold w-full sm:w-auto sm:min-w-[120px] h-10 text-sm"
+          >
+            {copied ? "✓ Copied" : "Copy"}
+          </Button>
+          {secondaryAction}
+        </div>
       </div>
       <div className="relative">
         {loading && (

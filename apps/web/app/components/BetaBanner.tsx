@@ -34,7 +34,7 @@ export function BetaBanner() {
   if (!mounted || dismissed) return null;
 
   return (
-    <div className="w-full bg-primary text-primary-foreground border-b border-primary px-6 py-3 flex flex-wrap items-center justify-center gap-3 text-sm font-medium">
+    <div className="w-full bg-primary text-primary-foreground border-b border-primary px-6 py-3 flex flex-wrap items-center justify-center gap-3 text-base font-medium">
       <div className="flex items-center gap-2 min-w-[200px] justify-center flex-1 flex-wrap">
         <span>🚀 AlignTrue is in beta.</span>
         <a
