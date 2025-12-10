@@ -42,7 +42,7 @@ export function BetaBanner() {
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 underline text-primary-foreground/80 hover:text-primary-foreground font-semibold"
-          aria-label="Follow updates on GitHub"
+          aria-label="Star on GitHub"
         >
           Star on GitHub
           <GitHubIcon size={16} className="inline" />

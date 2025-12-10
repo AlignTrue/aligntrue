@@ -13,17 +13,16 @@ export const metadata: Metadata = {
 /**
  * Root page redirect to /docs.
  *
- * This is a server component that renders a simple redirect page.
- * - Vercel hosting: vercel.json handles the redirect at the edge (HTTP 308)
- * - Other hosting: Users see this page briefly with a link to /docs
+ * Redirect handling:
+ * - Vercel: vercel.json handles redirect at edge (HTTP 308) before this page loads
+ * - Other static hosts: meta refresh in head triggers instant redirect
  *
- * We use a meta refresh tag in the page content as a fallback for non-Vercel
- * static hosting. While not in <head>, browsers still honor it.
+ * Note: Next.js App Router hoists <meta> tags from page components into <head>.
  */
 export default function HomeRedirectPage() {
   return (
     <>
-      {/* Meta refresh as fallback for static hosting without edge redirects */}
+      {/* Next.js hoists this into <head> for static export */}
       <meta httpEquiv="refresh" content={`0;url=${REDIRECT_PATH}`} />
 
       <div
