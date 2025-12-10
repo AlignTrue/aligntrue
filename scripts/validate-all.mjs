@@ -27,6 +27,11 @@ const validators = [
     script: "validate-docs-accuracy.mjs",
     hint: "Update docs to match CLI command counts, Node version, and exporter totals.",
   },
+  {
+    name: "Example packs",
+    script: "validate-example-packs.mjs",
+    hint: "Ensure .align.yaml manifests in examples/ have valid structure.",
+  },
 ];
 
 let failed = false;
