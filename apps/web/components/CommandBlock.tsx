@@ -1,6 +1,7 @@
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
 
 type CommandBlockProps = {
   description?: ReactNode;
@@ -29,17 +30,10 @@ export function CommandBlock({
   promptSymbol = "$",
   variant = "terminal",
 }: CommandBlockProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      onCopy?.();
-      setTimeout(() => setCopied(false), 1200);
-    } catch (err) {
-      console.error("copy failed", err);
-    }
+    await copy(code, onCopy);
   };
 
   const lines = code.split("\n");

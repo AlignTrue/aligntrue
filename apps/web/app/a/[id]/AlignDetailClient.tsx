@@ -334,7 +334,7 @@ export function AlignDetailClient({ align, content }: Props) {
                   value={agent}
                   onValueChange={(value) => setAgent(value as AgentId)}
                 >
-                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px]">
+                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[200px] max-w-full">
                     <SelectValue placeholder="Select agent format" />
                   </SelectTrigger>
                   <SelectContent>
@@ -444,7 +444,7 @@ export function AlignDetailClient({ align, content }: Props) {
                   value={selectedPath}
                   onValueChange={(value) => setSelectedPath(value)}
                 >
-                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[260px] border border-border bg-background">
+                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px] max-w-full border border-border bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

@@ -83,7 +83,8 @@ export async function POST(req: Request) {
         provider: "github",
         kind: "pack",
         title: pack.info.manifestSummary ?? pack.info.manifestId,
-        description: pack.info.manifestSummary ?? null,
+        // Avoid duplicating the title; only surface a secondary field if present
+        description: pack.info.manifestAuthor ?? null,
         fileType: "markdown",
         createdAt: existing?.createdAt ?? now,
         lastViewedAt: now,

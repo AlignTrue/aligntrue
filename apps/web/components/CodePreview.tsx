@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type ReactNode, useState } from "react";
+import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
+import { type ReactNode } from "react";
 
 type CodePreviewProps = {
   filename?: string;
@@ -17,18 +18,12 @@ export function CodePreview({
   loading,
   secondaryAction,
 }: CodePreviewProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const lines = content ? content.split("\n") : [];
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch (err) {
-      console.error("Failed to copy code", err);
-    }
+    await copy(content);
   };
 
   return (

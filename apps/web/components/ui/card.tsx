@@ -12,18 +12,6 @@ const cardVariantStyles: Record<CardVariant, string> = {
     "shadow-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-lg",
 };
 
-function getVariantClass(variant: CardVariant): string {
-  switch (variant) {
-    case "elevated":
-      return cardVariantStyles.elevated;
-    case "feature":
-      return cardVariantStyles.feature;
-    case "surface":
-    default:
-      return cardVariantStyles.surface;
-  }
-}
-
 export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     React.PropsWithChildren {
@@ -32,7 +20,18 @@ export interface CardProps
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "surface", ...props }, ref) => {
-    const variantClass = getVariantClass(variant);
+    const variantClass = (() => {
+      switch (variant) {
+        case "surface":
+          return cardVariantStyles.surface;
+        case "elevated":
+          return cardVariantStyles.elevated;
+        case "feature":
+          return cardVariantStyles.feature;
+        default:
+          return cardVariantStyles.surface;
+      }
+    })();
     return (
       <div
         ref={ref}
