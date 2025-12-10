@@ -7,7 +7,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-} from "@aligntrue/exporters";
+} from "@aligntrue/plugin-contracts";
 
 /**
  * Mock exporter that tracks calls and returns configurable results

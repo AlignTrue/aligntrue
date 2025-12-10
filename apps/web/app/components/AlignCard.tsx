@@ -40,7 +40,7 @@ export function AlignCard({ align }: AlignCardProps) {
   return (
     <Link href={`/a/${align.id}`} className="block h-full">
       <Card className="h-full transition hover:shadow-md hover:-translate-y-0.5">
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-4 space-y-3 text-left">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs sm:text-[11px] text-muted-foreground truncate">
               <span className="font-medium text-foreground/80">{filename}</span>
@@ -69,7 +69,7 @@ export function AlignCard({ align }: AlignCardProps) {
               {align.title || "Untitled align"}
             </h3>
             {align.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 leading-6">
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-6 text-left">
                 {align.description}
               </p>
             )}

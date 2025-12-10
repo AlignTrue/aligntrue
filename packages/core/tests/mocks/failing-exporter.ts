@@ -7,7 +7,7 @@ import type {
   ScopedExportRequest,
   ExportOptions,
   ExportResult,
-} from "@aligntrue/exporters";
+} from "@aligntrue/plugin-contracts";
 
 /**
  * Exporter that always fails for testing error handling
