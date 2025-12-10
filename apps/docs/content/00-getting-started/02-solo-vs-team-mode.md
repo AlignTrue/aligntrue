@@ -48,8 +48,8 @@ graph TD
 ```mermaid
 graph TD
     T1[.aligntrue/rules] --> T2[.aligntrue/lock.json]
-    T1 --> T3[Agent exports (e.g., AGENTS.md, .cursor/rules)]
-    T4[CI validation & drift detection] -.-> T2
+    T1 --> T3["Agent exports (AGENTS.md, .cursor/rules)"]
+    T4["CI validation + drift detection"] -.-> T2
 
     style T1 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style T2 fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
