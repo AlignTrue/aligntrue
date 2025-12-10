@@ -128,7 +128,7 @@ export function SiteHeader() {
       {mobileMenuOpen && (
         <nav
           id="mobile-menu"
-          className="mobile-nav fixed left-0 right-0 bottom-0 bg-background z-40 p-6 flex flex-col gap-4 md:hidden top-[calc(100px+var(--banner-height,0px))]"
+          className="fixed left-0 right-0 bottom-0 bg-background z-40 p-6 flex flex-col gap-4 md:hidden top-[calc(100px+var(--banner-height,0px))]"
           aria-label="Mobile navigation"
         >
           <a

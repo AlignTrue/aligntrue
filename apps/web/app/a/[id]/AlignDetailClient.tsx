@@ -19,9 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SiteHeader } from "@/app/components/SiteHeader";
-import { SiteFooter } from "@/app/components/SiteFooter";
-import { BetaBanner } from "@/app/components/BetaBanner";
 import { CodePreview } from "@/components/CodePreview";
 import { CommandBlock } from "@/components/CommandBlock";
 import { agentOptions } from "@/lib/aligns/agents";
@@ -38,6 +35,9 @@ import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
 import { downloadFile } from "@/lib/download";
+import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import { formatBytes } from "@/lib/utils";
+import { PageLayout } from "@/components/PageLayout";
 
 type Props = {
   align: AlignRecord;
@@ -60,34 +60,6 @@ async function postEvent(id: string, type: "view" | "install") {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ type }),
   }).catch(() => {});
-}
-
-function ownerAndRepo(url: string): {
-  owner: string;
-  repo: string;
-  ownerUrl: string | null;
-} {
-  try {
-    const parsed = new URL(url);
-    const parts = parsed.pathname.split("/").filter(Boolean);
-    return {
-      owner: parts[0] ? `@${parts[0]}` : "unknown",
-      repo: parts[1] ?? "unknown",
-      ownerUrl: parts[0] ? `${parsed.origin}/${parts[0]}` : null,
-    };
-  } catch {
-    return { owner: "unknown", repo: "unknown", ownerUrl: null };
-  }
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes >= 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  }
-  if (bytes >= 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-  return `${bytes} B`;
 }
 
 function filenameFromUrl(url: string): string {
@@ -143,7 +115,7 @@ export function AlignDetailClient({ align, content }: Props) {
   }, [isPack, packFiles]);
 
   const { owner, ownerUrl } = useMemo(
-    () => ownerAndRepo(align.normalizedUrl),
+    () => parseGitHubUrl(align.normalizedUrl),
     [align.normalizedUrl],
   );
 
@@ -298,221 +270,214 @@ export function AlignDetailClient({ align, content }: Props) {
   ) : null;
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <BetaBanner />
-      <SiteHeader />
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4 overflow-hidden">
-        <Card variant="surface">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
-                      {align.title || "Untitled align"}
-                    </h1>
-                    {isPack && (
-                      <TooltipProvider delayDuration={100}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <a
-                              href="/docs/concepts/align-yaml-packs"
-                              className="text-muted-foreground hover:text-foreground"
-                              aria-label="Learn how Align packs work"
-                            >
-                              <HelpCircle size={20} />
-                            </a>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Learn how Align packs work
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                  </div>
-                  {align.description && (
-                    <p className="text-muted-foreground leading-relaxed m-0">
-                      {align.description}
-                    </p>
+    <PageLayout mainClassName="max-w-6xl mx-auto px-4 py-6 space-y-4 overflow-hidden">
+      <Card variant="surface">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
+                    {align.title || "Untitled align"}
+                  </h1>
+                  {isPack && (
+                    <TooltipProvider delayDuration={100}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href="/docs/concepts/align-yaml-packs"
+                            className="text-muted-foreground hover:text-foreground"
+                            aria-label="Learn how Align packs work"
+                          >
+                            <HelpCircle size={20} />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Learn how Align packs work
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
+                {align.description && (
+                  <p className="text-muted-foreground leading-relaxed m-0">
+                    {align.description}
+                  </p>
+                )}
+              </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:justify-end">
+                <a
+                  href={align.normalizedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-foreground hover:underline"
+                >
+                  {fileNameLabel}
+                </a>
+                <span className="text-xs text-muted-foreground">by</span>
+                {ownerUrl ? (
                   <a
-                    href={align.normalizedUrl}
+                    href={ownerUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="font-semibold text-foreground hover:underline"
                   >
-                    {fileNameLabel}
+                    {owner}
                   </a>
-                  <span className="text-xs text-muted-foreground">by</span>
-                  {ownerUrl ? (
-                    <a
-                      href={ownerUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold text-foreground hover:underline"
+                ) : (
+                  <span className="font-semibold text-foreground">{owner}</span>
+                )}
+                {(fileCountLabel || sizeLabel) && (
+                  <Badge variant="outline" className="font-semibold">
+                    {fileCountLabel}
+                    {fileCountLabel && sizeLabel ? " · " : ""}
+                    {sizeLabel}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <hr className="border-t border-border" />
+
+            <Tabs
+              value={actionTab}
+              onValueChange={(v) => setActionTab(v as typeof actionTab)}
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Select
+                  value={agent}
+                  onValueChange={(value) => setAgent(value as AgentId)}
+                >
+                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px]">
+                    <SelectValue placeholder="Select agent format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agentOptions.map((opt) => (
+                      <SelectItem key={opt.id} value={opt.id}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm sm:ml-auto sm:justify-end">
+                  {[
+                    { id: "share", label: "Share Link" },
+                    { id: "global", label: "Global Install" },
+                    { id: "temp", label: "Temp Install" },
+                    { id: "source", label: "Add Source" },
+                  ].map((tab) => (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className="font-semibold rounded-lg px-4 py-2 text-sm"
                     >
-                      {owner}
-                    </a>
-                  ) : (
-                    <span className="font-semibold text-foreground">
-                      {owner}
-                    </span>
-                  )}
-                  {(fileCountLabel || sizeLabel) && (
-                    <Badge variant="outline" className="font-semibold">
-                      {fileCountLabel}
-                      {fileCountLabel && sizeLabel ? " · " : ""}
-                      {sizeLabel}
-                    </Badge>
-                  )}
-                </div>
+                      {tab.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
               </div>
 
-              <hr className="border-t border-border" />
+              <div className="pt-4 space-y-4">
+                <TabsContent value="share" className="space-y-3">
+                  <p className="text-muted-foreground">
+                    Make it easy for others to use these rules. Copy this link
+                    to share.
+                  </p>
+                  <CommandBlock
+                    code={shareText}
+                    copyLabel="Copy"
+                    variant="terminal"
+                    promptSymbol=">"
+                    showPrompt
+                  />
+                </TabsContent>
 
-              <Tabs
-                value={actionTab}
-                onValueChange={(v) => setActionTab(v as typeof actionTab)}
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <Select
-                    value={agent}
-                    onValueChange={(value) => setAgent(value as AgentId)}
-                  >
-                    <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px]">
-                      <SelectValue placeholder="Select agent format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {agentOptions.map((opt) => (
-                        <SelectItem key={opt.id} value={opt.id}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <TabsContent value="global" className="space-y-3">
+                  <p className="text-muted-foreground">
+                    New to AlignTrue? Install globally to manage rules across
+                    all your projects. Copy and run both commands together.{" "}
+                    <a
+                      href="/docs"
+                      className="text-foreground font-semibold hover:underline"
+                    >
+                      Learn more about AlignTrue
+                    </a>
+                  </p>
+                  <CommandBlock
+                    code={`${commands.globalInstall}\n${commands.globalInit}`}
+                    copyLabel="Copy"
+                  />
+                </TabsContent>
 
-                  <TabsList className="flex flex-wrap gap-2 rounded-xl bg-secondary/80 border border-border p-2 shadow-sm sm:ml-auto sm:justify-end">
-                    {[
-                      { id: "share", label: "Share Link" },
-                      { id: "global", label: "Global Install" },
-                      { id: "temp", label: "Temp Install" },
-                      { id: "source", label: "Add Source" },
-                    ].map((tab) => (
-                      <TabsTrigger
-                        key={tab.id}
-                        value={tab.id}
-                        className="font-semibold rounded-lg px-4 py-2 text-sm"
-                      >
-                        {tab.label}
-                      </TabsTrigger>
+                <TabsContent value="temp" className="space-y-3">
+                  <p className="text-muted-foreground">
+                    Quick one-off install. No global install required.
+                  </p>
+                  <CommandBlock
+                    code={commands.tempInstall}
+                    copyLabel="Copy"
+                    onCopy={() => void postEvent(align.id, "install")}
+                  />
+                </TabsContent>
+
+                <TabsContent value="source" className="space-y-3">
+                  <p className="m-0 text-muted-foreground">
+                    Already using AlignTrue? Add these rules as a connected
+                    source.{" "}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 h-auto"
+                      onClick={() => setActionTab("global")}
+                    >
+                      New here? Use Global Install instead.
+                    </Button>
+                  </p>
+                  <CommandBlock code={commands.addSource} copyLabel="Copy" />
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-3">
+        {!previewText && (
+          <p className="text-muted-foreground">
+            Content unavailable. Try refreshing; the source may be temporarily
+            unreachable.
+          </p>
+        )}
+        {previewText && (
+          <CodePreview
+            filename={previewFilename}
+            fileSelector={
+              isPack && packFiles.length > 0 ? (
+                <Select
+                  value={selectedPath}
+                  onValueChange={(value) => setSelectedPath(value)}
+                >
+                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[260px] border border-border bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {packFiles.map((file) => (
+                      <SelectItem key={file.path} value={file.path}>
+                        {file.path} ({formatBytes(file.size)})
+                      </SelectItem>
                     ))}
-                  </TabsList>
-                </div>
-
-                <div className="pt-4 space-y-4">
-                  <TabsContent value="share" className="space-y-3">
-                    <p className="text-muted-foreground">
-                      Make it easy for others to use these rules. Copy this link
-                      to share.
-                    </p>
-                    <CommandBlock
-                      code={shareText}
-                      copyLabel="Copy"
-                      variant="terminal"
-                      promptSymbol=">"
-                      showPrompt
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="global" className="space-y-3">
-                    <p className="text-muted-foreground">
-                      New to AlignTrue? Install globally to manage rules across
-                      all your projects. Copy and run both commands together.{" "}
-                      <a
-                        href="/docs"
-                        className="text-foreground font-semibold hover:underline"
-                      >
-                        Learn more about AlignTrue
-                      </a>
-                    </p>
-                    <CommandBlock
-                      code={`${commands.globalInstall}\n${commands.globalInit}`}
-                      copyLabel="Copy"
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="temp" className="space-y-3">
-                    <p className="text-muted-foreground">
-                      Quick one-off install. No global install required.
-                    </p>
-                    <CommandBlock
-                      code={commands.tempInstall}
-                      copyLabel="Copy"
-                      onCopy={() => void postEvent(align.id, "install")}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="source" className="space-y-3">
-                    <p className="m-0 text-muted-foreground">
-                      Already using AlignTrue? Add these rules as a connected
-                      source.{" "}
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="p-0 h-auto"
-                        onClick={() => setActionTab("global")}
-                      >
-                        New here? Use Global Install instead.
-                      </Button>
-                    </p>
-                    <CommandBlock code={commands.addSource} copyLabel="Copy" />
-                  </TabsContent>
-                </div>
-              </Tabs>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-3">
-          {!previewText && (
-            <p className="text-muted-foreground">
-              Content unavailable. Try refreshing; the source may be temporarily
-              unreachable.
-            </p>
-          )}
-          {previewText && (
-            <CodePreview
-              filename={previewFilename}
-              fileSelector={
-                isPack && packFiles.length > 0 ? (
-                  <Select
-                    value={selectedPath}
-                    onValueChange={(value) => setSelectedPath(value)}
-                  >
-                    <SelectTrigger className="w-full sm:w-auto sm:min-w-[260px] border border-border bg-background">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {packFiles.map((file) => (
-                        <SelectItem key={file.path} value={file.path}>
-                          {file.path} ({formatBytes(file.size)})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : undefined
-              }
-              content={converting ? "Converting..." : previewText}
-              loading={converting}
-              secondaryAction={downloadButton}
-            />
-          )}
-        </div>
-      </main>
-      <SiteFooter />
-    </div>
+                  </SelectContent>
+                </Select>
+              ) : undefined
+            }
+            content={converting ? "Converting..." : previewText}
+            loading={converting}
+            secondaryAction={downloadButton}
+          />
+        )}
+      </div>
+    </PageLayout>
   );
 }

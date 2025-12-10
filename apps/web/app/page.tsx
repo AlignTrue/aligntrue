@@ -14,10 +14,8 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { BetaBanner } from "./components/BetaBanner";
-import { SiteHeader } from "./components/SiteHeader";
-import { SiteFooter } from "./components/SiteFooter";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
+import { GitHubIcon } from "./components/GitHubIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,22 +24,14 @@ import { Badge } from "@/components/ui/badge";
 import { getSubmittedUrlFromSearch } from "@/lib/aligns/urlFromSearch";
 import type { AlignRecord } from "@/lib/aligns/types";
 import { CommandBlock } from "@/components/CommandBlock";
+import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import { PageLayout } from "@/components/PageLayout";
+import { SkeletonCard } from "@/components/SkeletonCard";
 
 type AlignSummary = Pick<
   AlignRecord,
   "id" | "title" | "description" | "provider" | "normalizedUrl"
 >;
-
-function ownerFromUrl(url: string | undefined): string {
-  if (!url) return "Unknown";
-  try {
-    const parsed = new URL(url);
-    const parts = parsed.pathname.split("/").filter(Boolean);
-    return parts[0] ? `@${parts[0]}` : "Unknown";
-  } catch {
-    return "Unknown";
-  }
-}
 
 async function submitUrl(url: string): Promise<string> {
   const response = await fetch("/api/aligns/submit", {
@@ -113,7 +103,7 @@ export default function HomePage() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {limited.map((item) => {
-          const owner = ownerFromUrl(item.normalizedUrl);
+          const { owner } = parseGitHubUrl(item.normalizedUrl);
           const isPack = item.title?.toLowerCase().includes("pack");
           return (
             <Link key={item.id} href={`/a/${item.id}`}>
@@ -138,16 +128,7 @@ export default function HomePage() {
   const renderSkeletonCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {Array.from({ length: 6 }).map((_, idx) => (
-        <Card key={`skeleton-${idx}`} className="h-full">
-          <CardContent className="p-4 space-y-3 animate-pulse">
-            <div className="flex items-center justify-between gap-2">
-              <div className="h-3 w-20 bg-muted rounded" />
-              <div className="h-5 w-12 bg-muted rounded-full" />
-            </div>
-            <div className="h-4 w-40 bg-muted rounded" />
-            <div className="h-3 w-24 bg-muted rounded" />
-          </CardContent>
-        </Card>
+        <SkeletonCard key={`skeleton-${idx}`} />
       ))}
     </div>
   );
@@ -183,7 +164,12 @@ export default function HomePage() {
             </Button>
           </div>
           {error && (
-            <p className="text-sm font-semibold text-red-600 m-0">{error}</p>
+            <p
+              className="text-sm font-semibold text-destructive m-0"
+              aria-live="polite"
+            >
+              {error}
+            </p>
           )}
         </div>
 
@@ -246,195 +232,197 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <a href="#main-content" className="sr-only">
-        Skip to main content
-      </a>
-      <BetaBanner />
-      <SiteHeader />
-
-      <main id="main-content" className="text-foreground overflow-hidden">
-        <section
-          className="relative text-center px-4 py-14 md:py-20 hero-surface hero-background"
-          aria-labelledby="hero-heading"
-        >
-          <div className="grid-pattern" aria-hidden="true" />
-          <div className="relative max-w-6xl mx-auto space-y-8">
-            <h1
-              id="hero-heading"
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground max-w-5xl mx-auto text-balance fade-in-up"
-              data-delay="0"
-            >
-              Sync + manage rules across AI agents, projects & teams.
-            </h1>
-            <p
-              className="text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty fade-in-up"
-              data-delay="1"
-            >
-              Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
-              <strong>Start in 60 seconds.</strong>
-            </p>
-
-            <Tabs
-              value={activeTab}
-              onValueChange={(v) => setActiveTab(v as "rules" | "scratch")}
-              className="w-full fade-in-up"
-              data-delay="2"
-            >
-              <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-1 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm">
-                <TabsTrigger value="rules" className="text-base px-4 py-2">
-                  Start with rules
-                </TabsTrigger>
-                <TabsTrigger value="scratch" className="text-base px-4 py-2">
-                  Start from scratch
-                </TabsTrigger>
-              </TabsList>
-              <div className="mt-4">
-                <TabsContent value="rules">{renderRulesTab()}</TabsContent>
-                <TabsContent value="scratch">{renderScratchTab()}</TabsContent>
-              </div>
-            </Tabs>
-
-            <div
-              className="hero-buttons flex flex-wrap justify-center gap-3 fade-in-up"
-              data-delay="3"
-            >
-              <Button asChild className="px-5 py-2.5">
-                <Link
-                  href={
-                    "/docs/00-getting-started/00-quickstart" as unknown as Route
-                  }
-                >
-                  Quickstart Guide
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="px-5 py-2.5">
-                <Link href={"/docs" as unknown as Route}>Read Docs</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <section
-          className="bg-muted border-y border-border px-4 py-12"
-          aria-labelledby="how-it-works-heading"
-        >
-          <div className="max-w-6xl mx-auto">
-            <h2
-              id="how-it-works-heading"
-              className="text-2xl font-bold text-center mt-2 mb-5 text-foreground"
-            >
-              How it works
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <HowItWorksDiagram />
-            </div>
-            <p className="text-center mt-6 text-base text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
-              Write your rules once & run <code>aligntrue sync</code>. AlignTrue
-              automatically generates agent-specific formats for all your AI
-              tools or team members.
-            </p>
-          </div>
-        </section>
-
-        <section
-          className="bg-muted border-b border-border px-4 py-12"
-          aria-labelledby="features-heading"
-        >
-          <div className="max-w-6xl mx-auto">
-            <h2 id="features-heading" className="sr-only">
-              Key Features
-            </h2>
-            <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto place-items-center">
-              {[
-                {
-                  icon: Zap,
-                  title: "60-second setup",
-                  text: "Auto-detects agents & generates rules in under a minute. No config required.",
-                },
-                {
-                  icon: RefreshCw,
-                  title: "Automatic sync",
-                  text: "Edit rules once & sync to all agents. No more manual copying or outdated rules.",
-                },
-                {
-                  icon: Globe,
-                  title: "20+ agents supported",
-                  text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
-                },
-              ].map((feature) => (
-                <Card key={feature.title} className="h-full" variant="feature">
-                  <CardContent className="p-5 space-y-3 text-center">
-                    <feature.icon
-                      size={32}
-                      className="text-primary transition-transform duration-200 card-icon mx-auto"
-                      aria-hidden="true"
-                    />
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-6">
-                      {feature.text}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section
-          className="max-w-6xl mx-auto px-4 sm:px-6 py-16"
-          aria-labelledby="rule-wrangling-heading"
-        >
-          <h2
-            id="rule-wrangling-heading"
-            className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+    <PageLayout>
+      <section
+        className="relative text-center px-4 py-14 md:py-20 hero-surface hero-background"
+        aria-labelledby="hero-heading"
+      >
+        <div className="grid-pattern" aria-hidden="true" />
+        <div className="relative max-w-6xl mx-auto space-y-8">
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 mx-auto rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground fade-in-up"
+            data-delay="0"
           >
-            Rule-wrangling, solved.
+            <GitHubIcon size={14} />
+            <span>Open Source</span>
+            <span className="text-border">|</span>
+            <span>MIT License</span>
+          </a>
+          <h1
+            id="hero-heading"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground max-w-5xl mx-auto text-balance fade-in-up"
+            data-delay="1"
+          >
+            Sync AI rules across agents, repos & teams.
+          </h1>
+          <p
+            className="text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty fade-in-up"
+            data-delay="2"
+          >
+            Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
+            <strong>Start in 60 seconds.</strong>
+          </p>
+
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as "rules" | "scratch")}
+            className="w-full fade-in-up"
+            data-delay="3"
+          >
+            <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-1 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm">
+              <TabsTrigger value="rules" className="text-base px-4 py-2">
+                Start with rules
+              </TabsTrigger>
+              <TabsTrigger value="scratch" className="text-base px-4 py-2">
+                Start from scratch
+              </TabsTrigger>
+            </TabsList>
+            <div className="mt-4">
+              <TabsContent value="rules">{renderRulesTab()}</TabsContent>
+              <TabsContent value="scratch">{renderScratchTab()}</TabsContent>
+            </div>
+          </Tabs>
+
+          <div
+            className="flex flex-wrap justify-center gap-3 fade-in-up"
+            data-delay="4"
+          >
+            <Button asChild className="px-5 py-2.5">
+              <Link
+                href={
+                  "/docs/00-getting-started/00-quickstart" as unknown as Route
+                }
+              >
+                Quickstart Guide
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="px-5 py-2.5">
+              <Link href={"/docs" as unknown as Route}>Read Docs</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="bg-muted border-y border-border px-4 py-12"
+        aria-labelledby="how-it-works-heading"
+      >
+        <div className="max-w-6xl mx-auto">
+          <h2
+            id="how-it-works-heading"
+            className="text-2xl font-bold text-center mt-2 mb-5 text-foreground"
+          >
+            How it works
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="max-w-4xl mx-auto">
+            <HowItWorksDiagram />
+          </div>
+          <p className="text-center mt-6 text-base text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
+            Write your rules once & run <code>aligntrue sync</code>. AlignTrue
+            automatically generates agent-specific formats for all your AI tools
+            or team members.
+          </p>
+        </div>
+      </section>
+
+      <section
+        className="bg-muted border-b border-border px-4 py-12"
+        aria-labelledby="features-heading"
+      >
+        <div className="max-w-6xl mx-auto">
+          <h2 id="features-heading" className="sr-only">
+            Key Features
+          </h2>
+          <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto place-items-center">
             {[
               {
-                icon: FileText,
-                title: "Central rule management",
-                text: "Write AI rules once & automatically sync everywhere for everyone.",
+                icon: Zap,
+                title: "60-second setup",
+                text: "Auto-detects agents & generates rules in under a minute. No config required.",
               },
               {
-                icon: Shuffle,
-                title: "Agent exporters",
-                text: "Generates rule files in each agent's native format & keeps existing settings.",
+                icon: RefreshCw,
+                title: "Automatic sync",
+                text: "Edit rules once & sync to all agents. No more manual copying or outdated rules.",
               },
               {
-                icon: Users,
-                title: "Solo & team modes",
-                text: "Local-first for individuals. PR-friendly for team collaboration. Better for everyone.",
+                icon: Globe,
+                title: "20+ agents supported",
+                text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
               },
-              {
-                icon: Settings,
-                title: "Built-in customizability",
-                text: "Use variables, path selectors & overlays for sharing + team friendly customization.",
-              },
-            ].map((item) => (
-              <Card key={item.title} variant="feature" className="text-center">
-                <CardContent className="p-5 space-y-4">
-                  <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center bg-primary text-primary-foreground">
-                    <item.icon size={24} aria-hidden="true" />
-                  </div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    {item.title}
+            ].map((feature) => (
+              <Card key={feature.title} className="h-full" variant="feature">
+                <CardContent className="p-5 space-y-3 text-center">
+                  <feature.icon
+                    size={32}
+                    className="text-primary transition-transform duration-200 mx-auto"
+                    aria-hidden="true"
+                  />
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {feature.title}
                   </h3>
                   <p className="text-sm text-muted-foreground leading-6">
-                    {item.text}
+                    {feature.text}
                   </p>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
-      <SiteFooter />
-    </div>
+      <section
+        className="max-w-6xl mx-auto px-4 sm:px-6 py-16"
+        aria-labelledby="rule-wrangling-heading"
+      >
+        <h2
+          id="rule-wrangling-heading"
+          className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+        >
+          Rule-wrangling, solved.
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              icon: FileText,
+              title: "Central rule management",
+              text: "Write AI rules once & automatically sync everywhere for everyone.",
+            },
+            {
+              icon: Shuffle,
+              title: "Agent exporters",
+              text: "Generates rule files in each agent's native format & keeps existing settings.",
+            },
+            {
+              icon: Users,
+              title: "Solo & team modes",
+              text: "Local-first for individuals. PR-friendly for team collaboration. Better for everyone.",
+            },
+            {
+              icon: Settings,
+              title: "Built-in customizability",
+              text: "Use variables, path selectors & overlays for sharing + team friendly customization.",
+            },
+          ].map((item) => (
+            <Card key={item.title} variant="feature" className="text-center">
+              <CardContent className="p-5 space-y-4">
+                <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center bg-primary text-primary-foreground">
+                  <item.icon size={24} aria-hidden="true" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-6">
+                  {item.text}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </PageLayout>
   );
 }

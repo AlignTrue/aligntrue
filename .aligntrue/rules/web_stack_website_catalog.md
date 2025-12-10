@@ -1,7 +1,7 @@
 ---
 description: Web stack guide for the homepage and catalog (auto-applies in apps/web/)
 nested_location: apps/web
-content_hash:
+content_hash: e57fd37e552bac7880bef10c4884f30d90f15b70726448d4a4c76f3fe8019b5c
 ---
 
 # Web stack guide for homepage/catalog
