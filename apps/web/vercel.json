@@ -1,5 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "_comment": "TEMPORARY: Disabling auto-deploys while validating apps/web + apps/docs split. Re-enable after preview validation.",
+  "git": {
+    "deploymentEnabled": {
+      "main": false,
+      "catalog-refactor": false
+    }
+  },
   "rewrites": [
     {
       "source": "/docs/:path*",
