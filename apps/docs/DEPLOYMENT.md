@@ -109,7 +109,7 @@ curl https://aligntrue.ai/robots.txt
 curl -I https://aligntrue.ai | grep -E "X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security"
 
 # 6. Assets are accessible
-curl -I https://aligntrue.ai/og-image.png
+curl -I https://aligntrue.ai/aligntrue-og-image.png
 curl -I https://aligntrue.ai/favicon.ico
 ```
 
@@ -145,7 +145,7 @@ The site includes the following security headers (configured in `vercel.json`):
 ### Assets (favicon, og-image) not found
 
 - Verify files exist in `apps/docs/public/`
-- Check file names match exactly: `og-image.png`, `favicon.ico`
+- Check file names match exactly: `aligntrue-og-image.png`, `favicon.ico`
 - Clear browser cache and test in incognito mode
 
 ## Migration Notes

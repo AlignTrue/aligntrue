@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev --webpack -p 3000",
     "clean": "rm -rf .next out",
-    "build": "pnpm clean && next build",
+    "build": "pnpm clean && next build --webpack",
     "postbuild": "pagefind --site out --output-path out/_pagefind && cp -r out/_pagefind public/ || true",
     "start": "next start -p 3000",
     "test": "vitest run",

@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     siteName: "AlignTrue",
     images: [
       {
-        url: "/og-image.png",
+        url: "/aligntrue-og-image.png",
         width: 1200,
         height: 630,
         alt: "AlignTrue - Sync AI rules across agents and teams",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: "AlignTrue",
     description:
       "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
-    images: ["/og-image.png"],
+    images: ["/aligntrue-og-image.png"],
   },
   metadataBase: new URL("https://aligntrue.ai"),
 };

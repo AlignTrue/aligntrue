@@ -20,10 +20,10 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
 The `apps/docs/public/` directory contains:
 
-- `og-image.png` (1200x630) - Open Graph and Twitter card image
+- `aligntrue-og-image.png` (1800x945) - Open Graph and Twitter card image
 - `favicon.ico` - Site favicon
 
-These assets are automatically served at the root path (e.g., `/og-image.png`, `/favicon.ico`).
+These assets are automatically served at the root path (e.g., `/aligntrue-og-image.png`, `/favicon.ico`).
 
 ## Analytics
 
