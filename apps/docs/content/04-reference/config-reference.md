@@ -439,6 +439,7 @@ git:
 - Applies to generated agent exports (`.cursor/rules`, `AGENTS.md`, etc.). Solo/team default to `ignore` to avoid PR noise; enterprise defaults to `commit` for auditability.
 - Agents still work when exports are gitignored as long as `aligntrue sync` runs (locally or in CI).
 - Use `per_exporter` overrides when a specific export must be tracked (e.g., commit `AGENTS.md`, ignore `.cursor/rules/`).
+- Rules with `gitignore: true` in frontmatter create a dedicated managed block in `.gitignore` that lists only their exported files (e.g., `.cursor/rules/guardrails.mdc`), regardless of `git.mode`. Use this for selective non-commit of sensitive rules while keeping other exports tracked.
 
 ### export
 

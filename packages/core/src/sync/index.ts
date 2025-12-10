@@ -53,6 +53,7 @@ export {
   type CleanResult,
   type SourceRuleInfo,
 } from "./cleanup.js";
+export { computeGitignoreRuleExports } from "./gitignore-rules.js";
 
 // Global sync engine instance for convenience functions
 const globalEngine = new SyncEngine();
