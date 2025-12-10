@@ -47,12 +47,12 @@ export function CommandBlock({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-3 border border-border rounded-xl p-0 shadow-sm",
+        "flex flex-col gap-0 sm:flex-row sm:items-center border border-border rounded-xl shadow-sm",
         variant === "terminal" ? "bg-[hsl(222_24%_8%)]" : "bg-background",
         className,
       )}
     >
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 w-full">
         {description && (
           <div
             className={cn(
@@ -90,13 +90,13 @@ export function CommandBlock({
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-2 px-4 py-3 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-2 p-4 w-full sm:w-auto">
         {!hideCopy && (
           <Button
             onClick={handleCopy}
             variant="default"
             size="sm"
-            className="font-semibold w-full sm:w-auto sm:min-w-[100px] h-10 text-sm"
+            className="font-semibold w-full sm:w-auto sm:min-w-[120px] h-10 text-sm"
           >
             {copied ? "✓ Copied" : copyLabel}
           </Button>

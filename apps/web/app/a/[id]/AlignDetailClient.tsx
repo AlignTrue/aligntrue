@@ -357,66 +357,73 @@ export function AlignDetailClient({ align, content }: Props) {
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
         <Card variant="surface">
           <CardContent className="p-6 space-y-4">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
-                    {align.title || "Untitled align"}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-col gap-4">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
+                  {align.title || "Untitled align"}
+                </h1>
+                {align.description && (
+                  <p className="text-muted-foreground leading-relaxed m-0">
+                    {align.description}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <a
+                    href={align.normalizedUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-foreground hover:underline"
+                  >
+                    {fileNameLabel} ↗
+                  </a>
+                  <span className="text-xs text-muted-foreground">by</span>
+                  {ownerUrl ? (
                     <a
-                      href={align.normalizedUrl}
+                      href={ownerUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="font-semibold text-foreground hover:underline"
                     >
-                      {fileNameLabel} ↗
+                      {owner}
                     </a>
-                    <span className="text-xs text-muted-foreground">by</span>
-                    {ownerUrl ? (
-                      <a
-                        href={ownerUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold text-foreground hover:underline"
-                      >
-                        {owner}
-                      </a>
-                    ) : (
-                      <span className="font-semibold text-foreground">
-                        {owner}
+                  ) : (
+                    <span className="font-semibold text-foreground">
+                      {owner}
+                    </span>
+                  )}
+                  {fileCountLabel && (
+                    <>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {fileCountLabel}
                       </span>
-                    )}
-                    {fileCountLabel && (
-                      <>
-                        <span className="text-xs text-muted-foreground">•</span>
-                        <span className="text-sm font-semibold text-foreground">
-                          {fileCountLabel}
-                        </span>
-                      </>
-                    )}
-                    {sizeLabel && (
-                      <>
-                        <span className="text-xs text-muted-foreground">•</span>
-                        <span className="text-sm font-semibold text-foreground">
-                          {sizeLabel}
-                        </span>
-                      </>
-                    )}
-                    {isPack && (
-                      <>
-                        <span className="text-xs text-muted-foreground">•</span>
-                        <a
-                          href="/docs/concepts/align-yaml-packs"
-                          className="inline-flex items-center gap-1 text-sm font-semibold text-foreground hover:underline"
-                        >
-                          <HelpCircle size={16} />
-                          How Aligns work
-                        </a>
-                      </>
-                    )}
-                  </div>
+                    </>
+                  )}
+                  {sizeLabel && (
+                    <>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {sizeLabel}
+                      </span>
+                    </>
+                  )}
+                  {isPack && (
+                    <>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <a
+                        href="/docs/concepts/align-yaml-packs"
+                        className="inline-flex items-center gap-1 text-sm font-semibold text-foreground hover:underline"
+                      >
+                        <HelpCircle size={16} />
+                        How Aligns work
+                      </a>
+                    </>
+                  )}
                 </div>
+
                 <div className="w-full sm:w-auto flex flex-col gap-1">
                   <span className="font-semibold text-foreground">
                     Agent export format
@@ -425,7 +432,7 @@ export function AlignDetailClient({ align, content }: Props) {
                     value={agent}
                     onValueChange={(value) => setAgent(value as AgentId)}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full sm:min-w-[240px]">
                       <SelectValue placeholder="Select agent" />
                     </SelectTrigger>
                     <SelectContent>
@@ -438,23 +445,17 @@ export function AlignDetailClient({ align, content }: Props) {
                   </Select>
                 </div>
               </div>
-
-              {align.description && (
-                <p className="text-muted-foreground leading-relaxed m-0">
-                  {align.description}
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-0">
+          <CardContent className="p-4">
             <Tabs
               value={actionTab}
               onValueChange={(v) => setActionTab(v as typeof actionTab)}
             >
-              <TabsList className="w-full max-w-4xl mx-auto flex items-center justify-center sm:justify-start gap-1 rounded-2xl bg-secondary/80 backdrop-blur-sm p-1.5 px-2 overflow-x-auto scrollbar-hide shadow-sm">
+              <TabsList className="w-full max-w-4xl mx-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-start sm:gap-2 rounded-xl bg-secondary/80 border border-border p-2 shadow-sm">
                 {[
                   { id: "share", label: "Share Link" },
                   { id: "global", label: "Global Install" },
@@ -468,14 +469,14 @@ export function AlignDetailClient({ align, content }: Props) {
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="font-semibold rounded-xl px-4 py-2 text-sm"
+                    className="font-semibold rounded-lg px-4 py-2 text-sm"
                   >
                     {tab.label}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
-              <div className="p-5 space-y-4">
+              <div className="pt-4 space-y-4">
                 <TabsContent value="share" className="space-y-3">
                   <p className="text-muted-foreground">
                     Make it easy for others to use these rules. Copy this link

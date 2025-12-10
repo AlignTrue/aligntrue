@@ -262,13 +262,13 @@ export default function HomePage() {
           <div className="relative max-w-6xl mx-auto space-y-8">
             <h1
               id="hero-heading"
-              className="text-5xl md:text-6xl font-bold leading-[1.15] text-foreground max-w-5xl mx-auto text-balance fade-in-up"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.15] text-foreground max-w-5xl mx-auto text-balance fade-in-up"
               data-delay="0"
             >
               Sync + manage rules across AI agents, projects & teams.
             </h1>
             <p
-              className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty fade-in-up"
+              className="text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty fade-in-up"
               data-delay="1"
             >
               Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
@@ -281,7 +281,7 @@ export default function HomePage() {
               className="w-full fade-in-up"
               data-delay="2"
             >
-              <TabsList className="max-w-xl mx-auto flex justify-center gap-1 rounded-2xl bg-muted/70 border border-border p-1.5 shadow-sm">
+              <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-1 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm">
                 <TabsTrigger value="rules" className="text-base px-4 py-2">
                   Start with rules
                 </TabsTrigger>
@@ -384,7 +384,7 @@ export default function HomePage() {
         </section>
 
         <section
-          className="max-w-6xl mx-auto px-6 py-16"
+          className="max-w-6xl mx-auto px-4 sm:px-6 py-16"
           aria-labelledby="rule-wrangling-heading"
         >
           <h2
