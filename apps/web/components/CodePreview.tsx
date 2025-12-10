@@ -28,13 +28,13 @@ export function CodePreview({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-[hsl(222_24%_8%)] text-white shadow-sm">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[hsl(222_24%_10%)]">
-        <div className="flex items-center gap-2 text-sm font-medium text-white/70">
+    <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-destructive" />
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
           </span>
           <span className="ml-2">{filename}</span>
         </div>
@@ -42,7 +42,7 @@ export function CodePreview({
           size="sm"
           variant="outline"
           onClick={handleCopy}
-          className="h-8 px-3 text-xs font-semibold border-white/20 text-white hover:bg-white/10"
+          className="h-8 px-3 text-xs font-semibold"
         >
           {copied ? "✓ Copied" : "Copy"}
         </Button>
@@ -50,34 +50,37 @@ export function CodePreview({
       <div className="relative">
         {loading && (
           <div
-            className="absolute inset-0 bg-white/5 backdrop-blur-[1px]"
+            className="absolute inset-0 bg-background/60"
             aria-hidden="true"
           />
         )}
         <pre
           className={cn(
-            "max-h-[640px] overflow-auto bg-transparent px-0 py-4 text-sm leading-6",
-            loading && "opacity-80",
+            "max-h-[640px] overflow-x-auto bg-transparent px-0 py-4 text-sm leading-6 text-foreground",
+            loading && "opacity-80 blur-[1px]",
           )}
         >
-          <code className="flex text-left">
-            <span className="select-none pr-4 pl-4 text-right text-white/40">
+          <code className="flex text-left min-w-0">
+            <span className="select-none pr-4 pl-4 text-right text-muted-foreground shrink-0">
               {lines.map((_, idx) => (
                 <span key={idx} className="block">
                   {idx + 1}
                 </span>
               ))}
             </span>
-            <span className="border-l border-white/10 pr-4" />
-            <span className="pl-4 text-white/90">
+            <span className="border-l border-border pr-4 shrink-0" />
+            <span className="pl-4 text-foreground min-w-0">
               {lines.length ? (
                 lines.map((line, idx) => (
-                  <span key={idx} className="block whitespace-pre-wrap">
+                  <span
+                    key={idx}
+                    className="block whitespace-pre-wrap break-words"
+                  >
                     {line || " "}
                   </span>
                 ))
               ) : (
-                <span className="block text-white/50">
+                <span className="block text-muted-foreground">
                   No content available.
                 </span>
               )}

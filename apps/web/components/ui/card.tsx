@@ -7,7 +7,7 @@ type CardVariant = "surface" | "elevated" | "feature";
 const cardVariantStyles: Record<CardVariant, string> = {
   surface: "shadow-sm",
   elevated:
-    "shadow-md transition-all duration-200 hover:-translate-y-[2px] hover:shadow-lg border-primary/20",
+    "shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-primary/20",
   feature:
     "shadow-sm transition-all duration-200 hover:-translate-y-[2px] hover:shadow-lg",
 };

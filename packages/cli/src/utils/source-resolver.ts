@@ -226,7 +226,7 @@ function titleFromFilename(filename: string): string {
 
 function ruleFromPackFile(file: { path: string; content: string }): RuleFile {
   const parsed = matter(file.content, matterOptions);
-  const frontmatter = parsed.data as RuleFrontmatter;
+  const frontmatter = (parsed.data ?? {}) as RuleFrontmatter;
   const filename = basename(file.path);
 
   const finalFrontmatter: RuleFrontmatter = {

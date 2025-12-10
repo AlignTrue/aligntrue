@@ -352,9 +352,9 @@ export function AlignDetailClient({ align, content }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <SiteHeader />
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-4 overflow-hidden">
         <Card variant="surface">
           <CardContent className="p-6 space-y-4">
             <div className="flex flex-col gap-4">
@@ -523,13 +523,14 @@ export function AlignDetailClient({ align, content }: Props) {
                   <p className="m-0 text-muted-foreground">
                     Already using AlignTrue? Add these rules as a connected
                     source.{" "}
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
+                      className="p-0 h-auto"
                       onClick={() => setActionTab("global")}
-                      className="text-foreground font-semibold underline"
                     >
                       New here? Use Global Install instead.
-                    </button>
+                    </Button>
                   </p>
                   <CommandBlock code={commands.addSource} copyLabel="Copy" />
                 </TabsContent>

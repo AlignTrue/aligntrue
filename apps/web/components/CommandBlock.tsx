@@ -48,7 +48,7 @@ export function CommandBlock({
     <div
       className={cn(
         "flex flex-col gap-0 sm:flex-row sm:items-center border border-border rounded-xl shadow-sm",
-        variant === "terminal" ? "bg-[hsl(222_24%_8%)]" : "bg-background",
+        variant === "terminal" ? "bg-card" : "bg-muted",
         className,
       )}
     >
@@ -69,20 +69,22 @@ export function CommandBlock({
           <div
             className={cn(
               variant === "terminal"
-                ? "bg-[hsl(222_24%_8%)] text-white"
+                ? "bg-card text-card-foreground"
                 : "bg-muted text-foreground",
             )}
           >
-            <pre className="flex max-h-[320px] overflow-auto px-4 py-3 text-sm leading-6">
-              <code className={cn("flex-1 text-left", codeClassName)}>
+            <pre className="flex max-h-[320px] overflow-x-auto px-4 py-3 text-sm leading-6">
+              <code className={cn("flex-1 min-w-0 text-left", codeClassName)}>
                 {lines.map((line, idx) => (
                   <div key={idx} className="flex gap-3">
                     {variant === "terminal" && showPrompt && (
-                      <span className="text-emerald-400 select-none">
+                      <span className="text-primary select-none shrink-0">
                         {line.trim() ? promptSymbol : ""}
                       </span>
                     )}
-                    <span className="whitespace-pre-wrap">{line || " "}</span>
+                    <span className="whitespace-pre-wrap break-all">
+                      {line || " "}
+                    </span>
                   </div>
                 ))}
               </code>

@@ -246,14 +246,14 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <a href="#main-content" className="sr-only">
         Skip to main content
       </a>
       <BetaBanner />
       <SiteHeader />
 
-      <main id="main-content" className="text-foreground">
+      <main id="main-content" className="text-foreground overflow-hidden">
         <section
           className="relative text-center px-4 py-14 md:py-20 hero-surface hero-background"
           aria-labelledby="hero-heading"
@@ -262,7 +262,7 @@ export default function HomePage() {
           <div className="relative max-w-6xl mx-auto space-y-8">
             <h1
               id="hero-heading"
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.15] text-foreground max-w-5xl mx-auto text-balance fade-in-up"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground max-w-5xl mx-auto text-balance fade-in-up"
               data-delay="0"
             >
               Sync + manage rules across AI agents, projects & teams.
