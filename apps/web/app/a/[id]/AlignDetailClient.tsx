@@ -39,6 +39,8 @@ import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import { formatBytes } from "@/lib/utils";
 import { PageLayout } from "@/components/PageLayout";
 
+const EMPTY_PACK_FILES: CachedPackFile[] = [];
+
 type Props = {
   align: AlignRecord;
   content: CachedContent | null;
@@ -77,7 +79,7 @@ export function AlignDetailClient({ align, content }: Props) {
     content?.kind === "pack" &&
     Array.isArray(content.files) &&
     !!align.pack;
-  const packFiles = isPack ? content.files : [];
+  const packFiles = isPack ? content.files : EMPTY_PACK_FILES;
   const [selectedPath, setSelectedPath] = useState<string>(
     isPack ? (packFiles[0]?.path ?? "") : "single",
   );
