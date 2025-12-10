@@ -1,16 +1,121 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "_comment": "TEMPORARY: Disabling auto-deploys while validating apps/web + apps/docs split. Re-enable after preview validation.",
   "git": {
     "deploymentEnabled": {
       "main": false,
       "catalog-refactor": false
     }
   },
+  "framework": "nextjs",
+  "regions": ["iad1"],
   "rewrites": [
     {
       "source": "/docs/:path*",
       "destination": "https://docs.aligntrue.ai/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/quickstart",
+      "destination": "/docs/00-getting-started/00-quickstart",
+      "permanent": true
+    },
+    {
+      "source": "/scopes",
+      "destination": "/docs/02-customization/scopes",
+      "permanent": true
+    },
+    {
+      "source": "/exporters",
+      "destination": "/docs/04-reference/cli-reference/exporters",
+      "permanent": true
+    },
+    {
+      "source": "/remote-setup",
+      "destination": "/docs/01-guides/06-rule-sharing-privacy",
+      "permanent": true
+    },
+    {
+      "source": "/dupe-rules",
+      "destination": "/docs/03-concepts/preventing-duplicate-rules",
+      "permanent": true
+    },
+    {
+      "source": "/agent-ignore",
+      "destination": "/docs/03-concepts/preventing-duplicate-rules",
+      "permanent": true
+    },
+    {
+      "source": "/sources",
+      "destination": "/docs/01-guides/04-external-sources",
+      "permanent": true
+    },
+    {
+      "source": "/agents",
+      "destination": "/docs/04-reference/agent-support",
+      "permanent": true
+    },
+    {
+      "source": "/extend",
+      "destination": "/docs/07-contributing/adding-exporters",
+      "permanent": true
+    },
+    {
+      "source": "/formats",
+      "destination": "/docs/02-customization/export-formats",
+      "permanent": true
+    },
+    {
+      "source": "/export-content-mode",
+      "destination": "/docs/02-customization/multi-file-organization",
+      "permanent": true
+    },
+    {
+      "source": "/sync",
+      "destination": "/docs/03-concepts/sync-behavior",
+      "permanent": true
+    },
+    {
+      "source": "/backup",
+      "destination": "/docs/03-concepts/backup",
+      "permanent": true
+    },
+    {
+      "source": "/sharing",
+      "destination": "/docs/01-guides/06-rule-sharing-privacy",
+      "permanent": true
+    },
+    {
+      "source": "/remote-issues",
+      "destination": "/docs/05-troubleshooting/source-remote-issues",
+      "permanent": true
+    },
+    {
+      "source": "/team",
+      "destination": "/docs/03-concepts/team-mode",
+      "permanent": true
+    },
+    {
+      "source": "/join-team",
+      "destination": "/docs/01-guides/03-join-team",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        }
+      ]
     }
   ]
 }
