@@ -103,21 +103,3 @@ apps/docs/public/_pagefind
 .cursor/rules/vision_strategy_roadmap.mdc
 # END AlignTrue Private Rules
 
-# START AlignTrue Generated Files
-.aligntrue/.backups/
-.cursor/rules/*.mdc
-.cursor/rules/ci_troubleshooting.mdc
-.cursor/rules/debugging.mdc
-.cursor/rules/documentation.mdc
-.cursor/rules/global.mdc
-.cursor/rules/guardrails.mdc
-.cursor/rules/implementation_specs.mdc
-.cursor/rules/pull_request_standards.mdc
-.cursor/rules/rule_writing.mdc
-.cursor/rules/security_linting_policy.mdc
-.cursor/rules/test_log_template.mdc
-.cursor/rules/testing.mdc
-.cursor/rules/typescript.mdc
-apps/docs/.cursor/rules/web_stack_nextra_docs.mdc
-apps/web/.cursor/rules/web_stack_website_catalog.mdc
-# END AlignTrue Generated Files
