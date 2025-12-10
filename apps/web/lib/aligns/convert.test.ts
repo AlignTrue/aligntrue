@@ -25,6 +25,20 @@ function parseFrontmatter(text: string) {
 }
 
 describe("convertContent", () => {
+  it("passes through AlignTrue format with full frontmatter", () => {
+    const result = convertContent(baseContent, "aligntrue");
+    const parsed = parseFrontmatter(result.text);
+
+    expect(result.filename).toBe("rules.md");
+    expect(result.extension).toBe("md");
+    expect(parsed.data).toEqual({
+      title: "Test Title",
+      description: "Test Description",
+      globs: ["**/*.ts"],
+    });
+    expect(parsed.content.trim()).toContain("Body text.");
+  });
+
   it("preserves minimal frontmatter for all-agents export", () => {
     const result = convertContent(baseContent, "all");
     const parsed = parseFrontmatter(result.text);
@@ -49,6 +63,19 @@ describe("convertContent", () => {
     expect(parsed.data.alwaysApply).toBe(true);
   });
 
+  it("maps apply_to to cursor alwaysApply", () => {
+    const contentWithApplyTo = `---
+title: Apply Mapping
+apply_to: agent_requested
+---
+
+Body
+`;
+    const result = convertContent(contentWithApplyTo, "cursor");
+    const parsed = parseFrontmatter(result.text);
+    expect(parsed.data.alwaysApply).toBe(false);
+  });
+
   it("uses cursor override metadata when provided", () => {
     const contentWithCursor = `---
 title: Overrides
@@ -71,6 +98,7 @@ Body
 
   it("maps supported agents to expected filenames", () => {
     const expectations: Record<AgentId, string> = {
+      aligntrue: "rules.md",
       all: "AGENTS.md",
       cursor: "rules.mdc",
       claude: "CLAUDE.md",

@@ -10,6 +10,14 @@ export type AgentOption = {
 
 const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
   [
+    "aligntrue",
+    {
+      label: "AlignTrue (.aligntrue/rules/*.md)",
+      format: "align-md",
+      exporter: "aligntrue",
+    },
+  ],
+  [
     "all",
     {
       label: "All agents (AGENTS.md)",

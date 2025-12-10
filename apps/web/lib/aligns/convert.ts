@@ -2,6 +2,7 @@ import matter from "gray-matter";
 import yaml from "js-yaml";
 
 export const SUPPORTED_AGENT_IDS = [
+  "aligntrue",
   "all",
   "cursor",
   "claude",
@@ -80,7 +81,13 @@ function cursorFrontmatter(data: Frontmatter): Frontmatter {
   }
   // Always allow; consumers can refine later
   if (result.alwaysApply === undefined) {
-    result.alwaysApply = true;
+    if (data.apply_to === "alwaysOn") {
+      result.alwaysApply = true;
+    } else if (data.apply_to === "agent_requested") {
+      result.alwaysApply = false;
+    } else {
+      result.alwaysApply = true;
+    }
   }
   return result;
 }
@@ -92,6 +99,13 @@ export function convertContent(
   const { data, body } = parseFrontmatter(rawContent);
 
   switch (targetAgent) {
+    case "aligntrue": {
+      return {
+        text: rawContent,
+        filename: "rules.md",
+        extension: "md",
+      };
+    }
     case "all": {
       const fm = minimalFrontmatter(data);
       return {

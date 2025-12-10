@@ -16,6 +16,12 @@ import type { AlignRecord } from "@/lib/aligns/types";
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
+const ALLOWED_EXTENSIONS = [".md", ".mdc", ".yaml", ".yml"] as const;
+
+function hasAllowedExtension(url: string): boolean {
+  const lower = url.toLowerCase();
+  return ALLOWED_EXTENSIONS.some((ext) => lower.endsWith(ext));
+}
 let redisClient: Redis | null = null;
 function getRedis(): Redis {
   if (!redisClient) {
@@ -102,7 +108,21 @@ export async function POST(req: Request) {
     const { provider, normalizedUrl } = normalizeGitUrl(body.url);
     if (provider !== "github" || !normalizedUrl) {
       return Response.json(
-        { error: "Only GitHub blob/raw URLs are supported" },
+        {
+          error:
+            "Only GitHub URLs are supported. Paste a link to a file (blob) or directory (tree).",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (!hasAllowedExtension(normalizedUrl)) {
+      const filename =
+        normalizedUrl.split("/").pop() || "the provided file path";
+      return Response.json(
+        {
+          error: `Only rule files are supported (.md, .mdc, .yaml, .yml). Got: ${filename}`,
+        },
         { status: 400 },
       );
     }
@@ -111,7 +131,10 @@ export async function POST(req: Request) {
     const cached = await fetchRawWithCache(id, normalizedUrl);
     if (!cached || cached.kind !== "single") {
       return Response.json(
-        { error: "Failed to fetch content or file too large (>256KB)" },
+        {
+          error:
+            "File too large (max 256KB) or could not be fetched. Try a smaller file.",
+        },
         { status: 413 },
       );
     }

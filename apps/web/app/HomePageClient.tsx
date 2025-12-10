@@ -48,7 +48,7 @@ async function fetchList(path: string): Promise<AlignSummary[]> {
 
 export function HomePageClient() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"rules" | "cli">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "cli">("cli");
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
