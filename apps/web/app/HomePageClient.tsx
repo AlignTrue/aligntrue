@@ -26,7 +26,9 @@ import { PageLayout } from "@/components/PageLayout";
 import { SkeletonCard } from "@/components/SkeletonCard";
 import { AlignCard, type AlignSummary } from "./components/AlignCard";
 
-async function submitUrl(url: string): Promise<string> {
+type SubmitResult = { id: string };
+
+async function submitUrl(url: string): Promise<SubmitResult> {
   const response = await fetch("/api/aligns/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -34,10 +36,13 @@ async function submitUrl(url: string): Promise<string> {
   });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.error ?? "Failed to submit URL");
+    const error = new Error(data.error ?? "Failed to submit URL", {
+      cause: { hint: data.hint, issueUrl: data.issueUrl },
+    });
+    throw error;
   }
-  const data = (await response.json()) as { id: string };
-  return data.id;
+  const data = (await response.json()) as SubmitResult;
+  return data;
 }
 
 async function fetchList(path: string): Promise<AlignSummary[]> {
@@ -51,6 +56,8 @@ export function HomePageClient() {
   const [activeTab, setActiveTab] = useState<"rules" | "cli">("cli");
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errorHint, setErrorHint] = useState<string | null>(null);
+  const [errorIssueUrl, setErrorIssueUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [recent, setRecent] = useState<AlignSummary[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
@@ -63,11 +70,23 @@ export function HomePageClient() {
     void (async () => {
       setSubmitting(true);
       setError(null);
+      setErrorHint(null);
+      setErrorIssueUrl(null);
       try {
-        const id = await submitUrl(candidate);
+        const { id } = await submitUrl(candidate);
         router.push(`/a/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Submission failed");
+        if (err instanceof Error) {
+          setError(err.message);
+          const cause = err.cause as {
+            hint?: string;
+            issueUrl?: string;
+          } | null;
+          setErrorHint(cause?.hint ?? null);
+          setErrorIssueUrl(cause?.issueUrl ?? null);
+        } else {
+          setError("Submission failed");
+        }
       } finally {
         setSubmitting(false);
       }
@@ -86,15 +105,26 @@ export function HomePageClient() {
     const target = value ?? urlInput;
     if (!target) {
       setError("Enter a GitHub URL to continue.");
+      setErrorHint(null);
+      setErrorIssueUrl(null);
       return;
     }
     setSubmitting(true);
     setError(null);
+    setErrorHint(null);
+    setErrorIssueUrl(null);
     try {
-      const id = await submitUrl(target);
+      const { id } = await submitUrl(target);
       router.push(`/a/${id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Submission failed");
+      if (err instanceof Error) {
+        setError(err.message);
+        const cause = err.cause as { hint?: string; issueUrl?: string } | null;
+        setErrorHint(cause?.hint ?? null);
+        setErrorIssueUrl(cause?.issueUrl ?? null);
+      } else {
+        setError("Submission failed");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -152,12 +182,22 @@ export function HomePageClient() {
             </Button>
           </div>
           {error && (
-            <p
-              className="text-sm font-semibold text-destructive m-0"
-              aria-live="polite"
-            >
-              {error}
-            </p>
+            <div className="text-sm space-y-1" aria-live="polite">
+              <p className="font-semibold text-destructive m-0">{error}</p>
+              {errorHint && (
+                <p className="text-muted-foreground m-0">{errorHint}</p>
+              )}
+              {errorIssueUrl && (
+                <a
+                  href={errorIssueUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Have a file type we should support? Create an issue
+                </a>
+              )}
+            </div>
           )}
         </div>
 

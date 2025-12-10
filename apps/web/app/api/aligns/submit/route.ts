@@ -16,10 +16,29 @@ import type { AlignRecord } from "@/lib/aligns/types";
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
-const ALLOWED_EXTENSIONS = [".md", ".mdc", ".yaml", ".yml"] as const;
+const ALLOWED_EXTENSIONS = [
+  ".md",
+  ".mdc",
+  ".mdx",
+  ".markdown",
+  ".yaml",
+  ".yml",
+  ".json",
+  ".txt",
+] as const;
+const ALLOWED_FILENAMES = [
+  ".clinerules",
+  ".cursorrules",
+  ".goosehints",
+] as const;
 
 function hasAllowedExtension(url: string): boolean {
   const lower = url.toLowerCase();
+  const filename = lower.split("/").pop() || "";
+  if (
+    ALLOWED_FILENAMES.includes(filename as (typeof ALLOWED_FILENAMES)[number])
+  )
+    return true;
   return ALLOWED_EXTENSIONS.some((ext) => lower.endsWith(ext));
 }
 let redisClient: Redis | null = null;
@@ -121,7 +140,10 @@ export async function POST(req: Request) {
         normalizedUrl.split("/").pop() || "the provided file path";
       return Response.json(
         {
-          error: `Only rule files are supported (.md, .mdc, .yaml, .yml). Got: ${filename}`,
+          error: `Unsupported file type: ${filename}`,
+          hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, .json, .txt, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
+          issueUrl:
+            "https://github.com/AlignTrue/aligntrue/issues/new?title=Support%20new%20file%20type&labels=enhancement",
         },
         { status: 400 },
       );
