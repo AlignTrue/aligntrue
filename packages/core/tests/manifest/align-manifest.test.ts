@@ -160,5 +160,26 @@ version: 1.0.0
       expect(result.manifest.includes?.rules).toContain("rules/*.md");
       expect(result.warnings).toHaveLength(0);
     });
+
+    it("parses the stress-pack manifest with nested includes", () => {
+      const stressPackPath = join(
+        __dirname,
+        "../../../../examples/.align.yaml",
+      );
+      const content = readFileSync(stressPackPath, "utf-8");
+      const result = parseAlignManifest(content);
+
+      expect(result.manifest.id).toBe("aligntrue/stress-pack");
+      expect(result.manifest.version).toBe("1.0.0");
+      expect(result.manifest.includes?.rules).toHaveLength(3);
+      expect(result.manifest.includes?.rules).toContain("aligns/*.md");
+      expect(result.manifest.includes?.rules).toContain(
+        "remote-test/large-rules/*.md",
+      );
+      expect(result.manifest.includes?.rules).toContain(
+        "multi-file-rules/rules/*.md",
+      );
+      expect(result.warnings).toHaveLength(0);
+    });
   });
 });

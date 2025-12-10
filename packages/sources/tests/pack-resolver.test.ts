@@ -330,4 +330,150 @@ includes:
       expect(result.ref).toBe("custom-branch");
     });
   });
+
+  describe("large pack resolution", () => {
+    it("resolves pack with 20+ files from multiple glob patterns", async () => {
+      // Generate file entries for nested directories
+      const alignsFiles = Array.from({ length: 10 }, (_, i) => ({
+        path: `aligns/rule-${i}.md`,
+        type: "blob" as const,
+        size: 500,
+      }));
+      const nestedFiles = Array.from({ length: 12 }, (_, i) => ({
+        path: `nested/deep/rule-${i}.md`,
+        type: "blob" as const,
+        size: 500,
+      }));
+
+      // Build mock responses for all files
+      const fileResponses: Record<string, { status: number; body: string }> =
+        {};
+      [...alignsFiles, ...nestedFiles].forEach((file, i) => {
+        fileResponses[
+          `raw.githubusercontent.com/test/stress/main/${file.path}`
+        ] = {
+          status: 200,
+          body: `---
+title: Rule ${i}
+---
+
+# Rule ${i}
+
+This is rule content for stress testing.
+`,
+        };
+      });
+
+      const mockFetch = createMockFetch({
+        "api.github.com/repos/test/stress/git/trees/main": {
+          status: 200,
+          body: {
+            tree: [
+              { path: ".align.yaml", type: "blob", size: 200 },
+              ...alignsFiles,
+              ...nestedFiles,
+            ],
+          },
+        },
+        "raw.githubusercontent.com/test/stress/main/.align.yaml": {
+          status: 200,
+          body: `id: test/stress-pack
+version: 1.0.0
+includes:
+  rules:
+    - "aligns/*.md"
+    - "nested/deep/*.md"
+`,
+        },
+        ...fileResponses,
+      });
+
+      const result = await resolvePackFromGithub(
+        "https://github.com/test/stress",
+        { fetchImpl: mockFetch },
+      );
+
+      expect(result.manifest.id).toBe("test/stress-pack");
+      expect(result.files.length).toBe(22);
+
+      // Verify files from both directories
+      const alignsPaths = result.files
+        .filter((f) => f.path.startsWith("aligns/"))
+        .map((f) => f.path);
+      const nestedPaths = result.files
+        .filter((f) => f.path.startsWith("nested/deep/"))
+        .map((f) => f.path);
+
+      expect(alignsPaths).toHaveLength(10);
+      expect(nestedPaths).toHaveLength(12);
+
+      // Verify content was fetched
+      expect(result.files[0].content).toContain("Rule");
+      expect(result.files[0].size).toBeGreaterThan(0);
+    });
+
+    it("handles pack with files in deeply nested directories", async () => {
+      const mockFetch = createMockFetch({
+        "api.github.com/repos/test/deep/git/trees/main": {
+          status: 200,
+          body: {
+            tree: [
+              { path: ".align.yaml", type: "blob", size: 100 },
+              {
+                path: "level1/level2/level3/rule-a.md",
+                type: "blob",
+                size: 100,
+              },
+              {
+                path: "level1/level2/level3/rule-b.md",
+                type: "blob",
+                size: 100,
+              },
+              { path: "level1/level2/rule-c.md", type: "blob", size: 100 },
+            ],
+          },
+        },
+        "raw.githubusercontent.com/test/deep/main/.align.yaml": {
+          status: 200,
+          body: `id: test/deep-pack
+version: 1.0.0
+includes:
+  rules:
+    - "level1/level2/level3/*.md"
+    - "level1/level2/*.md"
+`,
+        },
+        "raw.githubusercontent.com/test/deep/main/level1/level2/level3/rule-a.md":
+          {
+            status: 200,
+            body: "# Rule A",
+          },
+        "raw.githubusercontent.com/test/deep/main/level1/level2/level3/rule-b.md":
+          {
+            status: 200,
+            body: "# Rule B",
+          },
+        "raw.githubusercontent.com/test/deep/main/level1/level2/rule-c.md": {
+          status: 200,
+          body: "# Rule C",
+        },
+      });
+
+      const result = await resolvePackFromGithub(
+        "https://github.com/test/deep",
+        { fetchImpl: mockFetch },
+      );
+
+      expect(result.files).toHaveLength(3);
+      expect(result.files.map((f) => f.path)).toContain(
+        "level1/level2/level3/rule-a.md",
+      );
+      expect(result.files.map((f) => f.path)).toContain(
+        "level1/level2/level3/rule-b.md",
+      );
+      expect(result.files.map((f) => f.path)).toContain(
+        "level1/level2/rule-c.md",
+      );
+    });
+  });
 });
