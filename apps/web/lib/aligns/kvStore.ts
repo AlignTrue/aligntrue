@@ -6,7 +6,13 @@ const ALIGN_KEY_PREFIX = "v1:align:";
 const CREATED_ZSET = "v1:align:by-created";
 const INSTALLS_ZSET = "v1:align:by-installs";
 
-const redis = Redis.fromEnv();
+let redisClient: Redis | null = null;
+function getRedis(): Redis {
+  if (!redisClient) {
+    redisClient = Redis.fromEnv();
+  }
+  return redisClient;
+}
 
 function alignKey(id: string) {
   return `${ALIGN_KEY_PREFIX}${id}`;
@@ -14,14 +20,14 @@ function alignKey(id: string) {
 
 export class KvAlignStore implements AlignStore {
   async get(id: string): Promise<AlignRecord | null> {
-    return (await redis.get<AlignRecord>(alignKey(id))) ?? null;
+    return (await getRedis().get<AlignRecord>(alignKey(id))) ?? null;
   }
 
   async upsert(align: AlignRecord): Promise<void> {
     const key = alignKey(align.id);
     const [existing, zsetScore] = await Promise.all([
-      redis.get<AlignRecord>(key),
-      redis.zscore(INSTALLS_ZSET, align.id),
+      getRedis().get<AlignRecord>(key),
+      getRedis().zscore(INSTALLS_ZSET, align.id),
     ]);
 
     const mergedInstallCount = Math.max(
@@ -37,14 +43,14 @@ export class KvAlignStore implements AlignStore {
       installClickCount: mergedInstallCount,
     };
 
-    await redis.set(key, merged);
-    await redis.zadd(CREATED_ZSET, {
+    await getRedis().set(key, merged);
+    await getRedis().zadd(CREATED_ZSET, {
       score: new Date(merged.createdAt).getTime(),
       member: align.id,
     });
 
     if (!existing) {
-      await redis.zadd(INSTALLS_ZSET, {
+      await getRedis().zadd(INSTALLS_ZSET, {
         score: mergedInstallCount,
         member: align.id,
       });
@@ -54,7 +60,7 @@ export class KvAlignStore implements AlignStore {
     const currentInstallScore =
       zsetScore ?? existing.installClickCount ?? mergedInstallCount;
     if (mergedInstallCount > currentInstallScore) {
-      await redis.zincrby(
+      await getRedis().zincrby(
         INSTALLS_ZSET,
         mergedInstallCount - currentInstallScore,
         align.id,
@@ -67,7 +73,7 @@ export class KvAlignStore implements AlignStore {
     field: "viewCount" | "installClickCount",
   ): Promise<void> {
     const key = alignKey(id);
-    const existing = await redis.get<AlignRecord>(key);
+    const existing = await getRedis().get<AlignRecord>(key);
     if (!existing) return;
 
     if (field === "viewCount") {
@@ -76,7 +82,7 @@ export class KvAlignStore implements AlignStore {
         viewCount: (existing.viewCount ?? 0) + 1,
         lastViewedAt: new Date().toISOString(),
       };
-      await redis.set(key, updated);
+      await getRedis().set(key, updated);
       return;
     }
 
@@ -84,27 +90,27 @@ export class KvAlignStore implements AlignStore {
       ...existing,
       installClickCount: (existing.installClickCount ?? 0) + 1,
     };
-    await redis.set(key, updated);
-    await redis.zincrby(INSTALLS_ZSET, 1, id);
+    await getRedis().set(key, updated);
+    await getRedis().zincrby(INSTALLS_ZSET, 1, id);
   }
 
   async listRecent(limit: number): Promise<AlignRecord[]> {
-    const ids = (await redis.zrange(CREATED_ZSET, 0, limit - 1, {
+    const ids = (await getRedis().zrange(CREATED_ZSET, 0, limit - 1, {
       rev: true,
     })) as string[];
     if (!ids.length) return [];
-    const records = (await redis.mget(
+    const records = (await getRedis().mget(
       ids.map((id) => alignKey(id)),
     )) as AlignRecord[];
     return records.filter(Boolean) as AlignRecord[];
   }
 
   async listPopular(limit: number): Promise<AlignRecord[]> {
-    const ids = (await redis.zrange(INSTALLS_ZSET, 0, limit - 1, {
+    const ids = (await getRedis().zrange(INSTALLS_ZSET, 0, limit - 1, {
       rev: true,
     })) as string[];
     if (!ids.length) return [];
-    const records = (await redis.mget(
+    const records = (await getRedis().mget(
       ids.map((id) => alignKey(id)),
     )) as AlignRecord[];
     return records.filter(Boolean) as AlignRecord[];

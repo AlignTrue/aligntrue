@@ -15,7 +15,13 @@ import type { AlignRecord } from "@/lib/aligns/types";
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
-const redis = Redis.fromEnv();
+let redisClient: Redis | null = null;
+function getRedis(): Redis {
+  if (!redisClient) {
+    redisClient = Redis.fromEnv();
+  }
+  return redisClient;
+}
 
 // In-memory rate limit for local dev (no persistence across restarts)
 const localRateLimits = new Map<string, { count: number; expiresAt: number }>();
@@ -34,9 +40,9 @@ async function rateLimit(ip: string): Promise<boolean> {
   }
 
   const key = `v1:ratelimit:submit:${ip}`;
-  const count = await redis.incr(key);
+  const count = await getRedis().incr(key);
   if (count === 1) {
-    await redis.expire(key, 60);
+    await getRedis().expire(key, 60);
   }
   return count <= 10;
 }

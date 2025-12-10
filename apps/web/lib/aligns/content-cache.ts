@@ -5,7 +5,13 @@ import { githubBlobToRawUrl } from "./normalize";
 const CONTENT_TTL_SECONDS = 3600; // 1 hour
 const MAX_BYTES = 256 * 1024;
 
-const redis = Redis.fromEnv();
+let redisClient: Redis | null = null;
+function getRedis(): Redis {
+  if (!redisClient) {
+    redisClient = Redis.fromEnv();
+  }
+  return redisClient;
+}
 
 // In-memory content cache for local dev
 const localContentCache = new Map<
@@ -75,7 +81,7 @@ export async function setCachedContent(
     });
     return;
   }
-  await redis.set(cacheKey, JSON.stringify(payload), {
+  await getRedis().set(cacheKey, JSON.stringify(payload), {
     ex: CONTENT_TTL_SECONDS,
   });
 }
@@ -92,7 +98,7 @@ export async function getCachedContent(
       return entry.payload;
     }
   } else {
-    const cached = await redis.get<string>(cacheKey);
+    const cached = await getRedis().get<string>(cacheKey);
     if (cached) {
       try {
         return JSON.parse(cached) as CachedContent;
