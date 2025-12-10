@@ -12,6 +12,13 @@
   "framework": "nextjs",
   "public": false,
   "regions": ["iad1"],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/docs",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
