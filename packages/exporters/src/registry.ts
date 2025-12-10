@@ -5,19 +5,14 @@
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, resolve, sep } from "node:path";
-import { pathToFileURL, fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
 import Ajv, { type ErrorObject } from "ajv";
-import type { AnySchemaObject } from "ajv";
 import addFormats from "ajv-formats";
 import type {
   ExporterPlugin,
   ExporterManifest,
 } from "@aligntrue/plugin-contracts";
-
-// Determine schema path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const schemaPath = join(__dirname, "../schema/manifest.schema.json");
+import manifestSchema from "./schemas/manifest.schema.json" with { type: "json" };
 
 /**
  * Registry for exporter plugins with hybrid manifest + handler support
@@ -36,9 +31,6 @@ export class ExporterRegistry {
     addFormats(this.ajv);
 
     // Load and add manifest schema
-    const manifestSchema = JSON.parse(
-      readFileSync(schemaPath, "utf-8"),
-    ) as AnySchemaObject;
     this.ajv.addSchema(manifestSchema, "manifest");
   }
 

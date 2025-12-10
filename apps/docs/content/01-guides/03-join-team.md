@@ -69,11 +69,11 @@ Create rules in `.aligntrue/rules/` with `scope: personal` in the frontmatter:
 ---
 title: My Preferences
 scope: personal
-gitignore: true
+gitignore: true # Exports gitignored; source stays tracked unless you gitignore it
 ---
 ```
 
-These rules will be gitignored and won't require team approval.
+These rules will have their exported files gitignored and won't require team approval. The source markdown stays tracked unless you gitignore it or run with `git.mode: ignore`.
 
 **Option 3: Personal rules (with personal remote)**
 

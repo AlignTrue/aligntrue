@@ -96,7 +96,7 @@ The three dimensions of rule privacy:
 
 | Dimension          | Setting                       | What it controls                                | Values                                                                                                |
 | ------------------ | ----------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Git visibility** | `gitignore: true/false`       | Is the rule committed to your repo?             | `false` (committed) or `true` (gitignored)                                                            |
+| **Git visibility** | `gitignore: true/false`       | Are the rule’s exported files committed?        | `false` (committed) or `true` (exports gitignored; source file unchanged)                             |
 | **Approval scope** | `scope: team/personal/shared` | Does it require team approval? (team mode only) | `team` (requires approval), `personal` (bypass approval), `shared` (tracked, routed to shared remote) |
 | **Remote routing** | `remotes` config              | Where are rules synced?                         | Personal remote, shared remote, or custom remotes                                                     |
 
@@ -264,24 +264,23 @@ remotes:
 
 ## Setting git visibility
 
-Use `gitignore: true` in rule frontmatter to exclude from git:
+Use `gitignore: true` in rule frontmatter to exclude the rule’s exported files from git (source stays tracked unless you gitignore it or run with `git.mode: ignore`):
 
 ```yaml
 ---
 title: My Private Notes
 gitignore: true
 ---
-# Content here won't be committed
+# Exported files like `.cursor/rules/my-private-notes.mdc` are auto-added to a managed block in `.gitignore`.
+# The source `.aligntrue/rules/my-private-notes.md` remains tracked unless you gitignore it separately.
 ```
-
-AlignTrue will automatically add matching patterns to `.gitignore`.
 
 ### Git visibility table
 
-| Setting                      | Behavior                             | Use case                                  |
-| ---------------------------- | ------------------------------------ | ----------------------------------------- |
-| `gitignore: false` (default) | Rule file committed to git           | Team standards, shared guidelines         |
-| `gitignore: true`            | Rule file gitignored (not committed) | Sensitive configs, machine-specific notes |
+| Setting                      | Behavior                                                                | Use case                                |
+| ---------------------------- | ----------------------------------------------------------------------- | --------------------------------------- |
+| `gitignore: false` (default) | Rule source and exports committed                                       | Team standards, shared guidelines       |
+| `gitignore: true`            | Rule exports gitignored; source file unaffected unless you gitignore it | Sensitive exports or local-only exports |
 
 ## Setting approval scope
 

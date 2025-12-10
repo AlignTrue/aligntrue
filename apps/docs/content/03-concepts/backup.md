@@ -55,18 +55,18 @@ sources:
   - type: git
     url: git@github.com:me/personal.git
     personal: true # Personal - no approval needed
-    gitignore: true # Not committed to team repo
+    gitignore: true # Exports gitignored; source file still tracked unless you gitignore it
 ```
 
 This lets team members have personal rules that:
 
 - Update without team approval
-- Are not committed to the shared repository
+- Keep their exported artifacts out of the shared repository (sources remain tracked unless you also gitignore them)
 - Can be pushed to their own private repository (pushed on sync by default; set `auto: false` to push manually with `aligntrue remotes push`)
 
 ## Gitignored rules
 
-Rules from sources with `gitignore: true` or rules with `gitignore: true` in frontmatter are automatically added to `.gitignore`:
+Rules from sources with `gitignore: true` or rules with `gitignore: true` in frontmatter automatically add their **exported files** to a managed block in `.gitignore` (source files are unchanged):
 
 ```yaml
 # In config

@@ -1,15 +1,10 @@
 import Ajv, { type ValidateFunction, type ErrorObject } from "ajv";
 import addFormats from "ajv-formats";
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
 import { parseYamlToJson, computeAlignHash } from "./canonicalize.js";
 import type { RuleFrontmatter } from "./frontmatter.js";
+import alignSchema from "./schemas/align.schema.json" with { type: "json" };
 
 // Load the JSON Schema
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const schemaPath = join(__dirname, "../schema/align.schema.json");
-const alignSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
 // Initialize Ajv in strict mode
 const ajv = new Ajv({
