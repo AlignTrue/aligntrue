@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 
 type CodePreviewProps = {
   filename?: string;
+  fileSelector?: ReactNode;
   content: string;
   loading?: boolean;
   secondaryAction?: ReactNode;
@@ -11,6 +12,7 @@ type CodePreviewProps = {
 
 export function CodePreview({
   filename = "rules.md",
+  fileSelector,
   content,
   loading,
   secondaryAction,
@@ -38,7 +40,9 @@ export function CodePreview({
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
           </span>
-          <span className="ml-2">{filename}</span>
+          <span className="ml-2 flex-1 min-w-0">
+            {fileSelector ?? <span className="block">{filename}</span>}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Button

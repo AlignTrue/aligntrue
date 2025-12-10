@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
+import { BetaBanner } from "@/app/components/BetaBanner";
 import { CodePreview } from "@/components/CodePreview";
 import { CommandBlock } from "@/components/CommandBlock";
+import { agentOptions } from "@/lib/aligns/agents";
 import {
   convertAlignContentForFormat,
   type TargetFormat,
@@ -41,88 +43,6 @@ type Props = {
   align: AlignRecord;
   content: CachedContent | null;
 };
-
-const agentOptions: Array<{
-  id: AgentId;
-  label: string;
-  format: TargetFormat;
-  exporter: string;
-}> = [
-  {
-    id: "all",
-    label: "All agents (AGENTS.md)",
-    format: "align-md",
-    exporter: "agents",
-  },
-  {
-    id: "cursor",
-    label: "Cursor (.cursor/rules/*.mdc)",
-    format: "cursor-mdc",
-    exporter: "cursor",
-  },
-  {
-    id: "claude",
-    label: "Claude Code (CLAUDE.md)",
-    format: "align-md",
-    exporter: "claude",
-  },
-  {
-    id: "gemini",
-    label: "Gemini (GEMINI.md)",
-    format: "align-md",
-    exporter: "gemini",
-  },
-  { id: "zed", label: "Zed (ZED.md)", format: "align-md", exporter: "zed" },
-  { id: "warp", label: "Warp (WARP.md)", format: "align-md", exporter: "warp" },
-  {
-    id: "windsurf",
-    label: "Windsurf (WINDSURF.md)",
-    format: "align-md",
-    exporter: "windsurf",
-  },
-  {
-    id: "copilot",
-    label: "GitHub Copilot (AGENTS.md)",
-    format: "align-md",
-    exporter: "agents",
-  },
-  {
-    id: "cline",
-    label: "Cline (.clinerules/*.md)",
-    format: "align-md",
-    exporter: "cline",
-  },
-  {
-    id: "augmentcode",
-    label: "AugmentCode (.augment/rules/*.md)",
-    format: "align-md",
-    exporter: "augmentcode",
-  },
-  {
-    id: "amazonq",
-    label: "Amazon Q (.amazonq/rules/*.md)",
-    format: "align-md",
-    exporter: "amazonq",
-  },
-  {
-    id: "openhands",
-    label: "OpenHands (.openhands/*.md)",
-    format: "align-md",
-    exporter: "openhands",
-  },
-  {
-    id: "antigravity",
-    label: "Antigravity (.agent/rules/*.md)",
-    format: "align-md",
-    exporter: "antigravity",
-  },
-  {
-    id: "kiro",
-    label: "Kiro (.kiro/steering/*.md)",
-    format: "align-md",
-    exporter: "kiro",
-  },
-];
 
 function useShareUrl() {
   const [shareUrl, setShareUrl] = useState("");
@@ -379,6 +299,7 @@ export function AlignDetailClient({ align, content }: Props) {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      <BetaBanner />
       <SiteHeader />
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4 overflow-hidden">
         <Card variant="surface">
@@ -555,46 +476,41 @@ export function AlignDetailClient({ align, content }: Props) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
-            <CardTitle className="text-xl">
-              {isPack ? "Rule Files Preview" : "Rule File Preview"}
-            </CardTitle>
-            {isPack && packFiles.length > 0 && (
-              <Select
-                value={selectedPath}
-                onValueChange={(value) => setSelectedPath(value)}
-              >
-                <SelectTrigger className="w-full sm:w-auto sm:min-w-[260px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {packFiles.map((file) => (
-                    <SelectItem key={file.path} value={file.path}>
-                      {file.path} ({formatBytes(file.size)})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </CardHeader>
-          <CardContent>
-            {!previewText && (
-              <p className="text-muted-foreground">
-                Content unavailable. Try refreshing; the source may be
-                temporarily unreachable.
-              </p>
-            )}
-            {previewText && (
-              <CodePreview
-                filename={previewFilename}
-                content={converting ? "Converting..." : previewText}
-                loading={converting}
-                secondaryAction={downloadButton}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          {!previewText && (
+            <p className="text-muted-foreground">
+              Content unavailable. Try refreshing; the source may be temporarily
+              unreachable.
+            </p>
+          )}
+          {previewText && (
+            <CodePreview
+              filename={previewFilename}
+              fileSelector={
+                isPack && packFiles.length > 0 ? (
+                  <Select
+                    value={selectedPath}
+                    onValueChange={(value) => setSelectedPath(value)}
+                  >
+                    <SelectTrigger className="w-full sm:w-auto sm:min-w-[260px] border border-border bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packFiles.map((file) => (
+                        <SelectItem key={file.path} value={file.path}>
+                          {file.path} ({formatBytes(file.size)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : undefined
+              }
+              content={converting ? "Converting..." : previewText}
+              loading={converting}
+              secondaryAction={downloadButton}
+            />
+          )}
+        </div>
       </main>
       <SiteFooter />
     </div>
