@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   FileText,
   Globe,
+  Loader2,
   RefreshCw,
   Settings,
   Shuffle,
@@ -24,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getSubmittedUrlFromSearch } from "@/lib/aligns/urlFromSearch";
 import type { AlignRecord } from "@/lib/aligns/types";
+import { CommandBlock } from "@/components/CommandBlock";
 
 type AlignSummary = Pick<
   AlignRecord,
@@ -39,31 +41,6 @@ function ownerFromUrl(url: string | undefined): string {
   } catch {
     return "Unknown";
   }
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleCopy}
-      variant="outline"
-      size="sm"
-      className="text-sm"
-    >
-      {copied ? "✓ Copied" : "Copy"}
-    </Button>
-  );
 }
 
 async function submitUrl(url: string): Promise<string> {
@@ -93,6 +70,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [recent, setRecent] = useState<AlignSummary[]>([]);
+  const [recentLoading, setRecentLoading] = useState(true);
 
   useEffect(() => {
     const candidate = getSubmittedUrlFromSearch(window.location.search);
@@ -105,7 +83,9 @@ export default function HomePage() {
 
   useEffect(() => {
     void (async () => {
+      setRecentLoading(true);
       setRecent(await fetchList("/api/aligns/recent?limit=8"));
+      setRecentLoading(false);
     })();
   }, []);
 
@@ -155,8 +135,25 @@ export default function HomePage() {
     );
   };
 
+  const renderSkeletonCards = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, idx) => (
+        <Card key={`skeleton-${idx}`} className="h-full">
+          <CardContent className="p-4 space-y-3 animate-pulse">
+            <div className="flex items-center justify-between gap-2">
+              <div className="h-3 w-20 bg-muted rounded" />
+              <div className="h-5 w-12 bg-muted rounded-full" />
+            </div>
+            <div className="h-4 w-40 bg-muted rounded" />
+            <div className="h-3 w-24 bg-muted rounded" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
   const renderRulesTab = () => (
-    <Card className="max-w-5xl mx-auto">
+    <Card className="max-w-5xl mx-auto" variant="elevated">
       <CardContent className="p-6 md:p-7 space-y-6">
         <div className="space-y-3">
           <label className="font-semibold text-foreground">
@@ -175,7 +172,14 @@ export default function HomePage() {
               disabled={submitting}
               className="h-12 px-5 font-semibold"
             >
-              {submitting ? "Generating..." : "Generate Align"}
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="animate-spin" />
+                  Generating...
+                </span>
+              ) : (
+                "Generate Align"
+              )}
             </Button>
           </div>
           {error && (
@@ -183,12 +187,12 @@ export default function HomePage() {
           )}
         </div>
 
-        {recent.length > 0 && (
+        {(recentLoading || recent.length > 0) && (
           <section className="pt-2 space-y-2">
             <h3 className="text-lg font-semibold text-foreground">
               Recent Aligns
             </h3>
-            {renderCards(recent)}
+            {recentLoading ? renderSkeletonCards() : renderCards(recent)}
           </section>
         )}
       </CardContent>
@@ -196,58 +200,49 @@ export default function HomePage() {
   );
 
   const renderScratchTab = () => (
-    <Card className="max-w-5xl mx-auto">
-      <CardContent className="p-6 md:p-7">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[
-            {
-              step: "1",
-              title: "Install",
-              command: "npm install -g aligntrue",
-              text: (
-                <>
-                  Install to manage agent rules (Cursor <code>.mdc</code>,{" "}
-                  <code>AGENTS.md</code>, <code>CLAUDE.md</code>, etc.).
-                </>
-              ),
-            },
-            {
-              step: "2",
-              title: "Init & Sync",
-              command: "aligntrue init",
-              text: (
-                <>
-                  Auto-detects, imports, and syncs existing rules or creates
-                  smart defaults if needed.
-                </>
-              ),
-            },
-          ].map((card) => (
-            <Card key={card.step} className="h-full">
-              <CardHeader className="space-y-2 text-center">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                    {card.step}
-                  </div>
-                  <CardTitle className="text-lg">{card.title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 text-center">
-                <div className="flex items-center justify-center gap-2 flex-wrap">
-                  <code className="px-3 py-2 bg-muted border border-border rounded-md text-sm font-medium">
-                    {card.command}
-                  </code>
-                  <CopyButton text={card.command} />
-                </div>
-                <p className="text-sm text-muted-foreground leading-6">
-                  {card.text}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="grid gap-4 sm:grid-cols-2 max-w-5xl mx-auto">
+      {[
+        {
+          step: "1",
+          title: "Install",
+          command: "npm install -g aligntrue",
+          text: (
+            <>
+              Install to manage agent rules (Cursor <code>.mdc</code>,{" "}
+              <code>AGENTS.md</code>, <code>CLAUDE.md</code>, etc.).
+            </>
+          ),
+        },
+        {
+          step: "2",
+          title: "Init & Sync",
+          command: "aligntrue init",
+          text: (
+            <>
+              Auto-detects, imports, and syncs existing rules or creates smart
+              defaults if needed.
+            </>
+          ),
+        },
+      ].map((card) => (
+        <Card key={card.step} className="h-full" variant="surface">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                {card.step}
+              </div>
+              <CardTitle className="text-lg">{card.title}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 text-center">
+            <CommandBlock code={card.command} copyLabel="Copy" showPrompt />
+            <p className="text-sm text-muted-foreground leading-6 text-balance">
+              {card.text}
+            </p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 
   return (
@@ -260,17 +255,22 @@ export default function HomePage() {
 
       <main id="main-content" className="text-foreground">
         <section
-          className="text-center px-4 py-12 md:py-16"
+          className="relative text-center px-4 py-14 md:py-20 hero-surface hero-background"
           aria-labelledby="hero-heading"
         >
-          <div className="max-w-6xl mx-auto">
+          <div className="grid-pattern" aria-hidden="true" />
+          <div className="relative max-w-6xl mx-auto space-y-8">
             <h1
               id="hero-heading"
-              className="text-4xl md:text-5xl font-bold leading-tight text-foreground mb-6 max-w-[48ch] mx-auto text-balance"
+              className="text-5xl md:text-6xl font-bold leading-[1.15] text-foreground max-w-5xl mx-auto text-balance fade-in-up"
+              data-delay="0"
             >
               Sync + manage rules across AI agents, projects & teams.
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-7 md:leading-8 max-w-[65ch] md:max-w-3xl mx-auto mb-8 text-pretty">
+            <p
+              className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty fade-in-up"
+              data-delay="1"
+            >
               Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
               <strong>Start in 60 seconds.</strong>
             </p>
@@ -278,13 +278,14 @@ export default function HomePage() {
             <Tabs
               value={activeTab}
               onValueChange={(v) => setActiveTab(v as "rules" | "scratch")}
-              className="w-full mt-2"
+              className="w-full fade-in-up"
+              data-delay="2"
             >
-              <TabsList className="max-w-xl mx-auto flex justify-center gap-1">
-                <TabsTrigger value="rules" className="text-base">
+              <TabsList className="max-w-xl mx-auto flex justify-center gap-1 rounded-2xl bg-muted/70 border border-border p-1.5 shadow-sm">
+                <TabsTrigger value="rules" className="text-base px-4 py-2">
                   Start with rules
                 </TabsTrigger>
-                <TabsTrigger value="scratch" className="text-base">
+                <TabsTrigger value="scratch" className="text-base px-4 py-2">
                   Start from scratch
                 </TabsTrigger>
               </TabsList>
@@ -294,7 +295,10 @@ export default function HomePage() {
               </div>
             </Tabs>
 
-            <div className="hero-buttons flex flex-wrap justify-center gap-3 mt-8">
+            <div
+              className="hero-buttons flex flex-wrap justify-center gap-3 fade-in-up"
+              data-delay="3"
+            >
               <Button asChild className="px-5 py-2.5">
                 <Link
                   href={
@@ -334,14 +338,14 @@ export default function HomePage() {
         </section>
 
         <section
-          className="bg-background border-b border-border px-4 py-12"
+          className="bg-muted border-b border-border px-4 py-12"
           aria-labelledby="features-heading"
         >
           <div className="max-w-6xl mx-auto">
             <h2 id="features-heading" className="sr-only">
               Key Features
             </h2>
-            <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+            <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto place-items-center">
               {[
                 {
                   icon: Zap,
@@ -359,11 +363,11 @@ export default function HomePage() {
                   text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
                 },
               ].map((feature) => (
-                <Card key={feature.title} className="h-full">
-                  <CardContent className="p-5 space-y-3">
+                <Card key={feature.title} className="h-full" variant="feature">
+                  <CardContent className="p-5 space-y-3 text-center">
                     <feature.icon
                       size={32}
-                      className="text-primary"
+                      className="text-primary transition-transform duration-200 card-icon mx-auto"
                       aria-hidden="true"
                     />
                     <h3 className="text-lg font-semibold text-foreground">
@@ -412,20 +416,19 @@ export default function HomePage() {
                 text: "Use variables, path selectors & overlays for sharing + team friendly customization.",
               },
             ].map((item) => (
-              <div
-                key={item.title}
-                className="text-center bg-muted rounded-lg p-5 border border-border"
-              >
-                <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-primary text-primary-foreground">
-                  <item.icon size={24} aria-hidden="true" />
-                </div>
-                <h3 className="text-base font-semibold text-foreground mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-6">
-                  {item.text}
-                </p>
-              </div>
+              <Card key={item.title} variant="feature" className="text-center">
+                <CardContent className="p-5 space-y-4">
+                  <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center bg-primary text-primary-foreground">
+                    <item.icon size={24} aria-hidden="true" />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-6">
+                    {item.text}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>

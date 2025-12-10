@@ -14,6 +14,7 @@ export const SUPPORTED_AGENT_IDS = [
   "augmentcode",
   "amazonq",
   "openhands",
+  "antigravity",
   "kiro",
 ] as const;
 
@@ -157,6 +158,14 @@ export function convertContent(
       };
     }
     case "openhands": {
+      const fm = minimalFrontmatter(data);
+      return {
+        text: withFrontmatter(fm, body),
+        filename: "rules.md",
+        extension: "md",
+      };
+    }
+    case "antigravity": {
       const fm = minimalFrontmatter(data);
       return {
         text: withFrontmatter(fm, body),
