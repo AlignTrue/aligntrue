@@ -10,6 +10,7 @@ import {
   fetchRawWithCache,
   setCachedContent,
 } from "@/lib/aligns/content-cache";
+import { buildPackAlignRecord } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 export const dynamic = "force-dynamic";
@@ -75,23 +76,13 @@ export async function POST(req: Request) {
       const existing = await store.get(id);
       const now = new Date().toISOString();
 
-      const record: AlignRecord = {
-        schemaVersion: 1,
+      const record = buildPackAlignRecord({
         id,
-        url: body.url,
-        normalizedUrl: pack.manifestUrl,
-        provider: "github",
-        kind: "pack",
-        title: pack.info.manifestSummary ?? pack.info.manifestId,
-        // Avoid duplicating the title; only surface a secondary field if present
-        description: pack.info.manifestAuthor ?? null,
-        fileType: "markdown",
-        createdAt: existing?.createdAt ?? now,
-        lastViewedAt: now,
-        viewCount: existing?.viewCount ?? 0,
-        installClickCount: existing?.installClickCount ?? 0,
-        pack: pack.info,
-      };
+        pack,
+        sourceUrl: body.url,
+        existing,
+        now,
+      });
 
       await store.upsert(record);
       await setCachedContent(id, { kind: "pack", files: pack.files });
