@@ -1,6 +1,17 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 const REDIRECT_PATH = "/docs";
 
 export default function HomeRedirectPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(REDIRECT_PATH);
+  }, [router]);
+
   return (
     <div className="p-6 text-center">
       <p className="text-lg font-medium">Documentation moved.</p>
