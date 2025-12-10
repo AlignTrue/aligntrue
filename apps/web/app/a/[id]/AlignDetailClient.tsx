@@ -35,7 +35,7 @@ import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
 import { downloadFile } from "@/lib/download";
-import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import { formatBytes } from "@/lib/utils";
 import { PageLayout } from "@/components/PageLayout";
 
@@ -60,20 +60,6 @@ async function postEvent(id: string, type: "view" | "install") {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ type }),
   }).catch(() => {});
-}
-
-function filenameFromUrl(url: string): string {
-  if (!url) return "rules.md";
-  try {
-    const parsed = new URL(url);
-    const parts = parsed.pathname.split("/").filter(Boolean);
-    const last = parts[parts.length - 1];
-    if (last) return last;
-  } catch {
-    // fall through to string fallback
-  }
-  const fallbackParts = url.split("/").filter(Boolean);
-  return fallbackParts[fallbackParts.length - 1] || "rules.md";
 }
 
 export function AlignDetailClient({ align, content }: Props) {
@@ -118,7 +104,6 @@ export function AlignDetailClient({ align, content }: Props) {
     () => parseGitHubUrl(align.normalizedUrl),
     [align.normalizedUrl],
   );
-
   const selectedFile = useMemo(() => {
     if (!isPack) return null;
     return (

@@ -29,3 +29,16 @@ export function parseGitHubUrl(url?: string | null): ParsedGitHubUrl {
 
   return { owner, repo, ownerUrl };
 }
+
+export function filenameFromUrl(url?: string | null): string {
+  if (!url) return "rules.md";
+  const parsed = safeParse(url);
+  if (parsed) {
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last) return last;
+  }
+
+  const fallbackParts = url.split("/").filter(Boolean);
+  return fallbackParts[fallbackParts.length - 1] || "rules.md";
+}

@@ -24,13 +24,21 @@ import { Badge } from "@/components/ui/badge";
 import { getSubmittedUrlFromSearch } from "@/lib/aligns/urlFromSearch";
 import type { AlignRecord } from "@/lib/aligns/types";
 import { CommandBlock } from "@/components/CommandBlock";
-import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import { PageLayout } from "@/components/PageLayout";
 import { SkeletonCard } from "@/components/SkeletonCard";
+import { formatBytes } from "@/lib/utils";
 
 type AlignSummary = Pick<
   AlignRecord,
-  "id" | "title" | "description" | "provider" | "normalizedUrl"
+  | "id"
+  | "title"
+  | "description"
+  | "provider"
+  | "normalizedUrl"
+  | "kind"
+  | "url"
+  | "pack"
 >;
 
 async function submitUrl(url: string): Promise<string> {
@@ -55,7 +63,7 @@ async function fetchList(path: string): Promise<AlignSummary[]> {
 
 export default function HomePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"rules" | "scratch">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "cli">("rules");
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,12 +72,22 @@ export default function HomePage() {
 
   useEffect(() => {
     const candidate = getSubmittedUrlFromSearch(window.location.search);
-    if (candidate) {
-      setUrlInput(candidate);
-      setActiveTab("rules");
-      void handleSubmit(candidate);
-    }
-  }, []);
+    if (!candidate) return;
+    setUrlInput(candidate);
+    setActiveTab("rules");
+    void (async () => {
+      setSubmitting(true);
+      setError(null);
+      try {
+        const id = await submitUrl(candidate);
+        router.push(`/a/${id}`);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Submission failed");
+      } finally {
+        setSubmitting(false);
+      }
+    })();
+  }, [router]);
 
   useEffect(() => {
     void (async () => {
@@ -101,21 +119,63 @@ export default function HomePage() {
     const limited = items.slice(0, 6);
     if (!limited.length) return null;
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-1">
         {limited.map((item) => {
           const { owner } = parseGitHubUrl(item.normalizedUrl);
-          const isPack = item.title?.toLowerCase().includes("pack");
+          const isPack = item.kind === "pack";
+          const filename = filenameFromUrl(item.normalizedUrl || item.url);
+          const fileCount = isPack ? (item.pack?.files?.length ?? 0) : 0;
+          const sizeLabel =
+            isPack && item.pack?.totalBytes
+              ? formatBytes(item.pack.totalBytes)
+              : null;
+          const packMetaLabel =
+            isPack && fileCount
+              ? `${fileCount} file${fileCount === 1 ? "" : "s"}${
+                  sizeLabel ? ` · ${sizeLabel}` : ""
+                }`
+              : sizeLabel;
           return (
-            <Link key={item.id} href={`/a/${item.id}`}>
-              <Card className="h-full transition hover:shadow-md">
-                <CardContent className="p-4 space-y-2">
+            <Link key={item.id} href={`/a/${item.id}`} className="block h-full">
+              <Card className="h-full transition hover:shadow-md hover:-translate-y-0.5">
+                <CardContent className="p-4 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm text-muted-foreground">{owner}</p>
-                    {isPack && <Badge variant="secondary">Pack</Badge>}
+                    <span className="text-xs sm:text-[11px] text-muted-foreground truncate">
+                      <span className="font-medium text-foreground/80">
+                        {filename}
+                      </span>
+                      <span className="mx-1 text-border">•</span>
+                      <span className="font-semibold text-foreground">
+                        {owner}
+                      </span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={isPack ? "default" : "secondary"}
+                        className="text-[11px] py-1"
+                      >
+                        {isPack ? "Pack" : "Rule"}
+                      </Badge>
+                      {packMetaLabel && (
+                        <Badge
+                          variant="outline"
+                          className="font-semibold text-[11px] py-1"
+                        >
+                          {packMetaLabel}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    {item.title || "Untitled align"}
-                  </h3>
+                  <div className="space-y-1.5">
+                    <h3 className="text-base font-semibold text-foreground line-clamp-2 text-left">
+                      {item.title || "Untitled align"}
+                    </h3>
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-6">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </Link>
@@ -134,19 +194,20 @@ export default function HomePage() {
   );
 
   const renderRulesTab = () => (
-    <Card className="max-w-5xl mx-auto" variant="elevated">
+    <Card className="max-w-5xl mx-auto" variant="surface">
       <CardContent className="p-6 md:p-7 space-y-6">
         <div className="space-y-3">
-          <label className="font-semibold text-foreground">
+          <label className="font-semibold text-foreground" htmlFor="align-url">
             Enter a GitHub URL with AI rules (.mdc, .md, etc.)
           </label>
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
+              id="align-url"
               type="url"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="Paste a GitHub URL, supports blob and raw URLs."
-              className="h-12 text-base flex-1"
+              placeholder="https://github.com/user/repo/blob/main/rules/..."
+              className="h-12 text-base flex-1 bg-muted"
             />
             <Button
               onClick={() => void handleSubmit()}
@@ -185,7 +246,7 @@ export default function HomePage() {
     </Card>
   );
 
-  const renderScratchTab = () => (
+  const renderCLITab = () => (
     <div className="grid gap-4 sm:grid-cols-2 max-w-5xl mx-auto">
       {[
         {
@@ -205,8 +266,8 @@ export default function HomePage() {
           command: "aligntrue init",
           text: (
             <>
-              Auto-detects, imports, and syncs existing rules or creates smart
-              defaults if needed.
+              Auto-detects existing rules, imports them, and syncs or creates
+              smart defaults.
             </>
           ),
         },
@@ -247,6 +308,8 @@ export default function HomePage() {
             data-delay="0"
           >
             <GitHubIcon size={14} />
+            <span>AlignTrue CLI</span>
+            <span className="text-border">|</span>
             <span>Open Source</span>
             <span className="text-border">|</span>
             <span>MIT License</span>
@@ -262,27 +325,27 @@ export default function HomePage() {
             className="text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty fade-in-up"
             data-delay="2"
           >
-            Write once, sync everywhere. 20+ agents supported. Extensible.{" "}
+            Write once, sync everywhere. Works with 20+ agents. Extensible.{" "}
             <strong>Start in 60 seconds.</strong>
           </p>
 
           <Tabs
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "rules" | "scratch")}
+            onValueChange={(v) => setActiveTab(v as "rules" | "cli")}
             className="w-full fade-in-up"
             data-delay="3"
           >
             <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-1 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm">
-              <TabsTrigger value="rules" className="text-base px-4 py-2">
-                Start with rules
+              <TabsTrigger value="cli" className="text-base px-4 py-2">
+                Install CLI
               </TabsTrigger>
-              <TabsTrigger value="scratch" className="text-base px-4 py-2">
-                Start from scratch
+              <TabsTrigger value="rules" className="text-base px-4 py-2">
+                Import Rules
               </TabsTrigger>
             </TabsList>
             <div className="mt-4">
+              <TabsContent value="cli">{renderCLITab()}</TabsContent>
               <TabsContent value="rules">{renderRulesTab()}</TabsContent>
-              <TabsContent value="scratch">{renderScratchTab()}</TabsContent>
             </div>
           </Tabs>
 
@@ -350,7 +413,7 @@ export default function HomePage() {
               },
               {
                 icon: Globe,
-                title: "20+ agents supported",
+                title: "Works with 20+ agents",
                 text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
               },
             ].map((feature) => (

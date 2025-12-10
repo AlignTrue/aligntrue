@@ -47,8 +47,10 @@ export function CommandBlock({
   return (
     <div
       className={cn(
-        "flex flex-col gap-0 sm:flex-row sm:items-center border border-border rounded-xl shadow-sm",
-        variant === "terminal" ? "bg-card" : "bg-muted",
+        "flex flex-col gap-0 sm:flex-row sm:items-center rounded-xl",
+        variant === "terminal"
+          ? "bg-background ring-1 ring-inset ring-border"
+          : "bg-muted border border-border shadow-sm",
         className,
       )}
     >
@@ -69,7 +71,7 @@ export function CommandBlock({
           <div
             className={cn(
               variant === "terminal"
-                ? "bg-card text-card-foreground"
+                ? "bg-transparent text-card-foreground"
                 : "bg-muted text-foreground",
             )}
           >

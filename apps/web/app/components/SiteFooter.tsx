@@ -58,6 +58,7 @@ export function SiteFooter() {
             <img
               src="https://img.shields.io/github/actions/workflow/status/AlignTrue/aligntrue/ci.yml?label=CI&logo=github"
               alt="CI status"
+              loading="lazy"
               className="h-5 block"
             />
           </a>
@@ -71,6 +72,7 @@ export function SiteFooter() {
             <img
               src="https://img.shields.io/npm/v/aligntrue.svg"
               alt="npm version"
+              loading="lazy"
               className="h-5 block"
             />
           </a>
@@ -84,6 +86,7 @@ export function SiteFooter() {
             <img
               src="https://img.shields.io/badge/node-%3E%3D20-brightgreen"
               alt="Node 20+"
+              loading="lazy"
               className="h-5 block"
             />
           </a>
@@ -97,6 +100,7 @@ export function SiteFooter() {
             <img
               src="https://img.shields.io/badge/license-MIT-blue"
               alt="MIT License"
+              loading="lazy"
               className="h-5 block"
             />
           </a>

@@ -17,11 +17,46 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "AlignTrue",
-    template: "%s – AlignTrue",
+  title: { default: "AlignTrue", template: "%s – AlignTrue" },
+  description:
+    "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
+  keywords: [
+    "AI agents",
+    "Cursor rules",
+    "GitHub Copilot",
+    "Claude",
+    "team collaboration",
+    "developer tools",
+    "AI coding",
+  ],
+  icons: {
+    icon: "/favicon.ico",
   },
-  description: "AlignTrue Align Catalog",
+  openGraph: {
+    type: "website",
+    title: "AlignTrue",
+    description:
+      "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
+    url: "https://aligntrue.ai",
+    siteName: "AlignTrue",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AlignTrue - Sync AI rules across agents and teams",
+      },
+    ],
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AlignTrue",
+    description:
+      "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
+    images: ["/og-image.png"],
+  },
+  metadataBase: new URL("https://aligntrue.ai"),
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -35,12 +35,7 @@ export function CodePreview({
     <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-destructive" />
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" />
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
-          </span>
-          <span className="ml-2 flex-1 min-w-0">
+          <span className="flex-1 min-w-0">
             {fileSelector ?? <span className="block">{filename}</span>}
           </span>
         </div>
