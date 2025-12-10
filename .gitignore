@@ -118,5 +118,6 @@ apps/docs/public/_pagefind
 .cursor/rules/test_log_template.mdc
 .cursor/rules/testing.mdc
 .cursor/rules/typescript.mdc
-apps/docs/.cursor/rules/web_stack.mdc
+apps/docs/.cursor/rules/web_stack_nextra_docs.mdc
+apps/web/.cursor/rules/web_stack_website_catalog.mdc
 # END AlignTrue Generated Files

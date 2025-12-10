@@ -58,8 +58,6 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
@@ -77,17 +75,30 @@
 
 .hero-background {
   background-image:
-    radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.08) 0%, transparent 48%),
-    radial-gradient(circle at 82% 30%, hsl(var(--accent) / 0.08) 0%, transparent 42%);
+    radial-gradient(
+      circle at 20% 50%,
+      hsl(var(--primary) / 0.08) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 82% 30%,
+      hsl(var(--accent) / 0.08) 0%,
+      transparent 42%
+    );
 }
 
 .grid-pattern {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
     linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
   background-size: clamp(36px, 8vw, 64px) clamp(36px, 8vw, 64px);
-  mask-image: radial-gradient(circle at 50% 35%, rgba(0, 0, 0, 0.6), transparent 70%);
+  mask-image: radial-gradient(
+    circle at 50% 35%,
+    rgba(0, 0, 0, 0.6),
+    transparent 70%
+  );
   pointer-events: none;
   opacity: 0.6;
 }

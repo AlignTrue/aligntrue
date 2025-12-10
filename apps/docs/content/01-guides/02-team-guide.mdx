@@ -58,6 +58,7 @@ Notes:
 
 - One scope per rule. Use `remotes.custom[]` for extra destinations; custom remotes are additive to scope routing and concatenate across team + personal configs.
 - Sources with `personal: true` mark all imported rules as `scope: personal` and gitignore them.
+- Solo mode routes all rules to `remotes.personal` (unless `scope: shared` with a shared remote). See [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for mode-based routing.
 
 ## Team mode features
 

@@ -63,7 +63,7 @@ In team mode, configuration is split into two files:
 
 **Type:** `object`
 
-Controls where rules are pushed when you run `aligntrue remotes push`.
+Controls where rules are pushed. Remotes push during `aligntrue sync` by default unless you set `auto: false` on a remote; use `aligntrue remotes push` for explicit/manual pushes.
 
 | Key                | Used for                   | Scope                 | Config file                       |
 | ------------------ | -------------------------- | --------------------- | --------------------------------- |
@@ -71,39 +71,7 @@ Controls where rules are pushed when you run `aligntrue remotes push`.
 | `remotes.shared`   | Shared/public rules        | `scope: shared`       | Team (or personal if you publish) |
 | `remotes.custom[]` | Extra pattern-based copies | Additive to any scope | Team + personal (concatenated)    |
 
-Rules have a single `scope` (`team`, `personal`, or `shared`). To send a rule to multiple remotes, keep one scope and add `remotes.custom[]` entries with `include` patterns.
-
-Examples:
-
-```yaml
-# .aligntrue/config.team.yaml
-remotes:
-  shared: git@github.com:org/shared-rules.git
-  custom:
-    - id: lint-pack
-      url: git@github.com:org/lint-rules.git
-      include: ["lint*.md"]
-
-# .aligntrue/config.yaml (personal)
-remotes:
-  personal: git@github.com:me/personal-rules.git
-  custom:
-    - id: my-a11y-pack
-      url: git@github.com:me/a11y-rules.git
-      include: ["a11y*.md"]
-```
-
-Routing results (team mode):
-
-- `scope: team` → main repo only (not pushed).
-- `scope: shared` → `remotes.shared` + any matching `custom` remotes.
-- `scope: personal` → `remotes.personal` + any matching `custom` remotes.
-
-FAQs:
-
-- **Can a rule be both personal and shared?** No, one `scope` per rule. Use custom remotes for extra destinations.
-- **Can the team define `remotes.shared`?** Yes, put it in `config.team.yaml`. Personal config can set it too for your own shared pack.
-- **Do custom remotes merge?** Yes. Team and personal `remotes.custom` arrays concatenate; use unique `id` values to avoid confusion.
+Rules have a single `scope` (`team`, `personal`, or `shared`). To send a rule to multiple remotes, keep one scope and add `remotes.custom[]` entries with `include` patterns. Solo mode routes all rules to `remotes.personal` (unless `scope: shared` and a shared remote exists); team/enterprise use scope-based routing. For routing details, see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
 
 ## Core fields
 
@@ -500,7 +468,7 @@ remotes:
   shared:
     url: git@github.com:org/shared-rules.git
     branch: main
-    # Optional: set auto: true to push during sync; default is manual via `aligntrue remotes push`
+    # Optional: set auto: false to require manual push
   custom:
     - id: security
       url: git@github.com:org/security-rules.git

@@ -183,6 +183,8 @@ remotes:
 
 Resulting pushes (team mode):
 
+> Routing differs in solo mode: all rules go to `remotes.personal` unless a rule is `scope: shared` and a shared remote exists. See [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for full mode-based routing.
+
 - `scope: team` → main repo only (never pushed).
 - `scope: shared` → shared remote; also to any matching custom remotes.
 - `scope: personal` → personal remote; also to any matching custom remotes.

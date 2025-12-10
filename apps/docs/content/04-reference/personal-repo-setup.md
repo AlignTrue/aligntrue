@@ -36,7 +36,7 @@ sources:
 remotes:
   personal:
     url: git@github.com:yourusername/personal-rules.git
-    # Optional: set auto: true to push during sync; default is manual via `aligntrue remotes push`
+    # Optional: set auto: false to require manual push
     branch: main # default; change if your remote uses another branch
 ```
 
@@ -46,7 +46,7 @@ remotes:
 aligntrue sync
 ```
 
-Use `aligntrue remotes push` to publish. Set `auto: true` on a remote only if you want to push during `aligntrue sync`. Use HTTPS if SSH is blocked in your environment.
+`aligntrue sync` will push by default when a remote is configured (unless you set `auto: false`). Use HTTPS if SSH is blocked in your environment.
 
 ## Prerequisites
 
@@ -118,29 +118,9 @@ Use the git source from the quick start. `personal: true` scopes imported rules 
 
 ### To sync local rules to a remote
 
-- Push is manual by default (`aligntrue remotes push`). Set `auto: true` on a remote only if you want to push during `aligntrue sync`.
+- Push is automatic during `aligntrue sync` unless you set `auto: false` on the remote.
 - `branch` defaults to `main`; set it if your remote uses another branch.
-- Mark rules with a scope so they route to the right remote:
-
-```yaml
----
-title: My Preference
-scope: personal
----
-```
-
-For custom pattern-based routing (additive):
-
-```yaml
-remotes:
-  personal: git@github.com:yourusername/personal-rules.git
-  custom:
-    - id: typescript
-      url: git@github.com:yourusername/typescript-rules.git
-      include: ["typescript*.md", "eslint*.md"]
-```
-
-Custom remotes are additive - files can go to multiple destinations.
+- For routing behavior (solo vs team, scopes, custom remotes), see [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy).
 
 ### Team mode placement
 
@@ -155,7 +135,7 @@ Custom remotes are additive - files can go to multiple destinations.
 aligntrue sync
 ```
 
-This will pull rules from configured git sources. Publish to remotes with `aligntrue remotes push` (or set `auto: true` on specific remotes to push during sync).
+This will pull rules from configured git sources. It will also push to remotes by default unless you set `auto: false` and run `aligntrue remotes push` manually.
 
 ## Troubleshooting
 

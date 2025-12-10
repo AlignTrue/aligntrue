@@ -1,6 +1,5 @@
 ---
 description: Web stack guide for Nextra documentation site (auto-applies in apps/docs/)
-scope: apps/docs
 nested_location: apps/docs
 content_hash: ee9820763d93577738484fa5ae3df06e24e45bc9b6ebea607ff8e78043789e23
 ---

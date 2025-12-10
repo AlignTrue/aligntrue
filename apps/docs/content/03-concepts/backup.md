@@ -40,7 +40,7 @@ Set `retention_days: 0` to disable automatic cleanup.
 
 ## Publishing to remotes (separate from backups)
 
-To publish or mirror rules to git remotes, configure `remotes` and use `aligntrue remotes push` (manual). This is distinct from local backups. See the Remotes section in CLI reference for usage and options.
+To publish or mirror rules to git remotes, configure `remotes`. Pushes happen during `aligntrue sync` by default unless you set `auto: false` on a remote—use `aligntrue remotes push` for explicit/manual pushes. See the remotes CLI reference and [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for routing.
 
 ## Personal sources and team mode
 
@@ -62,7 +62,7 @@ This lets team members have personal rules that:
 
 - Update without team approval
 - Are not committed to the shared repository
-- Can be pushed to their own private repository via `aligntrue remotes push`
+- Can be pushed to their own private repository (pushed on sync by default; set `auto: false` to push manually with `aligntrue remotes push`)
 
 ## Gitignored rules
 
