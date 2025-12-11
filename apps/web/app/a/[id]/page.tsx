@@ -51,6 +51,8 @@ export async function generateMetadata(props: {
     align.description ||
     `${ruleTitle} (${filenameFromUrl(align.normalizedUrl || align.url)}) in any agent format, including AGENTS.md, Cursor, Claude Code, Copilot, Gemini and 20+ other agents.`;
 
+  const ogImage = `${BASE_URL}/aligntrue-og-image.png`;
+
   return {
     title,
     description,
@@ -61,6 +63,14 @@ export async function generateMetadata(props: {
       title,
       description,
       url: `${BASE_URL}/a/${id}`,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: "AlignTrue catalog item",
+        },
+      ],
     },
   };
 }
