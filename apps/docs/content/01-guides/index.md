@@ -22,6 +22,7 @@ Learn how to use AlignTrue for your specific workflow. Choose your path based on
 | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
 | **Add external rule sources** | [Working with external sources](/docs/01-guides/04-external-sources) - Import, link, customize rules  |
 | **Share or publish rules**    | [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) - Publish, control visibility, sync |
+| **Publish packs**             | [Align packs](/docs/03-concepts/align-packs) - Build and share multi-file packs via CLI or Catalog    |
 
 ## Production & operations
 

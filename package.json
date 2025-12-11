@@ -11,6 +11,7 @@
     "dev:docs": "pnpm --filter @aligntrue/docs dev",
     "dev:packages": "pnpm -r --filter ./packages/* --parallel build --watch",
     "start:docs": "node scripts/start-docs.mjs",
+    "start:web": "node scripts/start-web.mjs",
     "generate:repo-files": "node scripts/generate-repo-files.mjs",
     "test": "turbo run test",
     "test:fast": "pnpm -r test --reporter=dot --pool=forks",

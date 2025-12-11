@@ -302,7 +302,7 @@ export function AlignDetailClient({ align, content }: Props) {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <a
-                            href="/docs/concepts/align-yaml-packs"
+                            href="/docs/03-concepts/align-packs"
                             className="text-muted-foreground hover:text-foreground"
                             aria-label="Learn how Align packs work"
                           >

@@ -18,6 +18,8 @@ Not sure how to configure your rules? Find your use case below:
 | Share team standards normally (approval required)  | [Scenario 3](#scenario-3-share-team-rules-normally)              |
 | Publish rules for others to use as a pack          | [Scenario 4](#scenario-4-publish-rules-for-others-to-use)        |
 
+> New to packs? See [Align packs](/docs/03-concepts/align-packs) for manifest fields, limits, and examples.
+
 ## Publishing rules (for maintainers)
 
 ### Setting up a shared rules repository

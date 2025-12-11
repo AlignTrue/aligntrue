@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = join(__dirname, "..");
-const DOCS_DIR = join(REPO_ROOT, "apps", "docs");
-const PORT = 3001;
+const WEB_DIR = join(REPO_ROOT, "apps", "web");
+const PORT = 3000;
 const SERVER_URL = `http://localhost:${PORT}`;
 const MAX_WAIT_MS = 30000;
 const POLL_INTERVAL_MS = 2000;
@@ -127,8 +127,8 @@ async function killProcessesOnPort(port) {
 }
 
 async function cleanCache() {
-  const nextDir = join(DOCS_DIR, ".next");
-  const outDir = join(DOCS_DIR, "out");
+  const nextDir = join(WEB_DIR, ".next");
+  const outDir = join(WEB_DIR, "out");
 
   info("Cleaning stale cache...");
 
@@ -143,7 +143,7 @@ async function cleanCache() {
 }
 
 function installDependencies() {
-  const nodeModules = join(DOCS_DIR, "node_modules");
+  const nodeModules = join(WEB_DIR, "node_modules");
   if (!existsSync(nodeModules)) {
     info("Installing dependencies...");
     try {
@@ -160,19 +160,15 @@ function installDependencies() {
 async function startDevServer() {
   return new Promise((resolve, reject) => {
     info("Starting dev server...");
-    const child = spawn(
-      "pnpm",
-      ["exec", "next", "dev", "--webpack", "-p", String(PORT)],
-      {
-        cwd: DOCS_DIR,
-        stdio: "inherit",
-        shell: true,
-        env: {
-          ...process.env,
-          PORT: String(PORT),
-        },
+    const child = spawn("pnpm", ["exec", "next", "dev", "-p", String(PORT)], {
+      cwd: WEB_DIR,
+      stdio: "inherit",
+      shell: true,
+      env: {
+        ...process.env,
+        PORT: String(PORT),
       },
-    );
+    });
 
     child.on("error", (err) => {
       reject(new Error(`Failed to start dev server: ${err.message}`));
@@ -198,7 +194,7 @@ async function waitForServer() {
 }
 
 async function main() {
-  log("\n🚀 Starting AlignTrue docs server...\n", colors.blue);
+  log("\n🚀 Starting AlignTrue web server...\n", colors.blue);
 
   // Step 1: Check if already running
   if (await checkServerResponding()) {
@@ -270,9 +266,9 @@ async function main() {
     log(
       `\n${colors.yellow}Troubleshooting:${colors.reset}\n` +
         `  1. Check if port ${PORT} is blocked by firewall\n` +
-        `  2. Try a different port: PORT=3001 pnpm dev (in apps/docs)\n` +
+        `  2. Try a different port: PORT=3001 pnpm dev (in apps/web)\n` +
         `  3. Check build errors in output above\n` +
-        `  4. Clean rebuild: rm -rf apps/docs/.next && pnpm start:docs\n` +
+        `  4. Clean rebuild: rm -rf apps/web/.next && pnpm start:web\n` +
         `  5. Check Node version: node -v (need 20+)\n`,
     );
     process.exit(1);
