@@ -279,24 +279,6 @@ export function AlignDetailClient({ align, content }: Props) {
                   <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
                     {align.title || "Untitled align"}
                   </h1>
-                  {isPack && (
-                    <TooltipProvider delayDuration={100}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href="/docs/concepts/align-yaml-packs"
-                            className="text-muted-foreground hover:text-foreground"
-                            aria-label="Learn how Align packs work"
-                          >
-                            <HelpCircle size={20} />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Learn how Align packs work
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
                 </div>
                 {align.description && (
                   <p className="text-muted-foreground leading-relaxed m-0">
@@ -306,14 +288,34 @@ export function AlignDetailClient({ align, content }: Props) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:justify-end">
-                <a
-                  href={align.normalizedUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-semibold text-foreground hover:underline"
-                >
-                  {fileNameLabel}
-                </a>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={align.normalizedUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-foreground hover:underline"
+                  >
+                    {fileNameLabel}
+                  </a>
+                  {isPack && (
+                    <TooltipProvider delayDuration={100}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href="/docs/concepts/align-yaml-packs"
+                            className="text-muted-foreground hover:text-foreground"
+                            aria-label="Learn how Align packs work"
+                          >
+                            <HelpCircle size={18} />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Learn how Align packs work
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground">by</span>
                 {ownerUrl ? (
                   <a
