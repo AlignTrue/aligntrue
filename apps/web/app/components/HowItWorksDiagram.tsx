@@ -4,59 +4,37 @@ import { useEffect, useRef } from "react";
 import mermaid from "mermaid";
 import { useTheme } from "next-themes";
 
+let mermaidInitialized = false;
+let mermaidIdCounter = 0;
+
+function ensureMermaidInitialized() {
+  if (mermaidInitialized) return;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: "base",
+    flowchart: {
+      useMaxWidth: true,
+      htmlLabels: true,
+      curve: "basis",
+    },
+  });
+  mermaidInitialized = true;
+}
+
 export function HowItWorksDiagram() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const renderIdRef = useRef(`mermaid-how-it-works-${++mermaidIdCounter}`);
   const { theme, resolvedTheme } = useTheme();
   const currentTheme = resolvedTheme || theme;
 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    ensureMermaidInitialized();
+
     const emeraldPrimary = "#10b981"; // emerald primary
     const lightMuted = "#f1f5f9"; // slate-100
     const darkMuted = "#1e293b"; // slate-800
-    const textLight = "#e2e8f0"; // slate-200
-    const textDark = "#0f172a"; // slate-900
-
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: "base",
-      themeVariables:
-        currentTheme === "dark"
-          ? {
-              primaryColor: emeraldPrimary,
-              primaryTextColor: textLight,
-              primaryBorderColor: emeraldPrimary,
-              lineColor: "#94a3b8", // slate-400
-              secondaryColor: darkMuted,
-              tertiaryColor: "#0b1220", // near background dark
-              mainBkg: "#0b1220",
-              textColor: textLight,
-              nodeBorder: emeraldPrimary,
-              clusterBkg: darkMuted,
-              clusterBorder: "#334155", // slate-700
-              edgeLabelBackground: "#0b1220",
-            }
-          : {
-              primaryColor: emeraldPrimary,
-              primaryTextColor: textDark,
-              primaryBorderColor: emeraldPrimary,
-              lineColor: "#94a3b8", // slate-400
-              secondaryColor: lightMuted,
-              tertiaryColor: "#fff",
-              mainBkg: "#fff",
-              textColor: textDark,
-              nodeBorder: emeraldPrimary,
-              clusterBkg: lightMuted,
-              clusterBorder: "#cbd5e1", // slate-300
-              edgeLabelBackground: "#fff",
-            },
-      flowchart: {
-        useMaxWidth: true,
-        htmlLabels: true,
-        curve: "basis",
-      },
-    });
 
     const diagramDefinition = `
 graph TD
@@ -81,7 +59,7 @@ graph TD
     const render = async () => {
       try {
         const { svg } = await mermaid.render(
-          `mermaid-how-it-works-${Date.now()}`,
+          renderIdRef.current,
           diagramDefinition,
         );
         if (containerRef.current) {
@@ -92,7 +70,13 @@ graph TD
       }
     };
 
-    render();
+    void render();
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+      }
+    };
   }, [currentTheme]);
 
   return (

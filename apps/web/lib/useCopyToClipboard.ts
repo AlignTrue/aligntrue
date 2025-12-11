@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type CopyOptions = {
   resetAfterMs?: number;
@@ -7,6 +7,15 @@ type CopyOptions = {
 export function useCopyToClipboard(options: CopyOptions = {}) {
   const { resetAfterMs = 1200 } = options;
   const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const copy = useCallback(
     async (text: string, onCopy?: () => void) => {
@@ -15,7 +24,7 @@ export function useCopyToClipboard(options: CopyOptions = {}) {
         setCopied(true);
         onCopy?.();
         if (resetAfterMs) {
-          setTimeout(() => setCopied(false), resetAfterMs);
+          timeoutRef.current = setTimeout(() => setCopied(false), resetAfterMs);
         }
       } catch (error) {
         console.error("copy failed", error);

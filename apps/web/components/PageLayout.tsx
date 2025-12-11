@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { BetaBanner } from "@/app/components/BetaBanner";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
 
 type PageLayoutProps = {
@@ -30,7 +31,7 @@ export function PageLayout({
         id={mainId}
         className={cn("text-foreground overflow-hidden", mainClassName)}
       >
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
       </main>
       <SiteFooter />
     </div>

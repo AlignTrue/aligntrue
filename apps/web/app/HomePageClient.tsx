@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
@@ -25,6 +25,7 @@ import { CommandBlock } from "@/components/CommandBlock";
 import { PageLayout } from "@/components/PageLayout";
 import { SkeletonCard } from "@/components/SkeletonCard";
 import { AlignCard, type AlignSummary } from "./components/AlignCard";
+import { useVisibilityRecovery } from "@/lib/useVisibilityRecovery";
 
 type SubmitResult = { id: string };
 
@@ -45,8 +46,11 @@ async function submitUrl(url: string): Promise<SubmitResult> {
   return data;
 }
 
-async function fetchList(path: string): Promise<AlignSummary[]> {
-  const response = await fetch(path);
+async function fetchList(
+  path: string,
+  init?: RequestInit,
+): Promise<AlignSummary[]> {
+  const response = await fetch(path, init);
   if (!response.ok) return [];
   return (await response.json()) as AlignSummary[];
 }
@@ -93,13 +97,33 @@ export function HomePageClient() {
     })();
   }, [router]);
 
-  useEffect(() => {
-    void (async () => {
-      setRecentLoading(true);
-      setRecent(await fetchList("/api/aligns/recent?limit=8"));
-      setRecentLoading(false);
-    })();
+  const loadRecentAligns = useCallback(async (signal?: AbortSignal) => {
+    setRecentLoading(true);
+    try {
+      const result = await fetchList("/api/aligns/recent?limit=8", {
+        signal,
+      });
+      if (!signal?.aborted) {
+        setRecent(result);
+      }
+    } finally {
+      if (!signal?.aborted) {
+        setRecentLoading(false);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadRecentAligns(controller.signal);
+    return () => controller.abort();
+  }, [loadRecentAligns]);
+
+  useVisibilityRecovery({
+    onResume: () => {
+      void loadRecentAligns();
+    },
+  });
 
   const handleSubmit = async (value?: string) => {
     const target = value ?? urlInput;
