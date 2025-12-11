@@ -5,7 +5,6 @@ import mermaid from "mermaid";
 import { useTheme } from "next-themes";
 
 let mermaidInitialized = false;
-let mermaidIdCounter = 0;
 
 function ensureMermaidInitialized() {
   if (mermaidInitialized) return;
@@ -23,7 +22,7 @@ function ensureMermaidInitialized() {
 
 export function HowItWorksDiagram() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const renderIdRef = useRef(`mermaid-how-it-works-${++mermaidIdCounter}`);
+  const renderCounterRef = useRef(0);
   const { theme, resolvedTheme } = useTheme();
   const currentTheme = resolvedTheme || theme;
 
@@ -35,6 +34,8 @@ export function HowItWorksDiagram() {
     const emeraldPrimary = "#10b981"; // emerald primary
     const lightMuted = "#f1f5f9"; // slate-100
     const darkMuted = "#1e293b"; // slate-800
+
+    const renderId = `mermaid-how-it-works-${currentTheme}-${++renderCounterRef.current}`;
 
     const diagramDefinition = `
 graph TD
@@ -58,10 +59,7 @@ graph TD
 
     const render = async () => {
       try {
-        const { svg } = await mermaid.render(
-          renderIdRef.current,
-          diagramDefinition,
-        );
+        const { svg } = await mermaid.render(renderId, diagramDefinition);
         if (containerRef.current) {
           containerRef.current.innerHTML = svg;
         }
