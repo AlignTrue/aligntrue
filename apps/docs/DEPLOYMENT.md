@@ -27,7 +27,7 @@ Set these in Vercel Dashboard → Settings → Environment Variables:
 #### Production
 
 ```
-NEXT_PUBLIC_SITE_URL=https://docs.aligntrue.ai
+NEXT_PUBLIC_SITE_URL=https://aligntrue.ai
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX  # Optional, for Google Analytics
 ```
 
