@@ -47,7 +47,7 @@ export class AntigravityExporter extends ExporterBase {
         ? normalizePath(rule.frontmatter.nested_location)
         : undefined;
       const ruleRelPath = rule.relativePath || rule.filename;
-      const filename = ruleRelPath.replace(/\.md$/, ".md");
+      const filename = ruleRelPath.replace(/\.[^.]+$/, ".md");
 
       let outputPath: string;
       if (nestedLoc) {

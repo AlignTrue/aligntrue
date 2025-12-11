@@ -53,7 +53,9 @@ export function computeGitignoreRuleExports(
 }
 
 function deriveFilenameFromSource(sourceFile: string): string {
-  const base = path.basename(sourceFile || "rule.md");
+  // Normalize backslashes before taking basename to avoid Windows paths leaking directories
+  const normalized = (sourceFile || "rule.md").replace(/\\/g, "/");
+  const base = path.basename(normalized);
   if (base.toLowerCase().endsWith(".md")) {
     return base.slice(0, -3) + ".mdc";
   }
