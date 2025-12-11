@@ -7,7 +7,7 @@ export async function GET() {
     "User-agent: *",
     "Disallow: /_next/",
     "Disallow: /_not-found/",
-    "Disallow: /*.txt",
+    "Disallow: /api/",
     "Allow: /",
     "",
     `Sitemap: ${BASE_URL}/sitemap.xml`,

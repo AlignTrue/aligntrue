@@ -51,6 +51,10 @@ export const metadata: Metadata = {
     images: ["/aligntrue-og-image.png"],
   },
   metadataBase: new URL(BASE_URL),
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
 };
 
 const structuredData = {
