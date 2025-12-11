@@ -1,9 +1,9 @@
 // apps/docs/app/layout.tsx
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { Head } from "nextra/components";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -73,40 +73,30 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <Head faviconGlyph=":">
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>{`
-          body {
-            margin: 0;
-            padding: 0;
-          }
-        `}</style>
-        <script
+      <body style={{ margin: 0, padding: 0 }}>
+        <Script
+          id="structured-data"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData),
-          }}
-        />
+          strategy="beforeInteractive"
+        >
+          {JSON.stringify(structuredData)}
+        </Script>
         {gaId && (
           <>
-            <script
-              async
+            <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
             />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${gaId}');
-                `,
-              }}
-            />
+            <Script id="ga-gtag" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
           </>
         )}
-      </Head>
-      <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Analytics />
