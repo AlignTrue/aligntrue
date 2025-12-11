@@ -6,7 +6,7 @@ This guide covers deploying the AlignTrue documentation site to Vercel.
 
 The site is a unified static-export Next.js application with:
 
-- **Root route** at `/` that client-redirects to `/docs` (no separate marketing landing page)
+- **Root route** at `/` that is redirected to `/docs` by Vercel edge (HTTP 308); static fallback shows a link only
 - **Documentation** at `/docs/*`
 - **Sitemap** at `/sitemap.xml` (lists docs and the root redirect entry)
 - **Robots.txt** at `/robots.txt`
@@ -75,9 +75,9 @@ pnpm build
 # 2. Serve the static export locally
 # (Next.js output is static; use any static file server)
 pnpm dlx serve@latest out -l 3000
-# Visit http://localhost:3000 (should redirect you to /docs)
+# Visit http://localhost:3000 (you will see the fallback link; no redirect is expected locally)
 
-# 3. Verify root redirect renders the fallback link to /docs
+# 3. Verify root fallback page shows link to /docs
 curl -s http://localhost:3000 | head -20
 
 # 4. Verify docs section responds
@@ -93,8 +93,8 @@ curl http://localhost:3000/robots.txt
 ## Post-Deploy Verification
 
 ```bash
-# 1. Root responds and shows redirect copy (JS redirect)
-curl -s https://aligntrue.ai | head -20
+# 1. Root responds with HTTP 308 to /docs (edge redirect)
+curl -I https://aligntrue.ai
 
 # 2. Docs section loads
 curl -I https://aligntrue.ai/docs
