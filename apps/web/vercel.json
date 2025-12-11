@@ -16,6 +16,14 @@
     {
       "source": "/docs/:path+",
       "destination": "https://docs.aligntrue.ai/docs/:path+"
+    },
+    {
+      "source": "/_next/:path*",
+      "destination": "https://docs.aligntrue.ai/_next/:path*"
+    },
+    {
+      "source": "/_pagefind/:path*",
+      "destination": "https://docs.aligntrue.ai/_pagefind/:path*"
     }
   ],
   "redirects": [
