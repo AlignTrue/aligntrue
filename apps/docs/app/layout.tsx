@@ -93,13 +93,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
               strategy="afterInteractive"
               onLoad={() => {
-                const w = window as typeof window & { dataLayer: unknown[] };
+                const w = window as typeof window & {
+                  dataLayer: unknown[];
+                  gtag?: (...args: unknown[]) => void;
+                };
                 w.dataLayer = w.dataLayer || [];
-                function gtag(...args: unknown[]) {
-                  w.dataLayer.push(args);
-                }
-                gtag("js", new Date());
-                gtag("config", gaId);
+                w.gtag =
+                  w.gtag ||
+                  function gtag(...args: unknown[]) {
+                    w.dataLayer.push(args);
+                  };
+                w.gtag("js", new Date());
+                w.gtag("config", gaId);
               }}
             />
           </>
