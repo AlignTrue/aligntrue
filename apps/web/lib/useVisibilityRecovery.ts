@@ -1,19 +1,15 @@
 import { useEffect } from "react";
 
-type Options = {
-  onResume?: () => void;
-};
-
-export function useVisibilityRecovery(options?: Options) {
+export function useVisibilityRecovery(onResume?: () => void) {
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
-        options?.onResume?.();
+        onResume?.();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [options]);
+  }, [onResume]);
 }

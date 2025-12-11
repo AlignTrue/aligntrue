@@ -119,10 +119,8 @@ export function HomePageClient() {
     return () => controller.abort();
   }, [loadRecentAligns]);
 
-  useVisibilityRecovery({
-    onResume: () => {
-      void loadRecentAligns();
-    },
+  useVisibilityRecovery(() => {
+    void loadRecentAligns();
   });
 
   const handleSubmit = async (value?: string) => {
