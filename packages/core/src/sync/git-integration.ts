@@ -415,6 +415,40 @@ export class GitIntegration {
   }
 
   /**
+   * Add exported files for rules marked gitignore:true to .gitignore
+   * This section is independent of git.mode (always written when provided)
+   */
+  async addGitignoreRuleExportsToGitignore(
+    workspaceRoot: string,
+    exports: Array<{ exportPaths: string[] }>,
+  ): Promise<void> {
+    if (exports.length === 0) return;
+
+    const gitignorePath = join(workspaceRoot, ".gitignore");
+    const marker = "# START AlignTrue Gitignored Rule Exports";
+    const endMarker = "# END AlignTrue Gitignored Rule Exports";
+
+    let content = "";
+    try {
+      content = readFileSync(gitignorePath, "utf-8");
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code !== "ENOENT"
+      ) {
+        throw error;
+      }
+    }
+
+    const allPaths = exports.flatMap((item) => item.exportPaths);
+    const normalized = this.normalizePathsForGitignore(workspaceRoot, allPaths);
+
+    content = this.addManagedSection(content, marker, endMarker, normalized);
+    writeFileSync(gitignorePath, content, "utf-8");
+  }
+
+  /**
    * Remove a managed section from content
    */
   private removeManagedSection(

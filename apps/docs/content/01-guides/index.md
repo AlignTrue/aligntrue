@@ -8,12 +8,13 @@ Learn how to use AlignTrue for your specific workflow. Choose your path based on
 
 ## Choose your starting point
 
-| Your situation            | Guide                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------ |
-| **I'm working alone**     | [Solo developer guide](/docs/01-guides/01-solo-developer-guide) - Fast iteration, no overhead          |
-| **I'm in a team**         | [Team guide](/docs/01-guides/02-team-guide) - Reproducible builds, drift detection, approval workflows |
-| **I'm joining a team**    | [Joining an existing team](/docs/01-guides/03-join-team) - Get set up with existing rules              |
-| **I use multiple agents** | [Multi-agent workflows](/docs/01-guides/05-multi-agent-workflows) - Keep all agents synced             |
+| Your situation                          | Guide                                                                                                          |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **I want to try aligns in the browser** | [Align Catalog guide](/docs/01-guides/10-align-catalog) - Import, convert, and share aligns without installing |
+| **I'm working alone**                   | [Solo developer guide](/docs/01-guides/01-solo-developer-guide) - Fast iteration, no overhead                  |
+| **I'm in a team**                       | [Team guide](/docs/01-guides/02-team-guide) - Reproducible builds, drift detection, approval workflows         |
+| **I'm joining a team**                  | [Joining an existing team](/docs/01-guides/03-join-team) - Get set up with existing rules                      |
+| **I use multiple agents**               | [Multi-agent workflows](/docs/01-guides/05-multi-agent-workflows) - Keep all agents synced                     |
 
 ## Using external rules
 
@@ -21,6 +22,7 @@ Learn how to use AlignTrue for your specific workflow. Choose your path based on
 | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
 | **Add external rule sources** | [Working with external sources](/docs/01-guides/04-external-sources) - Import, link, customize rules  |
 | **Share or publish rules**    | [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) - Publish, control visibility, sync |
+| **Publish packs**             | [Align packs](/docs/03-concepts/align-packs) - Build and share multi-file packs via CLI or Catalog    |
 
 ## Production & operations
 

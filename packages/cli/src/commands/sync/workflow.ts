@@ -5,7 +5,11 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import * as clack from "@clack/prompts";
-import { BackupManager, getExporterNames } from "@aligntrue/core";
+import {
+  BackupManager,
+  computeGitignoreRuleExports,
+  getExporterNames,
+} from "@aligntrue/core";
 import { clearPromptHandler } from "@aligntrue/plugin-contracts";
 import type { SyncContext } from "./context-builder.js";
 import type { SyncOptions } from "./options.js";
@@ -296,6 +300,18 @@ export async function executeSyncWorkflow(
             autoGitignore,
             gitMode,
           );
+
+          // Also add per-rule gitignore exports
+          const gitignoreRuleExports = computeGitignoreRuleExports(
+            context.bundleResult.align?.sections || [],
+            getExporterNames(config.exporters),
+          );
+          if (gitignoreRuleExports.length > 0) {
+            await gitIntegration.addGitignoreRuleExportsToGitignore(
+              cwd,
+              gitignoreRuleExports,
+            );
+          }
         }
       } catch (_error) {
         // Silent failure on gitignore update - not critical

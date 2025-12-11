@@ -18,7 +18,7 @@ AI coding assistants that AlignTrue exports rules to. Examples include:
 - **Claude Code** (AGENTS.md + Claude-specific formats)
 - **Aider**, **Windsurf**, **VS Code MCP**, and 24+ others
 
-AlignTrue supports **28+ agents** through **50 specialized exporters**, each optimized for that agent's native format.
+AlignTrue supports **33 agents** through **51 specialized exporters**, each optimized for that agent's native format.
 
 **Related:** [Agent Support](/docs/04-reference/agent-support)
 

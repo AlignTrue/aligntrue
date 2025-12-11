@@ -1,0 +1,10 @@
+id: aligntrue/stress-pack
+version: 1.0.0
+summary: "Stress test pack with 20+ rules from nested directories"
+author: "@aligntrue"
+license: MIT
+includes:
+  rules:
+    - "aligns/*.md"
+    - "remote-test/large-rules/*.md"
+    - "multi-file-rules/rules/*.md"

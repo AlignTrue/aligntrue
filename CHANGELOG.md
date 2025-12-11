@@ -5,17 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.2] - 2025-12-10
 
 ### Added
 
+- **Example starter pack** - Added `examples/example-pack/` with `.align.yaml` manifest bundling global, testing, and TypeScript rules for testing and demonstration
+- **Pack testing infrastructure** - Added manifest parsing tests, pack resolver tests with mocked GitHub API, CLI integration tests for local pack sources, and catalog pack-fetcher/submit flow tests
 - **`aligntrue team join` subcommand** - Onboard new team members by creating their personal (gitignored) config without mutating team files. Replaces the previous auto-create behavior in sync
 - **`aligntrue add source` subcommand** - Add sources via CLI with `aligntrue add source <url>`. Replaces `--link` flag for the `add` command. Use `--personal` to mark source as personal scope
 - **`aligntrue add remote` subcommand** - Add push destinations via CLI with `aligntrue add remote <url>`. Use `--personal` or `--shared` to configure scope routing
 - **`aligntrue backup --yes` flag** - Skip confirmation prompts for restore and cleanup subcommands. Useful for CI/scripts
+- **Align Catalog experience** - Added Align Catalog UI with pack browsing/submit flows, new guide/navigation, and pack selection logic/tests
+- **Antigravity exporter** - Added exporter, registry entry, schema, and tests with compatibility metrics
+- **Example pack validation** - `scripts/validate-example-packs.mjs` and `scripts/validate-all.mjs` now validate `.align.yaml` manifests in `examples/`
+- **Gitignore rule exports management** - CLI/core support and tests for exporting managed gitignore rules
 
 ### Changed
 
+- **Homepage and catalog UX/SEO** - Redesigned HomePage and AlignDetail flows (new components, tooltips, default tabs), improved pack handling, and refreshed metadata/OG assets for better SEO
+- **Storage and deploy configuration** - Migrated catalog storage from Vercel KV to Upstash Redis, refined Vercel configs, and disabled auto-deploys during validation
+- **Documentation updates** - Refreshed agent support reference and catalog/web stack guides for accuracy
 - Sync no longer tracks agent export file hashes or prompts on "dirty exports"; sync simply overwrites after creating safety backups, relying on rule/config hashes and backups for protection
 - Drift command no longer blocks when git conflicts exist; lockfile bundle hash comparison now runs regardless of working tree state
 - Backup CLI is now local-only (create/list/restore/cleanup); remote push/setup/status subcommands were removed to avoid overlap with `aligntrue remotes`
@@ -56,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Convert API validates the full set of supported agents to prevent unknown agent selections from slipping through UI options
 - Override removal now respects `--yes`/non-interactive runs and clarifies full-overlay deletion
 - Sync warns when rules disappear since the last successful run to catch accidental deletions
 - Backup restore accepts `--latest` for restoring the most recent snapshot and rejects conflicting flags

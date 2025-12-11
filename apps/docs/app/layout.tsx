@@ -5,6 +5,8 @@ import { Head } from "nextra/components";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
+
 export const metadata: Metadata = {
   title: {
     default: "AlignTrue",
@@ -29,13 +31,13 @@ export const metadata: Metadata = {
     title: "AlignTrue",
     description:
       "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
-    url: "https://aligntrue.ai",
+    url: BASE_URL,
     siteName: "AlignTrue",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
+        url: "/aligntrue-og-image.png",
+        width: 1800,
+        height: 945,
         alt: "AlignTrue - Sync AI rules across agents and teams",
       },
     ],
@@ -46,9 +48,9 @@ export const metadata: Metadata = {
     title: "AlignTrue",
     description:
       "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
-    images: ["/og-image.png"],
+    images: ["/aligntrue-og-image.png"],
   },
-  metadataBase: new URL("https://aligntrue.ai"),
+  metadataBase: new URL(BASE_URL),
 };
 
 const structuredData = {
@@ -56,7 +58,7 @@ const structuredData = {
   "@type": "SoftwareApplication",
   name: "AlignTrue",
   description: "Instantly sync rules across agents, people, projects and teams",
-  url: "https://aligntrue.ai",
+  url: BASE_URL,
   applicationCategory: "DeveloperApplication",
   operatingSystem: "macOS, Windows, Linux",
   offers: {

@@ -1,0 +1,8 @@
+id: aligntrue/example-starter
+version: 1.0.0
+summary: "Example starter pack with global, testing, and TypeScript rules"
+author: "@aligntrue"
+license: MIT
+includes:
+  rules:
+    - "rules/*.md"

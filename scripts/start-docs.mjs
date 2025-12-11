@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = join(__dirname, "..");
 const DOCS_DIR = join(REPO_ROOT, "apps", "docs");
-const PORT = 3000;
+const PORT = 3001;
 const SERVER_URL = `http://localhost:${PORT}`;
 const MAX_WAIT_MS = 30000;
 const POLL_INTERVAL_MS = 2000;
@@ -160,11 +160,19 @@ function installDependencies() {
 async function startDevServer() {
   return new Promise((resolve, reject) => {
     info("Starting dev server...");
-    const child = spawn("pnpm", ["dev"], {
-      cwd: DOCS_DIR,
-      stdio: "inherit",
-      shell: true,
-    });
+    const child = spawn(
+      "pnpm",
+      ["exec", "next", "dev", "--webpack", "-p", String(PORT)],
+      {
+        cwd: DOCS_DIR,
+        stdio: "inherit",
+        shell: true,
+        env: {
+          ...process.env,
+          PORT: String(PORT),
+        },
+      },
+    );
 
     child.on("error", (err) => {
       reject(new Error(`Failed to start dev server: ${err.message}`));

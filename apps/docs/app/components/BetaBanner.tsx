@@ -39,6 +39,10 @@ export function BetaBanner() {
 
   if (!mounted || dismissed) return null;
 
+  const backgroundColor = "hsl(160 84% 39%)";
+  const textColor = "hsl(0 0% 100%)";
+  const subtleTextColor = "hsla(0, 0%, 100%, 0.85)";
+
   return (
     <>
       <style>{`
@@ -58,16 +62,16 @@ export function BetaBanner() {
       <div
         className="beta-banner"
         style={{
-          backgroundColor: "#0d47a1",
-          color: "white",
+          backgroundColor,
+          color: textColor,
           padding: "0.75rem 1.5rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "1rem",
+          gap: "0.75rem",
           flexWrap: "wrap",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-          fontSize: "0.875rem",
+          borderBottom: `1px solid ${backgroundColor}`,
+          fontSize: "1rem",
           fontWeight: "500",
         }}
       >
@@ -76,10 +80,11 @@ export function BetaBanner() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.75rem",
+            gap: "0.5rem",
             flex: 1,
             minWidth: "200px",
             justifyContent: "center",
+            flexWrap: "wrap",
           }}
         >
           <span>🚀 AlignTrue is in beta. </span>
@@ -88,16 +93,16 @@ export function BetaBanner() {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: "#64b5f6",
+              color: subtleTextColor,
               textDecoration: "underline",
               display: "inline-flex",
               alignItems: "center",
               gap: "0.375rem",
               fontWeight: "600",
             }}
-            aria-label="Follow updates on GitHub"
+            aria-label="Star on GitHub"
           >
-            Follow on GitHub
+            Star on GitHub
             <GitHubIcon size={16} style={{ display: "inline" }} />
           </a>
         </div>
@@ -106,7 +111,7 @@ export function BetaBanner() {
           style={{
             background: "transparent",
             border: "none",
-            color: "white",
+            color: textColor,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",

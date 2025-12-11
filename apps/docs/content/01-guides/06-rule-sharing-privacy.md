@@ -18,6 +18,8 @@ Not sure how to configure your rules? Find your use case below:
 | Share team standards normally (approval required)  | [Scenario 3](#scenario-3-share-team-rules-normally)              |
 | Publish rules for others to use as a pack          | [Scenario 4](#scenario-4-publish-rules-for-others-to-use)        |
 
+> New to packs? See [Align packs](/docs/03-concepts/align-packs) for manifest fields, limits, and examples.
+
 ## Publishing rules (for maintainers)
 
 ### Setting up a shared rules repository
@@ -35,11 +37,14 @@ remotes:
   shared: git@github.com:username/shared-rules.git
 ```
 
-3. **Push your rules (manual)**:
+3. **Push your rules (auto by default)**:
 
 ```bash
-aligntrue sync          # Export to agents
-aligntrue remotes push  # Push rules to configured remotes (manual)
+# Default: pushes on every sync unless you set auto: false on the remote
+aligntrue sync
+
+# If you set auto: false (or want an explicit push)
+aligntrue remotes push
 ```
 
 4. **Share the repository URL** with others. They can consume your rules as a source:
@@ -58,7 +63,7 @@ As a rules maintainer:
 
 1. **Edit rules locally** - Make changes in `.aligntrue/rules/`
 2. **Test changes** - Run `aligntrue sync` to verify exports
-3. **Push to remote** - Run `aligntrue remotes push` when ready
+3. **Push to remote** - Happens on `aligntrue sync` by default; set `auto: false` if you prefer to push manually with `aligntrue remotes push`
 
 Your rules repository structure:
 
@@ -93,7 +98,7 @@ The three dimensions of rule privacy:
 
 | Dimension          | Setting                       | What it controls                                | Values                                                                                                |
 | ------------------ | ----------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Git visibility** | `gitignore: true/false`       | Is the rule committed to your repo?             | `false` (committed) or `true` (gitignored)                                                            |
+| **Git visibility** | `gitignore: true/false`       | Are the rule’s exported files committed?        | `false` (committed) or `true` (exports gitignored; source file unchanged)                             |
 | **Approval scope** | `scope: team/personal/shared` | Does it require team approval? (team mode only) | `team` (requires approval), `personal` (bypass approval), `shared` (tracked, routed to shared remote) |
 | **Remote routing** | `remotes` config              | Where are rules synced?                         | Personal remote, shared remote, or custom remotes                                                     |
 
@@ -103,6 +108,16 @@ These dimensions are **largely independent**. A rule can be:
 - Personal-scope but committed to the repo
 - Gitignored and personal-scope (fully private)
 - Shared-scope for publishing
+
+### Mode-based routing and auto defaults
+
+- **Auto default:** Remotes push during `aligntrue sync` unless you set `auto: false` on a remote. Use `aligntrue remotes push` when you want explicit/manual pushes.
+- **Solo mode routing (default):** All rules route to `remotes.personal` (unless a rule is `scope: shared` and a shared remote exists). Scope is ignored for personal routing in solo mode.
+- **Team/enterprise routing:** Scope-based:
+  - `scope: personal` → `remotes.personal`
+  - `scope: shared` → `remotes.shared`
+  - `scope: team` → stays in repo
+- **Custom remotes:** Additive in all modes; matched files also go to those remotes.
 
 ### How data flows: Sources vs Remotes
 
@@ -204,7 +219,7 @@ remotes:
 
 - Rules committed to your repo
 - Not in team lockfile (won't trigger drift)
-- Pulled from and pushed to your personal remote
+- Pulled from and pushed to your personal remote (auto on by default; set `auto: false` to require `aligntrue remotes push`)
 - Accessible on all your machines
 
 ### Scenario 3: Share team rules normally
@@ -251,24 +266,23 @@ remotes:
 
 ## Setting git visibility
 
-Use `gitignore: true` in rule frontmatter to exclude from git:
+Use `gitignore: true` in rule frontmatter to exclude the rule’s exported files from git (source stays tracked unless you gitignore it or run with `git.mode: ignore`):
 
 ```yaml
 ---
 title: My Private Notes
 gitignore: true
 ---
-# Content here won't be committed
+# Exported files like `.cursor/rules/my-private-notes.mdc` are auto-added to a managed block in `.gitignore`.
+# The source `.aligntrue/rules/my-private-notes.md` remains tracked unless you gitignore it separately.
 ```
-
-AlignTrue will automatically add matching patterns to `.gitignore`.
 
 ### Git visibility table
 
-| Setting                      | Behavior                             | Use case                                  |
-| ---------------------------- | ------------------------------------ | ----------------------------------------- |
-| `gitignore: false` (default) | Rule file committed to git           | Team standards, shared guidelines         |
-| `gitignore: true`            | Rule file gitignored (not committed) | Sensitive configs, machine-specific notes |
+| Setting                      | Behavior                                                                | Use case                                |
+| ---------------------------- | ----------------------------------------------------------------------- | --------------------------------------- |
+| `gitignore: false` (default) | Rule source and exports committed                                       | Team standards, shared guidelines       |
+| `gitignore: true`            | Rule exports gitignored; source file unaffected unless you gitignore it | Sensitive exports or local-only exports |
 
 ## Setting approval scope
 

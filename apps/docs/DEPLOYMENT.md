@@ -4,18 +4,16 @@ This guide covers deploying the AlignTrue documentation site to Vercel.
 
 ## Architecture
 
-The site is a unified Next.js application with:
+Two Vercel projects:
 
-- **Homepage** at `/` (root)
-- **Documentation** at `/docs/*`
-- **Sitemap** at `/sitemap.xml` (includes both homepage and docs)
-- **Robots.txt** at `/robots.txt`
+- `apps/web` → **aligntrue.ai** (marketing + catalog). It proxies `/docs/*` to the docs site via rewrite.
+- `apps/docs` → **docs.aligntrue.ai** (documentation). Serves `/` and `/docs/*`, plus `/sitemap.xml` and `/robots.txt`.
 
 ## Vercel Project Configuration
 
 ### Project Settings
 
-In Vercel Dashboard → Project Settings:
+In Vercel Dashboard → Project Settings for the **docs** project:
 
 1. **Root Directory**: `apps/docs`
 2. **Framework Preset**: Next.js
@@ -65,51 +63,48 @@ vercel link
 # Confirm root directory
 ```
 
-## Pre-Deploy Checklist
+## Pre-Deploy Checklist (docs project)
 
 ```bash
 # 1. Build locally
 cd apps/docs
 pnpm build
 
-# 2. Test production build
-pnpm start
-# Visit http://localhost:3000
+# 2. Serve the static export locally
+# (Next.js output is static; use any static file server)
+pnpm dlx serve@latest out -l 3000
 
-# 3. Verify homepage
-curl -I http://localhost:3000
-
-# 4. Verify docs section
+# 3. Verify docs respond
 curl -I http://localhost:3000/docs
 
-# 5. Verify sitemap
+# 4. Verify sitemap includes docs
 curl http://localhost:3000/sitemap.xml | head -30
 
-# 6. Verify robots.txt
+# 5. Verify robots.txt
 curl http://localhost:3000/robots.txt
 ```
 
 ## Post-Deploy Verification
 
 ```bash
-# 1. Homepage loads
-curl -I https://aligntrue.ai
+# 1. Docs domain responds
+curl -I https://docs.aligntrue.ai
 
 # 2. Docs section loads
-curl -I https://aligntrue.ai/docs
+curl -I https://docs.aligntrue.ai/docs
 
-# 3. Sitemap is accessible and includes both homepage and docs
-curl https://aligntrue.ai/sitemap.xml | grep -E "<loc>|</loc>" | head -20
+# 3. Sitemap is accessible and includes docs
+curl https://docs.aligntrue.ai/sitemap.xml | grep -E "<loc>|</loc>" | head -20
 
 # 4. Robots.txt points to sitemap
-curl https://aligntrue.ai/robots.txt
+curl https://docs.aligntrue.ai/robots.txt
 
 # 5. Security headers are present
-curl -I https://aligntrue.ai | grep -E "X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security"
+curl -I https://docs.aligntrue.ai | grep -E "X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security"
 
 # 6. Assets are accessible
-curl -I https://aligntrue.ai/og-image.png
-curl -I https://aligntrue.ai/favicon.ico
+curl -I https://docs.aligntrue.ai/aligntrue-og-image.png
+curl -I https://docs.aligntrue.ai/favicon.ico
 ```
 
 ## Security Headers
@@ -144,19 +139,15 @@ The site includes the following security headers (configured in `vercel.json`):
 ### Assets (favicon, og-image) not found
 
 - Verify files exist in `apps/docs/public/`
-- Check file names match exactly: `og-image.png`, `favicon.ico`
+- Check file names match exactly: `aligntrue-og-image.png`, `favicon.ico`
 - Clear browser cache and test in incognito mode
 
 ## Migration Notes
 
-This site was previously split into separate catalog and docs apps. As of the current architecture:
+This repo now runs two active apps:
 
-- ✅ Unified single Next.js app at `apps/docs`
-- ✅ Homepage at root (`/`) with marketing content
-- ✅ Documentation at `/docs/*` with Nextra
-- ✅ Single sitemap at `/sitemap.xml`
-- ✅ No rewrites or middleware needed
-- ❌ No separate catalog app (archived to `archive/apps-web/`)
+- `apps/web` serves the marketing site and catalog at `aligntrue.ai` and rewrites `/docs/*` to `docs.aligntrue.ai`.
+- `apps/docs` serves documentation at `docs.aligntrue.ai` with `/docs/*`, `/sitemap.xml`, and `/robots.txt`.
 
 ## Related Files
 

@@ -4,8 +4,8 @@ import path from "node:path";
 // This script is run from the 'packages/core' directory via pnpm.
 const CWD = process.cwd();
 
-const schemaFile = path.join(CWD, "schema/config.schema.json");
-const destDir = path.join(CWD, "dist/schema");
+const schemaFile = path.join(CWD, "src/schemas/config.schema.json");
+const destDir = path.join(CWD, "dist/schemas");
 const destFile = path.join(destDir, "config.schema.json");
 
 if (!fs.existsSync(schemaFile)) {
