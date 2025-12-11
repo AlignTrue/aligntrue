@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
@@ -57,6 +57,7 @@ async function fetchList(
 
 export function HomePageClient() {
   const router = useRouter();
+  const recentAbortRef = useRef<AbortController | null>(null);
   const [activeTab, setActiveTab] = useState<"rules" | "cli">("cli");
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -98,16 +99,29 @@ export function HomePageClient() {
   }, [router]);
 
   const loadRecentAligns = useCallback(async (signal?: AbortSignal) => {
+    const controller = signal ? null : new AbortController();
+    const activeSignal = signal ?? controller!.signal;
+
+    if (controller) {
+      // Cancel any in-flight request before starting a new one.
+      if (recentAbortRef.current) {
+        recentAbortRef.current.abort();
+      }
+      recentAbortRef.current = controller;
+    }
+
     setRecentLoading(true);
     try {
       const result = await fetchList("/api/aligns/recent?limit=8", {
-        signal,
+        signal: activeSignal,
       });
-      if (!signal?.aborted) {
+      if (!activeSignal.aborted) {
         setRecent(result);
       }
     } finally {
-      setRecentLoading(false);
+      if (!activeSignal.aborted) {
+        setRecentLoading(false);
+      }
     }
   }, []);
 
@@ -120,6 +134,14 @@ export function HomePageClient() {
   useVisibilityRecovery(() => {
     void loadRecentAligns();
   });
+
+  useEffect(() => {
+    return () => {
+      if (recentAbortRef.current) {
+        recentAbortRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleSubmit = async (value?: string) => {
     const target = value ?? urlInput;
