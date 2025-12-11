@@ -1,5 +1,5 @@
 ---
-description: Documentation standards
+description: Documentation standards and required workflows
 apply_to: alwaysOn
 content_hash: 21c5b2c0ab3214028f60e779abfccd4c52734bcd7b2664cd80df4fc20f961884
 ---

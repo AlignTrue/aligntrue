@@ -1,5 +1,5 @@
 ---
-description: Debugging workflow
+description: Systematic debugging workflow
 apply_to: alwaysOn
 content_hash: 481ce43a84eda84495d3b1096bcd14c264783a424a9838e1f6fd94f9985cfba5
 ---

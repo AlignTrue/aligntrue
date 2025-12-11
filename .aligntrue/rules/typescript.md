@@ -1,5 +1,5 @@
 ---
-description: TypeScript development guide
+description: TypeScript standards for safe deterministic code
 globs:
   - "**/*.{ts,tsx}"
   - tsconfig*.json

@@ -1,5 +1,5 @@
 ---
-description: Global rules
+description: Global repo rules and priorities
 globs:
   - "**/*"
 apply_to: alwaysOn

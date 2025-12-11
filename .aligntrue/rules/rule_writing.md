@@ -1,5 +1,5 @@
 ---
-description: Use this when drafting or updating any Cursor rules.
+description: Use this when drafting or updating any Cursor or AlignTrue rules.
 content_hash: a8d2faeca5803ee22d01e2c6eaa58c65952a9b83d351ced0357a73138bb2b0cd
 ---
 
@@ -7,7 +7,7 @@ content_hash: a8d2faeca5803ee22d01e2c6eaa58c65952a9b83d351ced0357a73138bb2b0cd
 
 ## Purpose
 
-Use this when creating or updating any Cursor rule so guidance stays sharp, consistent, and testable.
+Use this when creating or updating any Cursor or AlignTrue rule so guidance stays sharp, consistent, and testable.
 
 ---
 
