@@ -11,7 +11,7 @@
   "rewrites": [
     {
       "source": "/docs/:path*",
-      "destination": "https://docs.aligntrue.ai/:path*"
+      "destination": "https://docs.aligntrue.ai/docs/:path*"
     }
   ],
   "redirects": [

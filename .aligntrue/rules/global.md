@@ -10,7 +10,7 @@ content_hash: 0f8b5db6d57a2033323324105843e99835475a26f9e9b1625df1d5c96714f4a5
 
 ## Vision
 
-AlignTrue is an AI-native alignment platform to manage AI directives (rules, skills, MCP configs, etc.) across agents, projects & teams. It's starting as an open source CLI tool to sync rules and MCP configs, then continue to evolve as AI does in order to help users close the gap between AI hype and real output. Read more at https://aligntrue.ai/docs/about.
+AlignTrue is an AI-native alignment platform to manage AI directives (rules, skills, MCP configs, etc.) across agents, repos & teams. It's starting as an open source CLI tool to sync rules and MCP configs, then continue to evolve as AI does in order to help users close the gap between AI hype and real output. Read more at https://aligntrue.ai/docs/about.
 
 - Repo boundaries: see `guardrails.mdc`
 - Architecture and determinism: see `/docs/06-development/architecture` on the docs site

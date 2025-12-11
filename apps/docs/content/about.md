@@ -7,7 +7,7 @@ description: About AlignTrue.
 
 ## What
 
-**AlignTrue keeps your AI rules in sync across agents, projects, and people.**
+**AlignTrue keeps your AI rules in sync across agents, repos, and people.**
 
 - **Solo devs:** One source of truth for Cursor `.mdc`, `AGENTS.md`, `CLAUDE.md`, and whatever else you use.
 - **Teams:** Shared rules that actually stay aligned across IDEs, agents, and repos, so best practices are practiced and not just vibes.
