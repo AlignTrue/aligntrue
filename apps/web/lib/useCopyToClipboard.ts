@@ -7,7 +7,7 @@ type CopyOptions = {
 export function useCopyToClipboard(options: CopyOptions = {}) {
   const { resetAfterMs = 1200 } = options;
   const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
