@@ -4,9 +4,9 @@ version: "1.0.0"
 summary: "Architecture guidelines for system design and module organization"
 ---
 
-# Architecture Guidelines
+# Architecture guidelines
 
-## System Design Principles
+## System design principles
 
 Follow these core principles when designing system architecture:
 
@@ -15,7 +15,7 @@ Follow these core principles when designing system architecture:
 3. **Single Responsibility**: Each module should have one reason to change
 4. **Interface Segregation**: Prefer small, focused interfaces over large ones
 
-## Module Organization
+## Module organization
 
 Organize code into clear, logical modules:
 
@@ -36,14 +36,14 @@ When designing APIs:
 - Return consistent error formats
 - Document with OpenAPI/Swagger
 
-## Database Schema
+## Database schema
 
 - Use migrations for all schema changes
 - Index foreign keys and frequently queried columns
 - Normalize to 3NF, denormalize only when necessary
 - Document schema decisions in migration comments
 
-## Microservices Guidelines
+## Microservices guidelines
 
 If using microservices:
 

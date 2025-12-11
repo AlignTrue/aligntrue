@@ -186,7 +186,7 @@ Or remove `scope: personal` from rules if you don't need to push them to a perso
 
 ## SSH issues
 
-### Permission Denied (publickey)
+### Permission denied (publickey)
 
 **Error:**
 
@@ -308,7 +308,7 @@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!
 
 ## Push/Pull issues
 
-### Push Rejected
+### Push rejected
 
 **Error:**
 
@@ -343,7 +343,7 @@ error: failed to push some refs
    aligntrue sync
    ```
 
-### Merge Conflicts
+### Merge conflicts
 
 **Error:**
 
@@ -379,7 +379,7 @@ Automatic merge failed
    # git merge --abort
    ```
 
-### Diverged Branches
+### Diverged branches
 
 **Error:**
 
@@ -410,7 +410,7 @@ Your branch and 'origin/main' have diverged
 
 ## HTTPS issues
 
-### Authentication Failed
+### Authentication failed
 
 **Error:**
 
@@ -462,7 +462,7 @@ remotes:
 git config --global credential.helper 'cache --timeout=3600'
 ```
 
-### Token Expired
+### Token expired
 
 **Error:**
 
@@ -490,7 +490,7 @@ remote: Invalid username or password.
 
 ## Network issues
 
-### Connection Timeout
+### Connection timeout
 
 **Error:**
 
@@ -561,7 +561,7 @@ SSH doesn't use SSL certificates, so this avoids the issue entirely.
 
 ## Permission issues
 
-### Permission Denied (Repository)
+### Permission denied (repository)
 
 **Error:**
 

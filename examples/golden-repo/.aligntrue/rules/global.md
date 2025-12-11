@@ -3,7 +3,7 @@
   Update, expand, or replace it based on your project's needs.
 -->
 
-# Global Principles
+# Global principles
 
 Keep the codebase stable, safe, and maintainable.
 
@@ -11,7 +11,7 @@ Match the existing style, patterns, and conventions in this project. Prefer mini
 
 When you are unsure or information is ambiguous, stop and ask for clarification.
 
-## Code Quality
+## Code quality
 
 - Keep functions and modules focused. Avoid "god objects" and overly complex functions.
 - Use clear, simple code over cleverness.
@@ -27,7 +27,7 @@ Follow these priorities:
 3. Maintainability and clarity
 4. Performance
 
-## Change Hygiene
+## Change hygiene
 
 - Prefer small, coherent changes.
 - Group related edits together.

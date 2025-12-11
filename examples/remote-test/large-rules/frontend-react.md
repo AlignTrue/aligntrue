@@ -5,9 +5,9 @@ spec_version: "1"
 summary: "React component patterns and frontend best practices"
 ---
 
-# Frontend React Development
+# Frontend React development
 
-## Component Structure
+## Component structure
 
 Organize components with clear structure:
 
@@ -29,7 +29,7 @@ components/
     index.ts
 ```
 
-## State Management
+## State management
 
 Choose appropriate state management:
 
@@ -40,7 +40,7 @@ Choose appropriate state management:
 - Keep state as local as possible
 - Lift state only when necessary
 
-## Hooks Best Practices
+## Hooks best practices
 
 Follow hooks rules and patterns:
 
@@ -84,7 +84,7 @@ export function Button({
 }
 ```
 
-## Component Composition
+## Component composition
 
 Use composition over inheritance:
 
@@ -95,7 +95,7 @@ Use composition over inheritance:
 - Avoid deep prop drilling with composition
 - Keep components decoupled and reusable
 
-## Performance Optimization
+## Performance optimization
 
 Optimize React performance:
 
@@ -119,7 +119,7 @@ Handle forms properly:
 - Handle loading and error states
 - Provide clear success feedback
 
-## Error Boundaries
+## Error boundaries
 
 Implement error boundaries:
 
@@ -142,7 +142,7 @@ Make components accessible:
 - Test with screen readers
 - Support reduced motion preferences
 
-## Testing Components
+## Testing components
 
 Test React components thoroughly:
 
@@ -154,7 +154,7 @@ Test React components thoroughly:
 - Test keyboard interactions
 - Aim for high coverage of critical paths
 
-## Styling Approaches
+## Styling approaches
 
 Choose appropriate styling:
 
@@ -166,7 +166,7 @@ Choose appropriate styling:
 - Avoid inline styles except for dynamic values
 - Follow consistent naming conventions
 
-## Data Fetching
+## Data fetching
 
 Handle data fetching properly:
 
@@ -178,7 +178,7 @@ Handle data fetching properly:
 - Prefetch data when possible
 - Use suspense for data loading (when stable)
 
-## Code Splitting
+## Code splitting
 
 Implement code splitting:
 
@@ -201,7 +201,7 @@ Implement routing properly:
 - Use route parameters and query strings
 - Implement breadcrumbs for navigation
 
-## Environment Variables
+## Environment variables
 
 Manage environment variables:
 

@@ -7,19 +7,19 @@ globs:
 content_hash: 2a57260e7f9653ae3fc792b8f023867a1a084bf5f21c2c8830931eca8e89b02a
 ---
 
-# CI Troubleshooting and Status Checking
+# CI troubleshooting and status checking
 
 **When to apply:** The user asks about CI status, why a build failed, or requests to check GitHub Actions/Workflows.
 
-## Core Principle
+## Core principle
 
 **Conserve API Rate Limits.** AI agents and scripts can easily hit GitHub API rate limits (60/hr unauthenticated, 5000/hr authenticated). Always prefer local verification and efficient API usage.
 
-## Troubleshooting Workflow
+## Troubleshooting workflow
 
 Follow this priority order when investigating CI issues:
 
-### 1. Local Reproduction (Zero API Cost)
+### 1. Local reproduction (zero API cost)
 
 Always attempt to reproduce failures locally first. This is faster and uses no API quota.
 
@@ -33,7 +33,7 @@ pnpm build:packages     # Build
 pnpm lint               # Linting
 ```
 
-### 2. CI Error Details (Low API Cost)
+### 2. CI error details (low API cost)
 
 If local checks pass but CI fails, fetch actual error details directly:
 
@@ -44,7 +44,7 @@ pnpm ci:errors
 
 This shows test failures, assertion errors, and other actionable details in one command.
 
-### 3. Code Scanning & Security Alerts (Low API Cost)
+### 3. Code scanning and security alerts (low API cost)
 
 If you need to check GitHub code scanning (CodeQL) alerts:
 
@@ -55,7 +55,7 @@ pnpm codeql:status
 
 This efficiently fetches and displays alerts by severity, with direct links to review them.
 
-### 4. Web UI (Fallback)
+### 4. Web UI (fallback)
 
 If rate limits are hit or complex debugging is needed, direct the user to the browser:
 
@@ -63,14 +63,14 @@ If rate limits are hit or complex debugging is needed, direct the user to the br
 - **Current Branch:** https://github.com/AlignTrue/aligntrue/actions?query=branch%3A<branch-name>
 - **Code Scanning:** https://github.com/AlignTrue/aligntrue/security/code-scanning
 
-## Anti-Patterns to Avoid
+## Anti-patterns to avoid
 
 - ❌ **DO NOT** run `gh run list` repeatedly in a loop.
 - ❌ **DO NOT** use `gh api` for simple status checks without checking rate limits.
 - ❌ **DO NOT** assume CI failure implies code error; check for flakes or infrastructure issues.
 - ❌ **DO NOT** blindly retry CI jobs without understanding the failure.
 
-## Rate Limit Awareness
+## Rate limit awareness
 
 If you encounter `API rate limit exceeded` or HTTP 403/429 errors:
 

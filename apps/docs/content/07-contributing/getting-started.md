@@ -61,7 +61,7 @@ Use a clear branch name:
 Work on your contribution:
 
 - Follow the relevant guide:
-  - [Creating aligns](/docs/07-contributing/creating-aligns) for rule sets
+  - [Creating Aligns](/docs/07-contributing/creating-aligns) for rule sets
   - [Editing documentation](/docs/07-contributing/editing-docs) for docs
   - [Adding exporters](/docs/07-contributing/adding-exporters) for new agents
   - [Development guide](/docs/06-development) for code changes
@@ -175,9 +175,9 @@ See the [Adding exporters](/docs/07-contributing/adding-exporters) guide for:
 - Required tests
 - Contribution process
 
-### "I want to create aligns"
+### "I want to create Aligns"
 
-See [Creating aligns](/docs/07-contributing/creating-aligns) for:
+See [Creating Aligns](/docs/07-contributing/creating-aligns) for:
 
 - Naming conventions
 - Validation requirements
@@ -219,7 +219,7 @@ Comment on the PR with questions. We're happy to help debug or explain patterns.
 - **Want more context?** Read the [Contributing index](/docs/07-contributing)
 - **Need setup help?** See [Development setup](/docs/06-development/setup)
 - **Specific guide?** Choose your contribution type:
-  - [Creating aligns](/docs/07-contributing/creating-aligns)
+  - [Creating Aligns](/docs/07-contributing/creating-aligns)
   - [Editing documentation](/docs/07-contributing/editing-docs)
   - [Adding exporters](/docs/07-contributing/adding-exporters)
   - [Testing workflow](/docs/07-contributing/testing-workflow)

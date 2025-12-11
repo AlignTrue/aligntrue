@@ -4,7 +4,7 @@ version: "1.0.0"
 summary: "Security best practices for authentication, authorization, and data protection"
 ---
 
-# Security Best Practices
+# Security best practices
 
 ## Authentication and Authorization
 
@@ -13,28 +13,28 @@ summary: "Security best practices for authentication, authorization, and data pr
 - Never store passwords in plain text - use bcrypt or Argon2
 - Rotate API keys and secrets regularly
 
-## Input Validation
+## Input validation
 
 - Validate all user input on the server side
 - Use parameterized queries to prevent SQL injection
 - Sanitize HTML input to prevent XSS attacks
 - Implement rate limiting on public endpoints
 
-## Data Protection
+## Data protection
 
 - Encrypt sensitive data at rest using AES-256
 - Use TLS 1.3 for data in transit
 - Implement proper key management (use KMS)
 - Follow GDPR/CCPA requirements for user data
 
-## Secrets Management
+## Secrets management
 
 - Never commit secrets to version control
 - Use environment variables or secret management services
 - Rotate secrets on a regular schedule
 - Audit secret access logs
 
-## Security Headers
+## Security headers
 
 Always include these HTTP security headers:
 
@@ -45,7 +45,7 @@ X-Frame-Options: DENY
 Strict-Transport-Security: max-age=31536000
 ```
 
-## Dependency Security
+## Dependency security
 
 - Run `npm audit` or equivalent regularly
 - Keep dependencies up to date

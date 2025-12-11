@@ -1,36 +1,40 @@
 # Vercel path routing configuration
 
-## Current Architecture (Post-Catalog Archive)
+## Current architecture (two active apps)
 
-The docs app is now the main and only site. No path routing or rewrites needed.
+- `apps/web` → `aligntrue.ai` (homepage + catalog demos)
+  - Rewrites `/docs` and `/docs/*` to `https://docs.aligntrue.ai/docs`
+  - Hosts short URL redirects (e.g., `/quickstart`, `/team`, `/agents`)
+- `apps/docs` → `docs.aligntrue.ai` (documentation)
+  - Redirects `/` → `/docs` on the docs domain
 
-## Environment Variables
+Each Vercel project reads its own `vercel.json` from its project root (`apps/web/vercel.json` and `apps/docs/vercel.json`). There is no root-level `vercel.json`.
 
-The docs project requires:
+## Environment variables
+
+Docs project (`apps/docs`):
 
 ```
 NEXT_PUBLIC_SITE_URL=https://aligntrue.ai
 ```
 
-Set this in Vercel project settings for `aligntrue-docs`.
-
-## Verification
-
-After deployment, verify:
+## Verification (post-deploy)
 
 ```bash
-# Root sitemap includes homepage and all docs pages
-curl https://aligntrue.ai/sitemap.xml
+# Main site serves marketing
+curl -I https://aligntrue.ai
 
-# Robots.txt should reference sitemap.xml
-curl https://aligntrue.ai/robots.txt
+# Docs rewrite from main domain
+curl -I https://aligntrue.ai/docs
+
+# Docs domain redirects to /docs
+curl -I https://docs.aligntrue.ai
+
+# Sitemaps
+curl -I https://aligntrue.ai/sitemap.xml
+curl -I https://docs.aligntrue.ai/sitemap.xml
 ```
 
-## Sitemap Structure
+## Historical note
 
-- **`/sitemap.xml`**: Root sitemap containing homepage and all `/docs/**` pages
-- **`/robots.txt`**: Points to `/sitemap.xml`
-
-## Historical Note
-
-Previously, this document described path routing between separate web and docs apps with federated sitemaps (`sitemap.main.xml`, `sitemap.docs.xml`, and a sitemap index). The catalog website has been archived to `archive/apps-web/` and the docs app now serves as the main website.
+Earlier revisions described a single-app deployment. We now run two Vercel projects (web + docs) with the web app handling rewrites and short URLs.

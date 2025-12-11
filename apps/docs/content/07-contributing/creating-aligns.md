@@ -9,35 +9,35 @@ Thank you for your interest in contributing to AlignTrue! This guide will help y
 
 ## Quick start
 
-Get started creating aligns:
+Get started creating Aligns:
 
 1. **Review examples** in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory
-2. **Create** your align following the [template](#minimal-example)
+2. **Create** your Align following the [template](#minimal-example)
 3. **Share** via GitHub URL, local file, or your own repository
 
-No central registry exists - share aligns however works best for your team.
+No central registry exists - share Aligns however works best for your team.
 
-## Authoring your first align
+## Authoring your first Align
 
 ### Review examples
 
-Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) in this repository.
+Browse example Aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) in this repository.
 
 Examples include:
 
-- Base aligns (global, testing, security, etc.)
-- Stack-specific aligns (Next.js, Vercel, etc.)
+- Base Aligns (global, testing, security, etc.)
+- Stack-specific Aligns (Next.js, Vercel, etc.)
 - Inline comments explaining best practices
-- Proper align structure and formatting
+- Proper Align structure and formatting
 
 ### Naming conventions
 
-Choose a clear, descriptive filename for your align that indicates its purpose:
+Choose a clear, descriptive filename for your Align that indicates its purpose:
 
-- **Global/base aligns** - `global.md`, `typescript.md`, `testing.md`
+- **Global/base Aligns** - `global.md`, `typescript.md`, `testing.md`
   - Use when: Your rules work for any project type
 
-- **Stack-specific aligns** - `nextjs-app-router.md`, `django-backend.md`
+- **Stack-specific Aligns** - `nextjs-app-router.md`, `django-backend.md`
   - Use when: Your rules target a specific tech stack or framework
 
 Examples are stored flat in `examples/aligns/` without namespace directories. Create descriptive filenames that make the purpose immediately clear.
@@ -64,7 +64,7 @@ Use `aligns/base/*` for global rules and `aligns/stacks/*` for stack-specific ru
 
 ### Minimal example
 
-Here's a minimal align using natural markdown sections:
+Here's a minimal Align using natural markdown sections:
 
 ````markdown
 ---
@@ -96,7 +96,7 @@ All TypeScript projects must include `tsconfig.json`. Use `npx tsc --init` if mi
 
 Enable strict mode for better type safety and fewer runtime errors.
 
-For more examples, browse existing aligns in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory.
+For more examples, browse existing Aligns in the [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) directory.
 
 ## Testing locally
 
@@ -106,7 +106,7 @@ You'll need:
 
 - Node.js 20+ and pnpm 9+
 - The `AlignTrue/aligntrue` repository cloned
-- Your align saved as `.md` in `.aligntrue/rules/` (or in `examples/aligns/` if contributing here)
+- Your Align saved as `.md` in `.aligntrue/rules/` (or in `examples/aligns/` if contributing here)
 
 ### Validate your align
 
@@ -261,7 +261,7 @@ aligntrue check && aligntrue sync
 
 ### Quality checklist
 
-Before sharing your align, verify:
+Before sharing your Align, verify:
 
 - [ ] File is `.md` using natural markdown sections
 - [ ] Frontmatter includes `id`, `version`, and `summary` (plus `owner`/`source` in team mode)
@@ -289,7 +289,7 @@ Stuck? Here's how to get help:
   - [Schema validation](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema) - IR validation and type definitions
   - [Canonicalization](https://github.com/AlignTrue/aligntrue/tree/main/packages/schema/src/canonicalize.ts) - Deterministic hashing
 
-- **Examples**: Browse example aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
+- **Examples**: Browse example Aligns in [`examples/aligns/`](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns)
   - [testing.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/testing.md) - Testing rules
   - [security.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.md) - Security rules
   - [nextjs_app_router.md](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.md) - Stack-specific rules
@@ -300,20 +300,20 @@ Stuck? Here's how to get help:
 
 ## Sharing with the community
 
-Consider sharing your align with the community:
+Consider sharing your Align with the community:
 
-1. **GitHub repository** - Create a public repo with your aligns
-2. **Documentation** - Add a README explaining what your aligns do
+1. **GitHub repository** - Create a public repo with your Aligns
+2. **Documentation** - Add a README explaining what your Aligns do
 3. **Examples** - Include usage examples and configuration
 4. **Community** - Share in [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
 
-Well-documented aligns help others learn and adopt best practices.
+Well-documented Aligns help others learn and adopt best practices.
 
 ## Advanced topics
 
-### Dependencies between aligns
+### Dependencies between Aligns
 
-Aligns can depend on other aligns using the `deps` field:
+Aligns can depend on other Aligns using the `deps` field:
 
 ```yaml
 deps:
@@ -325,7 +325,7 @@ Add `deps` in frontmatter alongside your other metadata. Dependencies are resolv
 
 ### Scoping rules
 
-Use `scope.applies_to` to narrow where your align applies:
+Use `scope.applies_to` to narrow where your Align applies:
 
 ```yaml
 scope:
@@ -334,9 +334,9 @@ scope:
 
 Add `scope` to frontmatter so users understand when to use your align.
 
-### Testing your align
+### Testing your Align
 
-To test your align locally:
+To test your Align locally:
 
 1. **Add to `.aligntrue/config.yaml`:**
 

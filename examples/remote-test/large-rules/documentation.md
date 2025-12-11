@@ -5,7 +5,7 @@ spec_version: "1"
 summary: "Documentation standards for APIs, code, and architecture"
 ---
 
-# Documentation Standards
+# Documentation standards
 
 ## README Requirements
 
@@ -59,7 +59,7 @@ Example endpoint documentation:
         description: User not found
 ```
 
-## Code Comments
+## Code comments
 
 Write helpful code comments:
 
@@ -80,7 +80,7 @@ Good comment:
 const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
 ```
 
-## Architecture Documentation
+## Architecture documentation
 
 Document system architecture:
 
@@ -129,7 +129,7 @@ Use PostgreSQL
 - Cons: Requires more ops expertise than NoSQL
 ```
 
-## Inline Documentation
+## Inline documentation
 
 Document code inline:
 
@@ -187,7 +187,7 @@ Create operational runbooks:
 - Test runbooks regularly
 - Keep updated
 
-## Migration Guides
+## Migration guides
 
 Document breaking changes:
 
@@ -199,7 +199,7 @@ Document breaking changes:
 - Announce well in advance
 - Support old version during transition
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
 Help users solve problems:
 
@@ -211,7 +211,7 @@ Help users solve problems:
 - Provide contact for help
 - Update based on support tickets
 
-## Contributing Guide
+## Contributing guide
 
 Help contributors:
 

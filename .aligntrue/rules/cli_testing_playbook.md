@@ -13,9 +13,9 @@ enabled: false
 
 ---
 
-## Before You Start
+## Before you start
 
-### Safety Rules
+### Safety rules
 
 **⚠️ CRITICAL: Never test in workspace root**
 
@@ -50,7 +50,7 @@ enabled: false
 
 ---
 
-## Seven Exploration Areas
+## Seven exploration areas
 
 Complete each area sequentially. After finishing each area, record findings before moving to the next.
 
@@ -533,7 +533,7 @@ Complete each area sequentially. After finishing each area, record findings befo
 
 ---
 
-## Recording Findings
+## Recording findings
 
 After each area, summarize:
 
@@ -557,7 +557,7 @@ After each area, summarize:
 
 ---
 
-## Coverage Matrix
+## Coverage matrix
 
 Mark each command as tested:
 
@@ -587,7 +587,7 @@ Mark each command as tested:
 
 ---
 
-## Final Report
+## Final report
 
 After completing all areas:
 

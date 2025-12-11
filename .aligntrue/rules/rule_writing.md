@@ -3,7 +3,7 @@ description: Use this when drafting or updating any Cursor or AlignTrue rules.
 content_hash: a8d2faeca5803ee22d01e2c6eaa58c65952a9b83d351ced0357a73138bb2b0cd
 ---
 
-# Cursor rules authoring guide
+# Cursor & AlignTrue rules authoring guide
 
 ## Purpose
 

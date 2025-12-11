@@ -102,7 +102,11 @@ function validateManifest(filePath) {
     return errors;
   }
 
-  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+  if (
+    manifest === null ||
+    typeof manifest !== "object" ||
+    Array.isArray(manifest)
+  ) {
     errors.push("Manifest must be a YAML object");
     return errors;
   }

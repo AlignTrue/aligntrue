@@ -117,7 +117,7 @@ When you choose "Convert to editable", the READ-ONLY marker block is removed fro
   Edit rules in .aligntrue/rules/ instead.
 -->
 
-# My Rule
+# My rule
 
 Content here...
 ```
@@ -125,7 +125,7 @@ Content here...
 **After:**
 
 ```markdown
-# My Rule
+# My rule
 
 Content here...
 ```

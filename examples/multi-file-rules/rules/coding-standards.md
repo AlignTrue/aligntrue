@@ -4,16 +4,16 @@ version: "1.0.0"
 summary: "Coding standards for style, naming conventions, comments, and error handling"
 ---
 
-# Coding Standards
+# Coding standards
 
-## Code Style
+## Code style
 
 - Use consistent formatting (Prettier/ESLint for JS/TS, Black for Python)
 - Follow language-specific style guides (Airbnb for JS, PEP 8 for Python)
 - Keep line length under 100 characters
 - Use meaningful variable and function names
 
-## Naming Conventions
+## Naming conventions
 
 - **Variables**: camelCase for JS/TS, snake_case for Python
 - **Constants**: UPPER_SNAKE_CASE
@@ -27,21 +27,21 @@ summary: "Coding standards for style, naming conventions, comments, and error ha
 - Document public APIs with JSDoc/docstrings
 - Keep README files up to date
 
-## Error Handling
+## Error handling
 
 - Use try-catch blocks for expected errors
 - Log errors with context (user ID, request ID, etc.)
 - Return user-friendly error messages
 - Never expose stack traces to end users
 
-## Testing Standards
+## Testing standards
 
 - Write unit tests for all business logic
 - Aim for 80%+ code coverage
 - Use integration tests for API endpoints
 - Run tests in CI before merging
 
-## Code Review Guidelines
+## Code review guidelines
 
 Before submitting a PR:
 

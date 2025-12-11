@@ -11,7 +11,7 @@ description: Dynamic configuration slots for stack-specific and project-specific
 </Callout>
 
 <Callout type="info">
-  **Solo developer?** You can skip this page unless you're using rule aligns
+  **Solo developer?** You can skip this page unless you're using rule Aligns
   that require project-specific values. Most solo workflows don't need plugs.
 </Callout>
 
@@ -25,7 +25,7 @@ Plugs provide template-based customization for rules that need different values 
 
 **You need plugs when:**
 
-- You use aligns that contain `[[plug:...]]` template slots
+- You use Aligns that contain `[[plug:...]]` template slots
 - You want to customize test commands or file paths across projects
 - You need organization-wide metadata (company name, URLs) in rules
 
@@ -767,13 +767,13 @@ Fills are **not** volatile - they affect export hash. If you change a fill, the 
 ### For solo developers
 
 1. **Set fills early** - Run `aligntrue plugs list` after init
-2. **Use stack aligns** - Let stack aligns provide sensible defaults
+2. **Use stack Aligns** - Let stack Aligns provide sensible defaults
 3. **Override selectively** - Only set fills when defaults don't work
 4. **Document decisions** - Add comments in .aligntrue/rules explaining custom fills
 
 ### For teams
 
-1. **Share stack aligns** - Create org-specific stack aligns with common fills
+1. **Share stack Aligns** - Create org-specific stack Aligns with common fills
 2. **Document required plugs** - List required plugs in team onboarding docs
 3. **Validate in CI** - Run `aligntrue plugs list` in CI to catch missing fills
 4. **Review fill changes** - Treat fill changes like code changes (PR review)
@@ -820,7 +820,7 @@ exporters:
 
 ### Organization metadata
 
-**Problem:** Your team uses shared rule aligns that reference organization-specific metadata like company name (`[[plug:org.name]]`), documentation URL (`[[plug:docs.url]]`), support email (`[[plug:support.email]]`), and default author (`[[plug:author.name]]`). Each project needs to fill these with your organization's values.
+**Problem:** Your team uses shared rule Aligns that reference organization-specific metadata like company name (`[[plug:org.name]]`), documentation URL (`[[plug:docs.url]]`), support email (`[[plug:support.email]]`), and default author (`[[plug:author.name]]`). Each project needs to fill these with your organization's values.
 
 **Solution:** Use plugs to provide organization metadata that gets resolved across all rules.
 
@@ -847,7 +847,7 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** Rules reference organization metadata via plugs, all projects use consistent values, easy to update across all projects, and no hardcoded company-specific values in aligns.
+**Expected outcome:** Rules reference organization metadata via plugs, all projects use consistent values, easy to update across all projects, and no hardcoded company-specific values in Aligns.
 
 **Keywords:** company name, organization URLs, author names, team metadata, company-specific values, organization branding
 
@@ -882,7 +882,7 @@ exporters:
   - cursor
 ```
 
-**Expected outcome:** Rules reference file paths via plugs, each stack uses appropriate locations, no path assumptions in shared aligns, and easy to adapt to different project structures.
+**Expected outcome:** Rules reference file paths via plugs, each stack uses appropriate locations, no path assumptions in shared Aligns, and easy to adapt to different project structures.
 
 **Keywords:** config file paths, stack-specific locations, different file locations, path customization, project structure, framework conventions
 
@@ -907,7 +907,7 @@ exporters:
 - Use descriptive keys for maintainability
 - Validate format constraints early (command, file, url, text)
 
-## Common Issues
+## Common issues
 
 ### "Plug references without slot definitions" error
 
@@ -1034,7 +1034,7 @@ plugs:
       format: command
       required: true
 ---
-## Run Tests
+## Run tests
 
 Run tests with: [[plug:test.cmd]]
 ```

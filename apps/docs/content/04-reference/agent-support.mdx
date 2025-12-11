@@ -33,15 +33,15 @@ This comprehensive coverage ensures AlignTrue rules work across the entire AI co
 
 These generate JSON/YAML configuration files for agents that support the MCP protocol. MCP allows agents to connect to external tools and data sources. AlignTrue creates agent-specific MCP files with rule-based guidance. See [MCP Support](/docs/04-reference/mcp-support) for details.
 
-### 2. Agent-Specific Format Exporters
+### 2. Agent-specific format exporters
 
 These create native configuration files or markdown formats specific to each agent (`.mdc`, `.md`, `.json`, `.yml`, etc.). Each format preserves agent-specific metadata and adapts rules to the agent's preferred structure.
 
-### 3. Universal Format Exporters
+### 3. Universal format exporters
 
 AGENTS.md provides a single, universal markdown format that multiple agents can consume, reducing duplication while maintaining broad compatibility.
 
-### 4. Dual-Output Agents
+### 4. Dual-output agents
 
 Some agents (like Aider) use both a universal format (AGENTS.md) AND their own specific config file for optimal results.
 

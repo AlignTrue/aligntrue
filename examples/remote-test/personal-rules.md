@@ -5,11 +5,11 @@ spec_version: "1"
 summary: "Personal coding preferences and local tooling configuration"
 ---
 
-# Personal Coding Preferences
+# Personal coding preferences
 
 These are my personal coding preferences that complement team standards.
 
-## Editor Configuration
+## Editor configuration
 
 Use VSCode with these extensions:
 
@@ -20,7 +20,7 @@ Use VSCode with these extensions:
 
 Configure auto-save on focus change and format on save.
 
-## Code Style Preferences
+## Code style preferences
 
 I prefer functional programming patterns when appropriate:
 
@@ -29,7 +29,7 @@ I prefer functional programming patterns when appropriate:
 - Use array methods (map, filter, reduce) over loops
 - Favor immutability and pure functions
 
-## Import Organization
+## Import organization
 
 Organize imports in this order:
 
@@ -40,7 +40,7 @@ Organize imports in this order:
 
 Add blank lines between groups for clarity.
 
-## Comment Style
+## Comment style
 
 Write comments that explain "why" not "what":
 
@@ -49,7 +49,7 @@ Write comments that explain "why" not "what":
 - Use JSDoc for public APIs and exported functions
 - Keep comments concise and up-to-date
 
-## Testing Preferences
+## Testing preferences
 
 I prefer test-driven development:
 
@@ -58,7 +58,7 @@ I prefer test-driven development:
 - Arrange-Act-Assert pattern for test structure
 - Mock external dependencies, not internal modules
 
-## Git Workflow
+## Git workflow
 
 My git workflow preferences:
 
@@ -68,7 +68,7 @@ My git workflow preferences:
 - Rebase feature branches before merging
 - Squash commits for cleaner history
 
-## Local Development Tools
+## Local development tools
 
 I use these tools for local development:
 
@@ -78,7 +78,7 @@ I use these tools for local development:
 - `ripgrep` for fast code search
 - `jq` for JSON processing
 
-## Debugging Approach
+## Debugging approach
 
 My debugging workflow:
 
@@ -88,7 +88,7 @@ My debugging workflow:
 - Document findings in issue comments
 - Add tests to prevent regressions
 
-## Performance Mindset
+## Performance mindset
 
 I prioritize performance where it matters:
 
@@ -98,7 +98,7 @@ I prioritize performance where it matters:
 - Lazy load when possible
 - Measure impact with benchmarks
 
-## Documentation Habits
+## Documentation habits
 
 I maintain documentation as I code:
 

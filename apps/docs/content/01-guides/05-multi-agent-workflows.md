@@ -339,7 +339,7 @@ ls -la .cursor/rules/
 # Universal
 ls -la AGENTS.md
 
-# Windsurf Markdown exporter
+# Windsurf markdown exporter
 ls -la WINDSURF.md
 
 # Windsurf MCP exporter (if enabled)

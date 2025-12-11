@@ -40,7 +40,7 @@ sync:
     - coding-standards.md
 ```
 
-## How It Works
+## How it works
 
 1. **Source Directory**: AlignTrue reads all `.md` files in the `rules/` directory
 2. **Ordering**: Files are merged in the order specified by `source_order` (or alphabetically if not specified)
@@ -79,7 +79,7 @@ This will:
 3. Update config to use the new files
 4. Optionally backup the original `AGENTS.md`
 
-## Best Practices
+## Best practices
 
 1. **Logical Grouping**: Group related rules into the same file
 2. **Clear Naming**: Use descriptive filenames (e.g., `security.md`, not `rules1.md`)
@@ -87,7 +87,7 @@ This will:
 4. **Custom Order**: Specify `source_order` if the merge order matters
 5. **Team Ownership**: Assign file ownership in your team's CODEOWNERS
 
-## Example Structure
+## Example structure
 
 ```
 project/

@@ -18,7 +18,7 @@ This page provides technical implementation details for working with plugs, over
 
 **Plugs slots:**
 
-- Declared in align files (natural markdown sections or `.aligntrue/rules` IR)
+- Declared in Align files (natural markdown sections or `.aligntrue/rules` IR)
 - Example: `examples/aligns/testing.md` with natural markdown sections
 
 **Plugs fills:**
@@ -43,7 +43,7 @@ This page provides technical implementation details for working with plugs, over
 
 AlignTrue supports two authoring formats (source of truth is `.aligntrue/rules/*.md`):
 
-### Natural markdown sections (recommended for aligns)
+### Natural markdown sections (recommended for Aligns)
 
 ```markdown
 ---
@@ -58,7 +58,7 @@ plugs:
       example: "pytest -q"
 ---
 
-# Testing align
+# Testing Align
 
 Use consistent test commands across your project.
 
@@ -121,7 +121,7 @@ TODO(plug:<key>): Provide a value for this plug.
 
 ### Merge order
 
-Base < stack align(s) < repo. Last writer wins.
+Base < stack Align(s) < repo. Last writer wins.
 
 ## Plugs format types
 
@@ -270,7 +270,7 @@ When using multiple customization features together, they apply in this order:
 - Glob patterns must be syntactically valid
 - Merge order values must be `root`, `path`, or `local`
 - No duplicate values in merge order
-- Rulesets must reference existing rule align IDs
+- Rulesets must reference existing rule Align IDs
 
 ## Best practices
 

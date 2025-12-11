@@ -41,7 +41,7 @@ title: General Architecture
 exclude_from: []
 ---
 
-## Architecture Principles
+## Architecture principles
 
 These apply to all agents...
 ```
@@ -307,7 +307,7 @@ export_only_to: [cursor]
 description: Cursor-specific keyboard optimization (not applicable to other agents)
 ---
 
-# Keyboard Shortcuts in Cursor
+# Keyboard shortcuts in Cursor
 
 Cursor has specific keyboard bindings...
 ```

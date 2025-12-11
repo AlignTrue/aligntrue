@@ -21,7 +21,7 @@ Structure CI pipelines effectively:
 - Cache dependencies for speed
 - Run jobs in parallel when possible
 
-## Deployment Strategy
+## Deployment strategy
 
 Choose appropriate deployment strategy:
 
@@ -34,7 +34,7 @@ Choose appropriate deployment strategy:
 - Have rollback plan ready
 - Document deployment procedures
 
-## Environment Management
+## Environment management
 
 Manage environments properly:
 
@@ -46,7 +46,7 @@ Manage environments properly:
 - Limit production access
 - Document environment differences
 
-## Container Best Practices
+## Container best practices
 
 Use containers effectively:
 
@@ -116,7 +116,7 @@ Implement structured logging:
 - Make logs searchable
 - Use correlation IDs for tracing
 
-## Secrets Management
+## Secrets management
 
 Handle secrets in CI/CD:
 
@@ -128,7 +128,7 @@ Handle secrets in CI/CD:
 - Audit secret usage
 - Encrypt secrets at rest
 
-## Performance Testing
+## Performance testing
 
 Test performance regularly:
 
@@ -140,7 +140,7 @@ Test performance regularly:
 - Test scalability
 - Document performance requirements
 
-## Disaster Recovery
+## Disaster recovery
 
 Plan for disasters:
 
@@ -153,7 +153,7 @@ Plan for disasters:
 - Post-mortem after incidents
 - Learn from failures
 
-## Security Scanning
+## Security scanning
 
 Scan for vulnerabilities:
 

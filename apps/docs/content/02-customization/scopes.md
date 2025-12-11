@@ -182,12 +182,12 @@ exclude:
 
 ### rulesets (optional)
 
-List of rule align IDs to apply to this scope.
+List of rule Align IDs to apply to this scope.
 
 **Rules:**
 
-- Rule align IDs from sources
-- Applied in order (later aligns override earlier)
+- Rule Align IDs from sources
+- Applied in order (later Aligns override earlier)
 - Defaults to all rules if omitted
 
 **Examples:**
@@ -196,7 +196,7 @@ List of rule align IDs to apply to this scope.
 # Base + stack-specific
 rulesets: ["base-rules", "nextjs-rules"]
 
-# Multiple stack aligns
+# Multiple stack Aligns
 rulesets: ["base-rules", "typescript-rules", "react-rules", "nextjs-rules"]
 
 # Single ruleset
@@ -484,7 +484,7 @@ overlays:
         severity: "warn" # Error in new, warn in legacy
 ```
 
-**Alternative with separate rule aligns:**
+**Alternative with separate rule Aligns:**
 
 ```yaml
 sources:
@@ -697,7 +697,7 @@ merge:
 
 1. **Start simple** - Use scopes only when you have multiple stacks
 2. **Shared base** - Use base rules across all scopes
-3. **Stack-specific** - Add stack aligns per scope
+3. **Stack-specific** - Add stack Aligns per scope
 4. **Document structure** - Add comments explaining scope boundaries
 
 **Example:**

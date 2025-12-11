@@ -1,4 +1,4 @@
-# Example Starter Pack
+# Example starter pack
 
 This is an example `.align.yaml` pack that bundles multiple rules together for easy sharing and installation.
 
@@ -12,7 +12,7 @@ This pack includes 3 foundational rules:
 
 ## Usage
 
-### Via Catalog
+### Via catalog
 
 Submit this pack URL to the AlignTrue catalog:
 
@@ -33,7 +33,7 @@ aligntrue add source https://github.com/AlignTrue/aligntrue/tree/main/examples/e
 aligntrue sync
 ```
 
-## Pack Structure
+## Pack structure
 
 ```
 examples/example-pack/

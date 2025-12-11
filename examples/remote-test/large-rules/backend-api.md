@@ -17,7 +17,7 @@ Follow REST principles for API endpoints:
 - Use path parameters for resource IDs: `/users/123`
 - Use query parameters for filtering and pagination: `/users?role=admin&page=2`
 
-## Request Validation
+## Request validation
 
 Validate all incoming requests:
 
@@ -40,7 +40,7 @@ Example validation error response:
 }
 ```
 
-## Error Handling
+## Error handling
 
 Implement consistent error handling:
 
@@ -64,7 +64,7 @@ Status code guidelines:
 - 422: Unprocessable entity (semantic errors)
 - 500: Server error
 
-## Response Formatting
+## Response formatting
 
 Use consistent response formats:
 
@@ -137,7 +137,7 @@ Implement role-based access control:
 - Log authorization failures for security monitoring
 - Implement least privilege principle
 
-## Rate Limiting
+## Rate limiting
 
 Protect APIs with rate limiting:
 
@@ -170,7 +170,7 @@ Implement comprehensive logging:
 - Set up alerts for error rate spikes
 - Monitor API performance metrics (latency, throughput)
 
-## Database Queries
+## Database queries
 
 Optimize database interactions:
 
@@ -182,7 +182,7 @@ Optimize database interactions:
 - Use read replicas for read-heavy workloads
 - Cache frequently accessed data
 
-## Async Operations
+## Async operations
 
 Handle long-running operations properly:
 

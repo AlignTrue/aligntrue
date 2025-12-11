@@ -194,13 +194,14 @@ Use documentation for real user workflows only.
 ### Brand and naming
 
 - **AlignTrue** (no space)
+- **Align/Aligns** capitalized when referring to glossary-defined rule bundles
 - `.aligntrue/config.yaml` for config
 - `.aligntrue/rules` for internal IR
 - `.aligntrue/lock.json` and `.aligntrue/bundle.yaml` for team mode
 - `.cursor/*.mdc` for Cursor exports
 - `.aligntrue/rules/*.md` is the single source of truth (edit here, sync flows to agents)
 
-### Emoji Usage
+### Emoji usage
 
 **NEVER use emojis in:**
 
@@ -369,7 +370,7 @@ Delete before merge:
 
 ---
 
-## Package Exports Documentation
+## Package exports documentation
 
 **Critical requirement:** All package exports must be documented BEFORE adding to `package.json`.
 

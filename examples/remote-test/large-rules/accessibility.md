@@ -5,7 +5,7 @@ spec_version: "1"
 summary: "Web accessibility standards and WCAG compliance"
 ---
 
-# Accessibility Standards
+# Accessibility standards
 
 ## WCAG Compliance
 
@@ -58,7 +58,7 @@ Examples:
 <nav aria-label="Main navigation">...</nav>
 ```
 
-## Keyboard Navigation
+## Keyboard navigation
 
 Ensure keyboard accessibility:
 
@@ -71,7 +71,7 @@ Ensure keyboard accessibility:
 - Support keyboard shortcuts
 - Test without mouse
 
-## Color Contrast
+## Color contrast
 
 Maintain sufficient contrast:
 
@@ -83,7 +83,7 @@ Maintain sufficient contrast:
 - Use contrast checking tools
 - Provide high contrast mode option
 
-## Form Accessibility
+## Form accessibility
 
 Make forms accessible:
 
@@ -122,7 +122,7 @@ Provide alternatives:
 - Describe complex images in detail
 - Use SVG with proper titles and descriptions
 
-## Focus Management
+## Focus management
 
 Manage focus properly:
 
@@ -134,7 +134,7 @@ Manage focus properly:
 - Trap focus in modals
 - Announce focus changes to screen readers
 
-## Screen Reader Support
+## Screen reader support
 
 Optimize for screen readers:
 
@@ -147,7 +147,7 @@ Optimize for screen readers:
 - Use proper heading structure
 - Avoid screen reader-only text when possible
 
-## Responsive Design
+## Responsive design
 
 Make responsive designs accessible:
 
@@ -159,7 +159,7 @@ Make responsive designs accessible:
 - Don't disable zoom
 - Test on mobile devices
 
-## Testing Accessibility
+## Testing accessibility
 
 Test thoroughly:
 

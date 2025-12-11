@@ -121,7 +121,7 @@ See [migrate command](https://aligntrue.ai/docs/04-reference/cli-reference/core#
 | CI validation              | Built-in commands for CI/CD pipelines with `aligntrue check` and `aligntrue drift`  | [CI/CD Integration](#integration-examples)                                                                                                                                                    |
 | **Customization**          |                                                                                     |                                                                                                                                                                                               |
 | Plugs                      | Dynamic value slots with validation for flexible rules                              | [Customization](https://aligntrue.ai/docs/02-customization)                                                                                                                                   |
-| Overlays                   | Surgical modifications to aligns for safe fork-resistant customization              | [Customization](https://aligntrue.ai/docs/02-customization)                                                                                                                                   |
+| Overlays                   | Surgical modifications to Aligns for safe fork-resistant customization              | [Customization](https://aligntrue.ai/docs/02-customization)                                                                                                                                   |
 | Scopes                     | Hierarchical rules for monorepos and complex projects                               | [Scopes](https://aligntrue.ai/docs/02-customization/scopes)                                                                                                                                   |
 | Export format options      | Choose native multi-file or AGENTS.md format per agent                              | [Export Formats](https://aligntrue.ai/docs/02-customization/export-formats)                                                                                                                   |
 | Per-rule targeting         | Control which agents receive specific rules via frontmatter                         | [Per-Rule Targeting](https://aligntrue.ai/docs/02-customization/per-rule-targeting)                                                                                                           |
@@ -207,7 +207,7 @@ jobs:
 - [Sync Behavior](https://aligntrue.ai/docs/03-concepts/sync-behavior) - How centralized rule management works
 - [Drift Detection](https://aligntrue.ai/docs/03-concepts/drift-detection) - Track alignment changes over time
 - [Git Workflows](https://aligntrue.ai/docs/03-concepts/git-workflows) - Pull and share rules via git
-- [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule aligns
+- [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule Aligns
 
 ## Reference
 
@@ -220,7 +220,7 @@ jobs:
 Want to contribute? Check out the guides:
 
 - [Getting Started](https://aligntrue.ai/docs/07-contributing/getting-started) - Set up your development environment
-- [Creating Aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns) - Author and publish rule aligns
+- [Creating Aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns) - Author and publish rule Aligns
 - [Adding Exporters](https://aligntrue.ai/docs/07-contributing/adding-exporters) - Add support for new agents
 
 ## Development
@@ -235,7 +235,7 @@ Setting up AlignTrue for local development:
 ## Learn more
 
 - [GitHub repository](https://github.com/AlignTrue/aligntrue)
-- [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule aligns
+- [Examples](https://aligntrue.ai/docs/04-reference/examples) - Browse 11 curated rule Aligns
 - [Security policy](https://github.com/AlignTrue/aligntrue/blob/main/SECURITY.md)
 
 ## Support

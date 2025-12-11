@@ -103,7 +103,7 @@ cd packages/cli
 pnpm test:report .internal_docs
 ```
 
-### Test Infrastructure
+### Test infrastructure
 
 **Automated Architecture:**
 
@@ -806,7 +806,7 @@ aligntrue init --mode solo --yes
 echo '---
 gitignore: true
 ---
-# Gitignored Rule' > .aligntrue/rules/secret.md
+# Gitignored rule' > .aligntrue/rules/secret.md
 aligntrue sync
 # Expected: Rule synced but marked for gitignore
 ```
@@ -893,7 +893,7 @@ aligntrue init --mode solo --yes
 
 # Create file with formatting issues (horizontal rule + heading without newline)
 cat > AGENTS.md <<'EOF'
-## First Section
+## First section
 
 Some content here.
 
@@ -904,7 +904,7 @@ More content.
 ---
 
 
-### Third Section
+### Third section
 
 Final content.
 EOF
@@ -943,11 +943,11 @@ cat > .aligntrue/rules/global.md <<'EOF'
 description: Global rules
 ---
 
-## Global Rule 1
+## Global rule 1
 
 First global rule content here.
 
-## Global Rule 2
+## Global rule 2
 
 Second global rule content here.
 EOF
@@ -957,7 +957,7 @@ cat > .aligntrue/rules/security.md <<'EOF'
 description: Security rules
 ---
 
-## Security Rule
+## Security rule
 
 Security rule content here.
 EOF
@@ -1214,11 +1214,11 @@ test -f apps/docs/.aligntrue/rules/web_stack.mdc && echo "PASS: exported to nest
    - Modify personal rules and sync
    - Verify remote push operations
 
-### Team Testing Patterns
+### Team testing patterns
 
 **Two approaches for testing team workflows:**
 
-#### Quick Testing Pattern (File Copying)
+#### Quick testing pattern (file copying)
 
 Use for fast, isolated tests that don't require git operations:
 
@@ -1869,7 +1869,7 @@ plugs:
       example: "https://docs.example.com"
 ---
 
-# Testing Guidelines
+# Testing guidelines
 
 Run tests with: [[plug:test.cmd]]
 
@@ -1947,7 +1947,7 @@ plugs:
       required: false
 ---
 
-# Testing Guidelines
+# Testing guidelines
 
 Run tests with: [[plug:test.cmd]]
 
@@ -2164,7 +2164,7 @@ mkdir -p .aligntrue/rules
 
 # Local rule
 cat > .aligntrue/rules/security.md <<'EOF'
-## No Console
+## No console
 
 Use console.log carefully (local version).
 EOF
@@ -2635,7 +2635,7 @@ If these checks fail, tests immediately exit with a clear error message explaini
 **Create test environment:**
 
 ```bash
-# For Layer 1 (distribution package testing)
+# For layer 1 (distribution package testing)
 # Build and pack from workspace (this is safe - just creates a file)
 cd /path/to/workspace/packages/cli
 pnpm pack  # Creates aligntrue-cli-X.Y.Z.tgz in current directory

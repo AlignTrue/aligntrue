@@ -49,7 +49,7 @@ Web standards: accessibility, performance, resilience, and mobile-first design.
 - Service workers for offline support
 - Resource hints (preload, prefetch, dns-prefetch)
 
-## Responsive Design
+## Responsive design
 
 - **Mobile-first** - Start with mobile, enhance for larger screens
 - **Flexible layouts** - Use CSS grid and flexbox
@@ -57,7 +57,7 @@ Web standards: accessibility, performance, resilience, and mobile-first design.
 - **Touch-friendly** - 44×44px minimum tap targets
 - **Typography scaling** - `clamp()` for fluid scaling
 
-## Form Accessibility
+## Form accessibility
 
 - **Label all inputs** - `<label for="id">`
 - **Error messages** - Clear, associated with inputs
@@ -73,7 +73,7 @@ Web standards: accessibility, performance, resilience, and mobile-first design.
 - **Clear current page** - Highlight active link
 - **Logical link text** - "Learn more" is bad, "Learn more about pricing" is good
 
-## Mobile Experience
+## Mobile experience
 
 - **Viewport meta tag** - `<meta name="viewport" content="width=device-width, initial-scale=1">`
 - **Touch targets** - 44×44px minimum
@@ -114,7 +114,7 @@ Web standards: accessibility, performance, resilience, and mobile-first design.
 - **E2E on real devices** - Verifying mobile experience
 - **Accessibility audit** - Manual review
 
-## Deployment Checklist
+## Deployment checklist
 
 - [ ] Lighthouse score ≥90 (desktop), ≥80 (mobile)
 - [ ] No accessibility violations (Axe)

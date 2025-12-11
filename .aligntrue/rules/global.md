@@ -335,7 +335,7 @@ Before declaring completion:
 
 ---
 
-## Stub Commands and Documentation
+## Stub commands and documentation
 
 Never create stub commands or "coming soon" documentation for unimplemented features:
 

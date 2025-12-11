@@ -3,11 +3,11 @@ description: Use this template for documenting test runs.
 content_hash: 4baf2c1d5f7be283a09f4390fe2a15f0978441fa60272d9115fe8c907f4d7394
 ---
 
-# Test Run Template
+# Test run template
 
 Use this template for documenting test runs.
 
-## Test Run {YYYY-MM-DD HH:MM}
+## Test run {YYYY-MM-DD HH:MM}
 
 **Environment:**
 
@@ -26,7 +26,7 @@ Use this template for documenting test runs.
 
 ## Findings
 
-### Confirmed Bugs
+### Confirmed bugs
 
 #### [P0] {Bug Title}
 
@@ -55,7 +55,7 @@ Use this template for documenting test runs.
 
 ---
 
-### Test Execution Issues
+### Test execution issues
 
 #### {Issue Title}
 
@@ -67,7 +67,7 @@ Use this template for documenting test runs.
 
 ---
 
-### Coverage Gaps
+### Coverage gaps
 
 #### {Gap Title}
 

@@ -7,7 +7,7 @@
 
 This project assumes all code is AI-edited. Design for safe, cheap future changes.
 
-## Code Structure and Contracts
+## Code structure and contracts
 
 - Define minimal interfaces and contracts first.
 - Add tests second to verify the contract.
@@ -15,7 +15,7 @@ This project assumes all code is AI-edited. Design for safe, cheap future change
 - Keep functions short and names predictable.
 - Minimize side effects and hidden state.
 
-## Explicitness Over Cleverness
+## Explicitness over cleverness
 
 - Make structure obvious: organize directories clearly and use descriptive naming.
 - Prefer explicit over implicit. Avoid hidden side effects and global mutable state.

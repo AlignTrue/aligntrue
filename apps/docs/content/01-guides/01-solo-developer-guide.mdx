@@ -166,7 +166,7 @@ cursor .
 
 - Created `.aligntrue/rules` (internal IR, auto-generated)
 - Created or detected your agent files (`.cursor/rules/*.mdc`, `AGENTS.md`, etc.)
-- Pulled example aligns from local examples
+- Pulled example Aligns from local examples
 - Exported to all detected agent formats
 - Ready to sync rules to all agents
 
@@ -175,9 +175,9 @@ cursor .
 - Customize test command: `aligntrue plugs set test.cmd "pnpm test"`
 - Adjust severity: `aligntrue override add --selector 'rule[id=...]' --set severity=warn`
 
-### Scenario 2: Using example aligns
+### Scenario 2: Using example Aligns
 
-**Goal:** Use example aligns from the AlignTrue repository and customize for your project.
+**Goal:** Use example Aligns from the AlignTrue repository and customize for your project.
 
 **Steps:**
 
@@ -250,7 +250,7 @@ cat > rules/coding-standards.md <<EOF
 title: My Custom Coding Standard
 ---
 
-# My Custom Coding Standard
+# My custom coding standard
 
 Always do X because Y. This rule applies to all TypeScript files.
 
@@ -292,7 +292,7 @@ cat > ~/.aligntrue/rules/my-standards.md <<EOF
 title: My Custom Coding Standard
 ---
 
-# My Custom Coding Standard
+# My custom coding standard
 
 Always do X because Y.
 EOF
@@ -307,7 +307,7 @@ aligntrue sync
 
 **Result:** Consistent rules across all personal projects.
 
-### Scenario 4: Customizing third-party aligns
+### Scenario 4: Customizing third-party Aligns
 
 **Goal:** Use community align but adjust for personal preferences.
 
@@ -429,7 +429,7 @@ aligntrue plugs set docs.url "https://docs.yourproject.com"
 
 - Adjusting severity for personal preference
 - Temporarily disabling strict rules during refactoring
-- Customizing third-party aligns without forking
+- Customizing third-party Aligns without forking
 
 **Example:**
 
@@ -587,7 +587,7 @@ cat > .aligntrue/rules/my-custom.md <<EOF
 title: My Custom Rules
 ---
 
-# My Custom Rules
+# My custom rules
 
 Your customized rules here.
 EOF
@@ -743,18 +743,18 @@ See [Team Guide](/docs/01-guides/02-team-guide) for team collaboration workflows
 2. **Customize** - Use plugs, overlays, and scopes as needed
 3. **Iterate fast** - No team overhead
 4. **Version control** - Commit rules to git
-5. **Share easily** - Git source or local aligns
+5. **Share easily** - Git source or local Aligns
 
 **Key principles:**
 
 - Start simple, add complexity only when needed
-- Use example aligns as starting point
+- Use example Aligns as starting point
 - Customize with plugs, overlays, and scopes
 - Document decisions with comments
 - Version control your rules
 
 **Next steps:**
 
-- Browse [example aligns](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) for curated examples
+- Browse [example Aligns](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns) for curated examples
 - Read [customization guides](/docs/02-customization/) for advanced patterns
 - Join community for align sharing and support

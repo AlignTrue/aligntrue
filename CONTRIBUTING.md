@@ -9,7 +9,7 @@
 
 # Contributing to AlignTrue
 
-Thank you for your interest in contributing to AlignTrue! We welcome contributions from everyone: whether you're creating aligns, improving documentation, adding exporters, or fixing bugs in the core codebase.
+Thank you for your interest in contributing to AlignTrue! We welcome contributions from everyone: whether you're creating Aligns, improving documentation, adding exporters, or fixing bugs in the core codebase.
 
 ## Contribution types
 
@@ -17,9 +17,9 @@ AlignTrue has many ways to get involved:
 
 ### Content contributions
 
-Create and maintain rule sets (aligns) that help others align their AI agents.
+Create and maintain rule sets (Aligns) that help others align their AI agents.
 
-**[Create aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns)** — Write rules that solve real problems for your domain or stack.
+**[Create Aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns)** — Write rules that solve real problems for your domain or stack.
 
 **[Edit documentation](https://aligntrue.ai/docs/07-contributing/editing-docs)** — Improve docs on the site or contribute to our docs-first architecture.
 
@@ -49,7 +49,7 @@ Extend AlignTrue's core platform and integrations.
 
 - Create a feature branch
 - Write tests alongside your changes
-- Follow the relevant guide ([aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns), [docs](https://aligntrue.ai/docs/07-contributing/editing-docs), [exporters](https://aligntrue.ai/docs/07-contributing/adding-exporters))
+- Follow the relevant guide ([Aligns](https://aligntrue.ai/docs/07-contributing/creating-aligns), [docs](https://aligntrue.ai/docs/07-contributing/editing-docs), [exporters](https://aligntrue.ai/docs/07-contributing/adding-exporters))
 - Keep a fast loop running: `pnpm test:fast`
 
 ### Before submitting a PR

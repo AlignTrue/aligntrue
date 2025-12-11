@@ -1,6 +1,6 @@
 # Overlay commands
 
-Commands for customizing third-party aligns without forking.
+Commands for customizing third-party Aligns without forking.
 
 ## `aligntrue override`
 

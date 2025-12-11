@@ -10,7 +10,7 @@ This repository demonstrates AlignTrue in action with a complete, working exampl
 - **`.cursor/rules/*.mdc`** - Generated Cursor rules (one file per rule)
 - **`.vscode/mcp.json`** - VS Code MCP configuration
 
-## Solo Developer Workflow
+## Solo developer workflow
 
 This repository demonstrates the **rules-first workflow** for solo developers:
 
@@ -20,7 +20,7 @@ This repository demonstrates the **rules-first workflow** for solo developers:
 
 No YAML knowledge required! The internal IR (`.aligntrue/rules`) is generated automatically.
 
-## Quick Start
+## Quick start
 
 ### 1. Clone and Navigate
 
@@ -111,9 +111,9 @@ git diff .cursor/rules/ .aligntrue/rules
 
 The content hashes will update automatically, and the internal IR (`.aligntrue/rules`) will be regenerated.
 
-## Advanced Features
+## Advanced features
 
-### Dry Run Mode
+### Dry run mode
 
 Preview changes without writing files:
 
@@ -144,7 +144,7 @@ git:
 
 **Note:** The `sources` path points to `.aligntrue/rules` (internal IR). Users should edit rules in `.aligntrue/rules/`. The IR is auto-generated during sync.
 
-### Rule Format
+### Rule format
 
 Each rule in `AGENTS.md` includes:
 
@@ -153,7 +153,7 @@ Each rule in `AGENTS.md` includes:
 - `Scope`: File patterns the rule applies to
 - `Guidance`: Markdown-formatted explanation with examples
 
-## Expected Performance
+## Expected performance
 
 - **Initial sync**: <5 seconds for 5 rules + 3 exporters
 - **File generation**: 3 files totaling ~6KB

@@ -19,13 +19,13 @@ Common patterns to avoid:
 - password: "mypassword123"
 - token: "ghp\_..."
 
-## Input Validation
+## Input validation
 
 - Validate and sanitize untrusted input (file paths, user input, external data).
 - Follow established authentication and authorization patterns.
 - Do not bypass security checks.
 
-## Risk Communication
+## Risk communication
 
 - Call out potential security risks clearly, even if outside the current request.
 - Be explicit about what is validated and what is not.

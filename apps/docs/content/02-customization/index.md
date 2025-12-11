@@ -5,7 +5,7 @@ description: Three powerful mechanisms for customizing AlignTrue rules without f
 
 # Customization overview
 
-AlignTrue provides three complementary mechanisms for customizing rules to fit your project, stack, and team needs without forking upstream aligns. Author rules in `.aligntrue/rules/*.md`; agent exports like `AGENTS.md` and `.cursor/rules/*.mdc` are generated outputs—treat them as read-only.
+AlignTrue provides three complementary mechanisms for customizing rules to fit your project, stack, and team needs without forking upstream Aligns. Author rules in `.aligntrue/rules/*.md`; agent exports like `AGENTS.md` and `.cursor/rules/*.mdc` are generated outputs—treat them as read-only.
 
 ## The three pillars
 
@@ -103,7 +103,7 @@ graph TD
     Q2 -->|Yes| Overlays[Use OVERLAYS<br/>severity, inputs, autofix]
     Q2 -->|No| Q3{Different rules per directory?}
     Q3 -->|Yes| Scopes[Use SCOPES<br/>monorepo, multi-stack]
-    Q3 -->|No| Fork[FORK or create custom align]
+    Q3 -->|No| Fork[FORK or create custom Align]
 
     style Plugs fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
     style Overlays fill:#F5A623,stroke:#F5A623,color:#fff,stroke-width:2px
@@ -148,14 +148,14 @@ graph TD
 
 **Plugs:**
 
-- Stack aligns provide default fills
+- Stack Aligns provide default fills
 - Teams override with org-specific values
 - Shared fills committed to repo for consistency
 
 **Overlays:**
 
 - Team-wide severity preferences
-- Adjust third-party aligns to team standards
+- Adjust third-party Aligns to team standards
 - Document customization decisions in config
 
 **Scopes:**
@@ -303,7 +303,7 @@ overlays:
 **Solution:**
 
 - **Scopes** for team boundaries
-- Shared base align + team-specific aligns
+- Shared base Align + team-specific Aligns
 - **Overlays** for team preferences
 
 ```yaml

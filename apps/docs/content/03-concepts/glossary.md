@@ -150,12 +150,12 @@ Each exporter:
 
 ### Bundle
 
-Merging rules from multiple aligns/sources into a single coherent rule set (team mode only).
+Merging rules from multiple Aligns/sources into a single coherent rule set (team mode only).
 
 **When bundling happens:**
 
 - Specified in `.aligntrue/config.yaml` under `sources`
-- Multiple aligns are resolved with precedence rules
+- Multiple Aligns are resolved with precedence rules
 - Dependencies are resolved recursively
 - Final bundle is deterministically merged
 
@@ -265,7 +265,7 @@ vendor:
 
 ### Overlays
 
-Customizations applied on top of third-party aligns without forking them. Allows safe, maintainable modifications to upstream rule sets.
+Customizations applied on top of third-party Aligns without forking them. Allows safe, maintainable modifications to upstream rule sets.
 
 **Features:**
 

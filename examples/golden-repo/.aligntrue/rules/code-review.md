@@ -1,4 +1,4 @@
-# Code Review Standards
+# Code review standards
 
 TODO comments should be converted to GitHub issues before merging. They often get forgotten in the codebase.
 

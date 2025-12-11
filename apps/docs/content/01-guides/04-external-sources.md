@@ -474,7 +474,7 @@ sources:
       - https://github.com/AlignTrue/community-rules/aligns
 # Then in .aligntrue/rules/:
 # - Add local/security.md (overrides community rules on conflict)
-# - Add local/project-specific.md (new rules not in community aligns)
+# - Add local/project-specific.md (new rules not in community Aligns)
 ```
 
 ## How import works

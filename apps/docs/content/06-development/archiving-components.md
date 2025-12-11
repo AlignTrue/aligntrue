@@ -101,7 +101,7 @@ Add entry explaining:
 ```markdown
 ### Archived
 
-- **apps/web (Catalog website)** - Archived to simplify pre-launch. Static catalog page in docs site replaces it. Restoration triggers: 50+ active users OR 20+ curated aligns.
+- **apps/web (Catalog website)** - Archived to simplify pre-launch. Static catalog page in docs site replaces it. Restoration triggers: 50+ active users OR 20+ curated Aligns.
 ```
 
 ### 7. Update future features documentation

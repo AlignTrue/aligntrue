@@ -10,7 +10,7 @@ globs:
 content_hash: 92c4cfe00c8c351067b76178d6547e4cd14d60c5c79aa44cc22f4820a33f7b7b
 ---
 
-# Security Linting Policy
+# Security linting policy
 
 **Applies to**: `scripts/**/*.{js,mjs}`, `packages/**/*.{ts,tsx}`, `apps/**/*.{ts,tsx}`
 
@@ -18,7 +18,7 @@ content_hash: 92c4cfe00c8c351067b76178d6547e4cd14d60c5c79aa44cc22f4820a33f7b7b
 
 This document defines when to suppress vs fix security warnings from `eslint-plugin-security` to ensure `pnpm check` only shows actionable warnings. It covers both TypeScript source files and JavaScript tooling scripts like build tools, validation scripts, and CLI utilities.
 
-## Core Principle
+## Core principle
 
 **Suppress false positives with documentation. Fix real vulnerabilities.**
 
@@ -188,7 +188,7 @@ if (
 obj[userKey] = value;
 ```
 
-## Suppression Documentation Requirements
+## Suppression documentation requirements
 
 All suppressions must include:
 
@@ -254,7 +254,7 @@ For build and validation scripts in `scripts/`, override rules when appropriate:
 - Scripts that dynamically construct commands or paths
 - Scripts that process user input
 
-## Review Process
+## Review process
 
 Before suppressing:
 
@@ -266,7 +266,7 @@ Before suppressing:
 
 ## Examples
 
-### Good Suppression
+### Good suppression
 
 ```typescript
 // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -274,7 +274,7 @@ Before suppressing:
 const configSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
 ```
 
-### Bad Suppression (missing validation)
+### Bad suppression (missing validation)
 
 ```typescript
 // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -282,7 +282,7 @@ const configSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
 const content = readFileSync(userPath, "utf8");
 ```
 
-### Good Fix
+### Good fix
 
 ```typescript
 // Validate user path first
@@ -290,7 +290,7 @@ validateScopePath(userPath);
 const content = readFileSync(userPath, "utf8");
 ```
 
-### Tooling Script Example (JavaScript)
+### Tooling script example (JavaScript)
 
 **Good suppression**:
 

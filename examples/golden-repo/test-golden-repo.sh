@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Golden Repository Validation Script
+# Golden repository validation script
 # Tests that the golden repo demonstrates < 60 second setup
 #
 

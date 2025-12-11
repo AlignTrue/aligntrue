@@ -107,6 +107,11 @@
       "source": "/join-team",
       "destination": "/docs/01-guides/03-join-team",
       "permanent": true
+    },
+    {
+      "source": "/about",
+      "destination": "/docs/about",
+      "permanent": true
     }
   ],
   "headers": [

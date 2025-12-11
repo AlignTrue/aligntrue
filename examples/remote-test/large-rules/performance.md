@@ -5,9 +5,9 @@ spec_version: "1"
 summary: "Performance optimization, profiling, and caching strategies"
 ---
 
-# Performance Optimization
+# Performance optimization
 
-## Profiling First
+## Profiling first
 
 Always profile before optimizing:
 
@@ -20,7 +20,7 @@ Always profile before optimizing:
 - Document performance improvements
 - Set performance budgets
 
-## Algorithm Complexity
+## Algorithm complexity
 
 Choose efficient algorithms:
 
@@ -33,7 +33,7 @@ Choose efficient algorithms:
 - Cache computed results
 - Avoid nested loops when possible
 
-## Database Performance
+## Database performance
 
 Optimize database queries:
 
@@ -46,7 +46,7 @@ Optimize database queries:
 - Denormalize when necessary
 - Use read replicas for read-heavy loads
 
-## Caching Strategies
+## Caching strategies
 
 Implement effective caching:
 
@@ -79,7 +79,7 @@ Optimize API responses:
 - Implement rate limiting
 - Use connection keep-alive
 
-## Frontend Performance
+## Frontend performance
 
 Optimize frontend loading:
 
@@ -92,7 +92,7 @@ Optimize frontend loading:
 - Preload critical resources
 - Defer non-critical scripts
 
-## Memory Management
+## Memory management
 
 Manage memory efficiently:
 
@@ -118,7 +118,7 @@ Handle concurrent operations:
 - Set appropriate timeouts
 - Handle race conditions
 
-## Asset Optimization
+## Asset optimization
 
 Optimize static assets:
 
@@ -131,7 +131,7 @@ Optimize static assets:
 - Remove unused code
 - Use content hashing for cache busting
 
-## Monitoring Performance
+## Monitoring performance
 
 Track performance metrics:
 
@@ -144,7 +144,7 @@ Track performance metrics:
 - Track Core Web Vitals for frontend
 - Create performance dashboards
 
-## Load Testing
+## Load testing
 
 Test under load:
 

@@ -5,9 +5,9 @@ spec_version: "1"
 summary: "Integration testing patterns and best practices"
 ---
 
-# Integration Testing
+# Integration testing
 
-## Test Structure
+## Test structure
 
 Organize integration tests:
 
@@ -18,7 +18,7 @@ Organize integration tests:
 - Keep tests independent and isolated
 - Run tests in parallel when possible
 
-## Test Database
+## Test database
 
 Manage test database properly:
 
@@ -66,7 +66,7 @@ describe("POST /api/users", () => {
 });
 ```
 
-## Mocking External Services
+## Mocking external services
 
 Mock external dependencies:
 
@@ -79,7 +79,7 @@ Mock external dependencies:
 - Update mocks when external APIs change
 - Document mock behavior
 
-## Test Fixtures
+## Test fixtures
 
 Create reusable test fixtures:
 
@@ -103,7 +103,7 @@ export function createUser(overrides = {}) {
 }
 ```
 
-## Async Testing
+## Async testing
 
 Handle async operations properly:
 
@@ -114,7 +114,7 @@ Handle async operations properly:
 - Test timeout scenarios
 - Handle promise rejections
 
-## Error Testing
+## Error testing
 
 Test error scenarios:
 
@@ -126,7 +126,7 @@ Test error scenarios:
 - Test edge cases
 - Verify error messages and codes
 
-## Test Coverage
+## Test coverage
 
 Maintain good test coverage:
 

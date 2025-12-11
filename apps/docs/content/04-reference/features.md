@@ -96,7 +96,7 @@ See [CLI Reference](/docs/04-reference/cli-reference) for complete command docum
 ## Documentation
 
 - Nextra docs site with quickstart, concepts, and reference
-- Curated example aligns
+- Curated example Aligns
 - Agent compatibility matrix
 
 ## Core format & architecture
@@ -154,9 +154,9 @@ See [Sync Behavior](/docs/03-concepts/sync-behavior) for details.
 ## Customization system
 
 - **Plugs** - Dynamic value slots with validation (slots + fills)
-- **Overlays** - Surgical modifications to aligns (set/remove operations)
+- **Overlays** - Surgical modifications to Aligns (set/remove operations)
 - **Overlay validation** - Stale selector detection, ambiguous match warnings, size limits
-- **Three-way merge** - Merge overlays with base align changes
+- **Three-way merge** - Merge overlays with base Align changes
 
 See [Customization](/docs/02-customization) for complete guides.
 

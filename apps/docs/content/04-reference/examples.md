@@ -1,11 +1,11 @@
 ---
 title: Examples
-description: Working examples and curated rule aligns for AlignTrue
+description: Working examples and curated rule Aligns for AlignTrue
 ---
 
 # Examples
 
-Learn by example with working demonstrations and 10 curated rule aligns.
+Learn by example with working demonstrations and 10 curated rule Aligns.
 
 ## Working examples (GitHub)
 
@@ -29,7 +29,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 ### Overlays demo
 
-**Fork-safe customization** without forking upstream aligns.
+**Fork-safe customization** without forking upstream Aligns.
 
 - Severity remapping (warn → error)
 - Adding check inputs (threshold adjustments)
@@ -39,7 +39,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 [View overlays-demo on GitHub →](https://github.com/AlignTrue/aligntrue/tree/main/examples/overlays-demo)
 
-**When to use:** Customizing third-party aligns, team severity preferences
+**When to use:** Customizing third-party Aligns, team severity preferences
 
 **Files:** YAML format with overlays section
 
@@ -77,11 +77,11 @@ Complete, runnable examples in the AlignTrue repository:
 
 ---
 
-## Curated rule aligns
+## Curated rule Aligns
 
-10 production-ready rule aligns maintained by AlignTrue. All aligns are CC0-licensed (public domain).
+10 production-ready rule Aligns maintained by AlignTrue. All Aligns are CC0-licensed (public domain).
 
-### Foundation aligns
+### Foundation Aligns
 
 - **[Base Global](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/global.md)** - Essential baseline rules for all AI coding agents. Ensures deterministic behavior, clear output formatting, and consistent code quality practices. Natural markdown format.
 
@@ -97,7 +97,7 @@ Complete, runnable examples in the AlignTrue repository:
 
 - **[Security and Compliance](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/security.md)** - Security and compliance baseline covering secrets management, supply chain security, and dependency auditing. Natural markdown format.
 
-### Framework & stack aligns
+### Framework & stack Aligns
 
 - **[Next.js App Router](https://github.com/AlignTrue/aligntrue/blob/main/examples/aligns/nextjs_app_router.md)** - Best practices for Next.js App Router covering server/client boundaries, caching strategies, and data fetching patterns. Natural markdown format.
 
@@ -125,12 +125,12 @@ Complete, runnable examples in the AlignTrue repository:
 
 </details>
 
-## Using aligns
+## Using Aligns
 
 ### Quick install
 
 ```bash
-# Add an align to your project
+# Add an Align to your project
 aligntrue add aligns/base/base-global
 
 # Sync to your agents
@@ -139,11 +139,11 @@ aligntrue sync
 
 ### Browse on GitHub
 
-All align YAML files are available in the [AlignTrue repository](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns).
+All Align YAML files are available in the [AlignTrue repository](https://github.com/AlignTrue/aligntrue/tree/main/examples/aligns).
 
 ### Customize with overlays
 
-Need to adjust an align for your project? Use overlays:
+Need to adjust an Align for your project? Use overlays:
 
 ```bash
 # Remap severity
@@ -155,10 +155,10 @@ aligntrue override add rule-id --set enabled=false
 
 See [Overlays Guide](/docs/02-customization/overlays) for details.
 
-## Contributing aligns
+## Contributing Aligns
 
 Want to share your rules with the community? See [Creating Aligns](/docs/07-contributing/creating-aligns) for guidelines.
 
 ---
 
-**Note:** All aligns are CC0-licensed (public domain) and maintained by AlignTrue. Community contributions welcome!
+**Note:** All Aligns are CC0-licensed (public domain) and maintained by AlignTrue. Community contributions welcome!

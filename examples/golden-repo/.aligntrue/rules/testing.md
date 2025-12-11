@@ -3,11 +3,11 @@
   Update, expand, or replace it based on your project's needs.
 -->
 
-# Testing Standards
+# Testing standards
 
 Add or update tests for any nontrivial change. Use the existing test framework and patterns in this project.
 
-## Test Quality
+## Test quality
 
 - Prefer fast, focused unit tests.
 - Only use integration or end-to-end tests when necessary.
@@ -15,14 +15,14 @@ Add or update tests for any nontrivial change. Use the existing test framework a
 - Keep tests independent and deterministic.
 - Use descriptive test names that explain what is being tested.
 
-## Test Design
+## Test design
 
 - Tests should act as executable specs: clear names, simple setups, deterministic assertions.
 - Explain why a test is missing if you cannot add one, and call out the risk.
 - When fixing a bug, add a regression test that fails before the fix and passes after.
 - Aim for test coverage that gives confidence in correctness (target 80%+ for critical code).
 
-## Test Co-location
+## Test co-location
 
 Place test files next to source files using the `.test.*` or `.spec.*` naming convention:
 

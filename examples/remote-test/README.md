@@ -11,7 +11,7 @@ These fixtures enable two critical test scenarios:
 
 ## Structure
 
-### Personal Rules
+### Personal rules
 
 `personal-rules.md` - A realistic personal rules file containing:
 
@@ -25,7 +25,7 @@ Used for testing:
 - Personal rules synchronization
 - Conflict detection between team and personal rules
 
-### Large Rule Sets
+### Large rule sets
 
 `large-rules/` - A collection of 9 rule files totaling 99 sections:
 
@@ -47,7 +47,7 @@ This represents a comprehensive rule set that covers common development scenario
 
 ## Usage in Tests
 
-### Remote Workflow Tests
+### Remote workflow tests
 
 Tests reference the GitHub repo with pinned commit hash:
 
@@ -67,7 +67,7 @@ const config = {
 };
 ```
 
-### Performance Tests
+### Performance tests
 
 Tests copy large-rules/ fixtures to test projects:
 
@@ -96,7 +96,7 @@ expect(duration).toBeLessThan(60000); // <60 seconds
 
 ## Maintenance
 
-### Updating Fixtures
+### Updating fixtures
 
 When updating these fixtures:
 
@@ -107,7 +107,7 @@ When updating these fixtures:
 5. Update `COMMIT_HASH` constant in test files
 6. Run tests to verify
 
-### Adding New Fixtures
+### Adding new fixtures
 
 To add new test fixtures:
 
@@ -118,7 +118,7 @@ To add new test fixtures:
 5. Update section count in table above
 6. Copy to GitHub repo and update tests
 
-## Performance Thresholds
+## Performance thresholds
 
 Current performance expectations for large rule sets:
 
@@ -128,7 +128,7 @@ Current performance expectations for large rule sets:
 
 These thresholds are tested in `packages/cli/tests/integration/performance.test.ts`.
 
-## Related Documentation
+## Related documentation
 
 - Test implementation: `packages/cli/tests/integration/personal-remote.test.ts`
 - Performance tests: `packages/cli/tests/integration/performance.test.ts`

@@ -252,9 +252,9 @@ Never trust user input.
 
 ## Advanced examples
 
-### Multi-section align
+### Multi-section Align
 
-Create aligns with many sections organized hierarchically:
+Create Aligns with many sections organized hierarchically:
 
 ```markdown
 ---
@@ -311,9 +311,9 @@ Each `##` heading becomes a separate rule:
 
 Each `###` heading becomes its own section under the prior `##`; parent content does **not** automatically include child sections.
 
-### Included example aligns
+### Included example Aligns
 
-Example aligns in `examples/aligns/` demonstrate natural markdown:
+Example Aligns in `examples/aligns/` demonstrate natural markdown:
 
 - `global.md` - Base global rules
 - `testing.md` - Testing standards
@@ -323,9 +323,9 @@ Example aligns in `examples/aligns/` demonstrate natural markdown:
 
 ## Backward compatibility
 
-Natural markdown sections coexist with rule-based aligns:
+Natural markdown sections coexist with rule-based Aligns:
 
-**Rule-based align (legacy):**
+**Rule-based Align (legacy):**
 
 ```yaml
 id: my-rules
@@ -336,12 +336,12 @@ rules:
     guidance: Text here
 ```
 
-**Section-based align (natural markdown):**
+**Section-based Align (natural markdown):**
 
 ```markdown
 # My rules
 
-## Rule One
+## Rule one
 
 Text here
 ```
@@ -366,11 +366,11 @@ Natural markdown sections:
 
 - Cannot express complex rule metadata (checks, autofixes)
 - Are simpler than rule-based format
-- Work best for guidance-focused aligns
+- Work best for guidance-focused Aligns
 
 For complex rule definitions with machine-checkable conditions, use rule-based YAML format.
 
 ## Related pages
 
 - [Getting Started](/docs/00-getting-started/00-quickstart) - Quick start guide
-- [Example Aligns](/docs/04-reference/examples) - Curated example aligns
+- [Example Aligns](/docs/04-reference/examples) - Curated example Aligns

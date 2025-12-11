@@ -5,9 +5,9 @@ spec_version: "1"
 summary: "Code review standards and pull request guidelines"
 ---
 
-# Code Review Standards
+# Code review standards
 
-## Pull Request Guidelines
+## Pull request guidelines
 
 Create good pull requests:
 
@@ -53,7 +53,7 @@ How to test the changes
 - [ ] Reviewed own code
 ```
 
-## Review Checklist
+## Review checklist
 
 Review systematically:
 
@@ -67,7 +67,7 @@ Review systematically:
 - Are there security issues?
 - Does it follow project conventions?
 
-## Providing Feedback
+## Providing feedback
 
 Give constructive feedback:
 
@@ -85,7 +85,7 @@ Feedback examples:
 - Good: "Consider extracting this logic into a separate function for better testability"
 - Bad: "This is wrong"
 
-## Receiving Feedback
+## Receiving feedback
 
 Handle feedback professionally:
 
@@ -97,7 +97,7 @@ Handle feedback professionally:
 - Address all feedback (implement or explain why not)
 - Mark conversations as resolved
 
-## Review Priorities
+## Review priorities
 
 Focus review on:
 
@@ -108,7 +108,7 @@ Focus review on:
 5. Tests: Is it adequately tested?
 6. Style: Does it follow conventions? (lowest priority)
 
-## Approval Process
+## Approval process
 
 Follow approval workflow:
 
@@ -120,7 +120,7 @@ Follow approval workflow:
 - Don't merge without approval
 - Use "Request changes" for blocking issues
 
-## Merge Strategy
+## Merge strategy
 
 Choose merge strategy consistently:
 
@@ -131,7 +131,7 @@ Choose merge strategy consistently:
 - Update branch before merging
 - Resolve conflicts carefully
 
-## Automated Checks
+## Automated checks
 
 Require automated checks to pass:
 
@@ -143,7 +143,7 @@ Require automated checks to pass:
 - Code coverage thresholds
 - No merge conflicts
 
-## Review Turnaround
+## Review turnaround
 
 Respond to reviews promptly:
 

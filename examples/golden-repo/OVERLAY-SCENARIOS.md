@@ -60,7 +60,7 @@ cat .aligntrue/lock.json | jq '.dependencies[] | select(.overlay_hash != null)'
 }
 ```
 
-### Simulate Upstream Update
+### Simulate upstream update
 
 4. **Modify upstream rules (add new check):**
 
@@ -93,7 +93,7 @@ aln override status
 #   Healthy: yes
 ```
 
-### Verify Clean Merge
+### Verify clean merge
 
 6. **Inspect lockfile:**
 
@@ -115,7 +115,7 @@ grep -r "typescript.no.any" .cursor/rules/*.mdc
 # Should show new rule: performance.avoid.nested.loops (from upstream)
 ```
 
-### Success Criteria
+### Success criteria
 
 ✅ Overlay applies after upstream update  
 ✅ Lockfile shows three hashes (content, overlay, final)  
@@ -158,7 +158,7 @@ aln sync
 cp .aligntrue/lock.json /tmp/lockfile-with-overlay.json
 ```
 
-### Simulate Conflicting Upstream Update
+### Simulate conflicting upstream update
 
 4. **Upstream changes same field:**
 
@@ -185,7 +185,7 @@ Instead of: // TODO: refactor this
 Do: Create issue, then // Issue #123: refactor this
 ```
 
-### Detect Conflict
+### Detect conflict
 
 5. **Run sync with conflict detection:**
 
@@ -222,7 +222,7 @@ aln override diff code.review.no.todos
 # ℹ Overlay is redundant: upstream now matches your override
 ```
 
-### Resolve Conflict
+### Resolve conflict
 
 7. **Remove redundant overlay:**
 
@@ -246,7 +246,7 @@ cat .aligntrue/lock.json | jq '.dependencies[]'
 # Output shows only content_hash and final_hash (no overlay)
 ```
 
-### Alternate Resolution: Keep Overlay with Reason
+### Alternate resolution: Keep overlay with reason
 
 ```bash
 # If you want to keep override (e.g., might revert upstream later)
@@ -257,7 +257,7 @@ aln override add \
   --owner "platform-team"
 ```
 
-### Success Criteria
+### Success criteria
 
 ✅ Conflict detected by sync  
 ✅ Three-way diff shows original, current, and overlay  
@@ -283,7 +283,7 @@ overlays:
         severity: "error"
 ```
 
-### Upstream Adds New Field
+### Upstream adds new field
 
 2. **Upstream adds inputs:**
 
@@ -306,7 +306,7 @@ Avoid using 'any' type as it defeats TypeScript's type safety.
 Use 'unknown' for truly unknown types, or define proper interfaces.
 ```
 
-### Update Overlay
+### Update overlay
 
 3. **Merge overlay with new upstream inputs:**
 
@@ -334,7 +334,7 @@ aln override diff typescript.no.any
 # - Merged result (severity error, allowImplicit false, allowExplicit true)
 ```
 
-### Success Criteria
+### Success criteria
 
 ✅ New upstream fields visible in diff  
 ✅ Overlay merges cleanly with upstream  
@@ -376,7 +376,7 @@ sources:
 **Severity:** warn
 ```
 
-### Apply Align-Specific Overlays
+### Apply align-specific overlays
 
 3. **Override each align differently:**
 
@@ -408,7 +408,7 @@ aln override status
 # ✓ security-rules → security.no.secrets (severity: warning)
 ```
 
-### Success Criteria
+### Success criteria
 
 ✅ Same check ID in multiple aligns  
 ✅ Each align has independent overlay  
@@ -417,7 +417,7 @@ aln override status
 
 ---
 
-## Test Script
+## Test script
 
 Save as `test-overlays.sh`:
 
@@ -554,7 +554,7 @@ Run:
 
 ---
 
-## Expected Test Output
+## Expected test output
 
 ```
 Testing Overlay Scenarios
@@ -581,7 +581,7 @@ All scenarios passed!
 
 Add to `examples/golden-repo/README.md`:
 
-### Overlay Demonstrations
+### Overlay demonstrations
 
 The golden repository includes overlay scenarios demonstrating:
 
@@ -616,7 +616,7 @@ aln sync
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - [Overlays Guide](../../docs/overlays.md) - Complete overlay documentation
 - [Drift Detection](../../docs/drift-detection.md) - Automated staleness checks

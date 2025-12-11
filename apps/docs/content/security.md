@@ -48,7 +48,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 ## Network and data handling
 
 - **No secret printing** - CLI output and exports avoid secrets; exports contain only rules, metadata, and hashes.
-- **Offline by default** - Remote fetches (for aligns or git sources) occur only when you configure them and reuse local cache when present.
+- **Offline by default** - Remote fetches (for Aligns or git sources) occur only when you configure them and reuse local cache when present.
 - **Local MCP access** - MCP exporters are scoped to the local workspace and avoid exposing arbitrary command execution.
 
 ## Dependency and supply chain
@@ -56,7 +56,7 @@ We release patches for security vulnerabilities as soon as possible. Only the la
 - **Pinned dependencies** - Releases are locked via `pnpm-lock.yaml`; no floating ranges.
 - **Dependabot monitoring** - Dependabot tracks manifest updates.
 - **Manual audits** - Run `pnpm audit --prod` locally before releases (not currently automated in CI).
-- **Data-only aligns** - Aligns are treated as data; they are never executed.
+- **Data-only Aligns** - Aligns are treated as data; they are never executed.
 - **SBOM and checksums** - SBOMs and release checksums are not published yet; verify releases via tags and repository hashes.
 
 ## MCP and IDE integration

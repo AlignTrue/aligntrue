@@ -1,6 +1,6 @@
 # Plugs commands
 
-Manage dynamic configuration slots and fills in rule aligns.
+Manage dynamic configuration slots and fills in rule Aligns.
 
 ## `aligntrue plugs`
 

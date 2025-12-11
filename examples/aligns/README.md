@@ -1,12 +1,12 @@
-# Example aligns
+# Example Aligns
 
-These example aligns demonstrate proper AlignTrue align format and can be imported via GitHub URLs or copied locally.
+These example Aligns demonstrate proper AlignTrue Align format and can be imported via GitHub URLs or copied locally.
 
 ## Usage
 
 ### Import via GitHub URL
 
-Reference aligns directly from this repository:
+Reference Aligns directly from this repository:
 
 ```yaml
 # .aligntrue.yaml
@@ -39,7 +39,7 @@ sources:
 
 ## Available Aligns
 
-### Base Aligns (Universal)
+### Base Aligns (universal)
 
 - `global.md` - Universal baseline rules for all projects
 - `docs.md` - Documentation standards and README requirements
@@ -55,7 +55,7 @@ sources:
 - `vercel_deployments.md` - Vercel deployment configuration and environment management
 - `web_quality.md` - Web performance, Core Web Vitals, and accessibility standards
 
-## Align Format
+## Align format
 
 All examples use markdown with YAML frontmatter:
 
@@ -67,22 +67,22 @@ summary: "Brief description"
 tags: ["tag1", "tag2"]
 ---
 
-# Align Title
+# Align title
 
 Markdown content with guidance for AI assistants.
 ```
 
-Each align file contains its own metadata in YAML frontmatter with sections organized as markdown headings.
+Each Align file contains its own metadata in YAML frontmatter with sections organized as markdown headings.
 
-## Sharing Your Own Aligns
+## Sharing your own Aligns
 
-There is no central catalog registry. Share your aligns by:
+There is no central catalog registry. Share your Aligns by:
 
 1. **Publishing to GitHub** - Users can import via git URLs
 2. **Sharing files directly** - Users can copy YAML files locally
 3. **Creating a collection** - Organize multiple aligns in a repository
 
-Each align file contains its own metadata in YAML frontmatter. See the [Creating Aligns](/docs/07-contributing/creating-aligns) guide for namespace conventions.
+Each Align file contains its own metadata in YAML frontmatter. See the [Creating Aligns](/docs/07-contributing/creating-aligns) guide for namespace conventions.
 
 ## Testing
 

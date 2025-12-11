@@ -5,9 +5,9 @@ spec_version: "1"
 summary: "Database design, migrations, and query optimization"
 ---
 
-# Database Best Practices
+# Database best practices
 
-## Schema Design
+## Schema design
 
 Design database schemas carefully:
 
@@ -46,7 +46,7 @@ Create indexes strategically:
 - Use EXPLAIN to analyze query plans
 - Consider covering indexes for read-heavy queries
 
-## Query Optimization
+## Query optimization
 
 Write efficient queries:
 
@@ -72,7 +72,7 @@ Use transactions appropriately:
 - Use optimistic locking for concurrent updates
 - Test transaction behavior under load
 
-## Connection Pooling
+## Connection pooling
 
 Manage database connections:
 
@@ -84,7 +84,7 @@ Manage database connections:
 - Close connections properly
 - Avoid connection leaks
 
-## Data Integrity
+## Data integrity
 
 Maintain data integrity:
 
@@ -121,7 +121,7 @@ Secure database access:
 - Prevent SQL injection with parameterized queries
 - Sanitize user inputs
 
-## Performance Monitoring
+## Performance monitoring
 
 Monitor database performance:
 

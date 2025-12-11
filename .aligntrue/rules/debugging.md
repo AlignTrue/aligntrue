@@ -316,7 +316,7 @@ In PR or commit message:
 
 ---
 
-# Error Lessons Learned Reference
+# Error lessons learned reference
 
 - For troubleshooting complex or recurring errors, consult `.cursor/rules/error_lessons_learned.mdc`—it contains past solutions and root causes.
 - When you solve a tricky or non-obvious error, summarize the problem, root cause, and successful fix in `error_lessons_learned.mdc`.

@@ -10,7 +10,7 @@ Learn how to use AlignTrue for your specific workflow. Choose your path based on
 
 | Your situation                          | Guide                                                                                                          |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **I want to try aligns in the browser** | [Align Catalog guide](/docs/01-guides/10-align-catalog) - Import, convert, and share aligns without installing |
+| **I want to try Aligns in the browser** | [Align Catalog guide](/docs/01-guides/10-align-catalog) - Import, convert, and share Aligns without installing |
 | **I'm working alone**                   | [Solo developer guide](/docs/01-guides/01-solo-developer-guide) - Fast iteration, no overhead                  |
 | **I'm in a team**                       | [Team guide](/docs/01-guides/02-team-guide) - Reproducible builds, drift detection, approval workflows         |
 | **I'm joining a team**                  | [Joining an existing team](/docs/01-guides/03-join-team) - Get set up with existing rules                      |
