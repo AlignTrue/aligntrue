@@ -139,6 +139,18 @@ Affected files (do not edit directly):
 
 **Exception:** ONLY edit `.aligntrue/rules/*.md` files and nothing else in the `.cursor/`, `.augment/`, or `.clinerules/` directories.
 
+### Git tracking of exports
+
+Export files can be either committed or ignored based on the `git.mode` setting in `.aligntrue/config.yaml`. Always check `git.mode` before flagging `.gitignore` changes as issues.
+
+- `git.mode: ignore` (default): Exports should be listed in `.gitignore`.
+- `git.mode: commit`: Exports should be tracked in git (the managed `.gitignore` block for exports will be removed).
+- `git.mode: branch`: Exports are staged on a generated feature branch.
+
+When `git.mode: commit` is set, it is correct for the `# START AlignTrue Generated Files` block to be absent from `.gitignore`; the sync system manages tracking automatically.
+
+Rules with `gitignore: true` in their frontmatter are always ignored regardless of global mode, creating a separate managed block in `.gitignore` for those rule exports only.
+
 ---
 
 ## Decisions and tradeoffs
