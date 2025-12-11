@@ -57,9 +57,6 @@ export const metadata: Metadata = {
     images: ["/aligntrue-og-image.png"],
   },
   metadataBase: new URL("https://aligntrue.ai"),
-  alternates: {
-    canonical: "/",
-  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -77,7 +77,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body style={{ margin: 0, padding: 0 }}>
+      <head>
         <Script
           id="structured-data"
           type="application/ld+json"
@@ -101,6 +101,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </Script>
           </>
         )}
+      </head>
+      <body style={{ margin: 0, padding: 0 }}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Analytics />

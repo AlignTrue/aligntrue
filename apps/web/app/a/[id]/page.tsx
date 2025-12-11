@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import {
   getCachedContent,
@@ -9,6 +8,9 @@ import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import { AlignDetailClient } from "./AlignDetailClient";
 import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
 export const dynamic = "force-dynamic";
 
@@ -52,9 +54,13 @@ export async function generateMetadata(props: {
   return {
     title,
     description,
+    alternates: {
+      canonical: `${BASE_URL}/a/${id}`,
+    },
     openGraph: {
       title,
       description,
+      url: `${BASE_URL}/a/${id}`,
     },
   };
 }
