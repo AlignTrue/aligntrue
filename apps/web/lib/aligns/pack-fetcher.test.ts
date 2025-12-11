@@ -27,6 +27,7 @@ describe("fetchPackForWeb", () => {
         version: "1.0.0",
         summary: "Example starter pack",
         author: "@aligntrue",
+        description: "Example starter description",
       },
       manifestPath: ".align.yaml",
       files: [
@@ -50,6 +51,7 @@ describe("fetchPackForWeb", () => {
     expect(result.info.manifestVersion).toBe("1.0.0");
     expect(result.info.manifestSummary).toBe("Example starter pack");
     expect(result.info.manifestAuthor).toBe("@aligntrue");
+    expect(result.info.manifestDescription).toBe("Example starter description");
     expect(result.info.ref).toBe("main");
     expect(result.info.totalBytes).toBe(350);
     expect(result.files).toHaveLength(2);
@@ -107,6 +109,7 @@ describe("fetchPackForWeb", () => {
 
     expect(result.info.manifestSummary).toBeNull();
     expect(result.info.manifestAuthor).toBeNull();
+    expect(result.info.manifestDescription).toBeNull();
   });
 
   it("propagates errors from resolver", async () => {

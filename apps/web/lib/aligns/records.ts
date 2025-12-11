@@ -24,8 +24,7 @@ export function buildPackAlignRecord({
     provider: "github",
     kind: "pack",
     title: pack.info.manifestSummary ?? pack.info.manifestId,
-    // Avoid duplicating the title; only surface a secondary field if present
-    description: pack.info.manifestAuthor ?? null,
+    description: pack.info.manifestDescription ?? null,
     fileType: "yaml",
     createdAt: existing?.createdAt ?? now,
     lastViewedAt: now,

@@ -1,6 +1,7 @@
 id: aligntrue/example-starter
 version: 1.0.0
 summary: "Example starter pack with global, testing, and TypeScript rules"
+description: "Starter pack for demos with global, testing, and TS rules."
 author: "@aligntrue"
 license: MIT
 includes:

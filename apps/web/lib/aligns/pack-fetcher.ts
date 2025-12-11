@@ -27,6 +27,7 @@ export async function fetchPackForWeb(
     manifestVersion: resolved.manifest.version,
     manifestSummary: resolved.manifest.summary ?? null,
     manifestAuthor: resolved.manifest.author ?? null,
+    manifestDescription: resolved.manifest.description ?? null,
     ref: resolved.ref,
     files: resolved.files.map(
       (file): AlignPackFile => ({

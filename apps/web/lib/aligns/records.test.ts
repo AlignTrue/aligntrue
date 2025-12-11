@@ -12,6 +12,7 @@ const basePack: WebPackResult = {
     manifestVersion: "1.0.0",
     manifestSummary: "Demo pack summary",
     manifestAuthor: "Jane Doe",
+    manifestDescription: "Demo pack description",
     ref: "main",
     files: [{ path: "aligns/rule.md", size: 120 }],
     totalBytes: 120,
@@ -34,7 +35,7 @@ describe("buildPackAlignRecord", () => {
     expect(record.createdAt).toBe(now);
     expect(record.lastViewedAt).toBe(now);
     expect(record.title).toBe("Demo pack summary");
-    expect(record.description).toBe("Jane Doe");
+    expect(record.description).toBe("Demo pack description");
   });
 
   it("preserves existing counters and createdAt", () => {

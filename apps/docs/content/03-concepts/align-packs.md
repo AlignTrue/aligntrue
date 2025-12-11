@@ -37,6 +37,7 @@ includes:
 id: author/pack-name
 version: 1.2.3
 summary: "One-line description"
+description: "Longer description for catalog previews"
 author: "@handle"
 license: MIT
 homepage: https://docs.example.com
@@ -66,7 +67,7 @@ customizations:
 
 - **id** (required): `author/name` slug (`^[a-z0-9-]+/[a-z0-9-]+$`).
 - **version** (required): SemVer.
-- **summary, author, license, homepage, repository**: optional metadata for discovery.
+- **summary, description, author, license, homepage, repository**: optional metadata for discovery. Use `description` for longer catalog blurbs.
 - **includes**:
   - `rules`, `skills`, `mcp`: arrays of relative globs; no absolute paths or `..`; resolved from the manifest directory.
 - **defaults** (optional):

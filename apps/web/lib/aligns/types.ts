@@ -17,6 +17,7 @@ export type AlignPackInfo = {
   manifestVersion: string;
   manifestSummary?: string | null;
   manifestAuthor?: string | null;
+  manifestDescription?: string | null;
   ref: string;
   files: AlignPackFile[];
   totalBytes: number;

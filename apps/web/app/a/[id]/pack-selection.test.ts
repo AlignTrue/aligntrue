@@ -67,6 +67,7 @@ describe("pack detection", () => {
         manifestVersion: "1.0.0",
         manifestSummary: null,
         manifestAuthor: null,
+        manifestDescription: null,
         ref: "main",
         files: [{ path: "rules/test.md", size: 100 }],
         totalBytes: 100,
@@ -125,6 +126,7 @@ describe("pack detection", () => {
         manifestVersion: "1.0.0",
         manifestSummary: null,
         manifestAuthor: null,
+        manifestDescription: null,
         ref: "main",
         files: [],
         totalBytes: 0,
@@ -171,6 +173,7 @@ describe("pack dropdown behavior", () => {
       manifestVersion: "1.0.0",
       manifestSummary: null,
       manifestAuthor: null,
+      manifestDescription: null,
       ref: "main",
       files: [
         { path: "rules/a.md", size: 100 },

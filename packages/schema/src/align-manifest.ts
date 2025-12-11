@@ -57,6 +57,8 @@ export interface AlignManifest {
   version: string;
   /** One-line description for sharing and discovery */
   summary?: string;
+  /** Longer description for catalog display */
+  description?: string;
   /** Author identifier (e.g., '@username' or 'Organization Name') */
   author?: string;
   /** SPDX license identifier (e.g., 'MIT', 'CC0-1.0') */
