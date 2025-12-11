@@ -1,11 +1,16 @@
 // apps/docs/app/layout.tsx
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -51,10 +56,6 @@ export const metadata: Metadata = {
     images: ["/aligntrue-og-image.png"],
   },
   metadataBase: new URL(BASE_URL),
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
 };
 
 const structuredData = {
