@@ -1,5 +1,5 @@
 ---
-description: Use this when drafting or updating any Cursor rules.
+description: Use this when drafting or updating any Cursor or AlignTrue rules.
 ---
 
 <!--
@@ -8,11 +8,11 @@ description: Use this when drafting or updating any Cursor rules.
   Edit rules in .aligntrue/rules/ instead.
 -->
 
-# Cursor rules authoring guide
+# Cursor & AlignTrue rules authoring guide
 
 ## Purpose
 
-Use this when creating or updating any Cursor rule so guidance stays sharp, consistent, and testable.
+Use this when creating or updating any Cursor or AlignTrue rule so guidance stays sharp, consistent, and testable.
 
 ---
 

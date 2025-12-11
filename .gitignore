@@ -103,3 +103,9 @@ apps/docs/public/_pagefind
 .cursor/rules/vision_strategy_roadmap.mdc
 # END AlignTrue Private Rules
 
+# START AlignTrue Gitignored Rule Exports
+.cursor/rules/error_lessons_learned.mdc
+.cursor/rules/guardrails.mdc
+.cursor/rules/potential_future_features.mdc
+.cursor/rules/vision_strategy_roadmap.mdc
+# END AlignTrue Gitignored Rule Exports

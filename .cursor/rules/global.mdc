@@ -1,5 +1,5 @@
 ---
-description: Global rules
+description: Global repo rules and priorities
 globs:
   - "**/*"
 alwaysApply: true
@@ -340,7 +340,7 @@ Before declaring completion:
 
 ---
 
-## Stub Commands and Documentation
+## Stub commands and documentation
 
 Never create stub commands or "coming soon" documentation for unimplemented features:
 
