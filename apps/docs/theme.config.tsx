@@ -3,6 +3,7 @@ import { AlignTrueLogo } from "@aligntrue/ui";
 
 const config = {
   logo: <AlignTrueLogo size="md" />,
+  logoLink: "https://aligntrue.ai",
   project: {
     link: "https://github.com/AlignTrue/aligntrue",
   },
