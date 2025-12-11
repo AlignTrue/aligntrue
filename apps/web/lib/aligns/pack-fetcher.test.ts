@@ -150,4 +150,24 @@ describe("fetchPackForWeb", () => {
       "https://github.com/org/project/blob/develop/examples/starter/.align.yaml",
     );
   });
+
+  it("passes fetchImpl through to resolver", async () => {
+    const fetchImpl = vi.fn();
+    const mockResolved: ResolvedPack = {
+      manifest: { id: "test/id", version: "1.0.0" },
+      manifestPath: ".align.yaml",
+      files: [{ path: "rules/a.md", size: 10, content: "# A" }],
+      ref: "main",
+      repo: { host: "github.com", org: "test", repo: "repo" },
+    };
+
+    mockResolvePackFromGithub.mockResolvedValue(mockResolved);
+
+    await fetchPackForWeb("https://github.com/test/repo", { fetchImpl });
+
+    expect(mockResolvePackFromGithub).toHaveBeenCalledWith(
+      "https://github.com/test/repo",
+      { fetchImpl },
+    );
+  });
 });

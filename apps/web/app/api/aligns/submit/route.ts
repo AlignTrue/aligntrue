@@ -12,6 +12,9 @@ import {
 } from "@/lib/aligns/content-cache";
 import { buildPackAlignRecord } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
+import { getGitHubAppToken } from "@/lib/aligns/github-app";
+import { createCachingFetch } from "@/lib/aligns/caching-fetch";
+import { getCachedAlignId, setCachedAlignId } from "@/lib/aligns/url-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -94,9 +97,23 @@ export async function POST(req: Request) {
       return Response.json({ error: "Missing url" }, { status: 400 });
     }
 
+    const trimmedUrl = body.url.trim();
+    const cachedId = await getCachedAlignId(trimmedUrl);
+    if (cachedId) {
+      return Response.json({ id: cachedId });
+    }
+
+    const githubToken = await getGitHubAppToken();
+    const cachingFetch = createCachingFetch(hasKvEnv() ? getRedis() : null, {
+      token: githubToken,
+      ttlSeconds: 3600,
+    });
+
     // 1) Try pack (.align.yaml) first
     try {
-      const pack = await fetchPackForWeb(body.url);
+      const pack = await fetchPackForWeb(trimmedUrl, {
+        fetchImpl: cachingFetch,
+      });
       const id = alignIdFromNormalizedUrl(pack.manifestUrl);
       const existing = await store.get(id);
       const now = new Date().toISOString();
@@ -111,6 +128,10 @@ export async function POST(req: Request) {
 
       await store.upsert(record);
       await setCachedContent(id, { kind: "pack", files: pack.files });
+      await Promise.all([
+        setCachedAlignId(trimmedUrl, id),
+        setCachedAlignId(pack.manifestUrl, id),
+      ]);
 
       return Response.json({ id });
     } catch (packError) {
@@ -124,7 +145,7 @@ export async function POST(req: Request) {
     }
 
     // 2) Single file fallback
-    const { provider, normalizedUrl } = normalizeGitUrl(body.url);
+    const { provider, normalizedUrl } = normalizeGitUrl(trimmedUrl);
     if (provider !== "github" || !normalizedUrl) {
       return Response.json(
         {
@@ -184,6 +205,10 @@ export async function POST(req: Request) {
     await store.upsert(record);
     // Ensure cache refreshed (fetchRawWithCache already populated)
     await setCachedContent(id, cached);
+    await Promise.all([
+      setCachedAlignId(trimmedUrl, id),
+      setCachedAlignId(normalizedUrl, id),
+    ]);
 
     return Response.json({ id });
   } catch (error) {

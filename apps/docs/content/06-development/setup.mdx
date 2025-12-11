@@ -285,6 +285,37 @@ pnpm --filter @aligntrue/schema build
 
 **Prevention:** CI runs full typecheck across all packages to catch missing exports.
 
+## GitHub App for catalog submissions
+
+Align submissions from the website use a GitHub App to raise API limits and enable ETag caching.
+
+### Create the app
+
+1. Go to GitHub → Settings → Developer settings → GitHub Apps → New GitHub App.
+2. Name: `AlignTrue Catalog` (or similar).
+3. Repository permissions: **Contents (read)**. No user permissions.
+4. Save, then install the app on the AlignTrue org (or make it public and install on the target org).
+5. Download the private key PEM.
+
+### Add environment variables (Vercel)
+
+| Name                         | Value                                  |
+| ---------------------------- | -------------------------------------- |
+| `GITHUB_APP_ID`              | App ID from the app settings           |
+| `GITHUB_APP_INSTALLATION_ID` | Installation ID from the installed app |
+| `GITHUB_APP_PRIVATE_KEY`     | Base64 of the PEM (one line)           |
+
+Encode the PEM:
+
+```bash
+base64 -b 0 private-key.pem  # macOS (use `base64 -w0` on Linux)
+```
+
+### Notes
+
+- Tokens auto-refresh every hour; caching refreshes 10 minutes early.
+- HTTP caching (ETag) uses a 1-hour TTL; set `GITHUB_DISABLE_CACHING=true` to bypass in emergencies.
+
 ## Next steps
 
 - Learn about the [workspace structure](/docs/06-development/workspace)

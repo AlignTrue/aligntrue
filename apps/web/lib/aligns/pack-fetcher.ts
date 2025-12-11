@@ -10,8 +10,11 @@ export interface WebPackResult {
 
 export async function fetchPackForWeb(
   sourceUrl: string,
+  options?: { fetchImpl?: typeof fetch },
 ): Promise<WebPackResult> {
-  const resolved = await resolvePackFromGithub(sourceUrl);
+  const resolved = await resolvePackFromGithub(sourceUrl, {
+    fetchImpl: options?.fetchImpl,
+  });
 
   const manifestUrl = `https://github.com/${resolved.repo.org}/${resolved.repo.repo}/blob/${resolved.ref}/${resolved.manifestPath}`;
 
