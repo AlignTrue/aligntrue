@@ -10,8 +10,12 @@
   "regions": ["iad1"],
   "rewrites": [
     {
-      "source": "/docs/:path*",
-      "destination": "https://docs.aligntrue.ai/docs/:path*"
+      "source": "/docs",
+      "destination": "https://docs.aligntrue.ai/docs"
+    },
+    {
+      "source": "/docs/:path+",
+      "destination": "https://docs.aligntrue.ai/docs/:path+"
     }
   ],
   "redirects": [
