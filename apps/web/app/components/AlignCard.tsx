@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
-import { formatBytes } from "@/lib/utils";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 export type AlignSummary = Pick<
@@ -25,17 +24,6 @@ export function AlignCard({ align }: AlignCardProps) {
   const { owner } = parseGitHubUrl(align.normalizedUrl);
   const isPack = align.kind === "pack";
   const filename = filenameFromUrl(align.normalizedUrl || align.url);
-  const fileCount = isPack ? (align.pack?.files?.length ?? 0) : 0;
-  const sizeLabel =
-    isPack && align.pack?.totalBytes
-      ? formatBytes(align.pack.totalBytes)
-      : null;
-  const packMetaLabel =
-    isPack && fileCount
-      ? `${fileCount} file${fileCount === 1 ? "" : "s"}${
-          sizeLabel ? ` · ${sizeLabel}` : ""
-        }`
-      : sizeLabel;
 
   return (
     <Link href={`/a/${align.id}`} className="block h-full">
@@ -54,14 +42,6 @@ export function AlignCard({ align }: AlignCardProps) {
               >
                 {isPack ? "Pack" : "Rule"}
               </Badge>
-              {packMetaLabel && (
-                <Badge
-                  variant="outline"
-                  className="font-semibold text-[11px] py-1"
-                >
-                  {packMetaLabel}
-                </Badge>
-              )}
             </div>
           </div>
           <div className="space-y-1.5">
