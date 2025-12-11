@@ -24,6 +24,9 @@ export function useCopyToClipboard(options: CopyOptions = {}) {
         setCopied(true);
         onCopy?.();
         if (resetAfterMs) {
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
           timeoutRef.current = setTimeout(() => setCopied(false), resetAfterMs);
         }
       } catch (error) {

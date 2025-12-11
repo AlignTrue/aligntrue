@@ -107,9 +107,7 @@ export function HomePageClient() {
         setRecent(result);
       }
     } finally {
-      if (!signal?.aborted) {
-        setRecentLoading(false);
-      }
+      setRecentLoading(false);
     }
   }, []);
 
