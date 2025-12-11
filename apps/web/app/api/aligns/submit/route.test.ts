@@ -9,6 +9,7 @@ var mockCreateCachingFetch: ReturnType<typeof vi.fn>;
 var mockGetCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedContent: ReturnType<typeof vi.fn>;
+var mockFetchRawWithCache: ReturnType<typeof vi.fn>;
 
 const storeData = new Map<string, AlignRecord>();
 var mockStore: {
@@ -36,9 +37,10 @@ vi.mock("@/lib/aligns/pack-fetcher", () => {
 
 vi.mock("@/lib/aligns/content-cache", () => {
   mockSetCachedContent = vi.fn();
+  mockFetchRawWithCache = vi.fn();
   return {
     setCachedContent: mockSetCachedContent,
-    fetchRawWithCache: vi.fn(),
+    fetchRawWithCache: mockFetchRawWithCache,
   };
 });
 
@@ -148,5 +150,41 @@ describe("POST /api/aligns/submit", () => {
     expect(json.id).toBe("cached-id-1");
     expect(mockFetchPackForWeb).not.toHaveBeenCalled();
     expect(mockStore.upsert).not.toHaveBeenCalled();
+  });
+
+  it("uses caching fetch for single-file fallback", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+
+    mockCreateCachingFetch.mockReturnValue(() =>
+      Promise.resolve(new Response("ok")),
+    );
+
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchRawWithCache.mockResolvedValueOnce({
+      kind: "single",
+      content: "# file",
+    });
+    mockSetCachedContent.mockResolvedValueOnce(undefined);
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "https://github.com/org/repo/blob/main/rules/file.md",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    expect(mockFetchRawWithCache).toHaveBeenCalledWith(
+      expect.any(String),
+      "https://github.com/org/repo/blob/main/rules/file.md",
+      expect.any(Number),
+      expect.objectContaining({ fetchImpl: expect.any(Function) }),
+    );
+    expect(mockSetCachedAlignId).toHaveBeenCalled();
   });
 });

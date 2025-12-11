@@ -171,7 +171,9 @@ export async function POST(req: Request) {
     }
 
     const id = alignIdFromNormalizedUrl(normalizedUrl);
-    const cached = await fetchRawWithCache(id, normalizedUrl);
+    const cached = await fetchRawWithCache(id, normalizedUrl, 256 * 1024, {
+      fetchImpl: cachingFetch,
+    });
     if (!cached || cached.kind !== "single") {
       return Response.json(
         {

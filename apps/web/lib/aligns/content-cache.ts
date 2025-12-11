@@ -32,9 +32,10 @@ export type CachedContent =
 async function fetchWithLimit(
   url: string,
   maxBytes: number = MAX_BYTES,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<string | null> {
   try {
-    const response = await fetch(url);
+    const response = await fetchImpl(url);
     if (!response.ok) return null;
 
     const reader = response.body?.getReader();
@@ -121,11 +122,16 @@ export async function fetchRawWithCache(
   id: string,
   normalizedUrl: string,
   maxBytes: number = MAX_BYTES,
+  options?: { fetchImpl?: typeof fetch },
 ): Promise<CachedContent | null> {
   return await getCachedContent(id, async () => {
     const rawUrl = githubBlobToRawUrl(normalizedUrl);
     if (!rawUrl) return null;
-    const content = await fetchWithLimit(rawUrl, maxBytes);
+    const content = await fetchWithLimit(
+      rawUrl,
+      maxBytes,
+      options?.fetchImpl ?? fetch,
+    );
     if (!content) return null;
     return { kind: "single", content };
   });
