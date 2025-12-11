@@ -102,8 +102,8 @@ function validateManifest(filePath) {
     return errors;
   }
 
-  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
-    errors.push("Manifest must be a YAML object");
+  if (Object.keys(manifest).length === 0) {
+    errors.push("Manifest must be a non-empty YAML object");
     return errors;
   }
 
