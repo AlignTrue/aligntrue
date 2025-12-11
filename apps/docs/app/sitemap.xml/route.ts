@@ -44,8 +44,8 @@ export async function GET() {
 
   // Build entries - homepage and docs pages
   const entries: Entry[] = docPaths.map((p) => {
-    // Root path maps to homepage, others get /docs prefix
-    const url = p === "/" ? BASE_URL : `${BASE_URL}/docs${p}`;
+    // Root path maps to docs homepage, others get /docs prefix
+    const url = p === "/" ? `${BASE_URL}/docs` : `${BASE_URL}/docs${p}`;
     return {
       url,
       lastModified: now,

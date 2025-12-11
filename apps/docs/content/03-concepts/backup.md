@@ -40,7 +40,7 @@ Set `retention_days: 0` to disable automatic cleanup.
 
 ## Publishing to remotes (separate from backups)
 
-To publish or mirror rules to git remotes, configure `remotes` and use `aligntrue remotes push` (manual). This is distinct from local backups. See the Remotes section in CLI reference for usage and options.
+To publish or mirror rules to git remotes, configure `remotes`. Pushes happen during `aligntrue sync` by default unless you set `auto: false` on a remote—use `aligntrue remotes push` for explicit/manual pushes. See the remotes CLI reference and [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for routing.
 
 ## Personal sources and team mode
 
@@ -55,18 +55,18 @@ sources:
   - type: git
     url: git@github.com:me/personal.git
     personal: true # Personal - no approval needed
-    gitignore: true # Not committed to team repo
+    gitignore: true # Exports gitignored; source file still tracked unless you gitignore it
 ```
 
 This lets team members have personal rules that:
 
 - Update without team approval
-- Are not committed to the shared repository
-- Can be pushed to their own private repository via `aligntrue remotes push`
+- Keep their exported artifacts out of the shared repository (sources remain tracked unless you also gitignore them)
+- Can be pushed to their own private repository (pushed on sync by default; set `auto: false` to push manually with `aligntrue remotes push`)
 
 ## Gitignored rules
 
-Rules from sources with `gitignore: true` or rules with `gitignore: true` in frontmatter are automatically added to `.gitignore`:
+Rules from sources with `gitignore: true` or rules with `gitignore: true` in frontmatter automatically add their **exported files** to a managed block in `.gitignore` (source files are unchanged):
 
 ```yaml
 # In config

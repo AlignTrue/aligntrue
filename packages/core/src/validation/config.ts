@@ -13,9 +13,6 @@
  * - config-validation.ts: Structural/semantic validation
  */
 
-import { readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
 import Ajv, { type ValidateFunction, type ErrorObject } from "ajv";
 import addFormats from "ajv-formats";
 import {
@@ -30,6 +27,7 @@ import type {
   ModeHints,
   ExporterConfig,
 } from "../config/types.js";
+import configSchema from "../schemas/config.schema.json" with { type: "json" };
 
 // Track shown warnings to prevent duplication
 const shownWarnings = new Set<string>();
@@ -57,18 +55,6 @@ interface SchemaValidationResult {
     params?: Record<string, unknown>;
   }>;
 }
-
-// Load JSON Schema and initialize Ajv
-const __dirname = dirname(fileURLToPath(import.meta.url));
-// Schema path works for both source (src/validation -> ../../schema) and dist (dist/validation -> ../schema)
-// Try dist path first (runtime), fall back to source path (tests)
-let schemaPath = resolve(__dirname, "../schema/config.schema.json");
-if (!existsSync(schemaPath)) {
-  schemaPath = resolve(__dirname, "../../schema/config.schema.json");
-}
-
-// Safe: Internal schema file path, resolved from __dirname at build time (not user input)
-const configSchema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
 const ajv = new Ajv({
   strict: true,

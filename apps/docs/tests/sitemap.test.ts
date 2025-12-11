@@ -27,12 +27,14 @@ describe("sitemap.xml", () => {
     // Extract locations
     const locs = urls.map((u: { loc: string }) => u.loc);
 
-    // Should have homepage
+    // Should have docs homepage
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
-    expect(locs).toContain(baseUrl);
+    const docsBaseUrl = `${baseUrl}/docs`;
+
+    expect(locs).toContain(docsBaseUrl);
 
     // Other URLs should contain /docs prefix (except homepage)
-    const nonHomepageUrls = locs.filter((loc: string) => loc !== baseUrl);
+    const nonHomepageUrls = locs.filter((loc: string) => loc !== docsBaseUrl);
     for (const loc of nonHomepageUrls) {
       expect(loc).toContain("/docs/");
     }

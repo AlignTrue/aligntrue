@@ -44,14 +44,6 @@
     "simple-git": "^3.30.0",
     "yaml": "^2.8.2"
   },
-  "peerDependencies": {
-    "@aligntrue/exporters": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "@aligntrue/exporters": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/micromatch": "^4.0.9"

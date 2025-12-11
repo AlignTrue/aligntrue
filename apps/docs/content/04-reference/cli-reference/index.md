@@ -7,6 +7,8 @@ description: "Complete reference for AlignTrue CLI commands with usage, flags, a
 
 Complete reference for all AlignTrue CLI commands organized by user workflow.
 
+`aln` is a shorthand alias for every command (e.g., `aln sync`).
+
 ## Getting started
 
 New to AlignTrue? Start here:

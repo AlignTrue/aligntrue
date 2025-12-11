@@ -137,7 +137,6 @@ export async function handleSyncResult(
       ].join("\n");
 
       result.warnings = [...(result.warnings ?? []), warning];
-      clack.log.warn(warning);
     }
   }
 

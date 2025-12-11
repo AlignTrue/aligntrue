@@ -13,9 +13,12 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/schema": "workspace:*",
+    "micromatch": "^4.0.8",
     "simple-git": "^3.30.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/micromatch": "^4.0.9"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20"

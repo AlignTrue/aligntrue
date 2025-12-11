@@ -36,7 +36,7 @@ See [CI/CD integration](/docs/01-guides/07-ci-cd-integration) for setup details.
 
 ### One source of truth, many agents
 
-Agents should not each have their own "secret" rules. With AlignTrue, you write rules once in markdown or IR (aligns / Aligns), and AlignTrue exports native formats for 28+ agents (Cursor `.mdc`, AGENTS.md, MCP configs, vendor files, etc.). Edit source sync keeps them aligned automatically.
+Agents should not each have their own "secret" rules. With AlignTrue, you write rules once in markdown or IR (aligns / Aligns), and AlignTrue exports native formats for 33 agents (Cursor `.mdc`, AGENTS.md, MCP configs, vendor files, etc.). Edit source sync keeps them aligned automatically.
 
 **How it works:**
 
