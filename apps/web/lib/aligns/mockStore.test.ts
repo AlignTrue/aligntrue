@@ -135,3 +135,58 @@ describe("MockAlignStore.search", () => {
     expect(res.items).toEqual([]);
   });
 });
+
+describe("MockAlignStore.sourceRemoved", () => {
+  let store: MockAlignStore;
+
+  beforeEach(() => {
+    store = new MockAlignStore(false);
+  });
+
+  it("markSourceRemoved sets fields and increments fetchFailCount", async () => {
+    await store.upsert(makeRecord("r1"));
+    await store.markSourceRemoved("r1", "2024-06-01T00:00:00.000Z");
+
+    const record = await store.get("r1");
+    expect(record?.sourceRemoved).toBe(true);
+    expect(record?.sourceRemovedAt).toBe("2024-06-01T00:00:00.000Z");
+    expect(record?.fetchFailCount).toBe(1);
+  });
+
+  it("markSourceRemoved increments fetchFailCount on repeated calls", async () => {
+    await store.upsert(makeRecord("r1"));
+    await store.markSourceRemoved("r1", "2024-06-01T00:00:00.000Z");
+    await store.markSourceRemoved("r1", "2024-06-02T00:00:00.000Z");
+
+    const record = await store.get("r1");
+    expect(record?.fetchFailCount).toBe(2);
+  });
+
+  it("resetSourceRemoved clears archival fields", async () => {
+    await store.upsert(
+      makeRecord("r1", {
+        sourceRemoved: true,
+        sourceRemovedAt: "2024-06-01T00:00:00.000Z",
+        fetchFailCount: 3,
+      }),
+    );
+    await store.resetSourceRemoved("r1");
+
+    const record = await store.get("r1");
+    expect(record?.sourceRemoved).toBe(false);
+    expect(record?.sourceRemovedAt).toBeUndefined();
+    expect(record?.fetchFailCount).toBe(0);
+  });
+
+  it("upsert preserves sourceRemoved fields from existing record", async () => {
+    await store.upsert(
+      makeRecord("r1", { sourceRemoved: true, fetchFailCount: 2 }),
+    );
+    await store.upsert(makeRecord("r1", { title: "Updated" }));
+
+    const record = await store.get("r1");
+    expect(record?.sourceRemoved).toBe(true);
+    expect(record?.fetchFailCount).toBe(2);
+    expect(record?.title).toBe("Updated");
+  });
+});

@@ -82,7 +82,9 @@ export async function setCachedContent(
     });
     return;
   }
-  await getRedis().set(cacheKey, JSON.stringify(payload));
+  await getRedis().set(cacheKey, JSON.stringify(payload), {
+    ex: CONTENT_TTL_SECONDS,
+  });
 }
 
 export async function getCachedContent(
