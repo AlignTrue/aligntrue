@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+
 import { ImageResponse } from "@vercel/og";
 import { AlignTrueLogoOG } from "../AlignTrueLogoOG";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
@@ -25,6 +27,12 @@ const KINDS: Record<string, string> = {
 };
 
 const store = getAlignStore();
+// The font path is static and not influenced by user input; lint rule is a false positive here.
+const fontPromise =
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  readFile(
+    new URL("../../../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
+  );
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
@@ -180,8 +188,14 @@ export async function GET(
     {
       width: 1200,
       height: 630,
-      // Use built-in fonts to avoid remote font fetch failures in edge/node
-      fonts: [],
+      fonts: [
+        {
+          name: "Noto Sans",
+          data: await fontPromise,
+          weight: 400,
+          style: "normal",
+        },
+      ],
       headers: {
         // Shorter cache to avoid stale OG data after align updates
         "Cache-Control": "public, max-age=3600, must-revalidate",
