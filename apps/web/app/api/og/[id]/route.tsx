@@ -75,13 +75,12 @@ export async function GET(
             borderRadius: "28px",
             border: `1px solid ${COLORS.border}`,
             boxShadow: "0 24px 72px rgba(0,0,0,0.45)",
-            fontFamily: "Plus Jakarta Sans",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
                 gap: "12px",
                 padding: "10px 18px",
@@ -153,10 +152,9 @@ export async function GET(
               </div>
               <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  fontFamily: "JetBrains Mono",
                   fontSize: "20px",
                   color: COLORS.foreground,
                   padding: "10px 14px",
