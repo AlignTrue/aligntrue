@@ -9,4 +9,11 @@ export interface AlignStore {
   ): Promise<void>;
   listRecent(limit: number): Promise<AlignRecord[]>;
   listPopular(limit: number): Promise<AlignRecord[]>;
+  search(options: {
+    query?: string;
+    kind?: "rule" | "pack";
+    sortBy: "recent" | "popular";
+    limit: number;
+    offset: number;
+  }): Promise<{ items: AlignRecord[]; total: number }>;
 }

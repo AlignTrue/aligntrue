@@ -50,4 +50,36 @@ export class MockAlignStore implements AlignStore {
       .sort((a, b) => b.installClickCount - a.installClickCount)
       .slice(0, limit);
   }
+
+  async search(options: {
+    query?: string;
+    kind?: "rule" | "pack";
+    sortBy: "recent" | "popular";
+    limit: number;
+    offset: number;
+  }): Promise<{ items: AlignRecord[]; total: number }> {
+    const { query, kind, sortBy, limit, offset } = options;
+    const q = query?.toLowerCase().trim();
+
+    const filtered = Array.from(this.records.values()).filter((record) => {
+      if (kind && record.kind !== kind) return false;
+      if (q) {
+        const haystack =
+          `${record.title ?? ""} ${record.description ?? ""}`.toLowerCase();
+        return haystack.includes(q);
+      }
+      return true;
+    });
+
+    const sorted = filtered.sort((a, b) => {
+      if (sortBy === "popular") {
+        return b.installClickCount - a.installClickCount;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    const total = sorted.length;
+    const items = sorted.slice(offset, offset + limit);
+    return { items, total };
+  }
 }

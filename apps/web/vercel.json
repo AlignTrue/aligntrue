@@ -112,6 +112,16 @@
       "source": "/about",
       "destination": "/docs/about",
       "permanent": true
+    },
+    {
+      "source": "/cli",
+      "destination": "/install",
+      "permanent": true
+    },
+    {
+      "source": "/import",
+      "destination": "/catalog",
+      "permanent": true
     }
   ],
   "headers": [

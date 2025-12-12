@@ -121,15 +121,14 @@ describe("getGitHubAppToken", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("throws when configuration is missing", async () => {
+  it("returns null when configuration is missing", async () => {
     mockEnv({
       GITHUB_APP_ID: undefined,
     });
     const { getGitHubAppToken } = await importModule(false);
 
-    await expect(getGitHubAppToken({ fetchImpl: vi.fn() })).rejects.toThrow(
-      "Missing GitHub App configuration",
-    );
+    const token = await getGitHubAppToken({ fetchImpl: vi.fn() });
+    expect(token).toBeNull();
   });
 
   it("throws on GitHub API errors", async () => {
@@ -144,5 +143,55 @@ describe("getGitHubAppToken", () => {
     await expect(getGitHubAppToken({ fetchImpl: fetchMock })).rejects.toThrow(
       /Failed to create GitHub App installation token/,
     );
+  });
+});
+
+describe("getAuthToken", () => {
+  beforeEach(() => {
+    mockEnv();
+    redisStore.clear();
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+    vi.clearAllMocks();
+  });
+
+  it("prefers GitHub App token when configured", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(okResponse("token-app", 60 * 60 * 1000));
+
+    const { getAuthToken } = await importModule(false);
+    const token = await getAuthToken({ fetchImpl: fetchMock });
+
+    expect(token).toBe("token-app");
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
+  it("falls back to GITHUB_TOKEN when app config is missing", async () => {
+    mockEnv({
+      GITHUB_APP_ID: undefined,
+      GITHUB_APP_INSTALLATION_ID: undefined,
+      GITHUB_APP_PRIVATE_KEY: undefined,
+      GITHUB_TOKEN: "pat-123",
+    });
+    const { getAuthToken } = await importModule(false);
+
+    const token = await getAuthToken({ fetchImpl: vi.fn() });
+    expect(token).toBe("pat-123");
+  });
+
+  it("returns null when no auth is configured", async () => {
+    mockEnv({
+      GITHUB_APP_ID: undefined,
+      GITHUB_APP_INSTALLATION_ID: undefined,
+      GITHUB_APP_PRIVATE_KEY: undefined,
+      GITHUB_TOKEN: undefined,
+    });
+    const { getAuthToken } = await importModule(false);
+
+    const token = await getAuthToken({ fetchImpl: vi.fn() });
+    expect(token).toBeNull();
   });
 });

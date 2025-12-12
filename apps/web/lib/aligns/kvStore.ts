@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { Redis } from "@upstash/redis";
 import type { AlignStore } from "./store";
 import type { AlignRecord } from "./types";
@@ -5,6 +6,8 @@ import type { AlignRecord } from "./types";
 const ALIGN_KEY_PREFIX = "v1:align:";
 const CREATED_ZSET = "v1:align:by-created";
 const INSTALLS_ZSET = "v1:align:by-installs";
+const KIND_RULE_SET = "idx:kind:rule";
+const KIND_PACK_SET = "idx:kind:pack";
 
 let redisClient: Redis | null = null;
 function getRedis(): Redis {
@@ -43,11 +46,14 @@ export class KvAlignStore implements AlignStore {
       installClickCount: mergedInstallCount,
     };
 
-    await getRedis().set(key, merged);
-    await getRedis().zadd(CREATED_ZSET, {
-      score: new Date(merged.createdAt).getTime(),
-      member: align.id,
-    });
+    await Promise.all([
+      getRedis().set(key, merged),
+      getRedis().zadd(CREATED_ZSET, {
+        score: new Date(merged.createdAt).getTime(),
+        member: align.id,
+      }),
+      this.addKindIndex(align.id, align.kind),
+    ]);
 
     if (!existing) {
       await getRedis().zadd(INSTALLS_ZSET, {
@@ -114,5 +120,86 @@ export class KvAlignStore implements AlignStore {
       ids.map((id) => alignKey(id)),
     )) as AlignRecord[];
     return records.filter(Boolean) as AlignRecord[];
+  }
+
+  private async addKindIndex(id: string, kind: AlignRecord["kind"]) {
+    if (kind === "rule") {
+      await getRedis().sadd(KIND_RULE_SET, id);
+      return;
+    }
+    if (kind === "pack") {
+      await getRedis().sadd(KIND_PACK_SET, id);
+    }
+  }
+
+  async search(options: {
+    query?: string;
+    kind?: "rule" | "pack";
+    sortBy: "recent" | "popular";
+    limit: number;
+    offset: number;
+  }): Promise<{ items: AlignRecord[]; total: number }> {
+    const { query, kind, sortBy, limit, offset } = options;
+    const sortKey = sortBy === "popular" ? INSTALLS_ZSET : CREATED_ZSET;
+    const redis = getRedis();
+
+    const hasTextQuery = Boolean(query && query.trim().length > 0);
+    const kindSet =
+      kind === "rule" ? KIND_RULE_SET : kind === "pack" ? KIND_PACK_SET : null;
+
+    let workingKey = sortKey;
+    let tempKeys: string[] = [];
+
+    if (kindSet) {
+      const tempSorted = `tmp:${randomUUID()}:sorted`;
+      tempKeys.push(tempSorted);
+      // Intersect sorted set with kind set, preserving scores from sortKey (weight 1 for sortKey, 0 for set)
+      await redis.zinterstore(tempSorted, 2, [sortKey, kindSet], {
+        weights: [1, 0],
+      });
+      workingKey = tempSorted;
+    }
+
+    try {
+      if (hasTextQuery) {
+        // For text queries, fetch all matching IDs then filter in memory (counts are small).
+        const ids = (await redis.zrange(workingKey, 0, -1, {
+          rev: true,
+        })) as string[];
+        if (!ids.length) return { items: [], total: 0 };
+        const records = (await redis.mget(
+          ids.map((id) => alignKey(id)),
+        )) as AlignRecord[];
+        const filtered = (records.filter(Boolean) as AlignRecord[]).filter(
+          (record) =>
+            (record.title ?? "")
+              .toLowerCase()
+              .concat(" ", (record.description ?? "").toLowerCase())
+              .includes(query!.toLowerCase()),
+        );
+        const total = filtered.length;
+        const paged = filtered.slice(offset, offset + limit);
+        return { items: paged, total };
+      }
+
+      const [ids, total] = await Promise.all([
+        redis.zrange(workingKey, offset, offset + limit - 1, {
+          rev: true,
+        }) as Promise<string[]>,
+        redis.zcard(workingKey),
+      ]);
+      if (!ids.length) return { items: [], total: Number(total) };
+      const records = (await redis.mget(
+        ids.map((id) => alignKey(id)),
+      )) as AlignRecord[];
+      return {
+        items: records.filter(Boolean) as AlignRecord[],
+        total: Number(total),
+      };
+    } finally {
+      if (tempKeys.length) {
+        await Promise.all(tempKeys.map((key) => redis.del(key)));
+      }
+    }
   }
 }

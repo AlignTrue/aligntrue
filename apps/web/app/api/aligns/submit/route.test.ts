@@ -4,7 +4,7 @@ import type { AlignRecord } from "../../../../lib/aligns/types";
 import { POST } from "./route";
 
 var mockFetchPackForWeb: ReturnType<typeof vi.fn>;
-var mockGetGitHubAppToken: ReturnType<typeof vi.fn>;
+var mockGetAuthToken: ReturnType<typeof vi.fn>;
 var mockCreateCachingFetch: ReturnType<typeof vi.fn>;
 var mockGetCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedAlignId: ReturnType<typeof vi.fn>;
@@ -50,8 +50,8 @@ vi.mock(
 );
 
 vi.mock("@/lib/aligns/github-app", () => {
-  mockGetGitHubAppToken = vi.fn();
-  return { getGitHubAppToken: mockGetGitHubAppToken };
+  mockGetAuthToken = vi.fn();
+  return { getAuthToken: mockGetAuthToken };
 });
 
 vi.mock("@/lib/aligns/caching-fetch", () => {
@@ -81,7 +81,7 @@ describe("POST /api/aligns/submit", () => {
     vi.clearAllMocks();
     mockStore.get.mockClear();
     mockStore.upsert.mockClear();
-    mockGetGitHubAppToken.mockResolvedValue("token-123");
+    mockGetAuthToken.mockResolvedValue("token-123");
     mockCreateCachingFetch.mockReturnValue(vi.fn());
   });
 

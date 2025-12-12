@@ -12,7 +12,7 @@ import {
 } from "@/lib/aligns/content-cache";
 import { buildPackAlignRecord } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
-import { getGitHubAppToken } from "@/lib/aligns/github-app";
+import { getAuthToken } from "@/lib/aligns/github-app";
 import { createCachingFetch } from "@/lib/aligns/caching-fetch";
 import { getCachedAlignId, setCachedAlignId } from "@/lib/aligns/url-cache";
 
@@ -103,9 +103,9 @@ export async function POST(req: Request) {
       return Response.json({ id: cachedId });
     }
 
-    const githubToken = await getGitHubAppToken();
+    const githubToken = await getAuthToken();
     const cachingFetch = createCachingFetch(hasKvEnv() ? getRedis() : null, {
-      token: githubToken,
+      token: githubToken ?? undefined,
       ttlSeconds: 3600,
     });
 

@@ -131,6 +131,14 @@ async function setCachedToken(token: CachedToken): Promise<void> {
   await getRedis().set(TOKEN_CACHE_KEY, token, { ex: ttlSeconds });
 }
 
+export function hasGitHubAppConfig(): boolean {
+  return Boolean(
+    process.env.GITHUB_APP_ID &&
+      process.env.GITHUB_APP_INSTALLATION_ID &&
+      process.env.GITHUB_APP_PRIVATE_KEY,
+  );
+}
+
 function loadConfig(): {
   appId: string;
   installationId: string;
@@ -152,7 +160,12 @@ function loadConfig(): {
 
 export async function getGitHubAppToken(options?: {
   fetchImpl?: Fetcher;
-}): Promise<string> {
+}): Promise<string | null> {
+  if (!hasGitHubAppConfig()) {
+    inMemoryToken = null;
+    return null;
+  }
+
   const fetcher = options?.fetchImpl ?? fetch;
 
   const cached = await getCachedToken();
@@ -162,4 +175,16 @@ export async function getGitHubAppToken(options?: {
   const fresh = await requestInstallationToken(cfg, fetcher);
   await setCachedToken(fresh);
   return fresh.token;
+}
+
+export async function getAuthToken(options?: {
+  fetchImpl?: Fetcher;
+}): Promise<string | null> {
+  const appToken = await getGitHubAppToken(options);
+  if (appToken) return appToken;
+
+  const pat = process.env.GITHUB_TOKEN;
+  if (pat) return pat;
+
+  return null;
 }
