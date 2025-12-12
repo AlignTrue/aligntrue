@@ -135,7 +135,12 @@ export async function fetchRawWithCache(
     const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
     if (content) {
       const payload: CachedContent = { kind: "single", content };
-      await setCachedContent(id, payload);
+      try {
+        await setCachedContent(id, payload);
+      } catch (error) {
+        // Cache write failure should not discard freshly fetched content.
+        console.error("failed to cache raw content", error);
+      }
       return payload;
     }
     throw new Error("Failed to fetch content during force refresh");
