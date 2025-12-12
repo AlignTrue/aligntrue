@@ -285,6 +285,9 @@ export function AlignDetailPreview({
                   <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
                     {align.title || "Untitled align"}
                   </h1>
+                  <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">
+                    ID: {align.id}
+                  </span>
                   {isArchived && (
                     <Badge variant="secondary" className="text-xs">
                       Archived copy (source removed)
@@ -357,13 +360,10 @@ export function AlignDetailPreview({
                     </Badge>
                   )}
                 </div>
-                <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">
-                  ID: {align.id}
-                </span>
               </div>
             </div>
 
-            <HashBar id={align.id} height={8} className="rounded-lg mb-4" />
+            <HashBar id={align.id} height={4} className="rounded-lg mb-4" />
             <Tabs
               value={actionTab}
               onValueChange={(v) => setActionTab(v as typeof actionTab)}

@@ -46,9 +46,6 @@ export default async function AlignDetailPage(props: {
           return { kind: "pack", files: pack.files };
         });
       }
-      if (!content) {
-        fetchFailed = true;
-      }
     } catch (error) {
       if (content) {
         // Cache write failed; keep the fresh content instead of discarding it.
@@ -70,9 +67,6 @@ export default async function AlignDetailPage(props: {
       content = await fetchRawWithCache(align.id, rawUrl, 256 * 1024, {
         forceRefresh: shouldRefresh,
       });
-      if (!content) {
-        fetchFailed = true;
-      }
     } catch (error) {
       fetchFailed = true;
       console.error("failed to fetch raw content", error);

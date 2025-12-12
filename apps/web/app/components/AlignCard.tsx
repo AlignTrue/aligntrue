@@ -105,7 +105,7 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
           </Button>
         </div>
       </CardFooter>
-      <HashBar id={align.id} height={3} className="rounded-b-xl" />
+      <HashBar id={align.id} height={2} className="rounded-b-xl" />
     </Card>
   );
 }
