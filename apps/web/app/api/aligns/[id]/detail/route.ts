@@ -28,12 +28,22 @@ export async function GET(
 
   let content: CachedContent | null = null;
   if (align.kind === "pack" && align.pack) {
-    content = await getCachedContent(align.id, async () => {
-      const pack = await fetchPackForWeb(align.normalizedUrl);
-      return { kind: "pack", files: pack.files };
-    });
+    try {
+      content = await getCachedContent(align.id, async () => {
+        const pack = await fetchPackForWeb(align.normalizedUrl);
+        return { kind: "pack", files: pack.files };
+      });
+    } catch (error) {
+      console.error("failed to fetch pack content", error);
+      content = await getCachedContent(align.id);
+    }
   } else {
-    content = await fetchRawWithCache(align.id, align.normalizedUrl);
+    try {
+      content = await fetchRawWithCache(align.id, align.normalizedUrl);
+    } catch (error) {
+      console.error("failed to fetch raw content", error);
+      content = await getCachedContent(align.id);
+    }
   }
 
   return Response.json({ align, content });
