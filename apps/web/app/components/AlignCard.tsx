@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { HashBar } from "@/components/HashBar";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import type { AlignRecord } from "@/lib/aligns/types";
 
@@ -31,7 +32,7 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
   return (
     <Card
       className={cn(
-        "h-full flex flex-col transition hover:shadow-md",
+        "h-full flex flex-col transition hover:shadow-md overflow-hidden",
         isSelected && "ring-2 ring-primary shadow-lg shadow-primary/10",
       )}
     >
@@ -104,6 +105,7 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
           </Button>
         </div>
       </CardFooter>
+      <HashBar id={align.id} className="rounded-b-xl" />
     </Card>
   );
 }

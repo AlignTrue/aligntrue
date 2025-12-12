@@ -243,7 +243,7 @@ export async function GET(
           <div
             style={{
               display: "flex",
-              height: "6px",
+              height: "16px",
               marginTop: "auto",
               marginLeft: "-56px",
               marginRight: "-56px",

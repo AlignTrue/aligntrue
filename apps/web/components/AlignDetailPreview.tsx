@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { HashBar } from "@/components/HashBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -362,6 +363,7 @@ export function AlignDetailPreview({
               </div>
             </div>
 
+            <HashBar id={align.id} height={8} className="rounded-lg" />
             <hr className="border-t border-border" />
 
             <Tabs
