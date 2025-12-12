@@ -44,6 +44,9 @@ export class KvAlignStore implements AlignStore {
       createdAt: existing?.createdAt ?? align.createdAt,
       viewCount: existing?.viewCount ?? align.viewCount,
       installClickCount: mergedInstallCount,
+      sourceRemoved: align.sourceRemoved ?? existing?.sourceRemoved ?? false,
+      sourceRemovedAt: align.sourceRemovedAt ?? existing?.sourceRemovedAt,
+      fetchFailCount: align.fetchFailCount ?? existing?.fetchFailCount ?? 0,
     };
 
     await Promise.all([
@@ -201,5 +204,33 @@ export class KvAlignStore implements AlignStore {
         await Promise.all(tempKeys.map((key) => redis.del(key)));
       }
     }
+  }
+
+  async markSourceRemoved(id: string, removedAt: string): Promise<void> {
+    const key = alignKey(id);
+    const existing = await getRedis().get<AlignRecord>(key);
+    if (!existing) return;
+    const nextFailCount = (existing.fetchFailCount ?? 0) + 1;
+    const updated: AlignRecord = {
+      ...existing,
+      sourceRemoved: true,
+      sourceRemovedAt: removedAt,
+      fetchFailCount: nextFailCount,
+    };
+    await getRedis().set(key, updated);
+  }
+
+  async resetSourceRemoved(id: string): Promise<void> {
+    const key = alignKey(id);
+    const existing = await getRedis().get<AlignRecord>(key);
+    if (!existing) return;
+    if (!existing.sourceRemoved && (existing.fetchFailCount ?? 0) === 0) return;
+    const updated: AlignRecord = {
+      ...existing,
+      sourceRemoved: false,
+      sourceRemovedAt: undefined,
+      fetchFailCount: 0,
+    };
+    await getRedis().set(key, updated);
   }
 }

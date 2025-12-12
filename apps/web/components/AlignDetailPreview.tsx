@@ -69,6 +69,7 @@ export function AlignDetailPreview({
   content,
   className,
 }: AlignDetailPreviewProps) {
+  const isArchived = align.sourceRemoved === true;
   const [agent, setAgent] = useState<AgentId>("all");
   const [format, setFormat] = useState<TargetFormat>("align-md");
   const [actionTab, setActionTab] = useState<
@@ -283,6 +284,11 @@ export function AlignDetailPreview({
                   <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
                     {align.title || "Untitled align"}
                   </h1>
+                  {isArchived && (
+                    <Badge variant="secondary" className="text-xs">
+                      Archived copy (source removed)
+                    </Badge>
+                  )}
                 </div>
                 {align.description && (
                   <p className="text-muted-foreground leading-relaxed m-0">
@@ -294,14 +300,20 @@ export function AlignDetailPreview({
               <div className="flex flex-col items-start sm:items-end gap-1.5 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <div className="flex items-center gap-2">
-                    <a
-                      href={align.normalizedUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold text-foreground hover:underline"
-                    >
-                      {fileNameLabel}
-                    </a>
+                    {isArchived ? (
+                      <span className="font-semibold text-foreground">
+                        {fileNameLabel}
+                      </span>
+                    ) : (
+                      <a
+                        href={align.normalizedUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-foreground hover:underline"
+                      >
+                        {fileNameLabel}
+                      </a>
+                    )}
                     {isPack && (
                       <TooltipProvider delayDuration={100}>
                         <Tooltip>
@@ -322,7 +334,7 @@ export function AlignDetailPreview({
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">by</span>
-                  {ownerUrl ? (
+                  {ownerUrl && !isArchived ? (
                     <a
                       href={ownerUrl}
                       target="_blank"
@@ -388,8 +400,11 @@ export function AlignDetailPreview({
                         ? [
                             { id: "global", label: "Global Install" },
                             { id: "temp", label: "Temp Install" },
-                            { id: "source", label: "Add Source" },
-                          ]
+                          ].concat(
+                            isArchived
+                              ? []
+                              : [{ id: "source", label: "Add Source" }],
+                          )
                         : [],
                     )
                     .map((tab) => (
@@ -451,7 +466,7 @@ export function AlignDetailPreview({
                   </TabsContent>
                 )}
 
-                {canExport && (
+                {canExport && !isArchived && (
                   <TabsContent value="source" className="space-y-3">
                     <p className="m-0 text-muted-foreground">
                       Already using AlignTrue? Add these rules as a connected

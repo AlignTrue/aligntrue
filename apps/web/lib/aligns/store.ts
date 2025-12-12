@@ -9,6 +9,8 @@ export interface AlignStore {
   ): Promise<void>;
   listRecent(limit: number): Promise<AlignRecord[]>;
   listPopular(limit: number): Promise<AlignRecord[]>;
+  markSourceRemoved(id: string, removedAt: string): Promise<void>;
+  resetSourceRemoved(id: string): Promise<void>;
   search(options: {
     query?: string;
     kind?: "rule" | "pack";

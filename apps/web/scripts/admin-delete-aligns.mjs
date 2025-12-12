@@ -21,7 +21,7 @@ const CREATED_ZSET = "v1:align:by-created";
 const INSTALLS_ZSET = "v1:align:by-installs";
 const KIND_RULE_SET = "idx:kind:rule";
 const KIND_PACK_SET = "idx:kind:pack";
-const CONTENT_PREFIX = "v1:content:";
+const CONTENT_PREFIX = "v1:align:content:";
 
 function requireEnv(name) {
   const value = process.env[name];

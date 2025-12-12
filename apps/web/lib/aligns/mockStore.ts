@@ -23,7 +23,14 @@ export class MockAlignStore implements AlignStore {
   }
 
   async upsert(align: AlignRecord): Promise<void> {
-    this.records.set(align.id, align);
+    const existing = this.records.get(align.id);
+    const merged: AlignRecord = {
+      ...align,
+      sourceRemoved: align.sourceRemoved ?? existing?.sourceRemoved ?? false,
+      sourceRemovedAt: align.sourceRemovedAt ?? existing?.sourceRemovedAt,
+      fetchFailCount: align.fetchFailCount ?? existing?.fetchFailCount ?? 0,
+    };
+    this.records.set(align.id, merged);
   }
 
   async increment(
@@ -95,5 +102,30 @@ export class MockAlignStore implements AlignStore {
     const total = sorted.length;
     const items = sorted.slice(offset, offset + limit);
     return { items, total };
+  }
+
+  async markSourceRemoved(id: string, removedAt: string): Promise<void> {
+    const existing = this.records.get(id);
+    if (!existing) return;
+    const updated: AlignRecord = {
+      ...existing,
+      sourceRemoved: true,
+      sourceRemovedAt: removedAt,
+      fetchFailCount: (existing.fetchFailCount ?? 0) + 1,
+    };
+    this.records.set(id, updated);
+  }
+
+  async resetSourceRemoved(id: string): Promise<void> {
+    const existing = this.records.get(id);
+    if (!existing) return;
+    if (!existing.sourceRemoved && (existing.fetchFailCount ?? 0) === 0) return;
+    const updated: AlignRecord = {
+      ...existing,
+      sourceRemoved: false,
+      sourceRemovedAt: undefined,
+      fetchFailCount: 0,
+    };
+    this.records.set(id, updated);
   }
 }

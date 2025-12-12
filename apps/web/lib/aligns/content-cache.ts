@@ -82,9 +82,7 @@ export async function setCachedContent(
     });
     return;
   }
-  await getRedis().set(cacheKey, JSON.stringify(payload), {
-    ex: CONTENT_TTL_SECONDS,
-  });
+  await getRedis().set(cacheKey, JSON.stringify(payload));
 }
 
 export async function getCachedContent(
@@ -122,16 +120,27 @@ export async function fetchRawWithCache(
   id: string,
   normalizedUrl: string,
   maxBytes: number = MAX_BYTES,
-  options?: { fetchImpl?: typeof fetch },
+  options?: { fetchImpl?: typeof fetch; forceRefresh?: boolean },
 ): Promise<CachedContent | null> {
+  const fetchImpl = options?.fetchImpl ?? fetch;
+  const forceRefresh = options?.forceRefresh ?? false;
+
+  if (forceRefresh) {
+    const rawUrl = githubBlobToRawUrl(normalizedUrl);
+    if (!rawUrl) return await getCachedContent(id);
+    const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
+    if (content) {
+      const payload: CachedContent = { kind: "single", content };
+      await setCachedContent(id, payload);
+      return payload;
+    }
+    return await getCachedContent(id);
+  }
+
   return await getCachedContent(id, async () => {
     const rawUrl = githubBlobToRawUrl(normalizedUrl);
     if (!rawUrl) return null;
-    const content = await fetchWithLimit(
-      rawUrl,
-      maxBytes,
-      options?.fetchImpl ?? fetch,
-    );
+    const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
     if (!content) return null;
     return { kind: "single", content };
   });

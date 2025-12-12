@@ -38,4 +38,7 @@ export type AlignRecord = {
   viewCount: number;
   installClickCount: number;
   pack?: AlignPackInfo;
+  sourceRemoved?: boolean;
+  sourceRemovedAt?: string;
+  fetchFailCount?: number;
 };
