@@ -109,4 +109,15 @@ describe("GET /api/aligns/search", () => {
       offset: 10,
     });
   });
+
+  it("returns 500 when search throws", async () => {
+    searchMock.mockRejectedValueOnce(new Error("boom"));
+
+    const { GET } = await import("./route");
+    const res = await GET(new Request("http://localhost/api/aligns/search"));
+
+    expect(res.status).toBe(500);
+    const json = (await res.json()) as { error?: string };
+    expect(json.error).toBe("Search failed");
+  });
 });

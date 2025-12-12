@@ -27,6 +27,16 @@ type KindFilter = "all" | "rule" | "pack";
 
 type DetailPayload = { align: AlignRecord; content: CachedContent | null };
 
+function isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === "AbortError") return true;
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError"
+  );
+}
+
 async function submitUrl(url: string): Promise<{ id: string }> {
   const response = await fetch("/api/aligns/submit", {
     method: "POST",
@@ -65,6 +75,7 @@ export function CatalogPageClient() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const detailCache = useRef<Map<string, DetailPayload>>(new Map());
+  const previewAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -97,8 +108,8 @@ export function CatalogPageClient() {
           setTotal(data.total);
         }
       } catch (err) {
-        if (!controller.signal.aborted) {
-          console.error(err);
+        if (!controller.signal.aborted && !isAbortError(err)) {
+          console.error("Search failed", err);
           setItems([]);
           setTotal(0);
         }
@@ -153,23 +164,42 @@ export function CatalogPageClient() {
       setPreview(detailCache.current.get(align.id) ?? null);
       return;
     }
+
+    // Cancel any in-flight preview request before starting a new one.
+    if (previewAbortRef.current) {
+      previewAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    previewAbortRef.current = controller;
+
     setPreviewLoading(true);
     try {
-      const res = await fetch(`/api/aligns/${align.id}/detail`);
+      const res = await fetch(`/api/aligns/${align.id}/detail`, {
+        signal: controller.signal,
+      });
       if (!res.ok) throw new Error("Failed to load align");
       const data = (await res.json()) as DetailPayload;
-      detailCache.current.set(align.id, data);
-      setPreview(data);
+      if (!controller.signal.aborted) {
+        detailCache.current.set(align.id, data);
+        setPreview(data);
+      }
     } catch (err) {
-      console.error(err);
-      setPreview(null);
-      setPreviewError("Unable to load preview. Please try again.");
+      if (!controller.signal.aborted && !isAbortError(err)) {
+        console.error("Preview load failed", err);
+        setPreview(null);
+        setPreviewError("Unable to load preview. Please try again.");
+      }
     } finally {
-      setPreviewLoading(false);
+      if (!controller.signal.aborted) {
+        setPreviewLoading(false);
+      }
     }
   }, []);
 
   const clearPreview = () => {
+    if (previewAbortRef.current) {
+      previewAbortRef.current.abort();
+    }
     setPreview(null);
     setPreviewError(null);
   };

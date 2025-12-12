@@ -36,23 +36,28 @@ function toSummary(record: AlignRecord) {
 }
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const query = searchParams.get("query") ?? undefined;
-  const kind = (searchParams.get("kind") as KindOption | null) ?? undefined;
-  const sort = (searchParams.get("sort") as SortOption | null) ?? "recent";
-  const limit = parseNumber(searchParams, "limit", 9, 1, 50);
-  const offset = parseNumber(searchParams, "offset", 0, 0, 10_000);
+  try {
+    const { searchParams } = new URL(req.url);
+    const query = searchParams.get("query") ?? undefined;
+    const kind = (searchParams.get("kind") as KindOption | null) ?? undefined;
+    const sort = (searchParams.get("sort") as SortOption | null) ?? "recent";
+    const limit = parseNumber(searchParams, "limit", 9, 1, 50);
+    const offset = parseNumber(searchParams, "offset", 0, 0, 10_000);
 
-  const result = await store.search({
-    query,
-    kind,
-    sortBy: sort,
-    limit,
-    offset,
-  });
+    const result = await store.search({
+      query,
+      kind,
+      sortBy: sort,
+      limit,
+      offset,
+    });
 
-  return Response.json({
-    items: result.items.map(toSummary),
-    total: result.total,
-  });
+    return Response.json({
+      items: result.items.map(toSummary),
+      total: result.total,
+    });
+  } catch (error) {
+    console.error("Search request failed", error);
+    return Response.json({ error: "Search failed" }, { status: 500 });
+  }
 }
