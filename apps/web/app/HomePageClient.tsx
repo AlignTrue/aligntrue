@@ -29,6 +29,16 @@ import { useVisibilityRecovery } from "@/lib/useVisibilityRecovery";
 
 type SubmitResult = { id: string };
 
+function isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === "AbortError") return true;
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError"
+  );
+}
+
 async function submitUrl(url: string): Promise<SubmitResult> {
   const response = await fetch("/api/aligns/submit", {
     method: "POST",
@@ -117,6 +127,10 @@ export function HomePageClient() {
       });
       if (!activeSignal.aborted) {
         setRecent(result);
+      }
+    } catch (err) {
+      if (!isAbortError(err)) {
+        console.error("Failed to load recent aligns", err);
       }
     } finally {
       if (!activeSignal.aborted) {
