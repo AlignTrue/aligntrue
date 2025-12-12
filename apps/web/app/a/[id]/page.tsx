@@ -32,16 +32,17 @@ export default async function AlignDetailPage(props: {
   let alignForRender = align;
 
   if (align.kind === "pack" && align.pack) {
+    const packUrl = align.normalizedUrl || align.url;
     try {
       const shouldRefresh =
         align.sourceRemoved || (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
       if (shouldRefresh) {
-        const pack = await fetchPackForWeb(align.url);
+        const pack = await fetchPackForWeb(packUrl);
         content = { kind: "pack", files: pack.files };
         await setCachedContent(align.id, content);
       } else {
         content = await getCachedContent(align.id, async () => {
-          const pack = await fetchPackForWeb(align.url);
+          const pack = await fetchPackForWeb(packUrl);
           return { kind: "pack", files: pack.files };
         });
       }
@@ -81,11 +82,12 @@ export default async function AlignDetailPage(props: {
   if (fetchFailed) {
     const now = new Date().toISOString();
     await store.markSourceRemoved(align.id, now);
-    alignForRender = {
+    const updated = await store.get(align.id);
+    alignForRender = updated ?? {
       ...align,
       sourceRemoved: true,
       sourceRemovedAt: now,
-      fetchFailCount: (align.fetchFailCount ?? 0) + 1,
+      fetchFailCount: align.fetchFailCount ?? 0,
     };
   } else if (align.sourceRemoved || (align.fetchFailCount ?? 0) > 0) {
     await store.resetSourceRemoved(align.id);
