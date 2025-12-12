@@ -363,9 +363,7 @@ export function AlignDetailPreview({
               </div>
             </div>
 
-            <HashBar id={align.id} height={8} className="rounded-lg" />
-            <hr className="border-t border-border" />
-
+            <HashBar id={align.id} height={8} className="rounded-lg mb-4" />
             <Tabs
               value={actionTab}
               onValueChange={(v) => setActionTab(v as typeof actionTab)}

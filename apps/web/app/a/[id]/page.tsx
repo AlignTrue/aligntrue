@@ -63,15 +63,13 @@ export default async function AlignDetailPage(props: {
       }
     }
   } else {
+    const rawUrl = align.normalizedUrl || align.url;
     const shouldRefresh =
       align.sourceRemoved || (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
     try {
-      content = await fetchRawWithCache(
-        align.id,
-        align.normalizedUrl,
-        256 * 1024,
-        { forceRefresh: shouldRefresh },
-      );
+      content = await fetchRawWithCache(align.id, rawUrl, 256 * 1024, {
+        forceRefresh: shouldRefresh,
+      });
       if (!content) {
         fetchFailed = true;
       }
