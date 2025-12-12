@@ -183,7 +183,8 @@ export async function GET(
       // Use built-in fonts to avoid remote font fetch failures in edge/node
       fonts: [],
       headers: {
-        "Cache-Control": "public, max-age=31536000, immutable",
+        // Shorter cache to avoid stale OG data after align updates
+        "Cache-Control": "public, max-age=3600, must-revalidate",
       },
     },
   );

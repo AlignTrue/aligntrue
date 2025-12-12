@@ -129,21 +129,27 @@ export async function fetchRawWithCache(
 
   if (forceRefresh) {
     const rawUrl = githubBlobToRawUrl(normalizedUrl);
-    if (!rawUrl) return null;
+    if (!rawUrl) {
+      throw new Error("Invalid raw URL for force refresh");
+    }
     const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
     if (content) {
       const payload: CachedContent = { kind: "single", content };
       await setCachedContent(id, payload);
       return payload;
     }
-    return null;
+    throw new Error("Failed to fetch content during force refresh");
   }
 
   return await getCachedContent(id, async () => {
     const rawUrl = githubBlobToRawUrl(normalizedUrl);
-    if (!rawUrl) return null;
+    if (!rawUrl) {
+      throw new Error("Invalid raw URL");
+    }
     const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
-    if (!content) return null;
+    if (!content) {
+      throw new Error("Failed to fetch content");
+    }
     return { kind: "single", content };
   });
 }
