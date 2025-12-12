@@ -54,7 +54,7 @@ export default async function AlignDetailPage(props: {
     }
   } else {
     const shouldRefresh =
-      align.sourceRemoved || (align.fetchFailCount ?? 0) > 0;
+      align.sourceRemoved || (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
     try {
       content = await fetchRawWithCache(
         align.id,

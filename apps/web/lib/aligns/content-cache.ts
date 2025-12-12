@@ -129,14 +129,14 @@ export async function fetchRawWithCache(
 
   if (forceRefresh) {
     const rawUrl = githubBlobToRawUrl(normalizedUrl);
-    if (!rawUrl) return await getCachedContent(id);
+    if (!rawUrl) return null;
     const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
     if (content) {
       const payload: CachedContent = { kind: "single", content };
       await setCachedContent(id, payload);
       return payload;
     }
-    return await getCachedContent(id);
+    return null;
   }
 
   return await getCachedContent(id, async () => {
