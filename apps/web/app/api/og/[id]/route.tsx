@@ -18,12 +18,12 @@ const COLORS = {
 };
 
 const KINDS: Record<string, string> = {
-  rule: "Rule",
-  rule_group: "Rule group",
-  skill: "Skill",
+  rule: "AI Rule",
+  rule_group: "AI Rules",
+  skill: "AI Skill",
   mcp: "MCP",
-  pack: "Align pack",
-  other: "Align",
+  pack: "AI Rule Pack",
+  other: "AI Context",
 };
 
 const store = getAlignStore();
@@ -36,13 +36,6 @@ const fontPromise =
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue init a:";
 const SOURCE_LABEL = "GitHub";
-const PATTERNS = [
-  { angle: 45, accent: "rgba(20,184,122,0.15)", pos: "20% 30%" },
-  { angle: 60, accent: "rgba(82,146,255,0.12)", pos: "75% 25%" },
-  { angle: 75, accent: "rgba(168,85,247,0.12)", pos: "30% 70%" },
-  { angle: 120, accent: "rgba(251,191,36,0.1)", pos: "80% 60%" },
-  { angle: 135, accent: "rgba(59,130,246,0.14)", pos: "15% 80%" },
-];
 // Brand-aligned palette for the footer bar
 const BAR_COLORS = [
   "hsl(160 84% 45%)", // primary green
@@ -110,15 +103,6 @@ export async function GET(
   const kindLabel = KINDS[align.kind] ?? "Align";
   const installCommand = buildInstallCommand(id);
 
-  const pattern = PATTERNS[idToSeed(id) % PATTERNS.length];
-
-  const backgroundImage = `
-    radial-gradient(circle at ${pattern.pos}, ${pattern.accent}, transparent 45%),
-    radial-gradient(circle at 78% 24%, rgba(82,146,255,0.08), transparent 40%),
-    linear-gradient(${pattern.angle}deg, rgba(255,255,255,0.04) 1px, transparent 1px)
-  `;
-  const backgroundSize = "100% 100%, 100% 100%, 24px 24px";
-
   return new ImageResponse(
     (
       <div
@@ -126,171 +110,166 @@ export async function GET(
           width: "1200px",
           height: "630px",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: COLORS.bg,
-          backgroundImage,
-          backgroundSize, // size controls spacing of the line grid
-          padding: "48px",
+          flexDirection: "column",
+          padding: "56px",
+          background: `linear-gradient(145deg, ${COLORS.card}, #0f131d)`,
+          color: COLORS.foreground,
         }}
       >
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            height: "100%",
-            gap: "32px",
-            padding: "56px",
-            background: `linear-gradient(145deg, ${COLORS.card}, #0f131d)`,
-            color: COLORS.foreground,
-            borderRadius: "28px",
-            border: `1px solid ${COLORS.border}`,
-            boxShadow: "0 24px 72px rgba(0,0,0,0.45)",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "18px",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 18px",
-                borderRadius: "999px",
-                border: `1px solid rgba(20,184,122,0.35)`,
-                background: "rgba(20,184,122,0.12)",
-                color: COLORS.primary,
-                fontWeight: 700,
-                fontSize: "22px",
-                letterSpacing: "0.02em",
-                textTransform: "uppercase",
-              }}
-            >
-              {kindLabel}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-              }}
-            >
-              <AlignTrueLogoOG
-                width={180}
-                color="rgba(240,244,248,0.85)"
-                accent={COLORS.accent}
-              />
-            </div>
-          </div>
-
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-          >
-            <div
-              style={{
-                fontSize: "60px",
-                lineHeight: 1.05,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                maxWidth: "1000px",
-              }}
-            >
-              {title}
-            </div>
-            {description ? (
-              <div
-                style={{
-                  fontSize: "28px",
-                  lineHeight: 1.4,
-                  color: COLORS.muted,
-                  maxWidth: "980px",
-                }}
-              >
-                {description}
-              </div>
-            ) : null}
-          </div>
-
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              marginTop: "auto",
+              gap: "12px",
+              padding: "10px 18px",
+              borderRadius: "999px",
+              border: `1px solid rgba(20,184,122,0.35)`,
+              background: "rgba(20,184,122,0.12)",
+              color: COLORS.primary,
+              fontWeight: 700,
+              fontSize: "22px",
+              letterSpacing: "0.02em",
+              textTransform: "uppercase",
             }}
           >
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  fontSize: "22px",
-                  color: COLORS.muted,
-                  fontWeight: 600,
-                }}
-              >
-                <span>by</span>
-                <span style={{ color: COLORS.foreground }}>{owner}</span>
-                <span>via</span>
-                <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
-              </div>
-            </div>
+            {kindLabel}
+          </div>
+          <AlignTrueLogoOG
+            width={180}
+            color="rgba(240,244,248,0.85)"
+            accent={COLORS.accent}
+          />
+        </div>
 
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+            marginTop: "24px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "60px",
+              lineHeight: 1.05,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              maxWidth: "1000px",
+            }}
+          >
+            {title}
+          </div>
+          {description ? (
+            <div
+              style={{
+                fontSize: "28px",
+                lineHeight: 1.4,
+                color: COLORS.muted,
+                maxWidth: "980px",
+              }}
+            >
+              {description}
+            </div>
+          ) : null}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: "auto",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: "6px",
+                alignItems: "center",
+                gap: "10px",
+                fontSize: "22px",
+                color: COLORS.muted,
+                fontWeight: 600,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "12px 16px",
-                  borderRadius: "12px",
-                  background: "rgba(15, 19, 29, 0.8)",
-                  border: `1px solid ${COLORS.border}`,
-                  boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
-                  fontFamily: "monospace",
-                  fontSize: "22px",
-                  color: COLORS.foreground,
-                  letterSpacing: "0.01em",
-                }}
-              >
-                <span style={{ color: COLORS.muted }}>$</span>
-                <span>{installCommand}</span>
-              </div>
+              <span>by</span>
+              <span style={{ color: COLORS.foreground }}>{owner}</span>
+              <span>via</span>
+              <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
             </div>
           </div>
-          {/* Hash-derived color bar footer */}
+
           <div
             style={{
               display: "flex",
-              height: "16px",
-              marginTop: "auto",
-              marginLeft: "-56px",
-              marginRight: "-56px",
-              marginBottom: "-56px",
-              borderRadius: "0 0 28px 28px",
-              overflow: "hidden",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "6px",
             }}
           >
-            {generateBarSegments(idToSeed(id)).map((seg, i) => (
-              <div
-                key={i}
-                style={{
-                  flex: seg.flex,
-                  backgroundColor: seg.color,
-                }}
-              />
-            ))}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "12px 16px",
+                borderRadius: "12px",
+                background: "rgba(15, 19, 29, 0.8)",
+                border: `1px solid ${COLORS.border}`,
+                boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
+                fontFamily: "monospace",
+                fontSize: "22px",
+                color: COLORS.foreground,
+                letterSpacing: "0.01em",
+              }}
+            >
+              <span style={{ color: COLORS.muted }}>$</span>
+              <span>{installCommand}</span>
+            </div>
+            <div style={{ height: "8px" }} />
+            <div
+              style={{
+                fontSize: "16px",
+                color: COLORS.muted,
+                textAlign: "right",
+                maxWidth: "460px",
+                lineHeight: 1.4,
+              }}
+            >
+              Use with any agent (Cursor, Claude, Codex, Copilot, etc.).
+            </div>
           </div>
+        </div>
+        {/* Hash-derived color bar footer */}
+        <div
+          style={{
+            display: "flex",
+            height: "16px",
+            marginTop: "auto",
+            overflow: "hidden",
+          }}
+        >
+          {generateBarSegments(idToSeed(id)).map((seg, i) => (
+            <div
+              key={i}
+              style={{
+                flex: seg.flex,
+                backgroundColor: seg.color,
+              }}
+            />
+          ))}
         </div>
       </div>
     ),
