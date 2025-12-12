@@ -50,10 +50,16 @@ export default async function AlignDetailPage(props: {
         fetchFailed = true;
       }
     } catch (error) {
-      fetchFailed = true;
-      content = await getCachedContent(align.id);
-      if (!content) {
+      if (content) {
+        // Cache write failed; keep the fresh content instead of discarding it.
+        console.error("failed to cache pack content", error);
+      } else {
+        fetchFailed = true;
         console.error("failed to fetch pack content", error);
+        content = await getCachedContent(align.id);
+        if (!content) {
+          console.error("no cached pack content available after failure");
+        }
       }
     }
   } else {

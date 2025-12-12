@@ -41,6 +41,15 @@ const PATTERNS = [
   { angle: 120, accent: "rgba(251,191,36,0.1)", pos: "80% 60%" },
   { angle: 135, accent: "rgba(59,130,246,0.14)", pos: "15% 80%" },
 ];
+// Brand-aligned palette for the footer bar
+const BAR_COLORS = [
+  "hsl(160 84% 45%)", // primary green
+  "hsl(210 90% 60%)", // accent blue
+  "#F5A623", // orange accent
+  "hsl(160 84% 35%)", // darker green
+  "hsl(210 90% 50%)", // deeper blue
+  "hsl(45 93% 55%)", // warm yellow/gold
+];
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
@@ -53,6 +62,18 @@ function idToSeed(id: string): number {
     hash = ((hash << 5) - hash + char.charCodeAt(0)) | 0;
   }
   return Math.abs(hash);
+}
+
+function generateBarSegments(seed: number, count = 5) {
+  const segments: { color: string; flex: number }[] = [];
+  let s = seed;
+  for (let i = 0; i < count; i++) {
+    s = ((s * 1103515245 + 12345) >>> 0) % 2147483648;
+    const color = BAR_COLORS[s % BAR_COLORS.length];
+    const flex = 1 + (s % 8); // width weight 1-8
+    segments.push({ color, flex });
+  }
+  return segments;
 }
 
 export function buildDescription(
@@ -217,6 +238,29 @@ export async function GET(
               color="rgba(240,244,248,0.75)"
               accent={COLORS.accent}
             />
+          </div>
+          {/* Hash-derived color bar footer */}
+          <div
+            style={{
+              display: "flex",
+              height: "6px",
+              marginTop: "auto",
+              marginLeft: "-56px",
+              marginRight: "-56px",
+              marginBottom: "-56px",
+              borderRadius: "0 0 28px 28px",
+              overflow: "hidden",
+            }}
+          >
+            {generateBarSegments(idToSeed(id)).map((seg, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: seg.flex,
+                  backgroundColor: seg.color,
+                }}
+              />
+            ))}
           </div>
         </div>
       </div>
