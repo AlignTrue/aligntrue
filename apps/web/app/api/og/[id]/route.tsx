@@ -34,10 +34,25 @@ const fontPromise =
     new URL("../../../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
   );
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
+const PATTERNS = [
+  { angle: 45, accent: "rgba(20,184,122,0.15)", pos: "20% 30%" },
+  { angle: 60, accent: "rgba(82,146,255,0.12)", pos: "75% 25%" },
+  { angle: 75, accent: "rgba(168,85,247,0.12)", pos: "30% 70%" },
+  { angle: 120, accent: "rgba(251,191,36,0.1)", pos: "80% 60%" },
+  { angle: 135, accent: "rgba(59,130,246,0.14)", pos: "15% 80%" },
+];
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return `${text.slice(0, max - 1).trimEnd()}…`;
+}
+
+function idToSeed(id: string): number {
+  let hash = 0;
+  for (const char of id) {
+    hash = ((hash << 5) - hash + char.charCodeAt(0)) | 0;
+  }
+  return Math.abs(hash);
 }
 
 export function buildDescription(
@@ -67,6 +82,15 @@ export async function GET(
   const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
 
+  const pattern = PATTERNS[idToSeed(id) % PATTERNS.length];
+
+  const backgroundImage = `
+    radial-gradient(circle at ${pattern.pos}, ${pattern.accent}, transparent 45%),
+    radial-gradient(circle at 78% 24%, rgba(82,146,255,0.08), transparent 40%),
+    linear-gradient(${pattern.angle}deg, rgba(255,255,255,0.04) 1px, transparent 1px)
+  `;
+  const backgroundSize = "100% 100%, 100% 100%, 24px 24px";
+
   return new ImageResponse(
     (
       <div
@@ -77,9 +101,8 @@ export async function GET(
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: COLORS.bg,
-          backgroundImage:
-            "radial-gradient(circle at 20% 30%, rgba(20,184,122,0.18), transparent 40%), radial-gradient(circle at 78% 24%, rgba(82,146,255,0.12), transparent 46%), radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          backgroundSize: "100% 100%, 100% 100%, 24px 24px", // dot grid: size controls spacing; opacity/size in the last gradient controls intensity
+          backgroundImage,
+          backgroundSize, // size controls spacing of the line grid
           padding: "48px",
         }}
       >
