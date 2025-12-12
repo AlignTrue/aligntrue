@@ -67,4 +67,13 @@ describe("GET /api/og/[id]", () => {
     const buf = Buffer.from(await res.arrayBuffer());
     expect(buf.subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47])); // \x89PNG
   });
+
+  it("uses fallback description when description matches title", async () => {
+    const record = makeRecord({ title: "Same", description: "Same" });
+    getMock.mockResolvedValueOnce(record);
+    const { buildDescription } = await import("./route");
+
+    const result = buildDescription(record.title, record.description);
+    expect(result).toBe("Try these rules to guide your AI");
+  });
 });

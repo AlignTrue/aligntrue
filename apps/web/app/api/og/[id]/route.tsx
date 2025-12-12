@@ -33,10 +33,22 @@ const fontPromise =
   readFile(
     new URL("../../../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
   );
+const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return `${text.slice(0, max - 1).trimEnd()}…`;
+}
+
+export function buildDescription(
+  title: string,
+  rawDescription?: string,
+): string {
+  const raw = rawDescription ? truncate(rawDescription, 180) : "";
+  if (!raw) return "";
+  return raw.toLowerCase().trim() === title.toLowerCase().trim()
+    ? FALLBACK_DESCRIPTION
+    : raw;
 }
 
 export async function GET(
@@ -52,7 +64,7 @@ export async function GET(
 
   const { owner } = parseGitHubUrl(align.normalizedUrl);
   const title = align.title || "Untitled Align";
-  const description = align.description ? truncate(align.description, 180) : "";
+  const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
 
   return new ImageResponse(
@@ -66,7 +78,8 @@ export async function GET(
           justifyContent: "center",
           backgroundColor: COLORS.bg,
           backgroundImage:
-            "radial-gradient(circle at 20% 30%, rgba(20,184,122,0.18), transparent 40%), radial-gradient(circle at 78% 24%, rgba(82,146,255,0.12), transparent 46%)",
+            "radial-gradient(circle at 20% 30%, rgba(20,184,122,0.18), transparent 40%), radial-gradient(circle at 78% 24%, rgba(82,146,255,0.12), transparent 46%), radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)",
+          backgroundSize: "100% 100%, 100% 100%, 24px 24px", // dot grid: size controls spacing; opacity/size in the last gradient controls intensity
           padding: "48px",
         }}
       >
@@ -103,6 +116,22 @@ export async function GET(
               }}
             >
               {kindLabel}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                fontSize: "20px",
+                color: COLORS.foreground,
+                padding: "10px 14px",
+                borderRadius: "12px",
+                border: `1px solid ${COLORS.border}`,
+                background: "rgba(255,255,255,0.04)",
+              }}
+            >
+              <span style={{ color: COLORS.muted }}>ID:</span>
+              <span>{align.id}</span>
             </div>
           </div>
 
@@ -157,22 +186,6 @@ export async function GET(
               >
                 <span>by</span>
                 <span style={{ color: COLORS.foreground }}>{owner}</span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  fontSize: "20px",
-                  color: COLORS.foreground,
-                  padding: "10px 14px",
-                  borderRadius: "12px",
-                  border: `1px solid ${COLORS.border}`,
-                  background: "rgba(255,255,255,0.02)",
-                }}
-              >
-                <span style={{ color: COLORS.muted }}>ID:</span>
-                <span>{align.id}</span>
               </div>
             </div>
 
