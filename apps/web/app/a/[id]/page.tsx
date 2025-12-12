@@ -71,6 +71,10 @@ export default async function AlignDetailPage(props: {
     } catch (error) {
       fetchFailed = true;
       console.error("failed to fetch raw content", error);
+      content = await getCachedContent(align.id);
+      if (!content) {
+        console.error("no cached raw content available after failure");
+      }
     }
   }
 
