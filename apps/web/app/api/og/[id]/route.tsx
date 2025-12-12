@@ -3,15 +3,7 @@ import { AlignTrueLogoOG } from "../AlignTrueLogoOG";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
 
-export const runtime = "edge";
-
-const FONT_SANS = fetch(
-  "https://fonts.gstatic.com/s/plusjakartasans/v8/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA.woff2",
-).then((res) => res.arrayBuffer());
-
-const FONT_MONO = fetch(
-  "https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPQ.woff2",
-).then((res) => res.arrayBuffer());
+export const runtime = "nodejs";
 
 const COLORS = {
   bg: "hsl(222 24% 6%)",
@@ -41,9 +33,9 @@ function truncate(text: string, max: number): string {
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = params;
+  const { id } = await params;
   const align = await store.get(id);
 
   if (!align) {
@@ -54,8 +46,6 @@ export async function GET(
   const title = align.title || "Untitled Align";
   const description = align.description ? truncate(align.description, 180) : "";
   const kindLabel = KINDS[align.kind] ?? "Align";
-
-  const [fontSans, fontMono] = await Promise.all([FONT_SANS, FONT_MONO]);
 
   return new ImageResponse(
     (
@@ -192,20 +182,8 @@ export async function GET(
     {
       width: 1200,
       height: 630,
-      fonts: [
-        {
-          name: "Plus Jakarta Sans",
-          data: fontSans,
-          weight: 400,
-          style: "normal",
-        },
-        {
-          name: "JetBrains Mono",
-          data: fontMono,
-          weight: 500,
-          style: "normal",
-        },
-      ],
+      // Use built-in fonts to avoid remote font fetch failures in edge/node
+      fonts: [],
       headers: {
         "Cache-Control": "public, max-age=31536000, immutable",
       },
