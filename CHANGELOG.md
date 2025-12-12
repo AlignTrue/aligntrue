@@ -94,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Branded Open Graph images for aligns** - `/api/og/[id]` now renders PNG previews with AlignTrue styling, deterministic background patterns, and bundled fonts for consistent sharing
+- **Align identity bar** - Added HashBar component to align cards and detail views to show a deterministic color signature for each align
 - **Init exporter selection streamlined** - Init now shows 5 most common exporters (AGENTS.md, Cursor, Claude, Windsurf, Cline) plus any detected ones, with message to add 14+ more via `aligntrue exporters`. Fixes multiselect rendering with large exporter list
 - **GitHub web UI URL support** - URL parser now handles GitHub web URLs with `/tree/` and `/blob/` paths. Copy URLs directly from GitHub's web interface (e.g., `https://github.com/org/repo/tree/main/aligns`)
 - **Selective import UI for init/add/sources detect** - Smart tiered selection interface when importing rules. Single file: auto-import. Small folder: show list + confirm. Large/multiple folders: show summary + folder-level selection
@@ -107,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Align detail resilience** - Detail pages refresh content after repeated fetch failures, track source removal timestamps, and fall back to cached content while showing archived copies when upstream sources disappear
 - **Renamed CLI command `adapters` → `exporters`** - Better aligns with user mental model ("exporters" = formats that export to agents). Config field `exporters:` remains unchanged. CLI help moved from "Development commands" to "Basic commands". Old `/adapters` URL redirects to `/exporters`
 - **Bulk search and replace `adapter(s)` → `exporter(s)`** to reduce confusio and increase consistency.
 - **BREAKING: `resolveSource()` from `@aligntrue/core` no longer supports git sources** - Git source resolution moved from `@aligntrue/core` to `@aligntrue/cli` to eliminate the `new Function()` dynamic import that triggered security scanner warnings. Use CLI commands (`aligntrue add`, `aligntrue sync`) for git sources. Core now throws a clear error for git sources, directing users to use CLI
@@ -122,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Content fetch robustness** - Align detail and Open Graph routes now handle fetch errors gracefully, reuse cached content when upstream requests fail, and use fallback descriptions when titles match descriptions
 - **Rules not loading from dot-directories** - Fixed glob pattern in `loadRulesDirectory` not finding rules in directories starting with a dot (e.g., `.cursor/`). Added `dot: true` option to enable matching files in dot-prefixed directories
 - **AGENTS.md and CLAUDE.md not created during sync** - Fixed exporter failing when frontmatter `globs` field is a string instead of array. Now handles both YAML formats correctly
 - **Backup files tracked by git** - Init command now creates `.aligntrue/.gitignore` to ignore internal state files (`.backups/`, `.source-rule-hashes.json`, `.cache/`, etc.)

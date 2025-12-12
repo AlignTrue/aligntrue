@@ -77,3 +77,10 @@ describe("GET /api/og/[id]", () => {
     expect(result).toBe("Try these rules to guide your AI");
   });
 });
+
+describe("helper utilities", () => {
+  it("buildInstallCommand returns npx init command with id", async () => {
+    const { buildInstallCommand } = await import("./route");
+    expect(buildInstallCommand("abc123")).toBe("npx aligntrue init a:abc123");
+  });
+});

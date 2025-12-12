@@ -34,6 +34,8 @@ const fontPromise =
     new URL("../../../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
   );
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
+const COMMAND_PREFIX = "npx aligntrue init a:";
+const SOURCE_LABEL = "GitHub";
 const PATTERNS = [
   { angle: 45, accent: "rgba(20,184,122,0.15)", pos: "20% 30%" },
   { angle: 60, accent: "rgba(82,146,255,0.12)", pos: "75% 25%" },
@@ -87,6 +89,10 @@ export function buildDescription(
     : raw;
 }
 
+export function buildInstallCommand(id: string): string {
+  return `${COMMAND_PREFIX}${id}`;
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -102,6 +108,7 @@ export async function GET(
   const title = align.title || "Untitled Align";
   const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
+  const installCommand = buildInstallCommand(id);
 
   const pattern = PATTERNS[idToSeed(id) % PATTERNS.length];
 
@@ -165,17 +172,14 @@ export async function GET(
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                fontSize: "20px",
-                color: COLORS.foreground,
-                padding: "10px 14px",
-                borderRadius: "12px",
-                border: `1px solid ${COLORS.border}`,
-                background: "rgba(255,255,255,0.04)",
+                justifyContent: "flex-end",
               }}
             >
-              <span style={{ color: COLORS.muted }}>ID:</span>
-              <span>{align.id}</span>
+              <AlignTrueLogoOG
+                width={180}
+                color="rgba(240,244,248,0.85)"
+                accent={COLORS.accent}
+              />
             </div>
           </div>
 
@@ -230,14 +234,39 @@ export async function GET(
               >
                 <span>by</span>
                 <span style={{ color: COLORS.foreground }}>{owner}</span>
+                <span>via</span>
+                <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
               </div>
             </div>
 
-            <AlignTrueLogoOG
-              width={180}
-              color="rgba(240,244,248,0.75)"
-              accent={COLORS.accent}
-            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: "6px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "12px 16px",
+                  borderRadius: "12px",
+                  background: "rgba(15, 19, 29, 0.8)",
+                  border: `1px solid ${COLORS.border}`,
+                  boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
+                  fontFamily: "monospace",
+                  fontSize: "22px",
+                  color: COLORS.foreground,
+                  letterSpacing: "0.01em",
+                }}
+              >
+                <span style={{ color: COLORS.muted }}>$</span>
+                <span>{installCommand}</span>
+              </div>
+            </div>
           </div>
           {/* Hash-derived color bar footer */}
           <div

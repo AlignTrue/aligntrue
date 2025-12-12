@@ -89,12 +89,8 @@ export default async function AlignDetailPage(props: {
     };
   } else if (align.sourceRemoved || (align.fetchFailCount ?? 0) > 0) {
     await store.resetSourceRemoved(align.id);
-    alignForRender = {
-      ...align,
-      sourceRemoved: false,
-      sourceRemovedAt: undefined,
-      fetchFailCount: 0,
-    };
+    const updated = await store.get(align.id);
+    alignForRender = updated ?? align;
   }
 
   return <AlignDetailClient align={alignForRender} content={content} />;
