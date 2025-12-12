@@ -6,7 +6,7 @@
  * Usage:
  *   export UPSTASH_REDIS_REST_URL="..."
  *   export UPSTASH_REDIS_REST_TOKEN="..."
- *   node scripts/admin-delete-aligns.mjs <align-id> [align-id-2 ...]
+ *   node apps/web/scripts/admin-delete-aligns.mjs <align-id> [align-id-2 ...]
  *
  * Flags:
  *   --yes | -y   Skip confirmation prompt
@@ -84,7 +84,7 @@ async function main() {
 
   if (ids.length === 0) {
     console.error(
-      "Usage: node scripts/admin-delete-aligns.mjs <align-id> [align-id-2 ...]",
+      "Usage: node apps/web/scripts/admin-delete-aligns.mjs <align-id> [align-id-2 ...]",
     );
     console.error("Add --yes to skip confirmation.");
     process.exit(1);
