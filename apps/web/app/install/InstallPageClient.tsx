@@ -1,6 +1,4 @@
 "use client";
-
-import Link from "next/link";
 import { CommandBlock } from "@/components/CommandBlock";
 import { GitHubIcon } from "@/app/components/GitHubIcon";
 import { PageLayout } from "@/components/PageLayout";
@@ -161,12 +159,12 @@ export function InstallPageClient() {
 
           <div className="flex flex-wrap justify-center gap-3">
             <Button asChild className="px-5 py-2.5">
-              <Link href="/docs/00-getting-started/00-quickstart">
+              <a href="/docs/00-getting-started/00-quickstart">
                 Quickstart guide
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline" className="px-5 py-2.5">
-              <Link href="/docs">Read docs</Link>
+              <a href="/docs">Read docs</a>
             </Button>
           </div>
         </div>
@@ -179,12 +177,12 @@ export function InstallPageClient() {
             <p className="text-sm text-muted-foreground">
               Use your preferred package manager or run one-off commands without
               a global install. See the{" "}
-              <Link
+              <a
                 href="/docs/00-getting-started/00-quickstart"
                 className="text-primary font-semibold hover:underline"
               >
                 full install guide here
-              </Link>
+              </a>
               .
             </p>
           </CardHeader>
@@ -241,12 +239,12 @@ export function InstallPageClient() {
               </li>
               <li>
                 An AI coding agent — see{" "}
-                <Link
+                <a
                   href="/docs/04-reference/agent-support"
                   className="text-primary hover:underline"
                 >
                   supported agents
-                </Link>
+                </a>
                 .
               </li>
               <li>
@@ -283,17 +281,15 @@ export function InstallPageClient() {
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button asChild>
-              <Link href="/docs/00-getting-started/00-quickstart">
+              <a href="/docs/00-getting-started/00-quickstart">
                 Quickstart guide
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/docs/04-reference/agent-support">
-                Agent compatibility
-              </Link>
+              <a href="/docs/04-reference/agent-support">Agent compatibility</a>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/docs/04-reference/cli-reference">CLI reference</Link>
+              <a href="/docs/04-reference/cli-reference">CLI reference</a>
             </Button>
           </CardContent>
         </Card>
