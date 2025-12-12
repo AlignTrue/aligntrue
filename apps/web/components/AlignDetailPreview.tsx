@@ -279,7 +279,7 @@ export function AlignDetailPreview({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1 space-y-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
                     {align.title || "Untitled align"}
                   </h1>
@@ -291,55 +291,62 @@ export function AlignDetailPreview({
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:justify-end">
-                <div className="flex items-center gap-2">
-                  <a
-                    href={align.normalizedUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-foreground hover:underline"
-                  >
-                    {fileNameLabel}
-                  </a>
-                  {isPack && (
-                    <TooltipProvider delayDuration={100}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href="/docs/03-concepts/align-packs"
-                            className="text-muted-foreground hover:text-foreground"
-                            aria-label="Learn how Align packs work"
-                          >
-                            <HelpCircle size={18} />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Learn how Align packs work
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+              <div className="flex flex-col items-start sm:items-end gap-1.5 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={align.normalizedUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-foreground hover:underline"
+                    >
+                      {fileNameLabel}
+                    </a>
+                    {isPack && (
+                      <TooltipProvider delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a
+                              href="/docs/03-concepts/align-packs"
+                              className="text-muted-foreground hover:text-foreground"
+                              aria-label="Learn how Align packs work"
+                            >
+                              <HelpCircle size={18} />
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Learn how Align packs work
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">by</span>
+                  {ownerUrl ? (
+                    <a
+                      href={ownerUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-foreground hover:underline"
+                    >
+                      {owner}
+                    </a>
+                  ) : (
+                    <span className="font-semibold text-foreground">
+                      {owner}
+                    </span>
+                  )}
+                  {(fileCountLabel || sizeLabel) && (
+                    <Badge variant="outline" className="font-semibold">
+                      {fileCountLabel}
+                      {fileCountLabel && sizeLabel ? " · " : ""}
+                      {sizeLabel}
+                    </Badge>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">by</span>
-                {ownerUrl ? (
-                  <a
-                    href={ownerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-foreground hover:underline"
-                  >
-                    {owner}
-                  </a>
-                ) : (
-                  <span className="font-semibold text-foreground">{owner}</span>
-                )}
-                {(fileCountLabel || sizeLabel) && (
-                  <Badge variant="outline" className="font-semibold">
-                    {fileCountLabel}
-                    {fileCountLabel && sizeLabel ? " · " : ""}
-                    {sizeLabel}
-                  </Badge>
-                )}
+                <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">
+                  ID: {align.id}
+                </span>
               </div>
             </div>
 

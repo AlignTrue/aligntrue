@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import type { AlignRecord } from "@/lib/aligns/types";
 
@@ -24,32 +24,53 @@ type AlignCardProps = {
 };
 
 export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
-  const { owner } = parseGitHubUrl(align.normalizedUrl);
+  const { owner, ownerUrl } = parseGitHubUrl(align.normalizedUrl);
   const isPack = align.kind === "pack";
   const filename = filenameFromUrl(align.normalizedUrl || align.url);
 
-  const content = (
+  return (
     <Card
       className={cn(
-        "h-full transition hover:shadow-md hover:-translate-y-0.5",
-        isSelected &&
-          "ring-2 ring-primary shadow-lg shadow-primary/10 hover:-translate-y-0",
+        "h-full flex flex-col transition hover:shadow-md",
+        isSelected && "ring-2 ring-primary shadow-lg shadow-primary/10",
       )}
     >
-      <CardContent className="p-4 space-y-3 text-left">
+      <CardContent className="p-4 space-y-3 text-left flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs sm:text-[11px] text-muted-foreground truncate">
-            <span className="font-medium text-foreground/80">{filename}</span>
+            <a
+              href={align.normalizedUrl || align.url}
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-foreground/80 hover:text-foreground hover:underline"
+            >
+              {filename}
+            </a>
             <span className="mx-1 text-border">•</span>
-            <span className="font-semibold text-foreground">{owner}</span>
+            {ownerUrl ? (
+              <a
+                href={ownerUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-foreground hover:text-primary hover:underline"
+              >
+                {owner}
+              </a>
+            ) : (
+              <span className="font-semibold text-foreground">{owner}</span>
+            )}
           </span>
           <div className="flex items-center gap-2">
-            <Badge
-              variant={isPack ? "default" : "secondary"}
-              className="text-[11px] py-1"
+            <span
+              className={cn(
+                "text-[11px] px-2 py-0.5 rounded-md font-medium border",
+                isPack
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-muted text-foreground/80 border-border/80",
+              )}
             >
               {isPack ? "Pack" : "Rule"}
-            </Badge>
+            </span>
           </div>
         </div>
         <div className="space-y-1.5">
@@ -63,25 +84,26 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
           )}
         </div>
       </CardContent>
+      <CardFooter className="p-4 pt-0 items-center justify-between gap-3">
+        <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">
+          ID: {align.id}
+        </span>
+        <div className="flex items-center gap-2">
+          {onSelect && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelect(align)}
+              className="text-foreground"
+            >
+              Preview
+            </Button>
+          )}
+          <Button size="sm" asChild>
+            <Link href={`/a/${align.id}`}>Open</Link>
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
-  );
-
-  if (onSelect) {
-    return (
-      <button
-        type="button"
-        onClick={() => onSelect(align)}
-        className="block h-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-xl"
-        aria-pressed={isSelected}
-      >
-        {content}
-      </button>
-    );
-  }
-
-  return (
-    <Link href={`/a/${align.id}`} className="block h-full">
-      {content}
-    </Link>
   );
 }
