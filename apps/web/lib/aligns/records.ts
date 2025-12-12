@@ -7,6 +7,8 @@ type BuildPackRecordParams = {
   sourceUrl: string;
   existing?: AlignRecord | null;
   now: string;
+  contentHash?: string;
+  contentHashUpdatedAt?: string;
 };
 
 export function buildPackAlignRecord({
@@ -15,6 +17,8 @@ export function buildPackAlignRecord({
   sourceUrl,
   existing,
   now,
+  contentHash,
+  contentHashUpdatedAt,
 }: BuildPackRecordParams): AlignRecord {
   return {
     schemaVersion: 1,
@@ -26,6 +30,8 @@ export function buildPackAlignRecord({
     title: pack.info.manifestSummary ?? pack.info.manifestId,
     description: pack.info.manifestDescription ?? null,
     fileType: "yaml",
+    ...(contentHash ? { contentHash } : {}),
+    ...(contentHashUpdatedAt ? { contentHashUpdatedAt } : {}),
     createdAt: existing?.createdAt ?? now,
     lastViewedAt: now,
     viewCount: existing?.viewCount ?? 0,

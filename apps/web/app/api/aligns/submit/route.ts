@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Redis } from "@upstash/redis";
 import { getAlignStore, hasKvEnv } from "@/lib/aligns/storeFactory";
 import { extractMetadata } from "@/lib/aligns/metadata";
@@ -9,6 +10,7 @@ import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import {
   fetchRawWithCache,
   setCachedContent,
+  type CachedPackFile,
 } from "@/lib/aligns/content-cache";
 import { buildPackAlignRecord } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
@@ -26,8 +28,6 @@ const ALLOWED_EXTENSIONS = [
   ".markdown",
   ".yaml",
   ".yml",
-  ".json",
-  ".txt",
 ] as const;
 const ALLOWED_FILENAMES = [
   ".clinerules",
@@ -84,6 +84,18 @@ function isPackNotFoundError(error: unknown): boolean {
   );
 }
 
+function hashString(content: string): string {
+  return crypto.createHash("sha256").update(content).digest("hex");
+}
+
+function hashPackFiles(files: CachedPackFile[]): string {
+  const ordered = [...files].sort((a, b) => a.path.localeCompare(b.path));
+  const payload = JSON.stringify(
+    ordered.map((file) => ({ path: file.path, content: file.content })),
+  );
+  return hashString(payload);
+}
+
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
@@ -117,6 +129,7 @@ export async function POST(req: Request) {
       const id = alignIdFromNormalizedUrl(pack.manifestUrl);
       const existing = await store.get(id);
       const now = new Date().toISOString();
+      const contentHash = hashPackFiles(pack.files);
 
       const record = buildPackAlignRecord({
         id,
@@ -124,6 +137,8 @@ export async function POST(req: Request) {
         sourceUrl: body.url,
         existing,
         now,
+        contentHash,
+        contentHashUpdatedAt: now,
       });
 
       await store.upsert(record);
@@ -162,7 +177,7 @@ export async function POST(req: Request) {
       return Response.json(
         {
           error: `Unsupported file type: ${filename}`,
-          hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, .json, .txt, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
+          hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
           issueUrl:
             "https://github.com/AlignTrue/aligntrue/issues/new?title=Support%20new%20file%20type&labels=enhancement",
         },
@@ -187,6 +202,7 @@ export async function POST(req: Request) {
     const meta = extractMetadata(normalizedUrl, cached.content);
     const existing = await store.get(id);
     const now = new Date().toISOString();
+    const contentHash = hashString(cached.content);
 
     const record: AlignRecord = {
       schemaVersion: 1,
@@ -198,6 +214,8 @@ export async function POST(req: Request) {
       title: meta.title,
       description: meta.description,
       fileType: meta.fileType,
+      contentHash,
+      contentHashUpdatedAt: now,
       createdAt: existing?.createdAt ?? now,
       lastViewedAt: now,
       viewCount: existing?.viewCount ?? 0,

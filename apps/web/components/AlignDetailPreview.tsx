@@ -5,6 +5,7 @@ import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HashBar } from "@/components/HashBar";
+import { CommunityContentNotice } from "@/components/CommunityContentNotice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -277,7 +278,12 @@ export function AlignDetailPreview({
   return (
     <div className={cn("space-y-6", className)}>
       <Card variant="surface">
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-6 space-y-5">
+          <HashBar
+            id={align.id}
+            height={4}
+            className="-mx-6 -mt-6 rounded-t-xl mb-4"
+          />
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1 space-y-2">
@@ -291,6 +297,11 @@ export function AlignDetailPreview({
                   {isArchived && (
                     <Badge variant="secondary" className="text-xs">
                       Archived copy (source removed)
+                    </Badge>
+                  )}
+                  {align.contentHashMismatch && (
+                    <Badge variant="destructive" className="text-xs">
+                      Content changed since submission
                     </Badge>
                   )}
                 </div>
@@ -360,10 +371,17 @@ export function AlignDetailPreview({
                     </Badge>
                   )}
                 </div>
+                <CommunityContentNotice
+                  alignId={align.id}
+                  alignUrl={align.normalizedUrl || align.url}
+                  compact
+                  variant="inline"
+                  className="mt-1"
+                />
               </div>
             </div>
 
-            <HashBar id={align.id} height={4} className="rounded-lg mb-4" />
+            <hr className="border-t border-border my-4" />
             <Tabs
               value={actionTab}
               onValueChange={(v) => setActionTab(v as typeof actionTab)}

@@ -33,6 +33,9 @@ export type AlignRecord = {
   title: string | null;
   description: string | null;
   fileType: "markdown" | "yaml" | "unknown";
+  contentHash?: string;
+  contentHashUpdatedAt?: string;
+  contentHashMismatch?: boolean;
   createdAt: string; // ISO timestamp
   lastViewedAt: string;
   viewCount: number;

@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import {
   getCachedContent,
@@ -17,6 +18,24 @@ const FAILURE_THRESHOLD = 3;
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
+
+function hashString(content: string): string {
+  return crypto.createHash("sha256").update(content).digest("hex");
+}
+
+function hashContent(content: CachedContent | null): string | null {
+  if (!content) return null;
+  if (content.kind === "single") {
+    return hashString(content.content);
+  }
+  const ordered = [...content.files].sort((a, b) =>
+    a.path.localeCompare(b.path),
+  );
+  const payload = JSON.stringify(
+    ordered.map((file) => ({ path: file.path, content: file.content })),
+  );
+  return hashString(payload);
+}
 
 export default async function AlignDetailPage(props: {
   params: Promise<{ id: string }>;
@@ -93,7 +112,24 @@ export default async function AlignDetailPage(props: {
     alignForRender = updated ?? align;
   }
 
-  return <AlignDetailClient align={alignForRender} content={content} />;
+  const currentHash = hashContent(content);
+  const contentHashMismatch =
+    !!alignForRender.contentHash &&
+    !!currentHash &&
+    alignForRender.contentHash !== currentHash;
+
+  const enrichedAlign = {
+    ...alignForRender,
+    ...(currentHash && !alignForRender.contentHash
+      ? {
+          contentHash: currentHash,
+          contentHashUpdatedAt: new Date().toISOString(),
+        }
+      : {}),
+    ...(contentHashMismatch ? { contentHashMismatch: true } : {}),
+  };
+
+  return <AlignDetailClient align={enrichedAlign} content={content} />;
 }
 
 export async function generateMetadata(props: {

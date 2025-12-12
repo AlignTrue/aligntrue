@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { HashBar } from "@/components/HashBar";
+import { CommunityContentNotice } from "@/components/CommunityContentNotice";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import type { AlignRecord } from "@/lib/aligns/types";
 
@@ -84,6 +85,11 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
             </p>
           )}
         </div>
+        <CommunityContentNotice
+          alignId={align.id}
+          alignUrl={align.normalizedUrl || align.url}
+          compact
+        />
       </CardContent>
       <CardFooter className="p-4 pt-0 items-center justify-between gap-3">
         <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">

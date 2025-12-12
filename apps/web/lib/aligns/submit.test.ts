@@ -14,8 +14,6 @@ const ALLOWED_EXTENSIONS = [
   ".markdown",
   ".yaml",
   ".yml",
-  ".json",
-  ".txt",
 ] as const;
 
 const ALLOWED_FILENAMES = [
@@ -84,18 +82,6 @@ describe("hasAllowedExtension", () => {
     it("allows .yml files", () => {
       expect(
         hasAllowedExtension("https://github.com/org/repo/blob/main/config.yml"),
-      ).toBe(true);
-    });
-
-    it("allows .json files", () => {
-      expect(
-        hasAllowedExtension("https://github.com/org/repo/blob/main/rules.json"),
-      ).toBe(true);
-    });
-
-    it("allows .txt files", () => {
-      expect(
-        hasAllowedExtension("https://github.com/org/repo/blob/main/rules.txt"),
       ).toBe(true);
     });
   });

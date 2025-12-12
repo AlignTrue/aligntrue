@@ -133,7 +133,7 @@ export async function fetchRawWithCache(
       throw new Error("Invalid raw URL for force refresh");
     }
     const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
-    if (content) {
+    if (content !== null) {
       const payload: CachedContent = { kind: "single", content };
       try {
         await setCachedContent(id, payload);
@@ -152,7 +152,7 @@ export async function fetchRawWithCache(
       throw new Error("Invalid raw URL");
     }
     const content = await fetchWithLimit(rawUrl, maxBytes, fetchImpl);
-    if (!content) {
+    if (content === null) {
       throw new Error("Failed to fetch content");
     }
     return { kind: "single", content };

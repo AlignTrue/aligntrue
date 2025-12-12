@@ -1,0 +1,44 @@
+name: "Report catalog align"
+description: "Report malicious, misleading, or spam content in the catalog."
+title: "Report align: <align-id>"
+labels: ["report-align"]
+body:
+  - type: input
+    id: align-id
+    attributes:
+      label: Align ID
+      description: Copy the ID from the catalog card or detail page.
+      placeholder: e.g., aBc123xyz
+    validations:
+      required: true
+
+  - type: input
+    id: align-url
+    attributes:
+      label: Align URL
+      description: GitHub URL or catalog URL for the align.
+      placeholder: https://github.com/org/repo/blob/main/rules.md
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reason
+    attributes:
+      label: Reason for report
+      options:
+        - Malicious content
+        - Misleading or inaccurate
+        - Spam
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional details
+      description: Add reproduction steps, why it is unsafe, and any evidence.
+      placeholder: >
+        Describe what the align does and why it is unsafe or misleading.
+    validations:
+      required: false

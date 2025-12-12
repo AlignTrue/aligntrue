@@ -9,5 +9,6 @@
   "07-ci-cd-integration": "CI/CD integration",
   "08-safety-best-practices": "Safety best practices",
   "09-ai-native-engineering": "AI-native engineering",
-  "10-align-catalog": "Align Catalog guide"
+  "10-align-catalog": "Align Catalog guide",
+  "11-catalog-safety": "Catalog safety"
 }
