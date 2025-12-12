@@ -87,7 +87,7 @@ export default async function AlignDetailPage(props: {
       ...align,
       sourceRemoved: true,
       sourceRemovedAt: now,
-      fetchFailCount: align.fetchFailCount ?? 0,
+      fetchFailCount: (align.fetchFailCount ?? 0) + 1,
     };
   } else if (align.sourceRemoved || (align.fetchFailCount ?? 0) > 0) {
     await store.resetSourceRemoved(align.id);
