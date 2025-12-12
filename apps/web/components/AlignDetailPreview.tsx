@@ -36,7 +36,7 @@ import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
 import { downloadFile } from "@/lib/download";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
-import { formatBytes } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
 
 const EMPTY_PACK_FILES: CachedPackFile[] = [];
 
@@ -273,7 +273,7 @@ export function AlignDetailPreview({
   ) : null;
 
   return (
-    <div className={className}>
+    <div className={cn("space-y-6", className)}>
       <Card variant="surface">
         <CardContent className="p-6 space-y-4">
           <div className="flex flex-col gap-4">

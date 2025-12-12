@@ -5,6 +5,8 @@ import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ChevronDown,
+  ChevronUp,
   FileText,
   Globe,
   Loader2,
@@ -14,9 +16,11 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { SectionBadge } from "./components/SectionBadge";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
 import { GitHubIcon } from "./components/GitHubIcon";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -76,6 +80,7 @@ export function HomePageClient() {
   const [submitting, setSubmitting] = useState(false);
   const [recent, setRecent] = useState<AlignSummary[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
+  const [showImportHelp, setShowImportHelp] = useState(false);
 
   useEffect(() => {
     const candidate = getSubmittedUrlFromSearch(window.location.search);
@@ -206,12 +211,12 @@ export function HomePageClient() {
     </div>
   );
 
-  const renderRulesTab = () => (
-    <Card className="max-w-5xl mx-auto" variant="surface">
+  const renderImportCard = () => (
+    <Card className="max-w-4xl mx-auto text-left" variant="surface">
       <CardContent className="p-6 md:p-7 space-y-6">
         <div className="space-y-3">
           <label className="font-semibold text-foreground" htmlFor="align-url">
-            Enter a GitHub URL with AI rules (.mdc, .md, etc.)
+            Import from GitHub (.mdc, .md, Align packs)
           </label>
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
@@ -233,7 +238,7 @@ export function HomePageClient() {
                   Generating...
                 </span>
               ) : (
-                "Generate Align"
+                "Import"
               )}
             </Button>
           </div>
@@ -257,14 +262,69 @@ export function HomePageClient() {
           )}
         </div>
 
-        {(recentLoading || recent.length > 0) && (
-          <section className="pt-2 space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">
-              Recent Aligns
-            </h3>
-            {recentLoading ? renderSkeletonCards() : renderCards(recent)}
-          </section>
-        )}
+        <div className="border-t pt-4 space-y-3">
+          <button
+            type="button"
+            className="w-full flex items-center justify-between text-left text-sm font-semibold text-foreground hover:text-primary transition-colors"
+            onClick={() => setShowImportHelp((v) => !v)}
+            aria-expanded={showImportHelp}
+            aria-controls="import-help"
+          >
+            <span>How imports work</span>
+            {showImportHelp ? (
+              <ChevronUp size={18} className="text-muted-foreground" />
+            ) : (
+              <ChevronDown size={18} className="text-muted-foreground" />
+            )}
+          </button>
+          {showImportHelp && (
+            <div
+              id="import-help"
+              className="space-y-3 text-sm text-muted-foreground"
+            >
+              <ol className="list-decimal list-inside space-y-2">
+                <li>
+                  AlignTrue fetches your rules and normalizes them into IR.
+                </li>
+                <li>
+                  Rules are written to <code>.aligntrue/rules</code> as the
+                  single source of truth.
+                </li>
+                <li>
+                  Agent exports are generated on sync (
+                  <code>aligntrue sync</code>) in native formats (Cursor .mdc,
+                  AGENTS.md, etc.).
+                </li>
+              </ol>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="text-xs font-semibold">
+                  <a
+                    href="/docs/00-getting-started/00-quickstart"
+                    className="hover:underline"
+                  >
+                    Quickstart guide
+                  </a>
+                </Badge>
+                <Badge variant="outline" className="text-xs font-semibold">
+                  <a
+                    href="/docs/03-concepts/sync-behavior"
+                    className="hover:underline"
+                  >
+                    How sync works
+                  </a>
+                </Badge>
+                <Badge variant="outline" className="text-xs font-semibold">
+                  <a
+                    href="/docs/04-reference/agent-support"
+                    className="hover:underline"
+                  >
+                    Agent compatibility
+                  </a>
+                </Badge>
+              </div>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -318,6 +378,7 @@ export function HomePageClient() {
   return (
     <PageLayout>
       <section
+        id="page-top"
         className="relative text-center px-4 py-14 md:py-20 hero-surface hero-background"
         aria-labelledby="hero-heading"
       >
@@ -368,13 +429,13 @@ export function HomePageClient() {
             </TabsList>
             <div className="mt-4">
               <TabsContent value="cli">{renderCLITab()}</TabsContent>
-              <TabsContent value="rules">{renderRulesTab()}</TabsContent>
+              <TabsContent value="rules">{renderImportCard()}</TabsContent>
             </div>
           </Tabs>
 
           <div
             className="flex flex-wrap justify-center gap-3 fade-in-up"
-            data-delay="4"
+            data-delay="5"
           >
             <Button asChild className="px-5 py-2.5">
               <Link
@@ -393,55 +454,53 @@ export function HomePageClient() {
       </section>
 
       <section
-        className="bg-muted border-y border-border px-4 py-12"
+        className="bg-muted border-y border-border px-4 sm:px-6 py-16"
         aria-labelledby="how-it-works-heading"
       >
-        <div className="max-w-6xl mx-auto">
-          <h2
-            id="how-it-works-heading"
-            className="text-2xl font-bold text-center mt-2 mb-5 text-foreground"
-          >
-            How it works
-          </h2>
-          <div className="max-w-4xl mx-auto">
-            <HowItWorksDiagram />
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="text-center space-y-4">
+            <h2
+              id="how-it-works-heading"
+              className="text-3xl md:text-4xl font-bold text-foreground"
+            >
+              Write once. Sync everywhere.
+            </h2>
+            <div className="max-w-4xl mx-auto">
+              <HowItWorksDiagram />
+            </div>
+            <p className="text-center text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
+              Run <code>aligntrue sync</code> to generate native agent files.
+              Keep one source of truth, ship rule updates instantly to Cursor,
+              Claude Code, Copilot, Codex, Windsurf & more.
+            </p>
           </div>
-          <p className="text-center mt-6 text-base text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
-            Write your rules once & run <code>aligntrue sync</code>. AlignTrue
-            automatically generates agent-specific formats for all your AI tools
-            or team members.
-          </p>
-        </div>
-      </section>
 
-      <section
-        className="bg-muted border-b border-border px-4 py-12"
-        aria-labelledby="features-heading"
-      >
-        <div className="max-w-6xl mx-auto">
-          <h2 id="features-heading" className="sr-only">
-            Key Features
-          </h2>
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent dark:via-white/15" />
+
           <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto place-items-center">
             {[
               {
                 icon: Zap,
                 title: "60-second setup",
-                text: "Auto-detects agents & generates rules in under a minute. No config required.",
+                text: "Auto-detect agents, import existing rules, and sync in under a minute.",
               },
               {
                 icon: RefreshCw,
                 title: "Automatic sync",
-                text: "Edit rules once & sync to all agents. No more manual copying or outdated rules.",
+                text: "Edit once, sync to every agent—no manual copying or drift.",
               },
               {
                 icon: Globe,
-                title: "Works with 20+ agents",
-                text: "Cursor, Codex, Claude Code, Copilot, Aider, Windsurf, VS Code MCP & more.",
+                title: "20+ agent formats",
+                text: "Cursor .mdc, AGENTS.md, Claude Code, VS Code MCP, Windsurf, Copilot, and more.",
               },
             ].map((feature) => (
-              <Card key={feature.title} className="h-full" variant="feature">
-                <CardContent className="p-5 space-y-3 text-center">
+              <Card
+                key={feature.title}
+                className="h-full border-[var(--card-border-subtle)] bg-card/90"
+                variant="feature"
+              >
+                <CardContent className="p-6 space-y-3 text-center">
                   <feature.icon
                     size={32}
                     className="text-primary transition-transform duration-200 mx-auto"
@@ -450,7 +509,7 @@ export function HomePageClient() {
                   <h3 className="text-lg font-semibold text-foreground">
                     {feature.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-6">
+                  <p className="text-sm text-muted-foreground leading-6 text-pretty">
                     {feature.text}
                   </p>
                 </CardContent>
@@ -460,53 +519,160 @@ export function HomePageClient() {
         </div>
       </section>
 
+      <div
+        className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent"
+        aria-hidden="true"
+      />
+
       <section
-        className="max-w-6xl mx-auto px-4 sm:px-6 py-16"
+        className="px-4 sm:px-6 py-16"
         aria-labelledby="rule-wrangling-heading"
       >
-        <h2
-          id="rule-wrangling-heading"
-          className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="text-center space-y-4">
+            <SectionBadge>Simplify AI workflows</SectionBadge>
+            <h2
+              id="rule-wrangling-heading"
+              className="text-3xl md:text-4xl font-bold text-foreground"
+            >
+              Rule-wrangling, solved.
+            </h2>
+            <p className="text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
+              One source of truth for rules and outputs; sync safely across
+              agents and teams with built-in customization.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: FileText,
+                title: "Central rule management",
+                text: "Write AI rules once & automatically sync everywhere for everyone.",
+              },
+              {
+                icon: Shuffle,
+                title: "Agent exporters",
+                text: "Generates rule files in each agent's native format & keeps existing settings.",
+              },
+              {
+                icon: Users,
+                title: "Solo & team modes",
+                text: "Local-first for individuals. PR-friendly for team collaboration. Better for everyone.",
+              },
+              {
+                icon: Settings,
+                title: "Built-in customizability",
+                text: "Use variables, path selectors & overlays for sharing + team friendly customization.",
+              },
+            ].map((item) => (
+              <Card
+                key={item.title}
+                variant="feature"
+                className="text-center border-[var(--card-border-subtle)] bg-card/90"
+              >
+                <CardContent className="p-5 space-y-4">
+                  <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center bg-primary text-primary-foreground">
+                    <item.icon size={24} aria-hidden="true" />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-6">
+                    {item.text}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {(recentLoading || recent.length > 0) && (
+        <section
+          id="catalog"
+          className="px-4 sm:px-6 py-16 bg-muted border-y border-border"
+          aria-labelledby="ai-rule-catalog-heading"
         >
-          Rule-wrangling, solved.
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              icon: FileText,
-              title: "Central rule management",
-              text: "Write AI rules once & automatically sync everywhere for everyone.",
-            },
-            {
-              icon: Shuffle,
-              title: "Agent exporters",
-              text: "Generates rule files in each agent's native format & keeps existing settings.",
-            },
-            {
-              icon: Users,
-              title: "Solo & team modes",
-              text: "Local-first for individuals. PR-friendly for team collaboration. Better for everyone.",
-            },
-            {
-              icon: Settings,
-              title: "Built-in customizability",
-              text: "Use variables, path selectors & overlays for sharing + team friendly customization.",
-            },
-          ].map((item) => (
-            <Card key={item.title} variant="feature" className="text-center">
-              <CardContent className="p-5 space-y-4">
-                <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center bg-primary text-primary-foreground">
-                  <item.icon size={24} aria-hidden="true" />
+          <div className="max-w-6xl mx-auto space-y-6">
+            <div className="space-y-3 text-center">
+              <SectionBadge>Discover Better Rules</SectionBadge>
+              <h2
+                id="ai-rule-catalog-heading"
+                className="text-3xl md:text-4xl font-bold text-foreground"
+              >
+                AI rule catalog
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto leading-7 text-balance">
+                See recently submitted rules below, browse the full{" "}
+                <Link
+                  href={{ pathname: "/catalog", hash: "catalog" }}
+                  className="text-primary font-semibold hover:underline"
+                >
+                  rule catalog
+                </Link>{" "}
+                or{" "}
+                <Link
+                  href="/catalog"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  import & share&nbsp;
+                </Link>
+                your own.
+              </p>
+            </div>
+            <Card className="bg-gradient-to-br from-card via-card/95 to-muted/70 border border-border/80 shadow-xl">
+              <CardContent className="p-6 md:p-7 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="text-lg font-semibold text-foreground m-0">
+                    Recent Aligns
+                  </h3>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={{ pathname: "/catalog", hash: "catalog" }}>
+                      View catalog
+                    </Link>
+                  </Button>
+                  {recentLoading ? null : recent.length === 0 ? (
+                    <span className="text-sm text-muted-foreground">
+                      No Aligns found
+                    </span>
+                  ) : null}
                 </div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-6">
-                  {item.text}
-                </p>
+                {recentLoading
+                  ? renderSkeletonCards()
+                  : recent.length > 0 && renderCards(recent)}
               </CardContent>
             </Card>
-          ))}
+          </div>
+        </section>
+      )}
+
+      <section
+        className="px-4 sm:px-6 py-14 text-center cta-surface text-foreground overflow-hidden border border-white/30 dark:border-white/10 shadow-[0_25px_80px_-40px_rgba(0,0,0,0.65)] ring-1 ring-black/5 dark:ring-white/5"
+        aria-labelledby="cta-install-heading"
+      >
+        <div className="max-w-4xl mx-auto space-y-5">
+          <SectionBadge variant="cta">Get started</SectionBadge>
+          <h2
+            id="cta-install-heading"
+            className="text-3xl md:text-4xl font-bold leading-tight text-balance"
+          >
+            Make AI better for every agent you use & everyone you work with.
+          </h2>
+          <p className="text-base md:text-lg text-foreground/90 leading-7 max-w-2xl mx-auto text-pretty">
+            Start syncing your AI rules across agents, repos & teams in 60
+            seconds.
+          </p>
+          <div className="flex justify-center">
+            <Button
+              asChild
+              size="lg"
+              variant="secondary"
+              className="font-semibold px-6 py-3 shadow-lg ring-1 ring-black/10 dark:ring-white/15 bg-white text-foreground hover:bg-white/90 dark:bg-foreground dark:text-background dark:hover:bg-foreground/90"
+            >
+              <Link href="/install">Try AlignTrue CLI</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </PageLayout>

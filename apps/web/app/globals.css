@@ -29,6 +29,8 @@
     --chart-3: hsl(197 37% 24%);
     --chart-4: hsl(43 74% 66%);
     --chart-5: hsl(27 87% 67%);
+    --card-border: hsl(215 24% 88%);
+    --card-border-subtle: hsl(215 24% 88% / 0.6);
   }
   .dark {
     --background: hsl(222 24% 6%);
@@ -55,6 +57,8 @@
     --chart-3: hsl(30 80% 55%);
     --chart-4: hsl(280 65% 60%);
     --chart-5: hsl(340 75% 55%);
+    --card-border: hsl(220 16% 24%);
+    --card-border-subtle: hsl(0 0% 100% / 0.12);
   }
 }
 
@@ -120,6 +124,36 @@
 }
 .fade-in-up[data-delay="4"] {
   animation-delay: 240ms;
+}
+.fade-in-up[data-delay="5"] {
+  animation-delay: 300ms;
+}
+
+.cta-surface {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    hsl(160 84% 45%) 0%,
+    hsl(160 72% 36%) 100%
+  );
+}
+
+.dark .cta-surface {
+  background: linear-gradient(
+    135deg,
+    hsl(160 50% 18%) 0%,
+    hsl(160 40% 10%) 100%
+  );
+}
+
+.cta-surface::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, hsl(var(--background)));
+  pointer-events: none;
 }
 
 @keyframes fade-in-up {

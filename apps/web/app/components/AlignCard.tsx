@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import type { AlignRecord } from "@/lib/aligns/types";
@@ -19,15 +20,22 @@ export type AlignSummary = Pick<
 type AlignCardProps = {
   align: AlignSummary;
   onSelect?: (align: AlignSummary) => void;
+  isSelected?: boolean;
 };
 
-export function AlignCard({ align, onSelect }: AlignCardProps) {
+export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
   const { owner } = parseGitHubUrl(align.normalizedUrl);
   const isPack = align.kind === "pack";
   const filename = filenameFromUrl(align.normalizedUrl || align.url);
 
   const content = (
-    <Card className="h-full transition hover:shadow-md hover:-translate-y-0.5">
+    <Card
+      className={cn(
+        "h-full transition hover:shadow-md hover:-translate-y-0.5",
+        isSelected &&
+          "ring-2 ring-primary shadow-lg shadow-primary/10 hover:-translate-y-0",
+      )}
+    >
       <CardContent className="p-4 space-y-3 text-left">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs sm:text-[11px] text-muted-foreground truncate">
@@ -64,6 +72,7 @@ export function AlignCard({ align, onSelect }: AlignCardProps) {
         type="button"
         onClick={() => onSelect(align)}
         className="block h-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-xl"
+        aria-pressed={isSelected}
       >
         {content}
       </button>

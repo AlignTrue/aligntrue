@@ -28,7 +28,7 @@ describe("MockAlignStore.search", () => {
   let store: MockAlignStore;
 
   beforeEach(() => {
-    store = new MockAlignStore();
+    store = new MockAlignStore(false);
   });
 
   it("filters by text across title and description", async () => {

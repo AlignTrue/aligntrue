@@ -1,8 +1,22 @@
 import type { AlignRecord } from "./types";
 import type { AlignStore } from "./store";
+import { generateSeedRecords, findSeedContent } from "./seedData";
+import { setCachedContent } from "./content-cache";
 
 export class MockAlignStore implements AlignStore {
   private records = new Map<string, AlignRecord>();
+
+  constructor(seed = true) {
+    if (seed) {
+      for (const record of generateSeedRecords()) {
+        this.records.set(record.id, record);
+        const content = findSeedContent(record.id);
+        if (content) {
+          void setCachedContent(record.id, content);
+        }
+      }
+    }
+  }
 
   async get(id: string): Promise<AlignRecord | null> {
     return this.records.get(id) ?? null;

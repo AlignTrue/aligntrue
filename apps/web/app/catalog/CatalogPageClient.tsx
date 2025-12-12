@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { AlignCard, type AlignSummary } from "@/app/components/AlignCard";
 import { AlignDetailPreview } from "@/components/AlignDetailPreview";
+import { GitHubIcon } from "@/app/components/GitHubIcon";
 import { SkeletonCard } from "@/components/SkeletonCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { CommandBlock } from "@/components/CommandBlock";
+import { SectionBadge } from "@/app/components/SectionBadge";
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent } from "@/lib/aligns/content-cache";
 
@@ -74,8 +76,11 @@ export function CatalogPageClient() {
   const [preview, setPreview] = useState<DetailPayload | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [activeAlignId, setActiveAlignId] = useState<string | null>(null);
   const detailCache = useRef<Map<string, DetailPayload>>(new Map());
   const previewAbortRef = useRef<AbortController | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const [showImportHelp, setShowImportHelp] = useState(false);
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -160,6 +165,13 @@ export function CatalogPageClient() {
 
   const loadPreview = useCallback(async (align: AlignSummary) => {
     setPreviewError(null);
+    setActiveAlignId(align.id);
+    requestAnimationFrame(() => {
+      previewRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
     if (detailCache.current.has(align.id)) {
       setPreview(detailCache.current.get(align.id) ?? null);
       return;
@@ -202,6 +214,7 @@ export function CatalogPageClient() {
     }
     setPreview(null);
     setPreviewError(null);
+    setActiveAlignId(null);
   };
 
   const totalPages = useMemo(
@@ -214,20 +227,39 @@ export function CatalogPageClient() {
 
   return (
     <PageLayout>
-      <section className="relative text-center px-4 py-14 md:py-18 hero-surface hero-background">
+      <section
+        className="relative text-center px-4 py-14 md:py-18 hero-surface hero-background"
+        aria-labelledby="catalog-hero-heading"
+      >
         <div className="grid-pattern" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto space-y-8">
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 mx-auto rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <GitHubIcon size={14} />
+            <span>AlignTrue CLI</span>
+            <span className="text-border">|</span>
+            <span>Open Source</span>
+            <span className="text-border">|</span>
+            <span>MIT License</span>
+          </a>
           <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-foreground max-w-5xl mx-auto text-balance">
-              Import rules or browse the Align catalog
+            <h1
+              id="catalog-hero-heading"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-foreground max-w-5xl mx-auto text-balance"
+            >
+              Import rules from GitHub for easy sharing
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-4xl mx-auto text-pretty">
-              Paste a GitHub URL to import, or search curated Aligns and packs.
-              Preview before syncing to your agents.
+              Paste a GitHub URL to import rules & Aligns to easily share with
+              others.
             </p>
           </div>
 
-          <Card className="max-w-5xl mx-auto" variant="surface">
+          <Card className="max-w-4xl mx-auto text-left" variant="surface">
             <CardContent className="p-6 md:p-7 space-y-6">
               <div className="space-y-3">
                 <label
@@ -256,7 +288,7 @@ export function CatalogPageClient() {
                         Importing...
                       </span>
                     ) : (
-                      "Generate Align"
+                      "Import"
                     )}
                   </Button>
                 </div>
@@ -281,69 +313,102 @@ export function CatalogPageClient() {
                   </div>
                 )}
               </div>
+
+              <div className="border-t pt-4 space-y-3">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between text-left text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  onClick={() => setShowImportHelp((v) => !v)}
+                  aria-expanded={showImportHelp}
+                  aria-controls="import-help"
+                >
+                  <span>How imports work</span>
+                  {showImportHelp ? (
+                    <ChevronUp size={18} className="text-muted-foreground" />
+                  ) : (
+                    <ChevronDown size={18} className="text-muted-foreground" />
+                  )}
+                </button>
+                {showImportHelp && (
+                  <div
+                    id="import-help"
+                    className="space-y-3 text-sm text-muted-foreground"
+                  >
+                    <ol className="list-decimal list-inside space-y-2">
+                      <li>
+                        AlignTrue fetches your rules and normalizes them into
+                        IR.
+                      </li>
+                      <li>
+                        Rules are written to <code>.aligntrue/rules</code> as
+                        the single source of truth.
+                      </li>
+                      <li>
+                        Agent exports are generated on sync (
+                        <code>aligntrue sync</code>) in native formats (Cursor
+                        .mdc, AGENTS.md, etc.).
+                      </li>
+                    </ol>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge
+                        variant="outline"
+                        className="text-xs font-semibold"
+                      >
+                        <a
+                          href="/docs/00-getting-started/00-quickstart"
+                          className="hover:underline"
+                        >
+                          Quickstart guide
+                        </a>
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-xs font-semibold"
+                      >
+                        <a
+                          href="/docs/03-concepts/sync-behavior"
+                          className="hover:underline"
+                        >
+                          How sync works
+                        </a>
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-xs font-semibold"
+                      >
+                        <a
+                          href="/docs/04-reference/agent-support"
+                          className="hover:underline"
+                        >
+                          Agent compatibility
+                        </a>
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-8">
-        <Card variant="surface">
-          <CardHeader>
-            <CardTitle className="text-xl">How imports work</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <ol className="list-decimal list-inside space-y-2">
-              <li>AlignTrue fetches your rules and normalizes them into IR.</li>
-              <li>
-                Rules are written to <code>.aligntrue/rules</code> as the single
-                source of truth.
-              </li>
-              <li>
-                Agent exports are generated on sync (<code>aligntrue sync</code>
-                ) in native formats (Cursor .mdc, AGENTS.md, etc.).
-              </li>
-            </ol>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-xs font-semibold">
-                <a
-                  href="/docs/00-getting-started/00-quickstart"
-                  className="hover:underline"
-                >
-                  Quickstart
-                </a>
-              </Badge>
-              <Badge variant="outline" className="text-xs font-semibold">
-                <a
-                  href="/docs/03-concepts/sync-behavior"
-                  className="hover:underline"
-                >
-                  Sync behavior
-                </a>
-              </Badge>
-              <Badge variant="outline" className="text-xs font-semibold">
-                <a
-                  href="/docs/04-reference/agent-support"
-                  className="hover:underline"
-                >
-                  Agent support
-                </a>
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
+      <section
+        id="catalog"
+        className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-8"
+        aria-labelledby="catalog-list-heading"
+      >
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Search size={18} className="text-muted-foreground" />
-              <h2 className="text-xl font-semibold text-foreground m-0">
-                Browse Aligns
-              </h2>
-            </div>
-            <p className="text-sm text-muted-foreground m-0">
-              {total === 0
-                ? "No Aligns found"
-                : `Showing ${startIndex}-${endIndex} of ${total}`}
+          <div className="space-y-3 text-center">
+            <SectionBadge>Discover Better Rules</SectionBadge>
+            <h2
+              id="catalog-list-heading"
+              className="text-3xl md:text-4xl font-bold text-foreground"
+            >
+              Browse the rule catalog
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto text-pretty">
+              Search user-submitted rules & Align packs. Click any rule to
+              preview it.
             </p>
           </div>
 
@@ -419,6 +484,14 @@ export function CatalogPageClient() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground flex-wrap">
+                  <p className="m-0">
+                    {total === 0
+                      ? "No Aligns found"
+                      : `Showing ${startIndex}-${endIndex} of ${total}`}
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -430,6 +503,7 @@ export function CatalogPageClient() {
                       <AlignCard
                         key={align.id}
                         align={align}
+                        isSelected={activeAlignId === align.id}
                         onSelect={() => void loadPreview(align)}
                       />
                     ))}
@@ -466,7 +540,7 @@ export function CatalogPageClient() {
           </Card>
 
           {(preview || previewLoading || previewError) && (
-            <Card variant="surface">
+            <Card ref={previewRef} variant="surface" className="scroll-mt-24">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-xl">Preview</CardTitle>
                 <Button
@@ -500,19 +574,21 @@ export function CatalogPageClient() {
           )}
         </div>
 
-        <Card variant="surface">
-          <CardHeader>
-            <CardTitle className="text-xl">Quick start commands</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <CommandBlock code="npm install -g aligntrue" copyLabel="Copy" />
-            <CommandBlock
-              code="aligntrue init\naligntrue sync"
-              copyLabel="Copy"
-              description="Init + sync to generate agent files"
-            />
-          </CardContent>
-        </Card>
+        {!preview && !previewLoading && !previewError && (
+          <Card variant="surface">
+            <CardHeader>
+              <CardTitle className="text-xl">Quick start commands</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <CommandBlock code="npm install -g aligntrue" copyLabel="Copy" />
+              <CommandBlock
+                code="aligntrue init"
+                copyLabel="Copy"
+                description="Init (auto-runs sync to generate agent files)"
+              />
+            </CardContent>
+          </Card>
+        )}
       </section>
     </PageLayout>
   );

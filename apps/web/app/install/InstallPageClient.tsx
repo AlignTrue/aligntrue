@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CommandBlock } from "@/components/CommandBlock";
+import { GitHubIcon } from "@/app/components/GitHubIcon";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,7 +107,20 @@ export function InstallPageClient() {
         aria-labelledby="install-hero-heading"
       >
         <div className="grid-pattern" aria-hidden="true" />
-        <div className="relative max-w-6xl mx-auto space-y-10">
+        <div className="relative max-w-6xl mx-auto space-y-8">
+          <a
+            href="https://github.com/AlignTrue/aligntrue/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 mx-auto rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <GitHubIcon size={14} />
+            <span>AlignTrue CLI</span>
+            <span className="text-border">|</span>
+            <span>Open Source</span>
+            <span className="text-border">|</span>
+            <span>MIT License</span>
+          </a>
           <div className="space-y-4">
             <h1
               id="install-hero-heading"
@@ -161,12 +175,17 @@ export function InstallPageClient() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-10">
         <Card variant="surface">
           <CardHeader>
-            <CardTitle className="text-xl">
-              Choose your install method
-            </CardTitle>
+            <CardTitle className="text-xl">Other install options</CardTitle>
             <p className="text-sm text-muted-foreground">
               Use your preferred package manager or run one-off commands without
-              a global install.
+              a global install. See the{" "}
+              <Link
+                href="/docs/00-getting-started/00-quickstart"
+                className="text-primary font-semibold hover:underline"
+              >
+                full install guide here
+              </Link>
+              .
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -260,16 +279,18 @@ export function InstallPageClient() {
 
         <Card variant="surface">
           <CardHeader>
-            <CardTitle className="text-xl">Next steps</CardTitle>
+            <CardTitle className="text-xl">Learn more</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button asChild>
               <Link href="/docs/00-getting-started/00-quickstart">
-                Quickstart
+                Quickstart guide
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/docs/04-reference/agent-support">Agent support</Link>
+              <Link href="/docs/04-reference/agent-support">
+                Agent compatibility
+              </Link>
             </Button>
             <Button asChild variant="outline">
               <Link href="/docs/04-reference/cli-reference">CLI reference</Link>

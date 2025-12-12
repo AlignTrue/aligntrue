@@ -88,11 +88,33 @@ export function SiteHeader() {
                 Features
               </a>
               <a
+                href="/catalog"
+                className="text-sm text-foreground no-underline"
+              >
+                Import Rule
+              </a>
+              <a
+                href="/catalog#catalog"
+                className="text-sm text-foreground no-underline"
+              >
+                Rule Catalog
+              </a>
+              <a
                 href="/docs/about"
                 className="text-sm text-foreground no-underline"
               >
                 About
               </a>
+              <Button
+                asChild
+                size="sm"
+                variant="default"
+                className="h-9 px-4 font-semibold shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Link href="/install" className="no-underline">
+                  Install CLI
+                </Link>
+              </Button>
               <a
                 href="https://github.com/AlignTrue/aligntrue"
                 target="_blank"
@@ -146,12 +168,39 @@ export function SiteHeader() {
             Features
           </a>
           <a
+            href="/#page-top"
+            onClick={() => setMobileMenuOpen(false)}
+            className="px-4 py-3 text-base no-underline text-foreground rounded-md transition-colors hover:bg-muted"
+          >
+            Import
+          </a>
+          <a
+            href="/catalog#catalog"
+            onClick={() => setMobileMenuOpen(false)}
+            className="px-4 py-3 text-base no-underline text-foreground rounded-md transition-colors hover:bg-muted"
+          >
+            Rule Catalog
+          </a>
+          <a
             href="/docs/about"
             onClick={() => setMobileMenuOpen(false)}
             className="px-4 py-3 text-base no-underline text-foreground rounded-md transition-colors hover:bg-muted"
           >
             About
           </a>
+          <Button
+            asChild
+            className="h-12 text-base font-semibold shadow-md hover:shadow-lg transition-shadow"
+            variant="default"
+          >
+            <Link
+              href="/install"
+              onClick={() => setMobileMenuOpen(false)}
+              className="no-underline"
+            >
+              Install CLI
+            </Link>
+          </Button>
           <a
             href="https://github.com/AlignTrue/aligntrue"
             target="_blank"

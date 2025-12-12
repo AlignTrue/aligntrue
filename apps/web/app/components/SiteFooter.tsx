@@ -4,7 +4,7 @@ export function SiteFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-16">
+    <footer className="mt-0">
       <div className="h-px w-full bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30" />
       <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground flex flex-col items-center gap-6 md:flex-row md:items-start md:justify-between text-center md:text-left">
         <div className="space-y-3 w-full md:w-auto">

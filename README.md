@@ -58,7 +58,7 @@ aligntrue init --source https://github.com/your/rules
 aligntrue sync
 ```
 
-Import rules from GitHub, GitLab, or any git repository. Use `aligntrue add source <url>` to keep a connected source for ongoing updates; use `aligntrue add <url>` for a one-time import. [More examples →](https://aligntrue.ai/docs/01-guides/04-external-sources#managing-sources)
+Import rules from GitHub. Use `aligntrue add source <url>` to keep a connected source for ongoing updates; use `aligntrue add <url>` for a one-time import. [More examples →](https://aligntrue.ai/docs/01-guides/04-external-sources#managing-sources)
 
 **Team mode (opt-in):**
 
