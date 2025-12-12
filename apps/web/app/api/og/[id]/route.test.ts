@@ -12,6 +12,31 @@ vi.mock("node:fs/promises", () => ({
   readFile: readFileMock,
 }));
 
+vi.mock("@vercel/og", () => ({
+  ImageResponse: class extends Response {
+    constructor(_body: unknown, init?: ResponseInit) {
+      const pngHeader = Buffer.from([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      ]);
+      super(pngHeader, {
+        status: 200,
+        headers: {
+          "content-type": "image/png",
+          ...(init?.headers ?? {}),
+        },
+      });
+    }
+  },
+}));
+
+vi.mock("@/lib/aligns/urlUtils", () => ({
+  parseGitHubUrl: (url?: string | null) => ({
+    owner: "@org",
+    repo: "repo",
+    ownerUrl: url ? "https://github.com/org" : null,
+  }),
+}));
+
 function makeRecord(overrides: Partial<AlignRecord> = {}): AlignRecord {
   return {
     schemaVersion: 1,

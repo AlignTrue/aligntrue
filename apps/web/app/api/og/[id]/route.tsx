@@ -4,6 +4,10 @@ import { ImageResponse } from "@vercel/og";
 import { AlignTrueLogoOG } from "../AlignTrueLogoOG";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import {
+  generateBarSegments,
+  idToSeed,
+} from "../../../../lib/aligns/hash-bar-utils";
 
 export const runtime = "nodejs";
 
@@ -36,44 +40,14 @@ const fontPromise =
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue init a:";
 const SOURCE_LABEL = "GitHub";
-// Brand-aligned palette for the footer bar
-const BAR_COLORS = [
-  "hsl(160 84% 45%)", // primary green
-  "hsl(210 90% 60%)", // accent blue
-  "#F5A623", // orange accent
-  "hsl(160 84% 35%)", // darker green
-  "hsl(210 90% 50%)", // deeper blue
-  "hsl(45 93% 55%)", // warm yellow/gold
-];
-
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return `${text.slice(0, max - 1).trimEnd()}…`;
 }
 
-function idToSeed(id: string): number {
-  let hash = 0;
-  for (const char of id) {
-    hash = ((hash << 5) - hash + char.charCodeAt(0)) | 0;
-  }
-  return Math.abs(hash);
-}
-
-function generateBarSegments(seed: number, count = 5) {
-  const segments: { color: string; flex: number }[] = [];
-  let s = seed;
-  for (let i = 0; i < count; i++) {
-    s = ((s * 1103515245 + 12345) >>> 0) % 2147483648;
-    const color = BAR_COLORS[s % BAR_COLORS.length];
-    const flex = 1 + (s % 8); // width weight 1-8
-    segments.push({ color, flex });
-  }
-  return segments;
-}
-
 export function buildDescription(
   title: string,
-  rawDescription?: string,
+  rawDescription?: string | null,
 ): string {
   const raw = rawDescription ? truncate(rawDescription, 180) : "";
   if (!raw) return "";
