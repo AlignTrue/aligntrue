@@ -78,6 +78,32 @@ function safeYamlTitle(text: string): {
   return { title: null, description: null };
 }
 
+function humanizeFilename(url: string): string {
+  const fallback = "Align";
+
+  const extractFilename = (value: string): string => {
+    try {
+      const parsed = new URL(value);
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      return parts[parts.length - 1] ?? "";
+    } catch {
+      const parts = value.split("/").filter(Boolean);
+      return parts[parts.length - 1] ?? "";
+    }
+  };
+
+  const raw = extractFilename(url);
+  if (!raw) return fallback;
+
+  const withoutLeadingDots = raw.replace(/^\.+/, "");
+  const withoutExtension = withoutLeadingDots.replace(/\.[^.]+$/, "");
+  const withSpaces = withoutExtension.replace(/[-_.]+/g, " ").trim();
+  if (!withSpaces) return fallback;
+
+  const lower = withSpaces.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 export function extractMetadata(
   normalizedUrl: string,
   content: string,
@@ -89,7 +115,7 @@ export function extractMetadata(
   if (isYaml) {
     const { title, description } = safeYamlTitle(content);
     return {
-      title,
+      title: title ?? humanizeFilename(normalizedUrl),
       description,
       fileType: "yaml",
       kind: "rule_group",
@@ -97,9 +123,8 @@ export function extractMetadata(
   }
 
   if (isXml) {
-    const filename = normalizedUrl.split("/").pop() || null;
     return {
-      title: filename,
+      title: humanizeFilename(normalizedUrl),
       description: null,
       fileType: "xml",
       kind: "rule",
@@ -108,7 +133,7 @@ export function extractMetadata(
 
   const { title, description } = safeFrontmatterMetadata(content);
   return {
-    title,
+    title: title ?? humanizeFilename(normalizedUrl),
     description,
     fileType: "markdown",
     kind: "rule",

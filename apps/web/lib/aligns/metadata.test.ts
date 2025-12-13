@@ -38,7 +38,7 @@ description: Only description
 Body text without heading.`;
 
     const meta = extractMetadata(normalizedUrl, content);
-    expect(meta.title).toBeNull();
+    expect(meta.title).toBe("File");
     expect(meta.description).toBe("Only description");
   });
 
@@ -69,14 +69,14 @@ Body text.`;
     expect(meta.description).toBeNull();
   });
 
-  it("returns null title when closing fence is missing", () => {
+  it("uses filename fallback when closing fence is missing", () => {
     const content = `---
 key: value
 # yaml comment
 Body text without closing fence.`;
 
     const meta = extractMetadata(normalizedUrl, content);
-    expect(meta.title).toBeNull();
+    expect(meta.title).toBe("File");
     expect(meta.description).toBeNull();
   });
 });
@@ -85,8 +85,39 @@ describe("extractMetadata (xml)", () => {
   it("uses filename as title for XML files", () => {
     const url = "https://github.com/org/repo/blob/main/cursor_rule.xml";
     const meta = extractMetadata(url, "<root>content</root>");
-    expect(meta.title).toBe("cursor_rule.xml");
+    expect(meta.title).toBe("Cursor rule");
     expect(meta.description).toBeNull();
     expect(meta.fileType).toBe("xml");
+  });
+});
+
+describe("extractMetadata (filename fallback)", () => {
+  it("falls back to humanized filename for markdown without title or heading", () => {
+    const url = "https://github.com/org/repo/blob/main/templ.mdc";
+    const content = `---
+description: Best practices for Templ, a Go-based HTML tempalting library
+globs: **/*.templ
+alwaysApply: false
+---
+- Use Templ for server-side rendering of HTML templates
+`;
+
+    const meta = extractMetadata(url, content);
+    expect(meta.title).toBe("Templ");
+    expect(meta.description).toBe(
+      "Best practices for Templ, a Go-based HTML tempalting library",
+    );
+  });
+
+  it("falls back to humanized filename for yaml without title", () => {
+    const url = "https://github.com/org/repo/blob/main/ruleset.yml";
+    const content = `
+globs:
+  - "**/*.ts"
+`;
+
+    const meta = extractMetadata(url, content);
+    expect(meta.title).toBe("Ruleset");
+    expect(meta.fileType).toBe("yaml");
   });
 });
