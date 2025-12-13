@@ -102,7 +102,9 @@ function validateManifest(filePath) {
     return errors;
   }
 
-  if (typeof manifest !== "object" || Array.isArray(manifest)) {
+  // Use Object.prototype.toString to correctly reject null, arrays, and non-objects
+  // (typeof null === "object" in JS, so typeof check alone is insufficient)
+  if (Object.prototype.toString.call(manifest) !== "[object Object]") {
     errors.push("Manifest must be a YAML object");
     return errors;
   }
