@@ -73,6 +73,10 @@ function cursorFrontmatter(data: Frontmatter): Frontmatter {
   // map cursor-specific metadata if provided
   if (data.cursor && typeof data.cursor === "object") {
     Object.assign(result, data.cursor as Record<string, unknown>);
+    // sanitize globs from cursor override: must be an array
+    if (result.globs !== undefined && !Array.isArray(result.globs)) {
+      delete (result as Record<string, unknown>).globs;
+    }
   }
   // fallback to common fields if not present
   if (!result.description) {
