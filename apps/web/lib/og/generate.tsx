@@ -80,10 +80,8 @@ export async function buildOgImageResponse(options: {
           display: "flex",
           flexDirection: "column",
           padding: "56px",
-          paddingBottom: "80px",
           background: `linear-gradient(145deg, ${COLORS.card}, #0f131d)`,
           color: COLORS.foreground,
-          position: "relative",
         }}
       >
         <div
@@ -227,10 +225,9 @@ export async function buildOgImageResponse(options: {
           style={{
             display: "flex",
             height: "16px",
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
+            marginTop: "32px",
+            marginLeft: "-56px",
+            marginRight: "-56px",
             overflow: "hidden",
           }}
         >
