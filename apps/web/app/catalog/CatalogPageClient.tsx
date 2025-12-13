@@ -135,9 +135,18 @@ export function CatalogPageClient() {
     }
   }, [page, total, pageSize]);
 
+  const clearPreview = useCallback(() => {
+    if (previewAbortRef.current) {
+      previewAbortRef.current.abort();
+    }
+    setPreview(null);
+    setPreviewError(null);
+    setActiveAlignId(null);
+  }, []);
+
   useEffect(() => {
     clearPreview();
-  }, [page]);
+  }, [page, clearPreview]);
 
   const handleImport = async () => {
     if (!urlInput) {
@@ -211,15 +220,6 @@ export function CatalogPageClient() {
       }
     }
   }, []);
-
-  const clearPreview = () => {
-    if (previewAbortRef.current) {
-      previewAbortRef.current.abort();
-    }
-    setPreview(null);
-    setPreviewError(null);
-    setActiveAlignId(null);
-  };
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / pageSize)),
