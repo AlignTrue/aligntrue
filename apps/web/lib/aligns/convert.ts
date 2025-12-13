@@ -85,8 +85,12 @@ function cursorFrontmatter(data: Frontmatter): Frontmatter {
     else if (typeof data.title === "string") result.description = data.title;
     else result.description = "AlignTrue rules for Cursor";
   }
-  // Preserve globs only when an array is provided
-  if (Array.isArray(data.globs) && data.globs.length > 0) {
+  // Preserve globs only when an array is provided; do not overwrite cursor override
+  if (
+    result.globs === undefined &&
+    Array.isArray(data.globs) &&
+    data.globs.length > 0
+  ) {
     result.globs = data.globs;
   }
   // Always allow; consumers can refine later
