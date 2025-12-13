@@ -37,7 +37,6 @@ Body text.`;
     // Should not throw and should preserve body
     expect(parsed.data).toEqual({
       description: "AlignTrue rules for Cursor", // default cursor description fallback
-      globs: undefined,
       alwaysApply: true,
     });
     expect(parsed.content.trim()).toContain("Body text.");
