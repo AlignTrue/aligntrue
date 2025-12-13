@@ -223,7 +223,7 @@ export async function POST(req: Request) {
 
     // 2) Single file fallback
     const normalized = normalizeGitUrl(trimmedUrl);
-    if (normalized.provider !== "github" || !normalized.normalizedUrl) {
+    if (normalized.provider !== "github") {
       return Response.json(
         {
           error:
@@ -239,6 +239,16 @@ export async function POST(req: Request) {
           error:
             "This URL points to a repository or directory without a specific file.",
           hint: "Paste a direct link to a file (e.g., .../blob/main/rules/file.md) or a repository containing .align.yaml.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (!normalized.normalizedUrl) {
+      return Response.json(
+        {
+          error:
+            "Only GitHub URLs are supported. Paste a link to a file (blob) or directory (tree).",
         },
         { status: 400 },
       );

@@ -317,4 +317,25 @@ describe("POST /api/aligns/submit", () => {
     expect(json.error).toContain("Unsupported file type");
     expect(json.hint).toContain(".xml");
   });
+
+  it("returns directory-specific error when no manifest and no file", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+
+    mockCreateCachingFetch.mockReturnValue(vi.fn());
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://github.com/org/repo" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+
+    const json = (await res.json()) as { error: string; hint: string };
+    expect(json.error).toContain("repository or directory");
+    expect(json.hint).toContain("direct link to a file");
+  });
 });
