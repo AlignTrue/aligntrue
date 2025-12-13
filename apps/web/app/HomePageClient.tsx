@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -73,6 +73,11 @@ export function HomePageClient() {
   const router = useRouter();
   const recentAbortRef = useRef<AbortController | null>(null);
   const [activeTab, setActiveTab] = useState<"rules" | "cli">("cli");
+  const tabsBaseId = useId();
+  const cliTriggerId = `${tabsBaseId}-trigger-cli`;
+  const cliContentId = `${tabsBaseId}-content-cli`;
+  const rulesTriggerId = `${tabsBaseId}-trigger-rules`;
+  const rulesContentId = `${tabsBaseId}-content-rules`;
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [errorHint, setErrorHint] = useState<string | null>(null);
@@ -420,16 +425,38 @@ export function HomePageClient() {
             data-delay="3"
           >
             <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-1 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm">
-              <TabsTrigger value="cli" className="text-base px-4 py-2">
+              <TabsTrigger
+                id={cliTriggerId}
+                aria-controls={cliContentId}
+                value="cli"
+                className="text-base px-4 py-2"
+              >
                 Install CLI
               </TabsTrigger>
-              <TabsTrigger value="rules" className="text-base px-4 py-2">
+              <TabsTrigger
+                id={rulesTriggerId}
+                aria-controls={rulesContentId}
+                value="rules"
+                className="text-base px-4 py-2"
+              >
                 Import Rules
               </TabsTrigger>
             </TabsList>
             <div className="mt-4">
-              <TabsContent value="cli">{renderCLITab()}</TabsContent>
-              <TabsContent value="rules">{renderImportCard()}</TabsContent>
+              <TabsContent
+                id={cliContentId}
+                aria-labelledby={cliTriggerId}
+                value="cli"
+              >
+                {renderCLITab()}
+              </TabsContent>
+              <TabsContent
+                id={rulesContentId}
+                aria-labelledby={rulesTriggerId}
+                value="rules"
+              >
+                {renderImportCard()}
+              </TabsContent>
             </div>
           </Tabs>
 
