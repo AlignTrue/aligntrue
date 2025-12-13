@@ -57,6 +57,16 @@ export async function resolveGistFiles(
   });
 
   if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error(
+        "Gist not found. It may be private or deleted. Make sure the gist is public.",
+      );
+    }
+    if (res.status === 403) {
+      throw new Error(
+        "GitHub rate limit exceeded. Try again in a few minutes.",
+      );
+    }
     const body = await res.text().catch(() => "");
     throw new Error(
       `Failed to load gist ${gistId}: ${res.status} ${res.statusText}${body ? ` - ${body}` : ""}`,

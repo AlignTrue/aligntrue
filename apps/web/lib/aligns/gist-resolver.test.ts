@@ -51,7 +51,19 @@ describe("resolveGistFiles", () => {
 
     await expect(
       resolveGistFiles("missing", { fetchImpl: fetchMock, token: null }),
-    ).rejects.toThrow("Failed to load gist missing");
+    ).rejects.toThrow("Gist not found");
+  });
+
+  it("throws on rate limit", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("rate limit", { status: 403, statusText: "Forbidden" }),
+      );
+
+    await expect(
+      resolveGistFiles("limited", { fetchImpl: fetchMock, token: null }),
+    ).rejects.toThrow("rate limit exceeded");
   });
 });
 

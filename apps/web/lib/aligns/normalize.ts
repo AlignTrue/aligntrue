@@ -163,6 +163,13 @@ export function alignIdFromNormalizedUrl(normalizedUrl: string): string {
 export function githubBlobToRawUrl(blobUrl: string): string | null {
   try {
     const url = new URL(blobUrl);
+    // Already a raw URL (gist or repo raw)
+    if (
+      url.hostname === "gist.githubusercontent.com" ||
+      url.hostname === "raw.githubusercontent.com"
+    ) {
+      return blobUrl;
+    }
     if (url.hostname !== "github.com") return null;
     const parts = url.pathname.split("/").filter(Boolean);
     const [owner, repo, maybeBlob, branch, ...rest] = parts;

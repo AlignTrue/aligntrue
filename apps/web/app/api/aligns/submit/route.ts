@@ -233,6 +233,17 @@ export async function POST(req: Request) {
       );
     }
 
+    if (normalized.kind === "directory" && !normalized.normalizedUrl) {
+      return Response.json(
+        {
+          error:
+            "This URL points to a repository or directory without a specific file.",
+          hint: "Paste a direct link to a file (e.g., .../blob/main/rules/file.md) or a repository containing .align.yaml.",
+        },
+        { status: 400 },
+      );
+    }
+
     // 2a) Gist handling
     if (normalized.kind === "gist" && normalized.gistId) {
       const files = await resolveGistFiles(normalized.gistId, {
@@ -247,7 +258,7 @@ export async function POST(req: Request) {
         );
       }
 
-      if (!hasAllowedExtension(primary.rawUrl)) {
+      if (!hasAllowedExtension(primary.filename || primary.rawUrl)) {
         const filename = primary.filename || "the provided file";
         return Response.json(
           {

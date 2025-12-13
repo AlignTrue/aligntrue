@@ -144,4 +144,22 @@ describe("githubBlobToRawUrl", () => {
     const raw = githubBlobToRawUrl("https://example.com/not/blob");
     expect(raw).toBeNull();
   });
+
+  it("returns gist raw URLs as-is", () => {
+    const raw = githubBlobToRawUrl(
+      "https://gist.githubusercontent.com/user/abc/raw/123/file.md",
+    );
+    expect(raw).toBe(
+      "https://gist.githubusercontent.com/user/abc/raw/123/file.md",
+    );
+  });
+
+  it("returns raw.githubusercontent.com URLs as-is", () => {
+    const raw = githubBlobToRawUrl(
+      "https://raw.githubusercontent.com/org/repo/main/path/to/file.md",
+    );
+    expect(raw).toBe(
+      "https://raw.githubusercontent.com/org/repo/main/path/to/file.md",
+    );
+  });
 });
