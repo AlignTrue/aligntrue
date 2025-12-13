@@ -125,7 +125,7 @@ export function extractMetadata(
       title: title ?? humanizeFilename(normalizedUrl),
       description,
       fileType: "yaml",
-      kind: "rule_group",
+      kind: "rule",
     };
   }
 

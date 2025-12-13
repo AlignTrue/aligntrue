@@ -20,11 +20,10 @@ const COLORS = {
 
 const KINDS: Record<string, string> = {
   rule: "AI Rule",
-  rule_group: "AI Rules",
-  skill: "AI Skill",
-  mcp: "MCP",
   pack: "AI Rule Pack",
-  other: "AI Context",
+  skill: "AI Skill",
+  mcp: "MCP Config",
+  other: "Align",
 };
 
 export const OG_WIDTH = 1200;

@@ -1,10 +1,4 @@
-export type AlignKind =
-  | "rule"
-  | "rule_group"
-  | "skill"
-  | "mcp"
-  | "other"
-  | "pack";
+export type AlignKind = "rule" | "skill" | "mcp" | "other" | "pack";
 
 export type AlignPackFile = {
   path: string;
