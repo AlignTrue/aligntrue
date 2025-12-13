@@ -45,13 +45,20 @@ function safeFrontmatterMetadata(md: string): {
         // frontmatter start without closing fence: cannot safely parse, avoid YAML headings
         return { title: null, description: null };
       }
+      const frontmatterLines = lines.slice(1, endIdx);
+      const descriptionLine = frontmatterLines.find((line) =>
+        line.trim().toLowerCase().startsWith("description:"),
+      );
+      const description = descriptionLine
+        ? descriptionLine.split(/description\s*:\s*/i)[1]?.trim() || null
+        : null;
       const heading = lines
         .slice(endIdx + 1)
         .find((line) => line.trim().startsWith("#"));
       const title = heading
         ? heading.replace(/^#+\s*/, "").trim() || null
         : null;
-      return { title, description: null };
+      return { title, description };
     }
     const heading = lines.find((line) => line.trim().startsWith("#"));
     const title = heading ? heading.replace(/^#+\s*/, "").trim() || null : null;
