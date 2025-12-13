@@ -79,7 +79,6 @@ export async function buildOgImageResponse(options: {
           height: `${OG_HEIGHT}px`,
           display: "flex",
           flexDirection: "column",
-          padding: "56px",
           background: `linear-gradient(145deg, ${COLORS.card}, #0f131d)`,
           color: COLORS.foreground,
         }}
@@ -87,136 +86,146 @@ export async function buildOgImageResponse(options: {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "12px",
-            marginBottom: "18px",
+            flex: 1,
+            flexDirection: "column",
+            padding: "56px",
+            gap: "24px",
           }}
         >
           <div
             style={{
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
               gap: "12px",
-              padding: "10px 18px",
-              borderRadius: "999px",
-              border: `1px solid rgba(20,184,122,0.35)`,
-              background: "rgba(20,184,122,0.12)",
-              color: COLORS.primary,
-              fontWeight: 700,
-              fontSize: "22px",
-              letterSpacing: "0.02em",
-              textTransform: "uppercase",
+              marginBottom: "18px",
             }}
-          >
-            {kindLabel}
-          </div>
-          <AlignTrueLogoOG
-            width={180}
-            color="rgba(240,244,248,0.85)"
-            accent={COLORS.accent}
-          />
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "14px",
-            marginTop: "24px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "60px",
-              lineHeight: 1.05,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              maxWidth: "1000px",
-            }}
-          >
-            {title}
-          </div>
-          {description ? (
-            <div
-              style={{
-                fontSize: "32px",
-                lineHeight: 1.45,
-                color: COLORS.muted,
-                maxWidth: "980px",
-              }}
-            >
-              {description}
-            </div>
-          ) : null}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginTop: "auto",
-          }}
-        >
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                fontSize: "24px",
-                color: COLORS.muted,
-                fontWeight: 600,
+                gap: "12px",
+                padding: "10px 18px",
+                borderRadius: "999px",
+                border: `1px solid rgba(20,184,122,0.35)`,
+                background: "rgba(20,184,122,0.12)",
+                color: COLORS.primary,
+                fontWeight: 700,
+                fontSize: "22px",
+                letterSpacing: "0.02em",
+                textTransform: "uppercase",
               }}
             >
-              <span>by</span>
-              <span style={{ color: COLORS.foreground }}>{owner}</span>
-              <span>via</span>
-              <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
+              {kindLabel}
             </div>
+            <AlignTrueLogoOG
+              width={180}
+              color="rgba(240,244,248,0.85)"
+              accent={COLORS.accent}
+            />
           </div>
 
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "flex-end",
-              gap: "6px",
+              gap: "14px",
             }}
           >
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "12px 16px",
-                borderRadius: "12px",
-                background: "rgba(15, 19, 29, 0.8)",
-                border: `1px solid ${COLORS.border}`,
-                boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
-                fontFamily: "monospace",
-                fontSize: "26px",
-                color: COLORS.foreground,
-                letterSpacing: "0.01em",
+                fontSize: "60px",
+                lineHeight: 1.05,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                maxWidth: "1000px",
               }}
             >
-              <span style={{ color: COLORS.muted }}>$</span>
-              <span>{installCommand}</span>
+              {title}
             </div>
-            <div style={{ height: "8px" }} />
+            {description ? (
+              <div
+                style={{
+                  fontSize: "32px",
+                  lineHeight: 1.45,
+                  color: COLORS.muted,
+                  maxWidth: "980px",
+                }}
+              >
+                {description}
+              </div>
+            ) : null}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: "auto",
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  fontSize: "24px",
+                  color: COLORS.muted,
+                  fontWeight: 600,
+                }}
+              >
+                <span>by</span>
+                <span style={{ color: COLORS.foreground }}>{owner}</span>
+                <span>via</span>
+                <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
+              </div>
+            </div>
+
             <div
               style={{
-                fontSize: "18px",
-                color: COLORS.muted,
-                textAlign: "right",
-                maxWidth: "460px",
-                lineHeight: 1.4,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: "6px",
               }}
             >
-              Use with any AI agent (Cursor, Claude, Codex, etc.).
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "12px 16px",
+                  borderRadius: "12px",
+                  background: "rgba(15, 19, 29, 0.85)",
+                  border: "2px solid rgba(20,184,122,0.55)",
+                  boxShadow:
+                    "0 12px 28px rgba(0,0,0,0.38), 0 0 0 1px rgba(20,184,122,0.2)",
+                  fontFamily: "monospace",
+                  fontSize: "26px",
+                  color: COLORS.foreground,
+                  letterSpacing: "0.01em",
+                }}
+              >
+                <span style={{ color: COLORS.muted }}>$</span>
+                <span>{installCommand}</span>
+              </div>
+              <div style={{ height: "8px" }} />
+              <div
+                style={{
+                  fontSize: "18px",
+                  color: COLORS.muted,
+                  textAlign: "right",
+                  maxWidth: "460px",
+                  lineHeight: 1.4,
+                }}
+              >
+                Use with any AI agent (Cursor, Claude, Codex, etc.).
+              </div>
             </div>
           </div>
         </div>
@@ -225,9 +234,7 @@ export async function buildOgImageResponse(options: {
           style={{
             display: "flex",
             height: "16px",
-            marginTop: "32px",
-            marginLeft: "-56px",
-            marginRight: "-56px",
+            width: "100%",
             overflow: "hidden",
           }}
         >
