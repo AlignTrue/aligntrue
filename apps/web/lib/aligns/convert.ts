@@ -44,6 +44,18 @@ function parseFrontmatter(content: string): {
     return { data: parsed.data ?? {}, body: parsed.content };
   } catch {
     // On malformed frontmatter, return raw content with empty data
+    const lines = content.split("\n");
+    if (lines[0]?.trim() === "---") {
+      const endIdx = lines.findIndex(
+        (line, i) => i > 0 && line.trim() === "---",
+      );
+      if (endIdx !== -1) {
+        // strip malformed frontmatter from the body
+        return { data: {}, body: lines.slice(endIdx + 1).join("\n") };
+      }
+      // frontmatter start without closing fence: drop body to avoid leaking YAML fragment
+      return { data: {}, body: "" };
+    }
     return { data: {}, body: content };
   }
 }

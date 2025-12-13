@@ -42,6 +42,26 @@ Body text.`;
     expect(parsed.content.trim()).toContain("Body text.");
   });
 
+  it("strips malformed frontmatter from body", () => {
+    const malformed = `---
+globs: **/*.templ
+---
+Body text.`;
+
+    const result = convertContent(malformed, "cursor");
+    expect(result.text).not.toContain("globs: **/*.templ");
+    expect(result.text).toContain("Body text.");
+  });
+
+  it("handles missing closing fence gracefully", () => {
+    const noClosing = `---
+key: value
+Body text without closing fence.`;
+
+    const result = convertContent(noClosing, "cursor");
+    expect(result.text).toContain("description: AlignTrue rules for Cursor");
+  });
+
   it("passes through AlignTrue format with full frontmatter", () => {
     const result = convertContent(baseContent, "aligntrue");
     const parsed = parseFrontmatter(result.text);

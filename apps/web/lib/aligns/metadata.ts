@@ -36,16 +36,24 @@ function safeFrontmatterMetadata(md: string): {
   } catch {
     // On malformed frontmatter, fall back to first heading in raw markdown
     const lines = md.split("\n");
-    let startIdx = 0;
-    if (lines[0]?.trim() === "---") {
+    const hasOpeningFence = lines[0]?.trim() === "---";
+    if (hasOpeningFence) {
       const endIdx = lines.findIndex(
         (line, i) => i > 0 && line.trim() === "---",
       );
-      if (endIdx !== -1) startIdx = endIdx + 1;
+      if (endIdx === -1) {
+        // frontmatter start without closing fence: cannot safely parse, avoid YAML headings
+        return { title: null, description: null };
+      }
+      const heading = lines
+        .slice(endIdx + 1)
+        .find((line) => line.trim().startsWith("#"));
+      const title = heading
+        ? heading.replace(/^#+\s*/, "").trim() || null
+        : null;
+      return { title, description: null };
     }
-    const heading = lines
-      .slice(startIdx)
-      .find((line) => line.trim().startsWith("#"));
+    const heading = lines.find((line) => line.trim().startsWith("#"));
     const title = heading ? heading.replace(/^#+\s*/, "").trim() || null : null;
     return { title, description: null };
   }

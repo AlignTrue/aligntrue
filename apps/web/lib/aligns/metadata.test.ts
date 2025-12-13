@@ -68,6 +68,17 @@ Body text.`;
     expect(meta.title).toBe("Real Heading");
     expect(meta.description).toBeNull();
   });
+
+  it("returns null title when closing fence is missing", () => {
+    const content = `---
+key: value
+# yaml comment
+Body text without closing fence.`;
+
+    const meta = extractMetadata(normalizedUrl, content);
+    expect(meta.title).toBeNull();
+    expect(meta.description).toBeNull();
+  });
 });
 
 describe("extractMetadata (xml)", () => {
