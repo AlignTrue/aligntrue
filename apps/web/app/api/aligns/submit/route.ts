@@ -14,6 +14,7 @@ import {
 import {
   fetchRawWithCache,
   setCachedContent,
+  type CachedContent,
   type CachedPackFile,
 } from "@/lib/aligns/content-cache";
 import { buildPackAlignRecord } from "@/lib/aligns/records";
