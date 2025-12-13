@@ -17,7 +17,6 @@ import type { AlignRecord } from "@/lib/aligns/types";
 import { getAuthToken } from "@/lib/aligns/github-app";
 import { createCachingFetch } from "@/lib/aligns/caching-fetch";
 import { getCachedAlignId, setCachedAlignId } from "@/lib/aligns/url-cache";
-import { ensureOgImage } from "@/lib/og/service";
 
 export const dynamic = "force-dynamic";
 
@@ -97,14 +96,6 @@ function hashPackFiles(files: CachedPackFile[]): string {
   return hashString(payload);
 }
 
-async function generateOgIfPossible(record: AlignRecord) {
-  try {
-    await ensureOgImage(record);
-  } catch (error) {
-    console.error("og generation failed", error);
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
@@ -152,7 +143,6 @@ export async function POST(req: Request) {
 
       await store.upsert(record);
       await setCachedContent(id, { kind: "pack", files: pack.files });
-      await generateOgIfPossible(record);
       await Promise.all([
         setCachedAlignId(trimmedUrl, id),
         setCachedAlignId(pack.manifestUrl, id),
@@ -235,7 +225,6 @@ export async function POST(req: Request) {
     await store.upsert(record);
     // Ensure cache refreshed (fetchRawWithCache already populated)
     await setCachedContent(id, cached);
-    await generateOgIfPossible(record);
     await Promise.all([
       setCachedAlignId(trimmedUrl, id),
       setCachedAlignId(normalizedUrl, id),
