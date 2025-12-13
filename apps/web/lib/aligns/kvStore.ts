@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { Redis } from "@upstash/redis";
 import type { AlignStore } from "./store";
 import type { AlignRecord } from "./types";
+import { ensureOgImage } from "../og/service";
 
 const ALIGN_KEY_PREFIX = "v1:align:";
 const CREATED_ZSET = "v1:align:by-created";
@@ -63,6 +64,7 @@ export class KvAlignStore implements AlignStore {
         score: mergedInstallCount,
         member: align.id,
       });
+      await ensureOgImage(merged);
       return;
     }
 
@@ -75,6 +77,7 @@ export class KvAlignStore implements AlignStore {
         align.id,
       );
     }
+    await ensureOgImage(merged);
   }
 
   async increment(

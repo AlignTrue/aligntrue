@@ -9,6 +9,7 @@ import {
 import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import { AlignDetailClient } from "./AlignDetailClient";
 import { filenameFromUrl } from "@/lib/aligns/urlUtils";
+import { getOgUrlForAlign } from "@/lib/og/storage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -145,7 +146,7 @@ export async function generateMetadata(props: {
     align.description ||
     `${ruleTitle} (${filenameFromUrl(align.normalizedUrl || align.url)}) in any agent format, including AGENTS.md, Cursor, Claude Code, Copilot, Gemini and 20+ other agents.`;
 
-  const ogImage = `${BASE_URL}/api/og/${id}`;
+  const ogImage = (await getOgUrlForAlign(id)) ?? `${BASE_URL}/api/og/${id}`;
 
   return {
     title,
