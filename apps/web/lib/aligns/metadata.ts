@@ -36,7 +36,16 @@ function safeFrontmatterMetadata(md: string): {
   } catch {
     // On malformed frontmatter, fall back to first heading in raw markdown
     const lines = md.split("\n");
-    const heading = lines.find((line) => line.trim().startsWith("#"));
+    let startIdx = 0;
+    if (lines[0]?.trim() === "---") {
+      const endIdx = lines.findIndex(
+        (line, i) => i > 0 && line.trim() === "---",
+      );
+      if (endIdx !== -1) startIdx = endIdx + 1;
+    }
+    const heading = lines
+      .slice(startIdx)
+      .find((line) => line.trim().startsWith("#"));
     const title = heading ? heading.replace(/^#+\s*/, "").trim() || null : null;
     return { title, description: null };
   }

@@ -54,6 +54,20 @@ Body text.`;
     expect(meta.title).toBe("Fallback Heading");
     expect(meta.description).toBeNull();
   });
+
+  it("ignores frontmatter when searching for fallback heading", () => {
+    const content = `---
+globs: **/*.templ
+# not a real heading
+---
+# Real Heading
+
+Body text.`;
+
+    const meta = extractMetadata(normalizedUrl, content);
+    expect(meta.title).toBe("Real Heading");
+    expect(meta.description).toBeNull();
+  });
 });
 
 describe("extractMetadata (xml)", () => {
