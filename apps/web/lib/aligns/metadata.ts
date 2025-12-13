@@ -13,25 +13,33 @@ function safeFrontmatterMetadata(md: string): {
   title: string | null;
   description: string | null;
 } {
-  // gray-matter defaults to js-yaml safeLoad (removed in js-yaml@4); provide a custom engine
-  const { data, content } = matter(md, {
-    engines: {
-      yaml: (s: string) => yaml.load(s) as Record<string, unknown>,
-    },
-  });
-  const title =
-    (typeof data?.title === "string" && data.title) ||
-    (() => {
-      const lines = content.split("\n");
-      const heading = lines.find((line) => line.trim().startsWith("#"));
-      if (heading) return heading.replace(/^#+\s*/, "").trim() || null;
-      return null;
-    })();
+  try {
+    // gray-matter defaults to js-yaml safeLoad (removed in js-yaml@4); provide a custom engine
+    const { data, content } = matter(md, {
+      engines: {
+        yaml: (s: string) => yaml.load(s) as Record<string, unknown>,
+      },
+    });
+    const title =
+      (typeof data?.title === "string" && data.title) ||
+      (() => {
+        const lines = content.split("\n");
+        const heading = lines.find((line) => line.trim().startsWith("#"));
+        if (heading) return heading.replace(/^#+\s*/, "").trim() || null;
+        return null;
+      })();
 
-  const description =
-    typeof data?.description === "string" ? data.description : null;
+    const description =
+      typeof data?.description === "string" ? data.description : null;
 
-  return { title: title ?? null, description };
+    return { title: title ?? null, description };
+  } catch {
+    // On malformed frontmatter, fall back to first heading in raw markdown
+    const lines = md.split("\n");
+    const heading = lines.find((line) => line.trim().startsWith("#"));
+    const title = heading ? heading.replace(/^#+\s*/, "").trim() || null : null;
+    return { title, description: null };
+  }
 }
 
 function safeYamlTitle(text: string): {

@@ -41,6 +41,19 @@ Body text without heading.`;
     expect(meta.title).toBeNull();
     expect(meta.description).toBe("Only description");
   });
+
+  it("falls back gracefully on malformed YAML frontmatter", () => {
+    const content = `---
+globs: **/*.templ
+---
+# Fallback Heading
+
+Body text.`;
+
+    const meta = extractMetadata(normalizedUrl, content);
+    expect(meta.title).toBe("Fallback Heading");
+    expect(meta.description).toBeNull();
+  });
 });
 
 describe("extractMetadata (xml)", () => {
