@@ -201,6 +201,31 @@ describe("POST /api/aligns/submit", () => {
   it("returns cached ID without calling pack resolver", async () => {
     mockGetCachedAlignId.mockResolvedValueOnce("cached-id-1");
 
+    const cachedRecord: AlignRecord = {
+      schemaVersion: 1,
+      id: "cached-id-1",
+      url: "https://github.com/org/repo",
+      normalizedUrl: "https://github.com/org/repo/blob/main/.align.yaml",
+      provider: "github",
+      kind: "pack",
+      title: "Cached pack",
+      description: null,
+      fileType: "yaml",
+      createdAt: "2024-01-01T00:00:00.000Z",
+      lastViewedAt: "2024-01-01T00:00:00.000Z",
+      viewCount: 0,
+      installClickCount: 0,
+      pack: {
+        manifestPath: ".align.yaml",
+        manifestId: "org/repo",
+        manifestVersion: "1.0.0",
+        ref: "main",
+        files: [],
+        totalBytes: 0,
+      },
+    };
+    storeData.set(cachedRecord.id, cachedRecord);
+
     const req = new Request("http://localhost/api/aligns/submit", {
       method: "POST",
       body: JSON.stringify({ url: "https://github.com/org/repo" }),
@@ -212,6 +237,7 @@ describe("POST /api/aligns/submit", () => {
     expect(json.id).toBe("cached-id-1");
     expect(mockFetchPackForWeb).not.toHaveBeenCalled();
     expect(mockStore.upsert).not.toHaveBeenCalled();
+    expect(mockDeleteCachedAlignId).not.toHaveBeenCalled();
   });
 
   it("uses caching fetch for single-file fallback", async () => {
