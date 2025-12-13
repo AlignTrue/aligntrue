@@ -79,9 +79,11 @@ export async function buildOgImageResponse(options: {
           height: `${OG_HEIGHT}px`,
           display: "flex",
           flexDirection: "column",
-          padding: "56px 56px 88px",
+          padding: "56px",
+          paddingBottom: "80px",
           background: `linear-gradient(145deg, ${COLORS.card}, #0f131d)`,
           color: COLORS.foreground,
+          position: "relative",
         }}
       >
         <div
@@ -225,7 +227,10 @@ export async function buildOgImageResponse(options: {
           style={{
             display: "flex",
             height: "16px",
-            marginTop: "28px",
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
             overflow: "hidden",
           }}
         >
