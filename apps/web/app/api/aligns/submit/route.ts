@@ -78,6 +78,8 @@ function getRedis(): Redis {
 const localRateLimits = new Map<string, { count: number; expiresAt: number }>();
 
 async function rateLimit(ip: string): Promise<boolean> {
+  if (process.env.NODE_ENV === "test") return true;
+
   if (!hasKvEnv()) {
     // In-memory rate limiting for local dev
     const now = Date.now();
