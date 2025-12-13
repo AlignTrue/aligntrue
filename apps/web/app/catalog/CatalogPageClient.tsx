@@ -270,7 +270,7 @@ export function CatalogPageClient() {
                   className="font-semibold text-foreground"
                   htmlFor="align-url"
                 >
-                  Import from GitHub (.mdc, .md, Align packs)
+                  Import from GitHub (.mdc, .md, Align packs, etc.)
                 </label>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Input

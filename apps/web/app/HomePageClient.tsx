@@ -216,7 +216,7 @@ export function HomePageClient() {
       <CardContent className="p-6 md:p-7 space-y-6">
         <div className="space-y-3">
           <label className="font-semibold text-foreground" htmlFor="align-url">
-            Import from GitHub (.mdc, .md, Align packs)
+            Import from GitHub (.mdc, .md, Align packs, etc.)
           </label>
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
