@@ -8,6 +8,7 @@ var mockGetAuthToken: ReturnType<typeof vi.fn>;
 var mockCreateCachingFetch: ReturnType<typeof vi.fn>;
 var mockGetCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedAlignId: ReturnType<typeof vi.fn>;
+var mockDeleteCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedContent: ReturnType<typeof vi.fn>;
 var mockFetchRawWithCache: ReturnType<typeof vi.fn>;
 var mockResolveGistFiles: ReturnType<typeof vi.fn>;
@@ -73,9 +74,11 @@ vi.mock("@/lib/aligns/caching-fetch", () => {
 vi.mock("@/lib/aligns/url-cache", () => {
   mockGetCachedAlignId = vi.fn();
   mockSetCachedAlignId = vi.fn();
+  mockDeleteCachedAlignId = vi.fn();
   return {
     getCachedAlignId: mockGetCachedAlignId,
     setCachedAlignId: mockSetCachedAlignId,
+    deleteCachedAlignId: mockDeleteCachedAlignId,
   };
 });
 
@@ -144,6 +147,54 @@ describe("POST /api/aligns/submit", () => {
       expectedId,
     );
     expect(mockSetCachedAlignId).toHaveBeenCalledWith(manifestUrl, expectedId);
+    expect(mockStore.upsert).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-imports when cached ID points to deleted align", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce("stale-id");
+
+    const manifestUrl =
+      "https://github.com/org/repo/blob/main/examples/starter/.align.yaml";
+    const expectedId = alignIdFromNormalizedUrl(manifestUrl);
+
+    mockFetchPackForWeb.mockResolvedValue({
+      manifestUrl,
+      info: {
+        manifestPath: ".align.yaml",
+        manifestId: "org/repo",
+        manifestVersion: "1.0.0",
+        manifestSummary: null,
+        manifestAuthor: null,
+        manifestDescription: null,
+        ref: "main",
+        files: [],
+        totalBytes: 0,
+      },
+      files: [],
+    });
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://github.com/org/repo" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = (await res.json()) as { id: string };
+    expect(json.id).toBe(expectedId);
+
+    expect(mockDeleteCachedAlignId).toHaveBeenCalledWith(
+      "https://github.com/org/repo",
+    );
+    expect(mockFetchPackForWeb).toHaveBeenCalledWith(
+      "https://github.com/org/repo",
+      { fetchImpl: expect.any(Function) },
+    );
+    expect(mockSetCachedAlignId).toHaveBeenCalledWith(
+      "https://github.com/org/repo",
+      expectedId,
+    );
     expect(mockStore.upsert).toHaveBeenCalledTimes(1);
   });
 

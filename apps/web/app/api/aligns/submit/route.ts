@@ -21,7 +21,11 @@ import { buildPackAlignRecord } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
 import { getAuthToken } from "@/lib/aligns/github-app";
 import { createCachingFetch } from "@/lib/aligns/caching-fetch";
-import { getCachedAlignId, setCachedAlignId } from "@/lib/aligns/url-cache";
+import {
+  getCachedAlignId,
+  setCachedAlignId,
+  deleteCachedAlignId,
+} from "@/lib/aligns/url-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -171,7 +175,12 @@ export async function POST(req: Request) {
     const trimmedUrl = body.url.trim();
     const cachedId = await getCachedAlignId(trimmedUrl);
     if (cachedId) {
-      return Response.json({ id: cachedId });
+      const existing = await store.get(cachedId);
+      if (existing) {
+        return Response.json({ id: cachedId });
+      }
+      // Stale cache: align was deleted; clear and continue with fresh import
+      await deleteCachedAlignId(trimmedUrl);
     }
 
     const githubToken = await getAuthToken();

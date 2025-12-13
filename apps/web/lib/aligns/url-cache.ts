@@ -48,3 +48,11 @@ export async function setCachedAlignId(url: string, id: string): Promise<void> {
   if (!hasKvEnv()) return;
   await getRedis().set(key, { id }, { ex: URL_CACHE_TTL_SECONDS });
 }
+
+export async function deleteCachedAlignId(url: string): Promise<void> {
+  const key = keyFor(url);
+  localCache.delete(key);
+
+  if (!hasKvEnv()) return;
+  await getRedis().del(key);
+}

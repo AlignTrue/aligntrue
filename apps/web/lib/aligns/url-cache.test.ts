@@ -18,6 +18,11 @@ async function importModule(hasKv: boolean) {
         redisStore.set(key, value);
         return "OK";
       }
+
+      async del(key: string): Promise<number> {
+        const existed = redisStore.delete(key);
+        return existed ? 1 : 0;
+      }
     }
     return { Redis };
   });
@@ -67,5 +72,22 @@ describe("url-cache", () => {
     const cached = await getCachedAlignId(URL);
 
     expect(cached).toBe("align-redis");
+  });
+
+  it("deletes cached entries from local memory and redis", async () => {
+    const { setCachedAlignId, getCachedAlignId, deleteCachedAlignId } =
+      await importModule(true);
+
+    await setCachedAlignId(URL, "align-delete");
+    expect(await getCachedAlignId(URL)).toBe("align-delete");
+
+    await deleteCachedAlignId(URL);
+
+    // local cache cleared
+    expect(await getCachedAlignId(URL)).toBeNull();
+
+    // redis entry cleared (re-import module to force redis read)
+    const { getCachedAlignId: getAfterReload } = await importModule(true);
+    expect(await getAfterReload(URL)).toBeNull();
   });
 });
