@@ -135,6 +135,10 @@ export function CatalogPageClient() {
     }
   }, [page, total, pageSize]);
 
+  useEffect(() => {
+    clearPreview();
+  }, [page]);
+
   const handleImport = async () => {
     if (!urlInput) {
       setError("Enter a GitHub URL to continue.");
@@ -541,16 +545,29 @@ export function CatalogPageClient() {
 
           {(preview || previewLoading || previewError) && (
             <Card ref={previewRef} variant="surface" className="scroll-mt-24">
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle className="text-xl">Preview</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={clearPreview}
-                  aria-label="Close preview"
-                >
-                  <X />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (preview?.align.id)
+                        router.push(`/a/${preview.align.id}`);
+                    }}
+                    disabled={!preview}
+                  >
+                    Open Page
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearPreview}
+                    aria-label="Close preview"
+                  >
+                    <X />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 {previewLoading && (
