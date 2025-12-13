@@ -48,20 +48,6 @@ export type AlignDetailPreviewProps = {
   className?: string;
 };
 
-function useShareUrl(path: string) {
-  const [shareUrl, setShareUrl] = useState(path);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setShareUrl(new URL(path, window.location.origin).toString());
-    } else {
-      setShareUrl(path);
-    }
-  }, [path]);
-
-  return shareUrl;
-}
-
 async function postEvent(id: string, type: "view" | "install") {
   await fetch(`/api/aligns/${id}/event`, {
     method: "POST",
@@ -95,7 +81,7 @@ export function AlignDetailPreview({
     isPack ? (packFiles[0]?.path ?? "") : "single",
   );
   const alignSharePath = `/a/${align.id}`;
-  const shareUrl = useShareUrl(alignSharePath);
+  const shareUrl = alignSharePath;
 
   useEffect(() => {
     void postEvent(align.id, "view");
