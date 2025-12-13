@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
@@ -113,6 +114,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
