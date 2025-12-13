@@ -48,13 +48,17 @@ export type AlignDetailPreviewProps = {
   className?: string;
 };
 
-function useShareUrl() {
-  const [shareUrl, setShareUrl] = useState("");
+function useShareUrl(path: string) {
+  const [shareUrl, setShareUrl] = useState(path);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setShareUrl(window.location.href);
+      setShareUrl(new URL(path, window.location.origin).toString());
+    } else {
+      setShareUrl(path);
     }
-  }, []);
+  }, [path]);
+
   return shareUrl;
 }
 
@@ -90,7 +94,8 @@ export function AlignDetailPreview({
   const [selectedPath, setSelectedPath] = useState<string>(
     isPack ? (packFiles[0]?.path ?? "") : "single",
   );
-  const shareUrl = useShareUrl();
+  const alignSharePath = `/a/${align.id}`;
+  const shareUrl = useShareUrl(alignSharePath);
 
   useEffect(() => {
     void postEvent(align.id, "view");
@@ -204,7 +209,8 @@ export function AlignDetailPreview({
 
   const cachedConverted = convertedCache.get(cacheKey);
 
-  const shareText = shareUrl || align.normalizedUrl || align.url;
+  const shareText =
+    shareUrl || alignSharePath || align.normalizedUrl || align.url;
   const previewText =
     cachedConverted?.text ?? selectedContent ?? "Content unavailable.";
   const downloadFilename =
