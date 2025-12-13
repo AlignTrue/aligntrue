@@ -79,7 +79,7 @@ export async function buildOgImageResponse(options: {
           height: `${OG_HEIGHT}px`,
           display: "flex",
           flexDirection: "column",
-          padding: "56px",
+          padding: "56px 56px 88px",
           background: `linear-gradient(145deg, ${COLORS.card}, #0f131d)`,
           color: COLORS.foreground,
         }}
@@ -140,8 +140,8 @@ export async function buildOgImageResponse(options: {
           {description ? (
             <div
               style={{
-                fontSize: "28px",
-                lineHeight: 1.4,
+                fontSize: "32px",
+                lineHeight: 1.45,
                 color: COLORS.muted,
                 maxWidth: "980px",
               }}
@@ -167,7 +167,7 @@ export async function buildOgImageResponse(options: {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                fontSize: "22px",
+                fontSize: "24px",
                 color: COLORS.muted,
                 fontWeight: 600,
               }}
@@ -198,7 +198,7 @@ export async function buildOgImageResponse(options: {
                 border: `1px solid ${COLORS.border}`,
                 boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
                 fontFamily: "monospace",
-                fontSize: "22px",
+                fontSize: "26px",
                 color: COLORS.foreground,
                 letterSpacing: "0.01em",
               }}
@@ -209,14 +209,14 @@ export async function buildOgImageResponse(options: {
             <div style={{ height: "8px" }} />
             <div
               style={{
-                fontSize: "16px",
+                fontSize: "18px",
                 color: COLORS.muted,
                 textAlign: "right",
                 maxWidth: "460px",
                 lineHeight: 1.4,
               }}
             >
-              Use with any agent (Cursor, Claude, Codex, Copilot, etc.).
+              Use with any AI agent (Cursor, Claude, Codex, etc.).
             </div>
           </div>
         </div>
@@ -225,7 +225,7 @@ export async function buildOgImageResponse(options: {
           style={{
             display: "flex",
             height: "16px",
-            marginTop: "auto",
+            marginTop: "28px",
             overflow: "hidden",
           }}
         >
