@@ -239,6 +239,7 @@ describe("POST /api/aligns/submit", () => {
     const json = (await res.json()) as { id: string };
     expect(json.id).toBe(expectedId);
 
+    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
     expect(mockResolveGistFiles).toHaveBeenCalledWith(
       "abc123",
       expect.objectContaining({ token: "token-123" }),
@@ -279,6 +280,7 @@ describe("POST /api/aligns/submit", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
 
+    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
     const json = (await res.json()) as { error: string };
     expect(json.error).toContain("no files");
   });
@@ -310,6 +312,7 @@ describe("POST /api/aligns/submit", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
 
+    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
     const json = (await res.json()) as { error: string; hint: string };
     expect(json.error).toContain("Unsupported file type");
     expect(json.hint).toContain(".xml");

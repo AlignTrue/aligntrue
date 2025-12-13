@@ -40,6 +40,18 @@ const ALLOWED_FILENAMES = [
   ".goosehints",
 ] as const;
 
+function isGistUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url.trim());
+    return (
+      parsed.hostname === "gist.github.com" ||
+      parsed.hostname === "gist.githubusercontent.com"
+    );
+  } catch {
+    return false;
+  }
+}
+
 function hasAllowedExtension(url: string): boolean {
   const lower = url.toLowerCase();
   const filename = lower.split("/").pop() || "";
@@ -167,42 +179,46 @@ export async function POST(req: Request) {
       ttlSeconds: 3600,
     });
 
-    // 1) Try pack (.align.yaml) first
-    try {
-      const pack = await fetchPackForWeb(trimmedUrl, {
-        fetchImpl: cachingFetch,
-      });
-      const id = alignIdFromNormalizedUrl(pack.manifestUrl);
-      const existing = await store.get(id);
-      const now = new Date().toISOString();
-      const contentHash = hashPackFiles(pack.files);
+    // 1) Try pack (.align.yaml) first - skip for gists (packs are repo-based)
+    if (!isGistUrl(trimmedUrl)) {
+      try {
+        const pack = await fetchPackForWeb(trimmedUrl, {
+          fetchImpl: cachingFetch,
+        });
+        const id = alignIdFromNormalizedUrl(pack.manifestUrl);
+        const existing = await store.get(id);
+        const now = new Date().toISOString();
+        const contentHash = hashPackFiles(pack.files);
 
-      const record = buildPackAlignRecord({
-        id,
-        pack,
-        sourceUrl: body.url,
-        existing,
-        now,
-        contentHash,
-        contentHashUpdatedAt: now,
-      });
+        const record = buildPackAlignRecord({
+          id,
+          pack,
+          sourceUrl: body.url,
+          existing,
+          now,
+          contentHash,
+          contentHashUpdatedAt: now,
+        });
 
-      await store.upsert(record);
-      await setCachedContent(id, { kind: "pack", files: pack.files });
-      await Promise.all([
-        setCachedAlignId(trimmedUrl, id),
-        setCachedAlignId(pack.manifestUrl, id),
-      ]);
+        await store.upsert(record);
+        await setCachedContent(id, { kind: "pack", files: pack.files });
+        await Promise.all([
+          setCachedAlignId(trimmedUrl, id),
+          setCachedAlignId(pack.manifestUrl, id),
+        ]);
 
-      return Response.json({ id });
-    } catch (packError) {
-      if (!isPackNotFoundError(packError)) {
-        const message =
-          packError instanceof Error ? packError.message : "Pack import failed";
-        console.error("submit pack error", packError);
-        return Response.json({ error: message }, { status: 400 });
+        return Response.json({ id });
+      } catch (packError) {
+        if (!isPackNotFoundError(packError)) {
+          const message =
+            packError instanceof Error
+              ? packError.message
+              : "Pack import failed";
+          console.error("submit pack error", packError);
+          return Response.json({ error: message }, { status: 400 });
+        }
+        // Otherwise fall through to single-file handling
       }
-      // Otherwise fall through to single-file handling
     }
 
     // 2) Single file fallback
