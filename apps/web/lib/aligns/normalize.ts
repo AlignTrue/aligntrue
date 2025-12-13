@@ -35,7 +35,10 @@ export function normalizeGitUrl(input: string): NormalizedGitSource {
     const parts = url.pathname.split("/").filter(Boolean);
     const [owner, gistId] = parts;
     if (owner && gistId) {
-      const fragment = url.hash?.replace(/^#file-/, "") || null;
+      const hash = url.hash?.replace(/^#/, "") ?? "";
+      const fragment = hash.startsWith("file-")
+        ? hash.replace(/^file-/, "")
+        : null;
       return {
         provider: "github",
         normalizedUrl: `https://gist.github.com/${owner}/${gistId}`,

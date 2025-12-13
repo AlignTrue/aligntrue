@@ -83,6 +83,20 @@ describe("normalizeGitUrl", () => {
     });
   });
 
+  it("ignores non-file fragments for gist URLs", () => {
+    const input = "https://gist.github.com/user/abc123#random-fragment";
+    const result = normalizeGitUrl(input);
+    expect(result).toEqual({
+      provider: "github",
+      normalizedUrl: "https://gist.github.com/user/abc123",
+      kind: "gist",
+      owner: "user",
+      gistId: "abc123",
+      filename: null,
+      revision: null,
+    });
+  });
+
   it("normalizes raw gist URLs", () => {
     const input =
       "https://gist.githubusercontent.com/user/abc123/raw/abcd1234/cursor_rule.xml";
