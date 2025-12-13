@@ -2,18 +2,23 @@ import crypto from "node:crypto";
 
 export type NormalizedGitSource = {
   provider: "github" | "unknown";
-  normalizedUrl: string | null; // canonical blob URL for GitHub
-  kind: "single" | "directory" | "unknown";
+  normalizedUrl: string | null;
+  kind: "single" | "directory" | "gist" | "unknown";
   owner?: string;
   repo?: string;
   ref?: string;
   path?: string;
+  gistId?: string;
+  filename?: string | null;
+  revision?: string | null;
 };
 
 /**
  * v1: only GitHub is fully supported.
  * - Accepts github.com blob URLs and raw.githubusercontent.com URLs.
- * - Normalizes to: https://github.com/{owner}/{repo}/blob/{branch}/{path}
+ * - Accepts gist.github.com and gist.githubusercontent.com URLs (primary file selection is handled upstream).
+ * - Normalizes to: https://github.com/{owner}/{repo}/blob/{branch}/{path} for repos,
+ *   or canonical gist URLs for gists.
  */
 export function normalizeGitUrl(input: string): NormalizedGitSource {
   const trimmed = input.trim();
@@ -23,6 +28,49 @@ export function normalizeGitUrl(input: string): NormalizedGitSource {
     url = new URL(trimmed);
   } catch {
     return { provider: "unknown", normalizedUrl: null, kind: "unknown" };
+  }
+
+  // GitHub gists (canonical UI URL)
+  if (url.hostname === "gist.github.com") {
+    const parts = url.pathname.split("/").filter(Boolean);
+    const [owner, gistId] = parts;
+    if (owner && gistId) {
+      const fragment = url.hash?.replace(/^#file-/, "") || null;
+      return {
+        provider: "github",
+        normalizedUrl: `https://gist.github.com/${owner}/${gistId}`,
+        kind: "gist",
+        owner,
+        gistId,
+        filename: fragment,
+        revision: null,
+      };
+    }
+    return { provider: "github", normalizedUrl: null, kind: "unknown" };
+  }
+
+  // GitHub gists (raw host)
+  if (url.hostname === "gist.githubusercontent.com") {
+    // Example: /{owner}/{gistId}/raw/{revision?}/{filename}
+    const parts = url.pathname.split("/").filter(Boolean);
+    const [owner, gistId, maybeRaw, ...afterRaw] = parts;
+    if (owner && gistId && (maybeRaw === "raw" || maybeRaw === "raw/")) {
+      const hasRevision = afterRaw.length >= 2;
+      const revision = hasRevision ? afterRaw[0] : null;
+      const filename = hasRevision
+        ? (afterRaw[afterRaw.length - 1] ?? null)
+        : (afterRaw[0] ?? null);
+      return {
+        provider: "github",
+        normalizedUrl: url.toString(),
+        kind: "gist",
+        owner,
+        gistId,
+        filename,
+        revision,
+      };
+    }
+    return { provider: "github", normalizedUrl: null, kind: "unknown" };
   }
 
   // GitHub blob URLs

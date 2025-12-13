@@ -91,13 +91,13 @@ export function SiteHeader() {
                 href="/catalog"
                 className="text-sm text-foreground no-underline"
               >
-                Import Rule
+                Import
               </Link>
               <Link
                 href="/catalog#catalog"
                 className="text-sm text-foreground no-underline"
               >
-                Rule Catalog
+                Catalog
               </Link>
               <a
                 href="/docs/about"

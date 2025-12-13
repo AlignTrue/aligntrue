@@ -32,7 +32,7 @@ export type AlignRecord = {
   kind: AlignKind;
   title: string | null;
   description: string | null;
-  fileType: "markdown" | "yaml" | "unknown";
+  fileType: "markdown" | "yaml" | "xml" | "unknown";
   contentHash?: string;
   contentHashUpdatedAt?: string;
   contentHashMismatch?: boolean;

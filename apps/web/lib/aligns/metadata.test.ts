@@ -42,3 +42,13 @@ Body text without heading.`;
     expect(meta.description).toBe("Only description");
   });
 });
+
+describe("extractMetadata (xml)", () => {
+  it("uses filename as title for XML files", () => {
+    const url = "https://github.com/org/repo/blob/main/cursor_rule.xml";
+    const meta = extractMetadata(url, "<root>content</root>");
+    expect(meta.title).toBe("cursor_rule.xml");
+    expect(meta.description).toBeNull();
+    expect(meta.fileType).toBe("xml");
+  });
+});

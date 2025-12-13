@@ -10,6 +10,8 @@ var mockGetCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedAlignId: ReturnType<typeof vi.fn>;
 var mockSetCachedContent: ReturnType<typeof vi.fn>;
 var mockFetchRawWithCache: ReturnType<typeof vi.fn>;
+var mockResolveGistFiles: ReturnType<typeof vi.fn>;
+var mockSelectPrimaryFile: ReturnType<typeof vi.fn>;
 
 const storeData = new Map<string, AlignRecord>();
 var mockStore: {
@@ -41,6 +43,15 @@ vi.mock("@/lib/aligns/content-cache", () => {
   return {
     setCachedContent: mockSetCachedContent,
     fetchRawWithCache: mockFetchRawWithCache,
+  };
+});
+
+vi.mock("@/lib/aligns/gist-resolver", () => {
+  mockResolveGistFiles = vi.fn();
+  mockSelectPrimaryFile = vi.fn();
+  return {
+    resolveGistFiles: mockResolveGistFiles,
+    selectPrimaryFile: mockSelectPrimaryFile,
   };
 });
 
@@ -186,5 +197,115 @@ describe("POST /api/aligns/submit", () => {
       expect.objectContaining({ fetchImpl: expect.any(Function) }),
     );
     expect(mockSetCachedAlignId).toHaveBeenCalled();
+  });
+
+  it("submits a gist URL and resolves primary file", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+
+    const rawUrl =
+      "https://gist.githubusercontent.com/user/abc123/raw/cursor_rule.xml";
+    const expectedId = alignIdFromNormalizedUrl(rawUrl);
+
+    mockResolveGistFiles.mockResolvedValueOnce([
+      {
+        filename: "cursor_rule.xml",
+        rawUrl,
+        size: 100,
+      },
+    ]);
+    mockSelectPrimaryFile.mockReturnValueOnce({
+      filename: "cursor_rule.xml",
+      rawUrl,
+      size: 100,
+    });
+
+    // Mock the caching fetch to return XML content
+    const mockCachingFetchFn = vi
+      .fn()
+      .mockResolvedValue(new Response("<rule>content</rule>"));
+    mockCreateCachingFetch.mockReturnValue(mockCachingFetchFn);
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://gist.github.com/user/abc123" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = (await res.json()) as { id: string };
+    expect(json.id).toBe(expectedId);
+
+    expect(mockResolveGistFiles).toHaveBeenCalledWith(
+      "abc123",
+      expect.objectContaining({ token: "token-123" }),
+    );
+    expect(mockSelectPrimaryFile).toHaveBeenCalledWith(
+      expect.any(Array),
+      null, // no filename fragment
+    );
+    expect(mockStore.upsert).toHaveBeenCalledTimes(1);
+    expect(mockSetCachedAlignId).toHaveBeenCalledWith(
+      "https://gist.github.com/user/abc123",
+      expectedId,
+    );
+  });
+
+  it("returns error when gist has no files", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+
+    mockResolveGistFiles.mockResolvedValueOnce([]);
+    mockSelectPrimaryFile.mockReturnValueOnce(null);
+
+    mockCreateCachingFetch.mockReturnValue(vi.fn());
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://gist.github.com/user/empty" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toContain("no files");
+  });
+
+  it("returns error for unsupported gist file type", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+
+    const rawUrl =
+      "https://gist.githubusercontent.com/user/abc123/raw/script.py";
+    mockResolveGistFiles.mockResolvedValueOnce([
+      { filename: "script.py", rawUrl, size: 50 },
+    ]);
+    mockSelectPrimaryFile.mockReturnValueOnce({
+      filename: "script.py",
+      rawUrl,
+      size: 50,
+    });
+
+    mockCreateCachingFetch.mockReturnValue(vi.fn());
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://gist.github.com/user/abc123" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+
+    const json = (await res.json()) as { error: string; hint: string };
+    expect(json.error).toContain("Unsupported file type");
+    expect(json.hint).toContain(".xml");
   });
 });

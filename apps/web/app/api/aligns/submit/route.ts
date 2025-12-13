@@ -8,6 +8,10 @@ import {
 } from "@/lib/aligns/normalize";
 import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import {
+  resolveGistFiles,
+  selectPrimaryFile,
+} from "@/lib/aligns/gist-resolver";
+import {
   fetchRawWithCache,
   setCachedContent,
   type CachedPackFile,
@@ -28,6 +32,7 @@ const ALLOWED_EXTENSIONS = [
   ".markdown",
   ".yaml",
   ".yml",
+  ".xml",
 ] as const;
 const ALLOWED_FILENAMES = [
   ".clinerules",
@@ -96,6 +101,47 @@ function hashPackFiles(files: CachedPackFile[]): string {
   return hashString(payload);
 }
 
+async function fetchWithLimit(
+  url: string,
+  maxBytes: number,
+  fetchImpl: typeof fetch,
+): Promise<string | null> {
+  try {
+    const response = await fetchImpl(url);
+    if (!response.ok) return null;
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      return null;
+    }
+
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        total += value.byteLength;
+        if (total > maxBytes) {
+          reader.cancel();
+          return null;
+        }
+        chunks.push(value);
+      }
+    }
+
+    const combined = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      combined.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return new TextDecoder().decode(combined);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
@@ -160,8 +206,8 @@ export async function POST(req: Request) {
     }
 
     // 2) Single file fallback
-    const { provider, normalizedUrl } = normalizeGitUrl(trimmedUrl);
-    if (provider !== "github" || !normalizedUrl) {
+    const normalized = normalizeGitUrl(trimmedUrl);
+    if (normalized.provider !== "github" || !normalized.normalizedUrl) {
       return Response.json(
         {
           error:
@@ -171,13 +217,101 @@ export async function POST(req: Request) {
       );
     }
 
+    // 2a) Gist handling
+    if (normalized.kind === "gist" && normalized.gistId) {
+      const files = await resolveGistFiles(normalized.gistId, {
+        token: githubToken,
+        fetchImpl: cachingFetch,
+      });
+      const primary = selectPrimaryFile(files, normalized.filename);
+      if (!primary) {
+        return Response.json(
+          { error: "Gist has no files to import." },
+          { status: 400 },
+        );
+      }
+
+      if (!hasAllowedExtension(primary.rawUrl)) {
+        const filename = primary.filename || "the provided file";
+        return Response.json(
+          {
+            error: `Unsupported file type: ${filename}`,
+            hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, .xml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
+            issueUrl:
+              "https://github.com/AlignTrue/aligntrue/issues/new?title=Support%20new%20file%20type&labels=enhancement",
+          },
+          { status: 400 },
+        );
+      }
+
+      if (primary.size > 256 * 1024) {
+        return Response.json(
+          {
+            error:
+              "File too large (max 256KB) or could not be fetched. Try a smaller file.",
+          },
+          { status: 413 },
+        );
+      }
+
+      const content = await fetchWithLimit(
+        primary.rawUrl,
+        256 * 1024,
+        cachingFetch,
+      );
+      if (content === null) {
+        return Response.json(
+          {
+            error:
+              "File too large (max 256KB) or could not be fetched. Try a smaller file.",
+          },
+          { status: 413 },
+        );
+      }
+
+      const id = alignIdFromNormalizedUrl(primary.rawUrl);
+      const meta = extractMetadata(primary.rawUrl, content);
+      const existing = await store.get(id);
+      const now = new Date().toISOString();
+      const contentHash = hashString(content);
+
+      const record: AlignRecord = {
+        schemaVersion: 1,
+        id,
+        url: body.url,
+        normalizedUrl: primary.rawUrl,
+        provider: "github",
+        kind: meta.kind,
+        title: meta.title,
+        description: meta.description,
+        fileType: meta.fileType,
+        contentHash,
+        contentHashUpdatedAt: now,
+        createdAt: existing?.createdAt ?? now,
+        lastViewedAt: now,
+        viewCount: existing?.viewCount ?? 0,
+        installClickCount: existing?.installClickCount ?? 0,
+      };
+
+      await store.upsert(record);
+      await setCachedContent(id, { kind: "single", content });
+      await Promise.all([
+        setCachedAlignId(trimmedUrl, id),
+        setCachedAlignId(normalized.normalizedUrl, id),
+      ]);
+
+      return Response.json({ id });
+    }
+
+    const normalizedUrl = normalized.normalizedUrl;
+
     if (!hasAllowedExtension(normalizedUrl)) {
       const filename =
         normalizedUrl.split("/").pop() || "the provided file path";
       return Response.json(
         {
           error: `Unsupported file type: ${filename}`,
-          hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
+          hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, .xml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
           issueUrl:
             "https://github.com/AlignTrue/aligntrue/issues/new?title=Support%20new%20file%20type&labels=enhancement",
         },

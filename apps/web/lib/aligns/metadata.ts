@@ -5,7 +5,7 @@ import type { AlignKind } from "./types";
 export type ExtractedMetadata = {
   title: string | null;
   description: string | null;
-  fileType: "markdown" | "yaml" | "unknown";
+  fileType: "markdown" | "yaml" | "xml" | "unknown";
   kind: AlignKind;
 };
 
@@ -59,6 +59,7 @@ export function extractMetadata(
 ): ExtractedMetadata {
   const lower = normalizedUrl.toLowerCase();
   const isYaml = lower.endsWith(".yaml") || lower.endsWith(".yml");
+  const isXml = lower.endsWith(".xml");
 
   if (isYaml) {
     const { title, description } = safeYamlTitle(content);
@@ -67,6 +68,16 @@ export function extractMetadata(
       description,
       fileType: "yaml",
       kind: "rule_group",
+    };
+  }
+
+  if (isXml) {
+    const filename = normalizedUrl.split("/").pop() || null;
+    return {
+      title: filename,
+      description: null,
+      fileType: "xml",
+      kind: "rule",
     };
   }
 

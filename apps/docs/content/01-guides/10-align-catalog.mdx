@@ -17,7 +17,7 @@ Use the Align Catalog to turn any GitHub rule file or `.align.yaml` pack into ag
 ## Quick start (web)
 
 1. Go to the homepage and choose **Import Rules**.
-2. Paste a GitHub blob/raw URL (e.g., `.../blob/main/rules/align.md`) **or** a repo path containing `.align.yaml`.
+2. Paste a GitHub blob/raw URL (e.g., `.../blob/main/rules/align.md`), a gist URL (e.g., `https://gist.github.com/user/abc123`), **or** a repo path containing `.align.yaml`.
 3. Click **Import**.
 4. You’ll land on the Align detail page with previews and actions.
 
@@ -43,6 +43,14 @@ See supported agents in [Agent support](/docs/04-reference/agent-support).
 - **Packs** (`.align.yaml`) — use **Download All (.zip)** to get every file converted for the selected agent; folder paths are preserved.
 
 Learn how packs work in [Align packs](/docs/03-concepts/align-packs).
+
+## Importing from Gists
+
+You can import rules shared as GitHub Gists:
+
+1. Paste a gist URL like `https://gist.github.com/username/abc123`.
+2. For gists with multiple files, the primary file is imported automatically. To pick a specific file, add `#file-{filename}` to the URL (e.g., `#file-cursor_rule.xml`).
+3. Raw gist URLs (`https://gist.githubusercontent.com/...`) also work.
 
 ## Using the CLI with the Catalog
 

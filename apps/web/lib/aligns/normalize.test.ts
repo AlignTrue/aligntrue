@@ -54,6 +54,49 @@ describe("normalizeGitUrl", () => {
       kind: "unknown",
     });
   });
+
+  it("normalizes GitHub gist URLs", () => {
+    const input = "https://gist.github.com/user/abc123";
+    const result = normalizeGitUrl(input);
+    expect(result).toEqual({
+      provider: "github",
+      normalizedUrl: "https://gist.github.com/user/abc123",
+      kind: "gist",
+      owner: "user",
+      gistId: "abc123",
+      filename: null,
+      revision: null,
+    });
+  });
+
+  it("normalizes GitHub gist URLs with file fragment", () => {
+    const input = "https://gist.github.com/user/abc123#file-cursor_rule.xml";
+    const result = normalizeGitUrl(input);
+    expect(result).toEqual({
+      provider: "github",
+      normalizedUrl: "https://gist.github.com/user/abc123",
+      kind: "gist",
+      owner: "user",
+      gistId: "abc123",
+      filename: "cursor_rule.xml",
+      revision: null,
+    });
+  });
+
+  it("normalizes raw gist URLs", () => {
+    const input =
+      "https://gist.githubusercontent.com/user/abc123/raw/abcd1234/cursor_rule.xml";
+    const result = normalizeGitUrl(input);
+    expect(result).toEqual({
+      provider: "github",
+      normalizedUrl: input,
+      kind: "gist",
+      owner: "user",
+      gistId: "abc123",
+      filename: "cursor_rule.xml",
+      revision: "abcd1234",
+    });
+  });
 });
 
 describe("alignIdFromNormalizedUrl", () => {
