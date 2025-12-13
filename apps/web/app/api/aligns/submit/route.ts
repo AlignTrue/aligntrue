@@ -297,7 +297,7 @@ export async function POST(req: Request) {
       await setCachedContent(id, { kind: "single", content });
       await Promise.all([
         setCachedAlignId(trimmedUrl, id),
-        setCachedAlignId(normalized.normalizedUrl, id),
+        setCachedAlignId(primary.rawUrl, id),
       ]);
 
       return Response.json({ id });

@@ -252,6 +252,12 @@ describe("POST /api/aligns/submit", () => {
       "https://gist.github.com/user/abc123",
       expectedId,
     );
+    expect(mockSetCachedAlignId).toHaveBeenCalledWith(rawUrl, expectedId);
+    // Ensure we do not cache the canonical gist URL separately (avoids fragment collisions)
+    const cachedUrls = mockSetCachedAlignId.mock.calls.map((call) => call[0]);
+    expect(cachedUrls).not.toContain(
+      "https://gist.github.com/user/abc123#file-cursor_rule.xml",
+    );
   });
 
   it("returns error when gist has no files", async () => {
