@@ -40,6 +40,8 @@ import { downloadFile } from "@/lib/download";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import { cn, formatBytes } from "@/lib/utils";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
+
 const EMPTY_PACK_FILES: CachedPackFile[] = [];
 
 export type AlignDetailPreviewProps = {
@@ -81,7 +83,7 @@ export function AlignDetailPreview({
     isPack ? (packFiles[0]?.path ?? "") : "single",
   );
   const alignSharePath = `/a/${align.id}`;
-  const shareUrl = alignSharePath;
+  const shareUrl = `${BASE_URL}${alignSharePath}`;
 
   useEffect(() => {
     void postEvent(align.id, "view");
@@ -195,8 +197,7 @@ export function AlignDetailPreview({
 
   const cachedConverted = convertedCache.get(cacheKey);
 
-  const shareText =
-    shareUrl || alignSharePath || align.normalizedUrl || align.url;
+  const shareText = shareUrl || align.normalizedUrl || align.url;
   const previewText =
     cachedConverted?.text ?? selectedContent ?? "Content unavailable.";
   const downloadFilename =
