@@ -25,6 +25,24 @@ function parseFrontmatter(text: string) {
 }
 
 describe("convertContent", () => {
+  it("falls back on malformed frontmatter", () => {
+    const malformed = `---
+globs: **/*.templ
+---
+Body text.`;
+
+    const result = convertContent(malformed, "cursor");
+    const parsed = parseFrontmatter(result.text);
+
+    // Should not throw and should preserve body
+    expect(parsed.data).toEqual({
+      description: "AlignTrue rules for Cursor", // default cursor description fallback
+      globs: undefined,
+      alwaysApply: true,
+    });
+    expect(parsed.content.trim()).toContain("Body text.");
+  });
+
   it("passes through AlignTrue format with full frontmatter", () => {
     const result = convertContent(baseContent, "aligntrue");
     const parsed = parseFrontmatter(result.text);

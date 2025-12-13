@@ -37,10 +37,15 @@ function parseFrontmatter(content: string): {
   data: Frontmatter;
   body: string;
 } {
-  const parsed = matter(content, {
-    engines: { yaml: (s: string) => yaml.load(s) as Record<string, unknown> },
-  });
-  return { data: parsed.data ?? {}, body: parsed.content };
+  try {
+    const parsed = matter(content, {
+      engines: { yaml: (s: string) => yaml.load(s) as Record<string, unknown> },
+    });
+    return { data: parsed.data ?? {}, body: parsed.content };
+  } catch {
+    // On malformed frontmatter, return raw content with empty data
+    return { data: {}, body: content };
+  }
 }
 
 function stringifyFrontmatter(data: Frontmatter): string {
