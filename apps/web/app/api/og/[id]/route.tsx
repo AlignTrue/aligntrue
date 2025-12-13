@@ -29,7 +29,7 @@ export async function GET(
   }
 
   if (!canUseBlob) {
-    return buildOgImageResponse({
+    return await buildOgImageResponse({
       align,
       id,
       headers: {
