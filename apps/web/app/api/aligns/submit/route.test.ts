@@ -338,4 +338,69 @@ describe("POST /api/aligns/submit", () => {
     expect(json.error).toContain("repository or directory");
     expect(json.hint).toContain("direct link to a file");
   });
+
+  it("returns directory error for tree URLs", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+    mockCreateCachingFetch.mockReturnValue(vi.fn());
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "https://github.com/org/repo/tree/main/folder",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const json = (await res.json()) as { error: string; hint: string };
+    expect(json.error).toContain("repository or directory");
+    expect(json.hint).toContain("direct link to a file");
+  });
+
+  it("returns gist error messages instead of internal error", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+    mockCreateCachingFetch.mockReturnValue(vi.fn());
+    mockResolveGistFiles.mockRejectedValueOnce(
+      new Error("Gist not found. It may be private or deleted."),
+    );
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://gist.github.com/user/missing" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toContain("Gist not found");
+  });
+
+  it("returns friendly error when raw fetch fails", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    mockFetchPackForWeb.mockRejectedValueOnce(
+      new Error("No .align.yaml found"),
+    );
+    mockCreateCachingFetch.mockReturnValue(vi.fn());
+    mockFetchRawWithCache.mockRejectedValueOnce(
+      new Error("Failed to fetch content"),
+    );
+
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({
+        url: "https://github.com/org/repo/blob/main/rules/file.md",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toContain("Could not fetch the file");
+  });
 });

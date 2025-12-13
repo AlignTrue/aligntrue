@@ -233,7 +233,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (normalized.kind === "directory" && !normalized.normalizedUrl) {
+    if (normalized.kind === "directory") {
       return Response.json(
         {
           error:
@@ -256,10 +256,17 @@ export async function POST(req: Request) {
 
     // 2a) Gist handling
     if (normalized.kind === "gist" && normalized.gistId) {
-      const files = await resolveGistFiles(normalized.gistId, {
-        token: githubToken,
-        fetchImpl: cachingFetch,
-      });
+      let files;
+      try {
+        files = await resolveGistFiles(normalized.gistId, {
+          token: githubToken,
+          fetchImpl: cachingFetch,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Could not load gist";
+        return Response.json({ error: message }, { status: 400 });
+      }
       const primary = selectPrimaryFile(files, normalized.filename);
       if (!primary) {
         return Response.json(
@@ -357,9 +364,21 @@ export async function POST(req: Request) {
     }
 
     const id = alignIdFromNormalizedUrl(normalizedUrl);
-    const cached = await fetchRawWithCache(id, normalizedUrl, 256 * 1024, {
-      fetchImpl: cachingFetch,
-    });
+    let cached: CachedContent | null = null;
+    try {
+      cached = await fetchRawWithCache(id, normalizedUrl, 256 * 1024, {
+        fetchImpl: cachingFetch,
+      });
+    } catch (error) {
+      console.error("fetch raw error", error);
+      return Response.json(
+        {
+          error:
+            "Could not fetch the file. It may be private, deleted, or temporarily unavailable.",
+        },
+        { status: 400 },
+      );
+    }
     if (!cached || cached.kind !== "single") {
       return Response.json(
         {
