@@ -45,7 +45,9 @@ export async function GET(
     alignContentHash: align.contentHash,
   });
 
-  return new Response(jpegBuffer, {
+  // Response expects a typed array/ArrayBuffer in this runtime, not Node Buffer.
+  const body = new Uint8Array(jpegBuffer);
+  return new Response(body, {
     status: 200,
     headers: {
       "Content-Type": "image/jpeg",

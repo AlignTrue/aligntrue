@@ -22,6 +22,14 @@ function alignKey(id: string) {
   return `${ALIGN_KEY_PREFIX}${id}`;
 }
 
+async function generateOgIfPossible(record: AlignRecord) {
+  try {
+    await ensureOgImage(record);
+  } catch (error) {
+    console.error("og generation failed", error);
+  }
+}
+
 export class KvAlignStore implements AlignStore {
   async get(id: string): Promise<AlignRecord | null> {
     return (await getRedis().get<AlignRecord>(alignKey(id))) ?? null;
@@ -64,7 +72,7 @@ export class KvAlignStore implements AlignStore {
         score: mergedInstallCount,
         member: align.id,
       });
-      await ensureOgImage(merged);
+      await generateOgIfPossible(merged);
       return;
     }
 
@@ -77,7 +85,7 @@ export class KvAlignStore implements AlignStore {
         align.id,
       );
     }
-    await ensureOgImage(merged);
+    await generateOgIfPossible(merged);
   }
 
   async increment(
