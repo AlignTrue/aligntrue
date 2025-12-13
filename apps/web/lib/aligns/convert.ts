@@ -81,8 +81,8 @@ function cursorFrontmatter(data: Frontmatter): Frontmatter {
     else if (typeof data.title === "string") result.description = data.title;
     else result.description = "AlignTrue rules for Cursor";
   }
-  // Preserve globs; ensure key exists even when undefined for consistent shape
-  if (data.globs !== undefined) {
+  // Preserve globs only when an array is provided
+  if (Array.isArray(data.globs) && data.globs.length > 0) {
     result.globs = data.globs;
   }
   // Always allow; consumers can refine later
