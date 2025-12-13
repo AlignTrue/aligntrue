@@ -1,3 +1,14 @@
+/**
+ * OG backfill script. Requires BLOB_READ_WRITE_TOKEN and KV env vars.
+ *
+ * Run from apps/web:
+ *   pnpm dlx vercel env pull --environment=production .env.local
+ *   pnpm dlx dotenv-cli -e .env.local -- pnpm generate:og-images
+ *   rm .env.local
+ *
+ * pnpm subprocesses do not inherit shell-sourced vars; dotenv-cli loads them.
+ * Delete .env.local afterward because it contains secrets.
+ */
 import { Redis } from "@upstash/redis";
 import { hasKvEnv } from "@/lib/aligns/storeFactory";
 import type { AlignRecord } from "@/lib/aligns/types";
