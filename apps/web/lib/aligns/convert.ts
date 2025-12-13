@@ -84,8 +84,6 @@ function cursorFrontmatter(data: Frontmatter): Frontmatter {
   // Preserve globs; ensure key exists even when undefined for consistent shape
   if (data.globs !== undefined) {
     result.globs = data.globs;
-  } else if (!("globs" in result)) {
-    result.globs = undefined;
   }
   // Always allow; consumers can refine later
   if (result.alwaysApply === undefined) {
