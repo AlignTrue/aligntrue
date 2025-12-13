@@ -59,7 +59,8 @@ describe("OG storage", () => {
       expect.objectContaining({
         access: "public",
         contentType: "image/jpeg",
-        cacheControl: "public, max-age=31536000, immutable",
+        cacheControlMaxAge: 31536000,
+        addRandomSuffix: false,
       }),
     );
 
