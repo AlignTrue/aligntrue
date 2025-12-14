@@ -117,11 +117,6 @@
       "source": "/cli",
       "destination": "/install",
       "permanent": true
-    },
-    {
-      "source": "/import",
-      "destination": "/catalog",
-      "permanent": true
     }
   ],
   "headers": [
