@@ -35,6 +35,14 @@ export class KvAlignStore implements AlignStore {
     return (await getRedis().get<AlignRecord>(alignKey(id))) ?? null;
   }
 
+  async getMultiple(ids: string[]): Promise<(AlignRecord | null)[]> {
+    if (!ids.length) return [];
+    const records = (await getRedis().mget(
+      ids.map((id) => alignKey(id)),
+    )) as AlignRecord[];
+    return records.map((record) => record ?? null);
+  }
+
   async upsert(align: AlignRecord): Promise<void> {
     const key = alignKey(align.id);
     const [existing, zsetScore] = await Promise.all([
@@ -86,6 +94,11 @@ export class KvAlignStore implements AlignStore {
       );
     }
     await generateOgIfPossible(merged);
+  }
+
+  async upsertMultiple(aligns: AlignRecord[]): Promise<void> {
+    if (!aligns.length) return;
+    await Promise.all(aligns.map((align) => this.upsert(align)));
   }
 
   async increment(

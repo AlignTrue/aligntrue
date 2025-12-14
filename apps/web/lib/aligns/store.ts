@@ -2,7 +2,9 @@ import type { AlignRecord } from "./types";
 
 export interface AlignStore {
   get(id: string): Promise<AlignRecord | null>;
+  getMultiple(ids: string[]): Promise<(AlignRecord | null)[]>;
   upsert(align: AlignRecord): Promise<void>;
+  upsertMultiple(aligns: AlignRecord[]): Promise<void>;
   increment(
     id: string,
     field: "viewCount" | "installClickCount",

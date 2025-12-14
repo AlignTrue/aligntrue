@@ -39,6 +39,7 @@ import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
 import { downloadFile } from "@/lib/download";
 import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
 import { cn, formatBytes } from "@/lib/utils";
+import { PackMembershipBadges } from "./PackMembershipBadges";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -82,11 +83,29 @@ export function AlignDetailPreview({
   const [selectedPath, setSelectedPath] = useState<string>(
     isPack ? (packFiles[0]?.path ?? "") : "single",
   );
+  const [related, setRelated] = useState<{
+    packs: AlignRecord[];
+    rules: AlignRecord[];
+  } | null>(null);
+  const [relatedLoading, setRelatedLoading] = useState(false);
   const alignSharePath = `/a/${align.id}`;
   const shareUrl = `${BASE_URL}${alignSharePath}`;
 
   useEffect(() => {
     void postEvent(align.id, "view");
+  }, [align.id]);
+
+  useEffect(() => {
+    setRelatedLoading(true);
+    fetch(`/api/aligns/${align.id}/related`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setRelated({ packs: data.packs ?? [], rules: data.rules ?? [] });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setRelatedLoading(false));
   }, [align.id]);
 
   useEffect(() => {
@@ -212,6 +231,8 @@ export function AlignDetailPreview({
     () => buildZipFilename(align.pack?.manifestId ?? align.id),
     [align.id, align.pack?.manifestId],
   );
+  const relatedPacks = related?.packs ?? [];
+  const relatedRules = related?.rules ?? [];
 
   const handleDownload = async () => {
     if (!selectedContent) return;
@@ -292,10 +313,12 @@ export function AlignDetailPreview({
                     </Badge>
                   )}
                 </div>
-                {align.description && (
-                  <p className="text-muted-foreground leading-relaxed m-0">
-                    {align.description}
-                  </p>
+                <p className="text-muted-foreground leading-relaxed m-0">
+                  {align.description ||
+                    `Use this AI ${align.kind || "rule"} in any agent format, including AGENTS.md, CLAUDE.md, Cursor, Copilot, Gemini and 20+ others.`}
+                </p>
+                {!isPack && relatedPacks.length > 0 && (
+                  <PackMembershipBadges packs={relatedPacks} className="pt-2" />
                 )}
               </div>
 
@@ -367,6 +390,36 @@ export function AlignDetailPreview({
                 />
               </div>
             </div>
+
+            {isPack && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground m-0">
+                  Contains {relatedRules.length || 0} aligns
+                  {relatedLoading ? " (loading...)" : ""}
+                </p>
+                {relatedRules.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {relatedRules.map((rule) => (
+                      <Badge
+                        key={rule.id}
+                        variant="outline"
+                        className="text-xs font-semibold"
+                      >
+                        <a href={`/a/${rule.id}`} className="hover:underline">
+                          {rule.title || rule.id}
+                        </a>
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  !relatedLoading && (
+                    <p className="text-sm text-muted-foreground m-0">
+                      No linked aligns yet.
+                    </p>
+                  )
+                )}
+              </div>
+            )}
 
             <hr className="border-t border-border my-4" />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

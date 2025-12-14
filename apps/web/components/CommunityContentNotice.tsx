@@ -51,15 +51,11 @@ export function CommunityContentNotice({
             </TooltipContent>
           </Tooltip>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-muted-foreground">Community content</span>
-            <span aria-hidden className="text-muted-foreground/80 px-0.5">
-              •
-            </span>
             <a
               href={learnMoreHref}
               className="text-muted-foreground hover:text-foreground hover:underline underline-offset-4"
             >
-              Learn more
+              Community content
             </a>
             <span aria-hidden className="text-muted-foreground/80 px-0.5">
               •

@@ -38,4 +38,6 @@ export type AlignRecord = {
   sourceRemoved?: boolean;
   sourceRemovedAt?: string;
   fetchFailCount?: number;
+  memberOfPackIds?: string[];
+  containsAlignIds?: string[];
 };

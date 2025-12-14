@@ -412,8 +412,7 @@ export function CatalogPageClient() {
               Browse the rule catalog
             </h2>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto text-pretty">
-              Search user-submitted rules & Align packs. Use Preview to inspect
-              details or Open to jump into the Align.
+              Search user-submitted AI rules & Align packs.
             </p>
           </div>
 

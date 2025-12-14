@@ -17,7 +17,10 @@ import {
   type CachedContent,
   type CachedPackFile,
 } from "@/lib/aligns/content-cache";
-import { buildPackAlignRecord } from "@/lib/aligns/records";
+import {
+  buildPackAlignRecord,
+  buildRuleFromPackFile,
+} from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
 import { getAuthToken } from "@/lib/aligns/github-app";
 import { createCachingFetch } from "@/lib/aligns/caching-fetch";
@@ -26,6 +29,7 @@ import {
   setCachedAlignId,
   deleteCachedAlignId,
 } from "@/lib/aligns/url-cache";
+import { addRuleToPack } from "@/lib/aligns/relationships";
 
 export const dynamic = "force-dynamic";
 
@@ -197,12 +201,29 @@ export async function POST(req: Request) {
         const pack = await fetchPackForWeb(trimmedUrl, {
           fetchImpl: cachingFetch,
         });
+        const manifestParts = new URL(pack.manifestUrl).pathname
+          .split("/")
+          .filter(Boolean);
+        const org = manifestParts[0];
+        const repo = manifestParts[1];
+        const ref = manifestParts[3];
         const id = alignIdFromNormalizedUrl(pack.manifestUrl);
-        const existing = await store.get(id);
+        const ruleEntries = pack.files.map((file) => {
+          const normalizedUrl = `https://github.com/${org}/${repo}/blob/${ref}/${file.path}`;
+          return {
+            file,
+            normalizedUrl,
+            id: alignIdFromNormalizedUrl(normalizedUrl),
+          };
+        });
+        const [existing, existingRules] = await Promise.all([
+          store.get(id),
+          store.getMultiple(ruleEntries.map((entry) => entry.id)),
+        ]);
         const now = new Date().toISOString();
         const contentHash = hashPackFiles(pack.files);
 
-        const record = buildPackAlignRecord({
+        const record: AlignRecord = buildPackAlignRecord({
           id,
           pack,
           sourceUrl: body.url,
@@ -212,9 +233,49 @@ export async function POST(req: Request) {
           contentHashUpdatedAt: now,
         });
 
-        await store.upsert(record);
-        await setCachedContent(id, { kind: "pack", files: pack.files });
+        const ruleRecords: AlignRecord[] = ruleEntries.map(
+          ({ file, id: ruleId, normalizedUrl }, index) => {
+            const existingRule = existingRules.at(index);
+            const ruleRecord = buildRuleFromPackFile({
+              packId: id,
+              file,
+              repo: { org, repo, ref },
+              sourceUrl: body.url,
+              now,
+              existing: existingRule,
+            });
+            const nextMemberOf = new Set(ruleRecord.memberOfPackIds ?? []);
+            nextMemberOf.add(id);
+            ruleRecord.memberOfPackIds = Array.from(nextMemberOf);
+            ruleRecord.contentHash = hashString(file.content);
+            ruleRecord.contentHashUpdatedAt = now;
+            // Ensure normalizedUrl matches computed value in case metadata changes.
+            ruleRecord.normalizedUrl = normalizedUrl;
+            ruleRecord.url = body.url;
+            ruleRecord.id = ruleId;
+            return ruleRecord;
+          },
+        );
+
+        const ruleIds = ruleRecords.map((rule) => rule.id);
+        record.containsAlignIds = ruleIds;
+
+        const contentMap = new Map(
+          ruleEntries.map((entry) => [entry.id, entry]),
+        );
+
         await Promise.all([
+          store.upsert(record),
+          store.upsertMultiple(ruleRecords),
+          setCachedContent(id, { kind: "pack", files: pack.files }),
+          ...ruleRecords.map((rule) => {
+            const entry = contentMap.get(rule.id);
+            return setCachedContent(rule.id, {
+              kind: "single",
+              content: entry?.file.content ?? "",
+            });
+          }),
+          ...ruleRecords.map((rule) => addRuleToPack(rule.id, id)),
           setCachedAlignId(trimmedUrl, id),
           setCachedAlignId(pack.manifestUrl, id),
         ]);
