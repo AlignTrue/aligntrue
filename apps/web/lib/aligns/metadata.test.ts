@@ -8,7 +8,7 @@ describe("extractMetadata (markdown)", () => {
     const content = `---
 title: Frontmatter Title
 description: A description
-author: @author
+author: "@author"
 ---
 # Heading Title
 

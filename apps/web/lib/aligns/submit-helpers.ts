@@ -90,8 +90,13 @@ export async function fetchWithLimit(
         chunks.push(value);
       }
     }
-    const decoder = new TextDecoder("utf-8");
-    return decoder.decode(Buffer.concat(chunks));
+    const combined = new Uint8Array(received);
+    let offset = 0;
+    for (const chunk of chunks) {
+      combined.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return new TextDecoder("utf-8").decode(combined);
   } catch {
     return null;
   }

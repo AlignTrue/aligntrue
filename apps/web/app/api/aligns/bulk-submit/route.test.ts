@@ -1,10 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import { POST } from "./route";
-
-const mockUpsert = vi.fn();
-const mockGet = vi.fn();
-const mockAddRuleToPack = vi.fn();
+const { mockUpsert, mockGet, mockAddRuleToPack } = vi.hoisted(() => ({
+  mockUpsert: vi.fn(),
+  mockGet: vi.fn(),
+  mockAddRuleToPack: vi.fn(),
+}));
 
 vi.mock("@/lib/aligns/storeFactory", () => ({
   getAlignStore: () => ({
@@ -16,6 +16,8 @@ vi.mock("@/lib/aligns/storeFactory", () => ({
 vi.mock("@/lib/aligns/relationships", () => ({
   addRuleToPack: (...args: unknown[]) => mockAddRuleToPack(...args),
 }));
+
+import { POST } from "./route";
 
 vi.mock("@/lib/aligns/submit-helpers", async (orig) => {
   const actual = await orig();

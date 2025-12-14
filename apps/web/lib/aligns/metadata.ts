@@ -146,6 +146,7 @@ export function extractMetadata(
     return {
       title: humanizeFilename(normalizedUrl),
       description: null,
+      author: null,
       fileType: "xml",
       kind: "rule",
     };
