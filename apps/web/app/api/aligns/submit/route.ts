@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     if (cachedId) {
       const existing = await store.get(cachedId);
       if (existing) {
-        return Response.json({ id: cachedId });
+        return Response.json({ id: cachedId, title: existing.title });
       }
       // Stale cache: align was deleted; clear and continue with fresh import
       await deleteCachedAlignId(trimmedUrl);
@@ -168,7 +168,7 @@ export async function POST(req: Request) {
           setCachedAlignId(pack.manifestUrl, id),
         ]);
 
-        return Response.json({ id });
+        return Response.json({ id, title: record.title });
       } catch (packError) {
         if (!isPackNotFoundError(packError)) {
           const message =
@@ -296,7 +296,7 @@ export async function POST(req: Request) {
         setCachedAlignId(primary.rawUrl, id),
       ]);
 
-      return Response.json({ id });
+      return Response.json({ id, title: record.title });
     }
 
     const normalizedUrl = normalized.normalizedUrl;
@@ -364,7 +364,7 @@ export async function POST(req: Request) {
       setCachedAlignId(normalizedUrl, id),
     ]);
 
-    return Response.json({ id });
+    return Response.json({ id, title: record.title });
   } catch (error) {
     console.error("submit error", error);
     return Response.json({ error: "Internal error" }, { status: 500 });
