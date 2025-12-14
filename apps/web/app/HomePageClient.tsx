@@ -330,6 +330,15 @@ export function HomePageClient() {
             </div>
           )}
         </div>
+
+        <div>
+          <Link
+            href="/import"
+            className="text-sm text-muted-foreground hover:text-primary"
+          >
+            Importing multiple? Try bulk import →
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

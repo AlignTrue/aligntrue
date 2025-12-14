@@ -6,41 +6,8 @@
 
 import { describe, it, expect } from "vitest";
 
-// Test the file extension validation logic (extracted from route.ts)
-const ALLOWED_EXTENSIONS = [
-  ".md",
-  ".mdc",
-  ".mdx",
-  ".markdown",
-  ".yaml",
-  ".yml",
-  ".xml",
-] as const;
-
-const ALLOWED_FILENAMES = [
-  ".clinerules",
-  ".cursorrules",
-  ".goosehints",
-] as const;
-
-function hasAllowedExtension(url: string): boolean {
-  const lower = url.toLowerCase();
-  const filename = lower.split("/").pop() || "";
-  if (
-    ALLOWED_FILENAMES.includes(filename as (typeof ALLOWED_FILENAMES)[number])
-  )
-    return true;
-  return ALLOWED_EXTENSIONS.some((ext) => lower.endsWith(ext));
-}
-
-// Test pack detection logic (extracted from route.ts)
-function isPackNotFoundError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  const message = error.message.toLowerCase();
-  return (
-    message.includes("no .align.yaml") || message.includes("manifest not found")
-  );
-}
+import { hasAllowedExtension } from "./url-validation";
+import { isPackNotFoundError } from "./submit-helpers";
 
 describe("hasAllowedExtension", () => {
   describe("markdown files", () => {

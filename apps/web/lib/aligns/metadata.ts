@@ -47,7 +47,7 @@ function safeFrontmatterMetadata(md: string): {
       );
       if (endIdx === -1) {
         // frontmatter start without closing fence: cannot safely parse, avoid YAML headings
-        return { title: null, description: null };
+        return { title: null, description: null, author: null };
       }
       const frontmatterLines = lines.slice(1, endIdx);
       const descriptionLine = frontmatterLines.find((line) =>

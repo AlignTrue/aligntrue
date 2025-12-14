@@ -15,6 +15,7 @@ export type AlignRecord = {
   url: string; // original submitted URL
   normalizedUrl: string; // canonical GitHub blob URL
   provider: "github" | "unknown";
+  source?: "github" | "catalog";
   kind: AlignKind;
   title: string | null;
   description: string | null;

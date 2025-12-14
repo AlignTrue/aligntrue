@@ -28,6 +28,7 @@ export function buildPackAlignRecord({
     url: sourceUrl,
     normalizedUrl: pack.manifestUrl,
     provider: "github",
+    source: "github",
     kind: "pack",
     title: pack.title ?? pack.manifestUrl,
     description: pack.description ?? null,
@@ -75,6 +76,7 @@ export function buildRuleFromPackFile({
     url: sourceUrl,
     normalizedUrl,
     provider: "github",
+    source: "github",
     kind: meta.kind,
     title: meta.title,
     description: meta.description,
@@ -116,6 +118,7 @@ export function buildSingleRuleRecord({
     url: sourceUrl,
     normalizedUrl,
     provider: "github",
+    source: "github",
     kind: meta.kind,
     title: meta.title,
     description: meta.description,
@@ -127,5 +130,45 @@ export function buildSingleRuleRecord({
     lastViewedAt: now,
     viewCount: existing?.viewCount ?? 0,
     installClickCount: existing?.installClickCount ?? 0,
+  };
+}
+
+type BuildCatalogPackRecordParams = {
+  id: string;
+  title: string;
+  description: string;
+  author?: string | null;
+  ruleIds: string[];
+  now: string;
+  existing?: AlignRecord | null;
+};
+
+export function buildCatalogPackRecord({
+  id,
+  title,
+  description,
+  author,
+  ruleIds,
+  now,
+  existing,
+}: BuildCatalogPackRecordParams): AlignRecord {
+  const normalizedUrl = `https://aligntrue.ai/a/${id}`;
+  return {
+    id,
+    url: normalizedUrl,
+    normalizedUrl,
+    provider: "unknown",
+    source: "catalog",
+    kind: "pack",
+    title,
+    description,
+    author: author ?? null,
+    fileType: "yaml",
+    createdAt: existing?.createdAt ?? now,
+    lastViewedAt: now,
+    viewCount: existing?.viewCount ?? 0,
+    installClickCount: existing?.installClickCount ?? 0,
+    pack: { files: [], totalBytes: 0 },
+    containsAlignIds: ruleIds,
   };
 }

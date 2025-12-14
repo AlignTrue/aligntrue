@@ -1,11 +1,17 @@
-import crypto from "node:crypto";
-import { Redis } from "@upstash/redis";
 import { getAlignStore, hasKvEnv } from "@/lib/aligns/storeFactory";
 import { extractMetadata } from "@/lib/aligns/metadata";
 import {
   alignIdFromNormalizedUrl,
   normalizeGitUrl,
 } from "@/lib/aligns/normalize";
+import { hasAllowedExtension } from "@/lib/aligns/url-validation";
+import {
+  fetchWithLimit,
+  hashPackFiles,
+  hashString,
+  isPackNotFoundError,
+  rateLimit,
+} from "@/lib/aligns/submit-helpers";
 import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import {
   resolveGistFiles,
@@ -15,7 +21,6 @@ import {
   fetchRawWithCache,
   setCachedContent,
   type CachedContent,
-  type CachedPackFile,
 } from "@/lib/aligns/content-cache";
 import {
   buildPackAlignRecord,
@@ -31,25 +36,11 @@ import {
   deleteCachedAlignId,
 } from "@/lib/aligns/url-cache";
 import { addRuleToPack } from "@/lib/aligns/relationships";
+import { MAX_FILE_BYTES } from "@/lib/aligns/constants";
 
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
-const ALLOWED_EXTENSIONS = [
-  ".md",
-  ".mdc",
-  ".mdx",
-  ".markdown",
-  ".yaml",
-  ".yml",
-  ".xml",
-] as const;
-const ALLOWED_FILENAMES = [
-  ".clinerules",
-  ".cursorrules",
-  ".goosehints",
-] as const;
-
 function isGistUrl(url: string): boolean {
   try {
     const parsed = new URL(url.trim());
@@ -59,110 +50,6 @@ function isGistUrl(url: string): boolean {
     );
   } catch {
     return false;
-  }
-}
-
-function hasAllowedExtension(url: string): boolean {
-  const lower = url.toLowerCase();
-  const filename = lower.split("/").pop() || "";
-  if (
-    ALLOWED_FILENAMES.includes(filename as (typeof ALLOWED_FILENAMES)[number])
-  )
-    return true;
-  return ALLOWED_EXTENSIONS.some((ext) => lower.endsWith(ext));
-}
-let redisClient: Redis | null = null;
-function getRedis(): Redis {
-  if (!redisClient) {
-    redisClient = Redis.fromEnv();
-  }
-  return redisClient;
-}
-
-// In-memory rate limit for local dev (no persistence across restarts)
-const localRateLimits = new Map<string, { count: number; expiresAt: number }>();
-
-async function rateLimit(ip: string): Promise<boolean> {
-  if (process.env.NODE_ENV === "test") return true;
-
-  if (!hasKvEnv()) {
-    // In-memory rate limiting for local dev
-    const now = Date.now();
-    const entry = localRateLimits.get(ip);
-    if (!entry || entry.expiresAt < now) {
-      localRateLimits.set(ip, { count: 1, expiresAt: now + 60_000 });
-      return true;
-    }
-    entry.count += 1;
-    return entry.count <= 10;
-  }
-
-  const key = `v1:ratelimit:submit:${ip}`;
-  const count = await getRedis().incr(key);
-  if (count === 1) {
-    await getRedis().expire(key, 60);
-  }
-  return count <= 10;
-}
-
-function isPackNotFoundError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  const message = error.message.toLowerCase();
-  return (
-    message.includes("no .align.yaml") || message.includes("manifest not found")
-  );
-}
-
-function hashString(content: string): string {
-  return crypto.createHash("sha256").update(content).digest("hex");
-}
-
-function hashPackFiles(files: CachedPackFile[]): string {
-  const ordered = [...files].sort((a, b) => a.path.localeCompare(b.path));
-  const payload = JSON.stringify(
-    ordered.map((file) => ({ path: file.path, content: file.content })),
-  );
-  return hashString(payload);
-}
-
-async function fetchWithLimit(
-  url: string,
-  maxBytes: number,
-  fetchImpl: typeof fetch,
-): Promise<string | null> {
-  try {
-    const response = await fetchImpl(url);
-    if (!response.ok) return null;
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      return null;
-    }
-
-    const chunks: Uint8Array[] = [];
-    let total = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (value) {
-        total += value.byteLength;
-        if (total > maxBytes) {
-          reader.cancel();
-          return null;
-        }
-        chunks.push(value);
-      }
-    }
-
-    const combined = new Uint8Array(total);
-    let offset = 0;
-    for (const chunk of chunks) {
-      combined.set(chunk, offset);
-      offset += chunk.byteLength;
-    }
-    return new TextDecoder().decode(combined);
-  } catch {
-    return null;
   }
 }
 
@@ -362,11 +249,10 @@ export async function POST(req: Request) {
         );
       }
 
-      if (primary.size > 256 * 1024) {
+      if (primary.size > MAX_FILE_BYTES) {
         return Response.json(
           {
-            error:
-              "File too large (max 256KB) or could not be fetched. Try a smaller file.",
+            error: `File too large (max ${MAX_FILE_BYTES / 1024}KB) or could not be fetched. Try a smaller file.`,
           },
           { status: 413 },
         );
@@ -374,14 +260,13 @@ export async function POST(req: Request) {
 
       const content = await fetchWithLimit(
         primary.rawUrl,
-        256 * 1024,
+        MAX_FILE_BYTES,
         cachingFetch,
       );
       if (content === null) {
         return Response.json(
           {
-            error:
-              "File too large (max 256KB) or could not be fetched. Try a smaller file.",
+            error: `File too large (max ${MAX_FILE_BYTES / 1024}KB) or could not be fetched. Try a smaller file.`,
           },
           { status: 413 },
         );
@@ -433,7 +318,7 @@ export async function POST(req: Request) {
     const id = alignIdFromNormalizedUrl(normalizedUrl);
     let cached: CachedContent | null = null;
     try {
-      cached = await fetchRawWithCache(id, normalizedUrl, 256 * 1024, {
+      cached = await fetchRawWithCache(id, normalizedUrl, MAX_FILE_BYTES, {
         fetchImpl: cachingFetch,
       });
     } catch (error) {
@@ -449,8 +334,7 @@ export async function POST(req: Request) {
     if (!cached || cached.kind !== "single") {
       return Response.json(
         {
-          error:
-            "File too large (max 256KB) or could not be fetched. Try a smaller file.",
+          error: `File too large (max ${MAX_FILE_BYTES / 1024}KB) or could not be fetched. Try a smaller file.`,
         },
         { status: 413 },
       );

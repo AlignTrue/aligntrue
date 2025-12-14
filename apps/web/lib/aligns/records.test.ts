@@ -4,6 +4,7 @@ import {
   buildPackAlignRecord,
   buildRuleFromPackFile,
   buildSingleRuleRecord,
+  buildCatalogPackRecord,
 } from "./records";
 import type { AlignRecord } from "./types";
 import type { WebPackResult } from "./pack-fetcher";
@@ -35,6 +36,7 @@ describe("buildPackAlignRecord", () => {
     expect(record.lastViewedAt).toBe(now);
     expect(record.title).toBe("Demo pack summary");
     expect(record.description).toBe("Demo pack description");
+    expect(record.source).toBe("github");
   });
 
   it("preserves existing counters and createdAt", () => {
@@ -96,6 +98,7 @@ describe("buildRuleFromPackFile", () => {
     expect(record.memberOfPackIds).toContain("pack123");
     expect(record.createdAt).toBe(now);
     expect(record.lastViewedAt).toBe(now);
+    expect(record.source).toBe("github");
   });
 
   it("preserves existing member list and adds new pack", () => {
@@ -157,5 +160,27 @@ describe("buildSingleRuleRecord", () => {
     expect(record.author).toBe("@author");
     expect(record.title).toBe("Rule title");
     expect(record.contentHash).toBe("hash");
+    expect(record.source).toBe("github");
+  });
+});
+
+describe("buildCatalogPackRecord", () => {
+  it("creates catalog-origin pack with containsAlignIds", () => {
+    const now = "2024-04-01T00:00:00.000Z";
+    const record = buildCatalogPackRecord({
+      id: "pack-123",
+      title: "Catalog Pack",
+      description: "Created in catalog",
+      author: "@user",
+      ruleIds: ["rule-1", "rule-2"],
+      now,
+      existing: null,
+    });
+
+    expect(record.source).toBe("catalog");
+    expect(record.provider).toBe("unknown");
+    expect(record.containsAlignIds).toEqual(["rule-1", "rule-2"]);
+    expect(record.normalizedUrl).toContain("aligntrue.ai/a/pack-123");
+    expect(record.pack?.files).toHaveLength(0);
   });
 });
