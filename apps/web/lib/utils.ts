@@ -15,3 +15,17 @@ export function formatBytes(bytes: number | null | undefined): string | null {
   }
   return `${bytes} B`;
 }
+
+/**
+ * Check if an error is an AbortError from a cancelled fetch request.
+ * Works with both DOMException and error-like objects with a name property.
+ */
+export function isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === "AbortError") return true;
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "AbortError"
+  );
+}

@@ -3,13 +3,9 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
-  ChevronDown,
-  ChevronUp,
   FileText,
   Globe,
-  Loader2,
   RefreshCw,
   Settings,
   Shuffle,
@@ -20,45 +16,16 @@ import { SectionBadge } from "./components/SectionBadge";
 import { HowItWorksDiagram } from "./components/HowItWorksDiagram";
 import { GitHubIcon } from "./components/GitHubIcon";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { getSubmittedUrlFromSearch } from "@/lib/aligns/urlFromSearch";
 import { CommandBlock } from "@/components/CommandBlock";
 import { PageLayout } from "@/components/PageLayout";
 import { SkeletonCard } from "@/components/SkeletonCard";
 import { AlignCard, type AlignSummary } from "./components/AlignCard";
+import { RuleImportCard } from "@/components/RuleImportCard";
 import { useVisibilityRecovery } from "@/lib/useVisibilityRecovery";
-
-type SubmitResult = { id: string };
-
-function isAbortError(error: unknown): boolean {
-  if (error instanceof DOMException && error.name === "AbortError") return true;
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "name" in error &&
-    (error as { name?: unknown }).name === "AbortError"
-  );
-}
-
-async function submitUrl(url: string): Promise<SubmitResult> {
-  const response = await fetch("/api/aligns/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-  });
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    const error = new Error(data.error ?? "Failed to submit URL", {
-      cause: { hint: data.hint, issueUrl: data.issueUrl },
-    });
-    throw error;
-  }
-  const data = (await response.json()) as SubmitResult;
-  return data;
-}
+import { isAbortError } from "@/lib/utils";
 
 async function fetchList(
   path: string,
@@ -70,7 +37,6 @@ async function fetchList(
 }
 
 export function HomePageClient() {
-  const router = useRouter();
   const recentAbortRef = useRef<AbortController | null>(null);
   const [activeTab, setActiveTab] = useState<"rules" | "cli">("cli");
   const tabsBaseId = useId();
@@ -78,45 +44,16 @@ export function HomePageClient() {
   const cliContentId = `${tabsBaseId}-content-cli`;
   const rulesTriggerId = `${tabsBaseId}-trigger-rules`;
   const rulesContentId = `${tabsBaseId}-content-rules`;
-  const [urlInput, setUrlInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [errorHint, setErrorHint] = useState<string | null>(null);
-  const [errorIssueUrl, setErrorIssueUrl] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [initialImportUrl, setInitialImportUrl] = useState<string | null>(null);
   const [recent, setRecent] = useState<AlignSummary[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
-  const [showImportHelp, setShowImportHelp] = useState(false);
 
   useEffect(() => {
     const candidate = getSubmittedUrlFromSearch(window.location.search);
     if (!candidate) return;
-    setUrlInput(candidate);
     setActiveTab("rules");
-    void (async () => {
-      setSubmitting(true);
-      setError(null);
-      setErrorHint(null);
-      setErrorIssueUrl(null);
-      try {
-        const { id } = await submitUrl(candidate);
-        router.push(`/a/${id}`);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-          const cause = err.cause as {
-            hint?: string;
-            issueUrl?: string;
-          } | null;
-          setErrorHint(cause?.hint ?? null);
-          setErrorIssueUrl(cause?.issueUrl ?? null);
-        } else {
-          setError("Submission failed");
-        }
-      } finally {
-        setSubmitting(false);
-      }
-    })();
-  }, [router]);
+    setInitialImportUrl(candidate);
+  }, []);
 
   const loadRecentAligns = useCallback(async (signal?: AbortSignal) => {
     const controller = signal ? null : new AbortController();
@@ -167,35 +104,6 @@ export function HomePageClient() {
     };
   }, []);
 
-  const handleSubmit = async (value?: string) => {
-    const target = value ?? urlInput;
-    if (!target) {
-      setError("Enter a GitHub URL to continue.");
-      setErrorHint(null);
-      setErrorIssueUrl(null);
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    setErrorHint(null);
-    setErrorIssueUrl(null);
-    try {
-      const { id } = await submitUrl(target);
-      router.push(`/a/${id}`);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-        const cause = err.cause as { hint?: string; issueUrl?: string } | null;
-        setErrorHint(cause?.hint ?? null);
-        setErrorIssueUrl(cause?.issueUrl ?? null);
-      } else {
-        setError("Submission failed");
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const renderCards = (items: AlignSummary[]) => {
     const limited = items.slice(0, 6);
     if (!limited.length) return null;
@@ -214,133 +122,6 @@ export function HomePageClient() {
         <SkeletonCard key={`skeleton-${idx}`} />
       ))}
     </div>
-  );
-
-  const renderImportCard = () => (
-    <Card className="max-w-4xl mx-auto text-left" variant="surface">
-      <CardContent className="p-6 md:p-7 space-y-6">
-        <div className="space-y-3">
-          <label className="font-semibold text-foreground" htmlFor="align-url">
-            Import AI rules (.mdc, .md, Align packs, etc.) directly from GitHub.
-          </label>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Input
-              id="align-url"
-              type="url"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="https://github.com/user/repo/blob/main/rules/..."
-              className="h-12 text-base flex-1 bg-muted"
-            />
-            <Button
-              onClick={() => void handleSubmit()}
-              disabled={submitting}
-              className="h-12 px-5 font-semibold"
-            >
-              {submitting ? (
-                <span className="inline-flex items-center gap-2">
-                  <Loader2 className="animate-spin" />
-                  Generating...
-                </span>
-              ) : (
-                "Import"
-              )}
-            </Button>
-          </div>
-          {error && (
-            <div className="text-sm space-y-1" aria-live="polite">
-              <p className="font-semibold text-destructive m-0">{error}</p>
-              {errorHint && (
-                <p className="text-muted-foreground m-0">{errorHint}</p>
-              )}
-              {errorIssueUrl && (
-                <a
-                  href={errorIssueUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  Have a file type we should support? Create an issue
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="border-t pt-4 space-y-3">
-          <button
-            type="button"
-            className="w-full flex items-center justify-between text-left text-sm font-semibold text-foreground hover:text-primary transition-colors"
-            onClick={() => setShowImportHelp((v) => !v)}
-            aria-expanded={showImportHelp}
-            aria-controls="import-help"
-          >
-            <span>How imports work</span>
-            {showImportHelp ? (
-              <ChevronUp size={18} className="text-muted-foreground" />
-            ) : (
-              <ChevronDown size={18} className="text-muted-foreground" />
-            )}
-          </button>
-          {showImportHelp && (
-            <div
-              id="import-help"
-              className="space-y-3 text-sm text-muted-foreground"
-            >
-              <ol className="list-decimal list-inside space-y-2">
-                <li>
-                  AlignTrue fetches your rules and normalizes them into IR.
-                </li>
-                <li>
-                  Rules are written to <code>.aligntrue/rules</code> as the
-                  single source of truth.
-                </li>
-                <li>
-                  Agent exports are generated on sync (
-                  <code>aligntrue sync</code>) in native formats (Cursor .mdc,
-                  AGENTS.md, etc.).
-                </li>
-              </ol>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="text-xs font-semibold">
-                  <a
-                    href="/docs/00-getting-started/00-quickstart"
-                    className="hover:underline"
-                  >
-                    Quickstart guide
-                  </a>
-                </Badge>
-                <Badge variant="outline" className="text-xs font-semibold">
-                  <a
-                    href="/docs/03-concepts/sync-behavior"
-                    className="hover:underline"
-                  >
-                    How sync works
-                  </a>
-                </Badge>
-                <Badge variant="outline" className="text-xs font-semibold">
-                  <a
-                    href="/docs/04-reference/agent-support"
-                    className="hover:underline"
-                  >
-                    Agent compatibility
-                  </a>
-                </Badge>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Link
-            href="/import"
-            className="text-sm text-muted-foreground hover:text-primary"
-          >
-            Importing multiple? Try bulk import →
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
   );
 
   const renderCLITab = () => (
@@ -464,7 +245,11 @@ export function HomePageClient() {
                 aria-labelledby={rulesTriggerId}
                 value="rules"
               >
-                {renderImportCard()}
+                <RuleImportCard
+                  loadingText="Generating..."
+                  initialUrl={initialImportUrl ?? undefined}
+                  autoSubmitOnInitialUrl
+                />
               </TabsContent>
             </div>
           </Tabs>

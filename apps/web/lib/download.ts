@@ -1,3 +1,5 @@
+import { isAbortError } from "@/lib/utils";
+
 const mimeByExtension = new Map<string, string>([
   ["md", "text/markdown"],
   ["mdc", "text/markdown"],
@@ -56,15 +58,6 @@ function supportsFilePicker(): boolean {
 function buildPickerTypes(ext: string): FilePickerAcceptType[] | undefined {
   const type = fileTypes.get(ext);
   return type ? [type] : undefined;
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException
-    ? error.name === "AbortError"
-    : typeof error === "object" &&
-        error !== null &&
-        "name" in error &&
-        (error as { name?: string }).name === "AbortError";
 }
 
 export async function downloadFile(

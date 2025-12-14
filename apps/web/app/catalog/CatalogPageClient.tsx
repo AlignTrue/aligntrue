@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { AlignCard, type AlignSummary } from "@/app/components/AlignCard";
 import { AlignDetailPreview } from "@/components/AlignDetailPreview";
@@ -18,9 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { CommandBlock } from "@/components/CommandBlock";
 import { SectionBadge } from "@/app/components/SectionBadge";
+import { RuleImportCard } from "@/components/RuleImportCard";
+import { isAbortError } from "@/lib/utils";
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent } from "@/lib/aligns/content-cache";
 
@@ -29,40 +30,8 @@ type KindFilter = "all" | "rule" | "pack";
 
 type DetailPayload = { align: AlignRecord; content: CachedContent | null };
 
-function isAbortError(error: unknown): boolean {
-  if (error instanceof DOMException && error.name === "AbortError") return true;
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "name" in error &&
-    (error as { name?: unknown }).name === "AbortError"
-  );
-}
-
-async function submitUrl(url: string): Promise<{ id: string }> {
-  const response = await fetch("/api/aligns/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-  });
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    const error = new Error(data.error ?? "Failed to submit URL", {
-      cause: { hint: data.hint, issueUrl: data.issueUrl },
-    });
-    throw error;
-  }
-  return (await response.json()) as { id: string };
-}
-
 export function CatalogPageClient() {
   const router = useRouter();
-  const [urlInput, setUrlInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [errorHint, setErrorHint] = useState<string | null>(null);
-  const [errorIssueUrl, setErrorIssueUrl] = useState<string | null>(null);
-
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [kind, setKind] = useState<KindFilter>("all");
@@ -80,7 +49,6 @@ export function CatalogPageClient() {
   const detailCache = useRef<Map<string, DetailPayload>>(new Map());
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const [showImportHelp, setShowImportHelp] = useState(false);
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -147,34 +115,6 @@ export function CatalogPageClient() {
   useEffect(() => {
     clearPreview();
   }, [page, clearPreview]);
-
-  const handleImport = async () => {
-    if (!urlInput) {
-      setError("Enter a GitHub URL to continue.");
-      setErrorHint(null);
-      setErrorIssueUrl(null);
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    setErrorHint(null);
-    setErrorIssueUrl(null);
-    try {
-      const { id } = await submitUrl(urlInput);
-      router.push(`/a/${id}`);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-        const cause = err.cause as { hint?: string; issueUrl?: string } | null;
-        setErrorHint(cause?.hint ?? null);
-        setErrorIssueUrl(cause?.issueUrl ?? null);
-      } else {
-        setError("Submission failed");
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const loadPreview = useCallback(async (align: AlignSummary) => {
     setPreviewError(null);
@@ -263,137 +203,7 @@ export function CatalogPageClient() {
             </p>
           </div>
 
-          <Card className="max-w-4xl mx-auto text-left" variant="surface">
-            <CardContent className="p-6 md:p-7 space-y-6">
-              <div className="space-y-3">
-                <label
-                  className="font-semibold text-foreground"
-                  htmlFor="align-url"
-                >
-                  Import AI rules (.mdc, .md, Align packs, etc.) directly from
-                  GitHub.
-                </label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Input
-                    id="align-url"
-                    type="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder="https://github.com/user/repo/blob/main/rules/..."
-                    className="h-12 text-base flex-1 bg-muted"
-                  />
-                  <Button
-                    onClick={() => void handleImport()}
-                    disabled={submitting}
-                    className="h-12 px-5 font-semibold"
-                  >
-                    {submitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="animate-spin" />
-                        Importing...
-                      </span>
-                    ) : (
-                      "Import"
-                    )}
-                  </Button>
-                </div>
-                {error && (
-                  <div className="text-sm space-y-1" aria-live="polite">
-                    <p className="font-semibold text-destructive m-0">
-                      {error}
-                    </p>
-                    {errorHint && (
-                      <p className="text-muted-foreground m-0">{errorHint}</p>
-                    )}
-                    {errorIssueUrl && (
-                      <a
-                        href={errorIssueUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary font-semibold hover:underline"
-                      >
-                        Have a file type we should support? Create an issue
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t pt-4 space-y-3">
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between text-left text-sm font-semibold text-foreground hover:text-primary transition-colors"
-                  onClick={() => setShowImportHelp((v) => !v)}
-                  aria-expanded={showImportHelp}
-                  aria-controls="import-help"
-                >
-                  <span>How imports work</span>
-                  {showImportHelp ? (
-                    <ChevronUp size={18} className="text-muted-foreground" />
-                  ) : (
-                    <ChevronDown size={18} className="text-muted-foreground" />
-                  )}
-                </button>
-                {showImportHelp && (
-                  <div
-                    id="import-help"
-                    className="space-y-3 text-sm text-muted-foreground"
-                  >
-                    <ol className="list-decimal list-inside space-y-2">
-                      <li>
-                        AlignTrue fetches your rules and normalizes them into
-                        IR.
-                      </li>
-                      <li>
-                        Rules are written to <code>.aligntrue/rules</code> as
-                        the single source of truth.
-                      </li>
-                      <li>
-                        Agent exports are generated on sync (
-                        <code>aligntrue sync</code>) in native formats (Cursor
-                        .mdc, AGENTS.md, etc.).
-                      </li>
-                    </ol>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge
-                        variant="outline"
-                        className="text-xs font-semibold"
-                      >
-                        <a
-                          href="/docs/00-getting-started/00-quickstart"
-                          className="hover:underline"
-                        >
-                          Quickstart guide
-                        </a>
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs font-semibold"
-                      >
-                        <a
-                          href="/docs/03-concepts/sync-behavior"
-                          className="hover:underline"
-                        >
-                          How sync works
-                        </a>
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs font-semibold"
-                      >
-                        <a
-                          href="/docs/04-reference/agent-support"
-                          className="hover:underline"
-                        >
-                          Agent compatibility
-                        </a>
-                      </Badge>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <RuleImportCard loadingText="Importing..." />
         </div>
       </section>
 
