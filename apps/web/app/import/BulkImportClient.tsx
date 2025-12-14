@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle, Loader2, XCircle } from "lucide-react";
 
 import { PageLayout } from "@/components/PageLayout";
@@ -15,6 +15,7 @@ import {
   type UrlValidationResult,
 } from "@/lib/aligns/url-validation";
 import { DESCRIPTION_MAX_CHARS } from "@/lib/aligns/constants";
+import { useDebounce } from "@/lib/useDebounce";
 
 type BulkResult =
   | { url: string; status: "success"; id: string; title?: string | null }
@@ -58,23 +59,29 @@ export function BulkImportClient() {
     [urlsText],
   );
 
+  const debouncedUrls = useDebounce(urls, 300);
+
   const validCount = validation?.results.filter((r) => r.valid).length ?? 0;
 
-  const handleValidate = () => {
-    const res = validateAlignUrls(urls);
+  useEffect(() => {
+    const res = validateAlignUrls(debouncedUrls);
     setValidation(res);
     setError(null);
     if (res.allValid && res.uniqueOwners.length === 1) {
       setPackAuthor(res.uniqueOwners[0] ?? "");
     }
-  };
+  }, [debouncedUrls]);
 
   const handleSubmit = async () => {
+    const currentValidation = validation ?? validateAlignUrls(urls);
     if (!validation) {
-      handleValidate();
+      setValidation(currentValidation);
+    }
+    if (!currentValidation.results.length) {
+      setError("Enter at least one URL.");
       return;
     }
-    if (!validation.allValid) {
+    if (!currentValidation.allValid) {
       setError("Fix validation errors before importing.");
       return;
     }
@@ -234,7 +241,7 @@ export function BulkImportClient() {
           <h1 className="text-3xl font-bold text-foreground">Bulk import</h1>
           <p className="text-muted-foreground">
             Paste multiple GitHub URLs (one per line). Optionally bundle them as
-            a shareable pack. We validate URLs locally before importing.
+            a shareable pack. URLs are validated as you type.
           </p>
         </div>
 
@@ -259,9 +266,6 @@ export function BulkImportClient() {
                   Bundle as shareable pack (rules remain individually available)
                 </label>
               </div>
-              <Button variant="outline" size="sm" onClick={handleValidate}>
-                Validate
-              </Button>
             </div>
             {validation && renderValidation()}
           </CardContent>
