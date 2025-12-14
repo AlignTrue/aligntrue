@@ -34,8 +34,16 @@ async function fetchDirectoryItems(
   path: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<GitHubContentItem[] | null> {
-  const encodedPath = encodeURIComponent(path);
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`;
+  const encodedPath =
+    path === ""
+      ? ""
+      : path
+          .split("/")
+          .map((segment) => encodeURIComponent(segment))
+          .join("/");
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents${
+    encodedPath ? `/${encodedPath}` : ""
+  }?ref=${encodeURIComponent(ref)}`;
   const res = await fetchImpl(apiUrl, {
     headers: {
       Accept: "application/vnd.github+json",
