@@ -10,7 +10,7 @@ import {
 import type { CachedPackFile } from "./content-cache";
 
 let redisClient: Redis | null = null;
-function getRedis(): Redis {
+export function getRedis(): Redis {
   if (!redisClient) {
     redisClient = Redis.fromEnv();
   }

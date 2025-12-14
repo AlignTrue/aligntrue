@@ -10,6 +10,7 @@ import {
   hashPackFiles,
   hashString,
   isPackNotFoundError,
+  getRedis,
   rateLimit,
 } from "@/lib/aligns/submit-helpers";
 import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";

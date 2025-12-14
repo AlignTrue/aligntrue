@@ -94,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Bulk import UX** - New `/import` page with bulk URL entry, optional pack creation, and results that show imported rule titles returned by the bulk-submit API
+- **Web form controls** - Added shared `Textarea` and Radix-based `Checkbox` components for catalog UI forms
 - **Branded Open Graph images for aligns** - `/api/og/[id]` now renders PNG previews with AlignTrue styling, deterministic background patterns, and bundled fonts for consistent sharing
 - **Align identity bar** - Added HashBar component to align cards and detail views to show a deterministic color signature for each align
 - **Init exporter selection streamlined** - Init now shows 5 most common exporters (AGENTS.md, Cursor, Claude, Windsurf, Cline) plus any detected ones, with message to add 14+ more via `aligntrue exporters`. Fixes multiselect rendering with large exporter list
