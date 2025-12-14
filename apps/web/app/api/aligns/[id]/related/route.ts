@@ -7,9 +7,9 @@ const store = getAlignStore();
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const id = params.id;
+  const { id } = await params;
   if (!id) {
     return Response.json({ error: "Missing id" }, { status: 400 });
   }

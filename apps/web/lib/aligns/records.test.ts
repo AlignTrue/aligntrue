@@ -90,8 +90,10 @@ describe("buildRuleFromPackFile", () => {
       existing: null,
     });
 
-    expect(record.id).toEqual(
-      expect.stringContaining("https://github.com/org/repo/blob/main/rules"),
+    expect(record.id).toHaveLength(11);
+    expect(record.id).not.toMatch(/[+/=]/); // URL-safe base64
+    expect(record.normalizedUrl).toBe(
+      "https://github.com/org/repo/blob/main/rules/typescript.md",
     );
     expect(record.memberOfPackIds).toContain("pack123");
     expect(record.createdAt).toBe(now);

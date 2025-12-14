@@ -72,7 +72,7 @@ export async function getRulesForPack(packId: string): Promise<string[]> {
     return Array.from(getSet(packKey));
   }
   const redis = getRedis();
-  const result = await redis.smembers<string>(packKey);
+  const result = await redis.smembers<string[]>(packKey);
   return result ?? [];
 }
 
@@ -82,7 +82,7 @@ export async function getPacksForRule(ruleId: string): Promise<string[]> {
     return Array.from(getSet(ruleKey));
   }
   const redis = getRedis();
-  const result = await redis.smembers<string>(ruleKey);
+  const result = await redis.smembers<string[]>(ruleKey);
   return result ?? [];
 }
 
@@ -100,7 +100,7 @@ export async function setPackMembers(
   } else {
     await redis.del(packKey);
     if (ruleIds.length) {
-      await redis.sadd(packKey, ...ruleIds);
+      await redis.sadd(packKey, ruleIds[0], ...ruleIds.slice(1));
     }
   }
 }
@@ -119,7 +119,7 @@ export async function setRuleMemberships(
   } else {
     await redis.del(ruleKey);
     if (packIds.length) {
-      await redis.sadd(ruleKey, ...packIds);
+      await redis.sadd(ruleKey, packIds[0], ...packIds.slice(1));
     }
   }
 }

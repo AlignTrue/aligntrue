@@ -17,14 +17,22 @@ var mockSelectPrimaryFile: ReturnType<typeof vi.fn>;
 const storeData = new Map<string, AlignRecord>();
 var mockStore: {
   get: ReturnType<typeof vi.fn>;
+  getMultiple: ReturnType<typeof vi.fn>;
   upsert: ReturnType<typeof vi.fn>;
+  upsertMultiple: ReturnType<typeof vi.fn>;
 };
 
 vi.mock("@/lib/aligns/storeFactory", () => {
   mockStore = {
     get: vi.fn(async (id: string) => storeData.get(id) ?? null),
+    getMultiple: vi.fn(async (ids: string[]) =>
+      ids.map((id) => storeData.get(id) ?? null),
+    ),
     upsert: vi.fn(async (record: AlignRecord) => {
       storeData.set(record.id, record);
+    }),
+    upsertMultiple: vi.fn(async (records: AlignRecord[]) => {
+      records.forEach((r) => storeData.set(r.id, r));
     }),
   };
   return {
@@ -88,6 +96,10 @@ vi.mock(
 );
 
 vi.mock("@/lib/aligns/records", () => import("../../../../lib/aligns/records"));
+
+vi.mock("@/lib/aligns/relationships", () => ({
+  addRuleToPack: vi.fn(),
+}));
 
 describe("POST /api/aligns/submit", () => {
   beforeEach(() => {

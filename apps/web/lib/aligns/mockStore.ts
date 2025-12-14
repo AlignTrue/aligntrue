@@ -22,6 +22,10 @@ export class MockAlignStore implements AlignStore {
     return this.records.get(id) ?? null;
   }
 
+  async getMultiple(ids: string[]): Promise<(AlignRecord | null)[]> {
+    return ids.map((id) => this.records.get(id) ?? null);
+  }
+
   async upsert(align: AlignRecord): Promise<void> {
     const existing = this.records.get(align.id);
     const merged: AlignRecord = {
@@ -31,6 +35,12 @@ export class MockAlignStore implements AlignStore {
       fetchFailCount: align.fetchFailCount ?? existing?.fetchFailCount ?? 0,
     };
     this.records.set(align.id, merged);
+  }
+
+  async upsertMultiple(aligns: AlignRecord[]): Promise<void> {
+    for (const align of aligns) {
+      await this.upsert(align);
+    }
   }
 
   async increment(
