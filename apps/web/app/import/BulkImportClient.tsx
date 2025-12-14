@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle,
@@ -62,13 +62,13 @@ type ValidatedItem = {
 };
 
 export function BulkImportClient() {
-  let idCounter = 0;
+  const idCounterRef = useRef(0);
   const makeId = (prefix: string) => {
-    idCounter += 1;
+    idCounterRef.current += 1;
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
       return `${prefix}-${crypto.randomUUID()}`;
     }
-    return `${prefix}-${Date.now()}-${idCounter}`;
+    return `${prefix}-${Date.now()}-${idCounterRef.current}`;
   };
 
   const [urlsText, setUrlsText] = useState("");
