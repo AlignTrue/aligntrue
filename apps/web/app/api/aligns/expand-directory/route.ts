@@ -34,7 +34,8 @@ async function fetchDirectoryItems(
   path: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<GitHubContentItem[] | null> {
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(ref)}`;
+  const encodedPath = encodeURIComponent(path);
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`;
   const res = await fetchImpl(apiUrl, {
     headers: {
       Accept: "application/vnd.github+json",
@@ -68,7 +69,8 @@ export async function POST(req: NextRequest) {
       !normalized.owner ||
       !normalized.repo ||
       !normalized.ref ||
-      !normalized.path
+      normalized.path === undefined ||
+      normalized.path === null
     ) {
       return Response.json(
         { error: "URL must be a GitHub directory path (tree)." },
