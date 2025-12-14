@@ -49,7 +49,6 @@ function getSelectedContent(
 describe("pack detection", () => {
   it("detects a pack align with pack content", () => {
     const align: AlignRecord = {
-      schemaVersion: 1,
       id: "test-pack",
       url: "https://github.com/test/pack",
       normalizedUrl: "github.com/test/pack/.align.yaml",
@@ -62,13 +61,6 @@ describe("pack detection", () => {
       viewCount: 0,
       installClickCount: 0,
       pack: {
-        manifestPath: ".align.yaml",
-        manifestId: "test/pack",
-        manifestVersion: "1.0.0",
-        manifestSummary: null,
-        manifestAuthor: null,
-        manifestDescription: null,
-        ref: "main",
         files: [{ path: "rules/test.md", size: 100 }],
         totalBytes: 100,
       },
@@ -84,7 +76,6 @@ describe("pack detection", () => {
 
   it("returns false for single file align", () => {
     const align: AlignRecord = {
-      schemaVersion: 1,
       id: "test-single",
       url: "https://github.com/test/file.md",
       normalizedUrl: "github.com/test/file.md",
@@ -108,7 +99,6 @@ describe("pack detection", () => {
 
   it("returns false when content is null", () => {
     const align: AlignRecord = {
-      schemaVersion: 1,
       id: "test",
       url: "https://github.com/test",
       normalizedUrl: "github.com/test",
@@ -121,13 +111,6 @@ describe("pack detection", () => {
       viewCount: 0,
       installClickCount: 0,
       pack: {
-        manifestPath: ".align.yaml",
-        manifestId: "test/pack",
-        manifestVersion: "1.0.0",
-        manifestSummary: null,
-        manifestAuthor: null,
-        manifestDescription: null,
-        ref: "main",
         files: [],
         totalBytes: 0,
       },
@@ -168,13 +151,6 @@ describe("pack file selection", () => {
 describe("pack dropdown behavior", () => {
   it("pack with multiple files should show all paths", () => {
     const packInfo: AlignPackInfo = {
-      manifestPath: ".align.yaml",
-      manifestId: "test/pack",
-      manifestVersion: "1.0.0",
-      manifestSummary: null,
-      manifestAuthor: null,
-      manifestDescription: null,
-      ref: "main",
       files: [
         { path: "rules/a.md", size: 100 },
         { path: "rules/b.md", size: 150 },

@@ -7,7 +7,6 @@ function makeRecord(
   overrides: Partial<AlignRecord> = {},
 ): AlignRecord {
   return {
-    schemaVersion: 1,
     id,
     url: `https://github.com/org/repo/blob/main/rules/${id}.md`,
     normalizedUrl: `https://github.com/org/repo/blob/main/rules/${id}.md`,

@@ -2,7 +2,6 @@ import { AlignDetailClient } from "../[id]/AlignDetailClient";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 const demoAlign: AlignRecord = {
-  schemaVersion: 1,
   id: "demo-align",
   url: "https://github.com/AlignTrue/examples/blob/main/aligns/sample.mdc",
   normalizedUrl:
@@ -11,6 +10,7 @@ const demoAlign: AlignRecord = {
   kind: "rule",
   title: "Sample Align for Demo",
   description: "Demo rules showing how to sync, preview, and copy commands.",
+  author: "@aligntrue",
   fileType: "markdown",
   createdAt: new Date().toISOString(),
   lastViewedAt: new Date().toISOString(),

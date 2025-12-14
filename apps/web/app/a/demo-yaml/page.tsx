@@ -3,7 +3,6 @@ import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent } from "@/lib/aligns/content-cache";
 
 const demoPackAlign: AlignRecord = {
-  schemaVersion: 1,
   id: "demo-pack",
   url: "https://github.com/AlignTrue/examples/tree/main/aligns/pack-demo",
   normalizedUrl:
@@ -12,18 +11,13 @@ const demoPackAlign: AlignRecord = {
   kind: "pack",
   title: "Sample Align Pack",
   description: "Demo pack with multiple rules scoped by path.",
+  author: "@aligntrue",
   fileType: "yaml",
   createdAt: new Date().toISOString(),
   lastViewedAt: new Date().toISOString(),
   viewCount: 0,
   installClickCount: 0,
   pack: {
-    manifestPath: ".align.yaml",
-    manifestId: "demo/typescript-pack",
-    manifestVersion: "1.0.0",
-    manifestSummary: "TypeScript starter rules",
-    manifestAuthor: "@aligntrue",
-    ref: "main",
     files: [
       { path: "rules/typescript.md", size: 312 },
       { path: "rules/testing.md", size: 276 },

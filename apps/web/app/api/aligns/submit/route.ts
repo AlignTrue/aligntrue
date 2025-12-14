@@ -20,6 +20,7 @@ import {
 import {
   buildPackAlignRecord,
   buildRuleFromPackFile,
+  buildSingleRuleRecord,
 } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
 import { getAuthToken } from "@/lib/aligns/github-app";
@@ -392,23 +393,16 @@ export async function POST(req: Request) {
       const now = new Date().toISOString();
       const contentHash = hashString(content);
 
-      const record: AlignRecord = {
-        schemaVersion: 1,
+      const record: AlignRecord = buildSingleRuleRecord({
         id,
-        url: body.url,
+        sourceUrl: body.url,
         normalizedUrl: primary.rawUrl,
-        provider: "github",
-        kind: meta.kind,
-        title: meta.title,
-        description: meta.description,
-        fileType: meta.fileType,
+        meta,
+        existing,
+        now,
         contentHash,
         contentHashUpdatedAt: now,
-        createdAt: existing?.createdAt ?? now,
-        lastViewedAt: now,
-        viewCount: existing?.viewCount ?? 0,
-        installClickCount: existing?.installClickCount ?? 0,
-      };
+      });
 
       await store.upsert(record);
       await setCachedContent(id, { kind: "single", content });
@@ -467,23 +461,16 @@ export async function POST(req: Request) {
     const now = new Date().toISOString();
     const contentHash = hashString(cached.content);
 
-    const record: AlignRecord = {
-      schemaVersion: 1,
+    const record: AlignRecord = buildSingleRuleRecord({
       id,
-      url: body.url,
+      sourceUrl: body.url,
       normalizedUrl,
-      provider: "github",
-      kind: meta.kind,
-      title: meta.title,
-      description: meta.description,
-      fileType: meta.fileType,
+      meta,
+      existing,
+      now,
       contentHash,
       contentHashUpdatedAt: now,
-      createdAt: existing?.createdAt ?? now,
-      lastViewedAt: now,
-      viewCount: existing?.viewCount ?? 0,
-      installClickCount: existing?.installClickCount ?? 0,
-    };
+    });
 
     await store.upsert(record);
     // Ensure cache refreshed (fetchRawWithCache already populated)

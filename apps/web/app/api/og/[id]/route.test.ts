@@ -42,7 +42,6 @@ vi.mock("@/lib/aligns/urlUtils", () => ({
 
 function makeRecord(overrides: Partial<AlignRecord> = {}): AlignRecord {
   return {
-    schemaVersion: 1,
     id: "align-123",
     url: "https://github.com/org/repo/blob/main/rules/file.md",
     normalizedUrl: "https://github.com/org/repo/blob/main/rules/file.md",

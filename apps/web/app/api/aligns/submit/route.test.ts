@@ -124,18 +124,12 @@ describe("POST /api/aligns/submit", () => {
 
     mockFetchPackForWeb.mockResolvedValue({
       manifestUrl,
-      info: {
-        manifestPath: ".align.yaml",
-        manifestId: "org/repo",
-        manifestVersion: "1.0.0",
-        manifestSummary: null,
-        manifestAuthor: null,
-        manifestDescription: null,
-        ref: "main",
-        files: [],
-        totalBytes: 0,
-      },
       files: [],
+      packFiles: [],
+      totalBytes: 0,
+      author: null,
+      title: null,
+      description: null,
     });
 
     const req = new Request("http://localhost/api/aligns/submit", {
@@ -171,18 +165,12 @@ describe("POST /api/aligns/submit", () => {
 
     mockFetchPackForWeb.mockResolvedValue({
       manifestUrl,
-      info: {
-        manifestPath: ".align.yaml",
-        manifestId: "org/repo",
-        manifestVersion: "1.0.0",
-        manifestSummary: null,
-        manifestAuthor: null,
-        manifestDescription: null,
-        ref: "main",
-        files: [],
-        totalBytes: 0,
-      },
       files: [],
+      packFiles: [],
+      totalBytes: 0,
+      author: null,
+      title: null,
+      description: null,
     });
 
     const req = new Request("http://localhost/api/aligns/submit", {
@@ -214,7 +202,6 @@ describe("POST /api/aligns/submit", () => {
     mockGetCachedAlignId.mockResolvedValueOnce("cached-id-1");
 
     const cachedRecord: AlignRecord = {
-      schemaVersion: 1,
       id: "cached-id-1",
       url: "https://github.com/org/repo",
       normalizedUrl: "https://github.com/org/repo/blob/main/.align.yaml",
@@ -222,16 +209,13 @@ describe("POST /api/aligns/submit", () => {
       kind: "pack",
       title: "Cached pack",
       description: null,
+      author: null,
       fileType: "yaml",
       createdAt: "2024-01-01T00:00:00.000Z",
       lastViewedAt: "2024-01-01T00:00:00.000Z",
       viewCount: 0,
       installClickCount: 0,
       pack: {
-        manifestPath: ".align.yaml",
-        manifestId: "org/repo",
-        manifestVersion: "1.0.0",
-        ref: "main",
         files: [],
         totalBytes: 0,
       },

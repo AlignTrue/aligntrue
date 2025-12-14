@@ -1,24 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { buildPackAlignRecord, buildRuleFromPackFile } from "./records";
+import {
+  buildPackAlignRecord,
+  buildRuleFromPackFile,
+  buildSingleRuleRecord,
+} from "./records";
 import type { AlignRecord } from "./types";
 import type { WebPackResult } from "./pack-fetcher";
 import type { CachedPackFile } from "./content-cache";
 
 const basePack: WebPackResult = {
   manifestUrl: "https://github.com/org/repo/blob/main/.align.yaml",
-  info: {
-    manifestPath: ".align.yaml",
-    manifestId: "demo-pack",
-    manifestVersion: "1.0.0",
-    manifestSummary: "Demo pack summary",
-    manifestAuthor: "Jane Doe",
-    manifestDescription: "Demo pack description",
-    ref: "main",
-    files: [{ path: "aligns/rule.md", size: 120 }],
-    totalBytes: 120,
-  },
   files: [],
+  packFiles: [{ path: "aligns/rule.md", size: 120 }],
+  totalBytes: 120,
+  author: "Jane Doe",
+  title: "Demo pack summary",
+  description: "Demo pack description",
 };
 
 describe("buildPackAlignRecord", () => {
@@ -42,7 +40,6 @@ describe("buildPackAlignRecord", () => {
   it("preserves existing counters and createdAt", () => {
     const now = "2024-02-01T00:00:00.000Z";
     const existing: AlignRecord = {
-      schemaVersion: 1,
       id: "demo-pack-id",
       url: "https://github.com/org/repo",
       normalizedUrl: basePack.manifestUrl,
@@ -50,12 +47,13 @@ describe("buildPackAlignRecord", () => {
       kind: "pack",
       title: "Old title",
       description: "Old description",
+      author: "Old author",
       fileType: "yaml",
       createdAt: "2023-12-01T00:00:00.000Z",
       lastViewedAt: "2023-12-15T00:00:00.000Z",
       viewCount: 5,
       installClickCount: 2,
-      pack: basePack.info,
+      pack: { files: basePack.packFiles, totalBytes: basePack.totalBytes },
     };
 
     const record = buildPackAlignRecord({
@@ -103,7 +101,6 @@ describe("buildRuleFromPackFile", () => {
   it("preserves existing member list and adds new pack", () => {
     const now = "2024-03-01T00:00:00.000Z";
     const existing: AlignRecord = {
-      schemaVersion: 1,
       id: "rule1",
       url: "https://github.com/org/repo/blob/main/rules/typescript.md",
       normalizedUrl:
@@ -112,6 +109,7 @@ describe("buildRuleFromPackFile", () => {
       kind: "rule",
       title: "Existing",
       description: null,
+      author: null,
       fileType: "markdown",
       createdAt: "2024-02-01T00:00:00.000Z",
       lastViewedAt: "2024-02-02T00:00:00.000Z",
@@ -133,5 +131,31 @@ describe("buildRuleFromPackFile", () => {
       expect.arrayContaining(["otherPack", "pack123"]),
     );
     expect(record.createdAt).toBe(existing.createdAt);
+  });
+});
+
+describe("buildSingleRuleRecord", () => {
+  it("creates single rule record with author", () => {
+    const meta = {
+      title: "Rule title",
+      description: "Rule description",
+      author: "@author",
+      fileType: "markdown" as const,
+      kind: "rule" as const,
+    };
+    const record = buildSingleRuleRecord({
+      id: "rule-1",
+      sourceUrl: "https://github.com/org/repo/blob/main/rule.md",
+      normalizedUrl: "https://github.com/org/repo/blob/main/rule.md",
+      meta,
+      existing: null,
+      now: "2024-01-01T00:00:00.000Z",
+      contentHash: "hash",
+      contentHashUpdatedAt: "2024-01-01T00:00:00.000Z",
+    });
+
+    expect(record.author).toBe("@author");
+    expect(record.title).toBe("Rule title");
+    expect(record.contentHash).toBe("hash");
   });
 });

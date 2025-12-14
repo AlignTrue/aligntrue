@@ -5,6 +5,7 @@ import type { AlignKind } from "./types";
 export type ExtractedMetadata = {
   title: string | null;
   description: string | null;
+  author?: string | null;
   fileType: "markdown" | "yaml" | "xml" | "unknown";
   kind: AlignKind;
 };
@@ -12,6 +13,7 @@ export type ExtractedMetadata = {
 function safeFrontmatterMetadata(md: string): {
   title: string | null;
   description: string | null;
+  author: string | null;
 } {
   try {
     // gray-matter defaults to js-yaml safeLoad (removed in js-yaml@4); provide a custom engine
@@ -32,7 +34,9 @@ function safeFrontmatterMetadata(md: string): {
     const description =
       typeof data?.description === "string" ? data.description : null;
 
-    return { title: title ?? null, description };
+    const author = typeof data?.author === "string" ? data.author : null;
+
+    return { title: title ?? null, description, author };
   } catch {
     // On malformed frontmatter, fall back to first heading in raw markdown
     const lines = md.split("\n");
@@ -52,23 +56,30 @@ function safeFrontmatterMetadata(md: string): {
       const description = descriptionLine
         ? descriptionLine.split(/description\s*:\s*/i)[1]?.trim() || null
         : null;
+      const authorLine = frontmatterLines.find((line) =>
+        line.trim().toLowerCase().startsWith("author:"),
+      );
+      const author = authorLine
+        ? authorLine.split(/author\s*:\s*/i)[1]?.trim() || null
+        : null;
       const heading = lines
         .slice(endIdx + 1)
         .find((line) => line.trim().startsWith("#"));
       const title = heading
         ? heading.replace(/^#+\s*/, "").trim() || null
         : null;
-      return { title, description };
+      return { title, description, author };
     }
     const heading = lines.find((line) => line.trim().startsWith("#"));
     const title = heading ? heading.replace(/^#+\s*/, "").trim() || null : null;
-    return { title, description: null };
+    return { title, description: null, author: null };
   }
 }
 
 function safeYamlTitle(text: string): {
   title: string | null;
   description: string | null;
+  author: string | null;
 } {
   try {
     const parsed = yaml.load(text);
@@ -77,12 +88,13 @@ function safeYamlTitle(text: string): {
       const title = typeof obj.title === "string" ? obj.title : null;
       const description =
         typeof obj.description === "string" ? obj.description : null;
-      return { title, description };
+      const author = typeof obj.author === "string" ? obj.author : null;
+      return { title, description, author };
     }
   } catch {
     // best effort
   }
-  return { title: null, description: null };
+  return { title: null, description: null, author: null };
 }
 
 function humanizeFilename(url: string): string {
@@ -120,10 +132,11 @@ export function extractMetadata(
   const isXml = lower.endsWith(".xml");
 
   if (isYaml) {
-    const { title, description } = safeYamlTitle(content);
+    const { title, description, author } = safeYamlTitle(content);
     return {
       title: title ?? humanizeFilename(normalizedUrl),
       description,
+      author,
       fileType: "yaml",
       kind: "pack",
     };
@@ -138,10 +151,11 @@ export function extractMetadata(
     };
   }
 
-  const { title, description } = safeFrontmatterMetadata(content);
+  const { title, description, author } = safeFrontmatterMetadata(content);
   return {
     title: title ?? humanizeFilename(normalizedUrl),
     description,
+    author,
     fileType: "markdown",
     kind: "rule",
   };

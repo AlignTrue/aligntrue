@@ -1,11 +1,15 @@
 import { resolvePackFromGithub } from "@aligntrue/sources";
 import type { CachedPackFile } from "./content-cache";
-import type { AlignPackFile, AlignPackInfo } from "./types";
+import type { AlignPackFile } from "./types";
 
 export interface WebPackResult {
   manifestUrl: string;
-  info: AlignPackInfo;
-  files: CachedPackFile[];
+  files: CachedPackFile[]; // with content for caching
+  packFiles: AlignPackFile[]; // without content for storage
+  totalBytes: number;
+  author: string | null;
+  title: string | null;
+  description: string | null;
 }
 
 export async function fetchPackForWeb(
@@ -24,22 +28,22 @@ export async function fetchPackForWeb(
     content: file.content,
   }));
 
-  const info: AlignPackInfo = {
-    manifestPath: resolved.manifestPath,
-    manifestId: resolved.manifest.id,
-    manifestVersion: resolved.manifest.version,
-    manifestSummary: resolved.manifest.summary ?? null,
-    manifestAuthor: resolved.manifest.author ?? null,
-    manifestDescription: resolved.manifest.description ?? null,
-    ref: resolved.ref,
-    files: resolved.files.map(
-      (file): AlignPackFile => ({
-        path: file.path,
-        size: file.size,
-      }),
-    ),
-    totalBytes: resolved.files.reduce((sum, file) => sum + file.size, 0),
-  };
+  const packFiles: AlignPackFile[] = resolved.files.map(
+    (file): AlignPackFile => ({
+      path: file.path,
+      size: file.size,
+    }),
+  );
 
-  return { manifestUrl, info, files };
+  const totalBytes = resolved.files.reduce((sum, file) => sum + file.size, 0);
+
+  return {
+    manifestUrl,
+    files,
+    packFiles,
+    totalBytes,
+    author: resolved.manifest.author ?? null,
+    title: resolved.manifest.summary ?? null,
+    description: resolved.manifest.description ?? null,
+  };
 }

@@ -19,7 +19,7 @@ export function PackMembershipBadges({
         {packs.map((pack) => (
           <Badge key={pack.id} variant="secondary" className="text-xs">
             <Link href={`/a/${pack.id}`} className="hover:underline">
-              {pack.title || pack.pack?.manifestId || pack.id}
+              {pack.title || pack.id}
             </Link>
           </Badge>
         ))}

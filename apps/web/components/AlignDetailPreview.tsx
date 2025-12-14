@@ -225,11 +225,11 @@ export function AlignDetailPreview({
       ? convertAlignContentForFormat(selectedContent, format).filename
       : "align.md");
   const previewFilename = isPack
-    ? selectedPath || align.pack?.manifestId || "rules.md"
+    ? selectedPath || "rules.md"
     : downloadFilename;
   const downloadAllFilename = useMemo(
-    () => buildZipFilename(align.pack?.manifestId ?? align.id),
-    [align.id, align.pack?.manifestId],
+    () => buildZipFilename(align.title ?? align.id),
+    [align.id, align.title],
   );
   const relatedPacks = related?.packs ?? [];
   const relatedRules = related?.rules ?? [];

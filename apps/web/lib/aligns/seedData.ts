@@ -118,7 +118,6 @@ function buildSeeds(): SeedEntry[] {
 
       entries.push({
         record: {
-          schemaVersion: 1,
           id,
           url: manifestUrl,
           normalizedUrl: manifestUrl,
@@ -126,19 +125,13 @@ function buildSeeds(): SeedEntry[] {
           kind: "pack",
           title,
           description,
+          author: "AlignTrue",
           fileType: "yaml",
           createdAt,
           lastViewedAt,
           viewCount,
           installClickCount,
           pack: {
-            manifestPath: `.align.yaml`,
-            manifestId: `seed-pack-${baseSlug}`,
-            manifestVersion: "1.0.0",
-            manifestSummary: description,
-            manifestAuthor: "AlignTrue",
-            manifestDescription: description,
-            ref: "main",
             files: packContent.files.map((f) => ({
               path: f.path,
               size: f.size,
@@ -154,7 +147,6 @@ function buildSeeds(): SeedEntry[] {
 
       entries.push({
         record: {
-          schemaVersion: 1,
           id,
           url: fileUrl,
           normalizedUrl: fileUrl,
@@ -162,6 +154,7 @@ function buildSeeds(): SeedEntry[] {
           kind: "rule",
           title,
           description,
+          author: "AlignTrue",
           fileType: "markdown",
           createdAt,
           lastViewedAt,

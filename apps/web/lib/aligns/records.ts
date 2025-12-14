@@ -24,14 +24,14 @@ export function buildPackAlignRecord({
   contentHashUpdatedAt,
 }: BuildPackRecordParams): AlignRecord {
   return {
-    schemaVersion: 1,
     id,
     url: sourceUrl,
     normalizedUrl: pack.manifestUrl,
     provider: "github",
     kind: "pack",
-    title: pack.info.manifestSummary ?? pack.info.manifestId,
-    description: pack.info.manifestDescription ?? null,
+    title: pack.title ?? pack.manifestUrl,
+    description: pack.description ?? null,
+    author: pack.author,
     fileType: "yaml",
     ...(contentHash ? { contentHash } : {}),
     ...(contentHashUpdatedAt ? { contentHashUpdatedAt } : {}),
@@ -39,7 +39,10 @@ export function buildPackAlignRecord({
     lastViewedAt: now,
     viewCount: existing?.viewCount ?? 0,
     installClickCount: existing?.installClickCount ?? 0,
-    pack: pack.info,
+    pack: {
+      files: pack.packFiles,
+      totalBytes: pack.totalBytes,
+    },
   };
 }
 
@@ -68,7 +71,6 @@ export function buildRuleFromPackFile({
   nextMemberOf.add(packId);
 
   return {
-    schemaVersion: 1,
     id,
     url: sourceUrl,
     normalizedUrl,
@@ -76,6 +78,7 @@ export function buildRuleFromPackFile({
     kind: meta.kind,
     title: meta.title,
     description: meta.description,
+    author: meta.author ?? null,
     fileType: meta.fileType,
     contentHash: existing?.contentHash,
     contentHashUpdatedAt: existing?.contentHashUpdatedAt,
@@ -84,5 +87,45 @@ export function buildRuleFromPackFile({
     viewCount: existing?.viewCount ?? 0,
     installClickCount: existing?.installClickCount ?? 0,
     memberOfPackIds: Array.from(nextMemberOf),
+  };
+}
+
+type BuildSingleRuleRecordParams = {
+  id: string;
+  sourceUrl: string;
+  normalizedUrl: string;
+  meta: ReturnType<typeof extractMetadata>;
+  existing: AlignRecord | null;
+  now: string;
+  contentHash: string;
+  contentHashUpdatedAt: string;
+};
+
+export function buildSingleRuleRecord({
+  id,
+  sourceUrl,
+  normalizedUrl,
+  meta,
+  existing,
+  now,
+  contentHash,
+  contentHashUpdatedAt,
+}: BuildSingleRuleRecordParams): AlignRecord {
+  return {
+    id,
+    url: sourceUrl,
+    normalizedUrl,
+    provider: "github",
+    kind: meta.kind,
+    title: meta.title,
+    description: meta.description,
+    author: meta.author ?? null,
+    fileType: meta.fileType,
+    contentHash,
+    contentHashUpdatedAt,
+    createdAt: existing?.createdAt ?? now,
+    lastViewedAt: now,
+    viewCount: existing?.viewCount ?? 0,
+    installClickCount: existing?.installClickCount ?? 0,
   };
 }

@@ -8,6 +8,7 @@ describe("extractMetadata (markdown)", () => {
     const content = `---
 title: Frontmatter Title
 description: A description
+author: @author
 ---
 # Heading Title
 
@@ -16,6 +17,7 @@ Body text.`;
     const meta = extractMetadata(normalizedUrl, content);
     expect(meta.title).toBe("Frontmatter Title");
     expect(meta.description).toBe("A description");
+    expect(meta.author).toBe("@author");
   });
 
   it("falls back to first heading when title is absent", () => {

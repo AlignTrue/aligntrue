@@ -19,6 +19,8 @@ Use a `.align.yaml` manifest to publish a multi-file Align that keeps its folder
 
 ## Manifest formats
 
+> Catalog note: the Align Catalog only stores title, description, author, and files. Fields like `id`, `version`, `license`, `tags`, and `defaults` matter for CLI authoring but are not stored in the catalog; catalog-created packs auto-generate what they need.
+
 ### Minimal
 
 ```yaml

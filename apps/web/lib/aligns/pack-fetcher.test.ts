@@ -47,13 +47,11 @@ describe("fetchPackForWeb", () => {
     expect(result.manifestUrl).toBe(
       "https://github.com/AlignTrue/aligntrue/blob/main/.align.yaml",
     );
-    expect(result.info.manifestId).toBe("aligntrue/example-starter");
-    expect(result.info.manifestVersion).toBe("1.0.0");
-    expect(result.info.manifestSummary).toBe("Example starter pack");
-    expect(result.info.manifestAuthor).toBe("@aligntrue");
-    expect(result.info.manifestDescription).toBe("Example starter description");
-    expect(result.info.ref).toBe("main");
-    expect(result.info.totalBytes).toBe(350);
+    expect(result.title).toBe("Example starter pack");
+    expect(result.author).toBe("@aligntrue");
+    expect(result.description).toBe("Example starter description");
+    expect(result.totalBytes).toBe(350);
+    expect(result.packFiles).toHaveLength(2);
     expect(result.files).toHaveLength(2);
   });
 
@@ -77,12 +75,12 @@ describe("fetchPackForWeb", () => {
 
     const result = await fetchPackForWeb("https://github.com/test/repo");
 
-    expect(result.info.files).toHaveLength(3);
-    expect(result.info.files[0]).toEqual({
+    expect(result.packFiles).toHaveLength(3);
+    expect(result.packFiles[0]).toEqual({
       path: "packs/starter/rules/a.md",
       size: 100,
     });
-    expect(result.info.totalBytes).toBe(600);
+    expect(result.totalBytes).toBe(600);
 
     // Verify cached files include content
     expect(result.files[0].content).toBe("# A");
@@ -107,9 +105,9 @@ describe("fetchPackForWeb", () => {
 
     const result = await fetchPackForWeb("https://github.com/test/repo");
 
-    expect(result.info.manifestSummary).toBeNull();
-    expect(result.info.manifestAuthor).toBeNull();
-    expect(result.info.manifestDescription).toBeNull();
+    expect(result.title).toBeNull();
+    expect(result.author).toBeNull();
+    expect(result.description).toBeNull();
   });
 
   it("propagates errors from resolver", async () => {
