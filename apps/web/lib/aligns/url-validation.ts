@@ -81,3 +81,8 @@ export function validateAlignUrls(urls: string[]): {
 
   return { results, allValid, uniqueOwners, limited };
 }
+
+export function isDirectoryUrl(url: string): boolean {
+  const normalized = normalizeGitUrl(url);
+  return normalized.kind === "directory" && Boolean(normalized.normalizedUrl);
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   hasAllowedExtension,
+  isDirectoryUrl,
   validateAlignUrl,
   validateAlignUrls,
 } from "./url-validation";
@@ -52,6 +53,24 @@ describe("hasAllowedExtension", () => {
     expect(
       hasAllowedExtension("https://github.com/org/repo/blob/main/file.txt"),
     ).toBe(false);
+  });
+});
+
+describe("isDirectoryUrl", () => {
+  it("returns true for tree URLs", () => {
+    expect(
+      isDirectoryUrl("https://github.com/org/repo/tree/main/.cursor/rules"),
+    ).toBe(true);
+  });
+
+  it("returns false for blob URLs", () => {
+    expect(
+      isDirectoryUrl("https://github.com/org/repo/blob/main/rule.md"),
+    ).toBe(false);
+  });
+
+  it("returns false for invalid URLs", () => {
+    expect(isDirectoryUrl("notaurl")).toBe(false);
   });
 });
 

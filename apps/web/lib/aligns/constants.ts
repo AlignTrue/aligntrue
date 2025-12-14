@@ -19,3 +19,4 @@ export const RATE_LIMIT_REQUESTS = 10;
 export const RATE_LIMIT_WINDOW_SECONDS = 60;
 export const BULK_IMPORT_MAX_URLS = 50;
 export const DESCRIPTION_MAX_CHARS = 280;
+export const TITLE_MAX_CHARS = 60;
