@@ -4,6 +4,7 @@ import type { AlignPackFile } from "./types";
 
 export interface WebPackResult {
   manifestUrl: string;
+  manifestId: string; // e.g., "org/repo" from manifest.id
   files: CachedPackFile[]; // with content for caching
   packFiles: AlignPackFile[]; // without content for storage
   totalBytes: number;
@@ -39,6 +40,7 @@ export async function fetchPackForWeb(
 
   return {
     manifestUrl,
+    manifestId: resolved.manifest.id,
     files,
     packFiles,
     totalBytes,

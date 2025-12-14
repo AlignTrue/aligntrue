@@ -12,6 +12,7 @@ import type { CachedPackFile } from "./content-cache";
 
 const basePack: WebPackResult = {
   manifestUrl: "https://github.com/org/repo/blob/main/.align.yaml",
+  manifestId: "org/repo",
   files: [],
   packFiles: [{ path: "aligns/rule.md", size: 120 }],
   totalBytes: 120,
@@ -69,6 +70,23 @@ describe("buildPackAlignRecord", () => {
     expect(record.createdAt).toBe(existing.createdAt);
     expect(record.viewCount).toBe(existing.viewCount);
     expect(record.installClickCount).toBe(existing.installClickCount);
+  });
+
+  it("falls back to manifestId when title is null", () => {
+    const packWithoutTitle: WebPackResult = {
+      ...basePack,
+      title: null,
+      manifestId: "org/my-starter-pack",
+    };
+    const record = buildPackAlignRecord({
+      id: "demo-pack-id",
+      pack: packWithoutTitle,
+      sourceUrl: "https://github.com/org/repo",
+      existing: null,
+      now: "2024-01-01T00:00:00.000Z",
+    });
+
+    expect(record.title).toBe("org/my-starter-pack");
   });
 });
 

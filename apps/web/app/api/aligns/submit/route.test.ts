@@ -124,6 +124,7 @@ describe("POST /api/aligns/submit", () => {
 
     mockFetchPackForWeb.mockResolvedValue({
       manifestUrl,
+      manifestId: "org/repo",
       files: [],
       packFiles: [],
       totalBytes: 0,
@@ -165,6 +166,7 @@ describe("POST /api/aligns/submit", () => {
 
     mockFetchPackForWeb.mockResolvedValue({
       manifestUrl,
+      manifestId: "org/repo",
       files: [],
       packFiles: [],
       totalBytes: 0,

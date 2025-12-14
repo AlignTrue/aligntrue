@@ -47,6 +47,7 @@ describe("fetchPackForWeb", () => {
     expect(result.manifestUrl).toBe(
       "https://github.com/AlignTrue/aligntrue/blob/main/.align.yaml",
     );
+    expect(result.manifestId).toBe("aligntrue/example-starter");
     expect(result.title).toBe("Example starter pack");
     expect(result.author).toBe("@aligntrue");
     expect(result.description).toBe("Example starter description");
@@ -105,6 +106,7 @@ describe("fetchPackForWeb", () => {
 
     const result = await fetchPackForWeb("https://github.com/test/repo");
 
+    expect(result.manifestId).toBe("test/minimal");
     expect(result.title).toBeNull();
     expect(result.author).toBeNull();
     expect(result.description).toBeNull();

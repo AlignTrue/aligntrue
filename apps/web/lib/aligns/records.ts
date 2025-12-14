@@ -30,7 +30,7 @@ export function buildPackAlignRecord({
     provider: "github",
     source: "github",
     kind: "pack",
-    title: pack.title ?? pack.manifestUrl,
+    title: pack.title ?? pack.manifestId,
     description: pack.description ?? null,
     author: pack.author,
     fileType: "yaml",
