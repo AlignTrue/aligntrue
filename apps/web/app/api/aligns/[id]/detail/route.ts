@@ -44,7 +44,7 @@ export async function GET(
               if (raw?.kind !== "single") return null;
               return {
                 path: filenameFromUrl(rule!.normalizedUrl || rule!.url),
-                size: raw.content.length,
+                size: new TextEncoder().encode(raw.content).length,
                 content: raw.content,
               };
             } catch (err) {
