@@ -2,8 +2,6 @@ import crypto from "node:crypto";
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import {
   getCachedContent,
-  fetchRawWithCache,
-  setCachedContent,
   type CachedContent,
 } from "@/lib/aligns/content-cache";
 import { AlignDetailClient } from "./AlignDetailClient";
@@ -11,7 +9,7 @@ import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { getOgUrlForAlign } from "@/lib/og/storage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { findSeedContent } from "@/lib/aligns/seedData";
+import { fetchPackContent } from "@/lib/aligns/pack-content";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 const FAILURE_THRESHOLD = 3;
@@ -47,82 +45,23 @@ export default async function AlignDetailPage(props: {
     notFound();
   }
 
-  const seedContent = findSeedContent(id);
-  if (seedContent) {
-    return <AlignDetailClient align={align} content={seedContent} />;
-  }
-
   let content: CachedContent | null = null;
   let fetchFailed = false;
   let alignForRender = align;
 
-  if (align.kind === "pack" && align.pack) {
-    const isCatalogPack = align.source === "catalog" && align.kind === "pack";
-    try {
-      if (isCatalogPack) {
-        const ruleIds = align.containsAlignIds ?? [];
-        const rules = await store.getMultiple(ruleIds);
-        const filesResult = await Promise.all(
-          rules.filter(Boolean).map(async (rule) => {
-            try {
-              const ruleContent = await fetchRawWithCache(
-                rule!.id,
-                rule!.normalizedUrl || rule!.url,
-                256 * 1024,
-              );
-              if (ruleContent?.kind !== "single") return null;
-              const text = ruleContent.content;
-              return {
-                path: filenameFromUrl(rule!.normalizedUrl || rule!.url),
-                size: new TextEncoder().encode(text).length,
-                content: text,
-              };
-            } catch (err) {
-              console.error("failed to fetch rule content", err);
-              return null;
-            }
-          }),
-        );
-        const files = filesResult.filter(Boolean) as {
-          path: string;
-          size: number;
-          content: string;
-        }[];
-
-        content = { kind: "pack", files };
-        await setCachedContent(align.id, content);
-      } else {
-        // Legacy non-catalog packs: only serve cached content if present
-        content = await getCachedContent(align.id);
-      }
-    } catch (error) {
-      if (content) {
-        // Cache write failed; keep the fresh content instead of discarding it.
-        console.error("failed to cache pack content", error);
-      } else {
-        fetchFailed = true;
-        console.error("failed to fetch pack content", error);
-        content = await getCachedContent(align.id);
-        if (!content) {
-          console.error("no cached pack content available after failure");
-        }
-      }
-    }
-  } else {
-    const rawUrl = align.normalizedUrl || align.url;
-    const shouldRefresh =
-      align.sourceRemoved || (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
-    try {
-      content = await fetchRawWithCache(align.id, rawUrl, 256 * 1024, {
-        forceRefresh: shouldRefresh,
-      });
-    } catch (error) {
-      fetchFailed = true;
-      console.error("failed to fetch raw content", error);
-      content = await getCachedContent(align.id);
-      if (!content) {
-        console.error("no cached raw content available after failure");
-      }
+  const shouldRefresh =
+    align.sourceRemoved || (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
+  try {
+    content = await fetchPackContent(align, store, {
+      maxBytes: 256 * 1024,
+      forceRefresh: shouldRefresh,
+    });
+  } catch (error) {
+    fetchFailed = true;
+    console.error("failed to fetch content", error);
+    content = await getCachedContent(align.id);
+    if (!content) {
+      console.error("no cached content available after failure");
     }
   }
 

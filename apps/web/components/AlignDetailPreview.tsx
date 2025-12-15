@@ -41,6 +41,7 @@ import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { cn, formatBytes } from "@/lib/utils";
 import { PackMembershipBadges } from "./PackMembershipBadges";
 import { toAlignSummary } from "@/lib/aligns/transforms";
+import { isCatalogPack } from "@/lib/aligns/pack-helpers";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -89,7 +90,7 @@ export function AlignDetailPreview({
     rules: AlignRecord[];
   } | null>(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
-  const isCatalogPack = align.source === "catalog" && align.kind === "pack";
+  const catalogPack = isCatalogPack(align);
   const alignSharePath = `/a/${align.id}`;
   const shareUrl = `${BASE_URL}${alignSharePath}`;
   const display = useMemo(() => toAlignSummary(align), [align]);
@@ -144,7 +145,7 @@ export function AlignDetailPreview({
   }, [content, isPack, selectedFile]);
 
   const fileNameLabel = useMemo(() => {
-    if (isCatalogPack) return "Catalog Pack";
+    if (catalogPack) return "Catalog Pack";
     if (isPack) return display.displayFilename ?? "Pack";
     return (
       display.displayFilename ??
@@ -155,7 +156,7 @@ export function AlignDetailPreview({
     align.url,
     display.displayFilename,
     isPack,
-    isCatalogPack,
+    catalogPack,
   ]);
 
   const fileCountLabel = useMemo(() => {
@@ -333,7 +334,7 @@ export function AlignDetailPreview({
               <div className="flex flex-col items-start sm:items-end gap-1.5 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <div className="flex items-center gap-2">
-                    {isArchived || isCatalogPack || !display.externalUrl ? (
+                    {isArchived || catalogPack || !display.externalUrl ? (
                       <span className="font-semibold text-foreground">
                         {fileNameLabel}
                       </span>
@@ -366,21 +367,25 @@ export function AlignDetailPreview({
                       </TooltipProvider>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">by</span>
-                  {ownerUrl && !isArchived ? (
-                    <a
-                      href={ownerUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold text-foreground hover:underline"
-                    >
-                      {owner}
-                    </a>
-                  ) : (
-                    <span className="font-semibold text-foreground">
-                      {owner}
-                    </span>
-                  )}
+                  {owner ? (
+                    <>
+                      <span className="text-xs text-muted-foreground">by</span>
+                      {ownerUrl && !isArchived ? (
+                        <a
+                          href={ownerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-foreground hover:underline"
+                        >
+                          {owner}
+                        </a>
+                      ) : (
+                        <span className="font-semibold text-foreground">
+                          {owner}
+                        </span>
+                      )}
+                    </>
+                  ) : null}
                   {(fileCountLabel || sizeLabel) && (
                     <Badge variant="outline" className="font-semibold">
                       {fileCountLabel}
@@ -455,7 +460,7 @@ export function AlignDetailPreview({
                 </SelectContent>
               </Select>
 
-              {canExport && !isCatalogPack && (
+              {canExport && !catalogPack && (
                 <Tabs
                   value={actionTab}
                   onValueChange={(v) => setActionTab(v as typeof actionTab)}
@@ -487,12 +492,12 @@ export function AlignDetailPreview({
             </div>
 
             <div className="pt-4 space-y-4">
-              {(!canExport || actionTab === "share" || isCatalogPack) && (
+              {(!canExport || actionTab === "share" || catalogPack) && (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     Make it easy for others to use these rules. Copy this link
                     to share.
-                    {isCatalogPack &&
+                    {catalogPack &&
                       " Catalog packs can be shared or downloaded; CLI install is not yet supported for catalog packs."}
                   </p>
                   <CommandBlock
@@ -505,7 +510,7 @@ export function AlignDetailPreview({
                 </div>
               )}
 
-              {canExport && !isCatalogPack && actionTab === "global" && (
+              {canExport && !catalogPack && actionTab === "global" && (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     New to AlignTrue? Install globally to manage rules across
@@ -524,7 +529,7 @@ export function AlignDetailPreview({
                 </div>
               )}
 
-              {canExport && !isCatalogPack && actionTab === "temp" && (
+              {canExport && !catalogPack && actionTab === "temp" && (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     Quick one-off install. No global install required.
@@ -539,7 +544,7 @@ export function AlignDetailPreview({
 
               {canExport &&
                 !isArchived &&
-                !isCatalogPack &&
+                !catalogPack &&
                 actionTab === "source" && (
                   <div className="space-y-3">
                     <p className="m-0 text-muted-foreground">

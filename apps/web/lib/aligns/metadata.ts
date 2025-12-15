@@ -86,9 +86,9 @@ function parseSimpleFrontmatter(md: string): SimpleFrontmatter {
   };
 
   return {
-    title: normalizeValue(pick("title")),
-    description: normalizeValue(pick("description")),
-    author: normalizeValue(pick("author")),
+    title: pick("title"),
+    description: pick("description"),
+    author: pick("author"),
     content,
     malformed: false,
   };
