@@ -23,6 +23,7 @@ import {
   isTeamModeActive,
   validateRelativePath,
   type AlignTrueConfig,
+  type ConflictInfo,
 } from "@aligntrue/core";
 import type { RuleFile } from "@aligntrue/schema";
 import { importRules } from "../utils/source-resolver.js";
@@ -611,11 +612,7 @@ async function addSource(options: {
 
 async function writeRulesWithConflicts(options: {
   rules: RuleFile[];
-  conflicts: {
-    filename: string;
-    title: string;
-    source: string;
-  }[];
+  conflicts: ConflictInfo[];
   cwd: string;
   rulesDir: string;
   nonInteractive: boolean;
@@ -658,9 +655,10 @@ async function writeRulesWithConflicts(options: {
 
       const resolved = resolveConflict(conflict, resolution, cwd);
 
-      const ruleIndex = rulesToWrite.findIndex(
-        (r) => r.filename === conflict.filename,
-      );
+      const ruleIndex = rulesToWrite.findIndex((r) => {
+        const ruleName = r.relativePath || r.filename;
+        return ruleName === conflict.filename;
+      });
       if (ruleIndex !== -1) {
         if (resolved.resolution === "skip") {
           rulesToWrite.splice(ruleIndex, 1);
@@ -1095,6 +1093,8 @@ async function importCatalogCommand(options: {
   // Ensure config exists
   if (!existsSync(configPath)) {
     const config: AlignTrueConfig = {
+      version: undefined,
+      mode: "solo",
       sources: [{ type: "local", path: ".aligntrue/rules" }],
       exporters: ["agents"],
     };
@@ -1106,7 +1106,7 @@ async function importCatalogCommand(options: {
 
   let importResult: Awaited<ReturnType<typeof importFromCatalog>>;
   try {
-    importResult = await importFromCatalog(catalogId, rulesDir);
+    importResult = await importFromCatalog(catalogId, rulesDir, cwd);
   } catch (error) {
     spinner.stopSilent();
     exitWithError(
@@ -1177,6 +1177,7 @@ async function importCatalogCommand(options: {
   if (!noSync) {
     spinner.start("Syncing to agents...");
     try {
+      const { sync } = await import("./sync/index.js");
       await sync(["--quiet"]);
       syncPerformed = true;
       spinner.stop("Imported and synced to agents");

@@ -1,5 +1,5 @@
 import { mkdirSync } from "fs";
-import { dirname, join } from "path";
+import { dirname, join, relative } from "path";
 import matter from "gray-matter";
 import {
   computeContentHash,
@@ -26,19 +26,20 @@ export interface CatalogImportResult {
 export async function importFromCatalog(
   catalogId: string,
   targetDir: string,
+  cwd: string,
 ): Promise<CatalogImportResult> {
   const initial = await fetchAlignRecord(catalogId);
 
   if (initial.kind === "pack") {
     const { pack, rules } = await fetchPackRuleRecords(catalogId);
-    return buildPackImport(pack, rules, targetDir);
+    return buildPackImport(pack, rules, targetDir, cwd);
   }
 
-  const ruleFile = await buildRuleFile(initial, targetDir);
+  const ruleFile = await buildRuleFile(initial, targetDir, cwd);
   return {
     kind: "rule",
     title: initial.title ?? initial.id,
-    rules: ruleFile ? [ruleFile.rule] : [],
+    rules: ruleFile?.rule ? [ruleFile.rule] : [],
     warnings: ruleFile?.warning ? [ruleFile.warning] : [],
   };
 }
@@ -47,12 +48,13 @@ async function buildPackImport(
   pack: CatalogRecord,
   rules: CatalogRecord[],
   targetDir: string,
+  cwd: string,
 ): Promise<CatalogImportResult> {
   const collected: RuleFile[] = [];
   const warnings: ImportWarning[] = [];
 
   for (const rule of rules) {
-    const result = await buildRuleFile(rule, targetDir);
+    const result = await buildRuleFile(rule, targetDir, cwd);
     if (result?.rule) {
       collected.push(result.rule);
     }
@@ -72,7 +74,8 @@ async function buildPackImport(
 async function buildRuleFile(
   record: CatalogRecord,
   targetDir: string,
-): Promise<{ rule?: RuleFile; warning?: ImportWarning } | null> {
+  cwd: string,
+): Promise<{ rule?: RuleFile; warning?: ImportWarning }> {
   if (record.sourceRemoved) {
     return { warning: { id: record.id, reason: "source removed" } };
   }
@@ -89,9 +92,9 @@ async function buildRuleFile(
     filenameFromUrl(record.normalizedUrl ?? record.id) || `${record.id}.md`;
   const relativePath =
     extractPathFromNormalizedUrl(record.normalizedUrl) ?? filename;
-  const path = join(targetDir, relativePath);
+  const fullPath = join(targetDir, relativePath);
 
-  mkdirSync(dirname(path), { recursive: true });
+  mkdirSync(dirname(fullPath), { recursive: true });
 
   const frontmatter: RuleFrontmatter = {
     ...(parsed.data as RuleFrontmatter),
@@ -103,7 +106,7 @@ async function buildRuleFile(
   const rule: RuleFile = {
     content: parsed.content,
     frontmatter,
-    path,
+    path: relative(cwd, fullPath),
     filename,
     relativePath,
     hash: computeContentHash({ content: parsed.content, frontmatter }),
@@ -136,11 +139,13 @@ function safeMatter(content: string): matter.GrayMatterFile<string> {
     return {
       data: {},
       content,
-      excerpt: null,
+      excerpt: "",
       orig: "",
       language: "",
       matter: "",
-    };
+      stringify: () => "",
+      toString: () => content,
+    } as matter.GrayMatterFile<string>;
   }
 }
 

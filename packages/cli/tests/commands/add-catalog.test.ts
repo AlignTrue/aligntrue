@@ -35,22 +35,24 @@ vi.mock("../../src/utils/catalog-resolver.js", () => ({
 }));
 
 vi.mock("../../src/utils/catalog-import.js", () => ({
-  importFromCatalog: vi.fn(async (_id: string, targetDir: string) => {
-    const rule: RuleFile = {
-      content: "Hello catalog",
-      frontmatter: { title: "Catalog Rule" },
-      path: join(targetDir, "catalog-rule.md"),
-      filename: "catalog-rule.md",
-      relativePath: "catalog-rule.md",
-      hash: "hash",
-    };
-    return {
-      kind: "pack" as const,
-      title: "Test Pack",
-      rules: [rule],
-      warnings: [],
-    };
-  }),
+  importFromCatalog: vi.fn(
+    async (_id: string, targetDir: string, _cwd: string) => {
+      const rule: RuleFile = {
+        content: "Hello catalog",
+        frontmatter: { title: "Catalog Rule" },
+        path: join(targetDir, "catalog-rule.md"),
+        filename: "catalog-rule.md",
+        relativePath: "catalog-rule.md",
+        hash: "hash",
+      };
+      return {
+        kind: "pack" as const,
+        title: "Test Pack",
+        rules: [rule],
+        warnings: [],
+      };
+    },
+  ),
 }));
 
 describe("add command - catalog import", () => {

@@ -22,7 +22,7 @@ export function extractCatalogId(input: string): string | null {
   const trimmed = input.trim();
 
   const urlMatch = trimmed.match(CATALOG_URL_PATTERN);
-  if (urlMatch) return urlMatch[1];
+  if (urlMatch?.[1]) return urlMatch[1];
 
   if (CATALOG_ID_PATTERN.test(trimmed) && !existsSync(trimmed)) {
     return trimmed;
