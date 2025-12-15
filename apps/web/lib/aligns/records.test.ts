@@ -79,7 +79,7 @@ describe("buildCatalogPackRecord", () => {
 
     const record = buildCatalogPackRecord({
       id: "pack-1",
-      title: "Catalog Pack",
+      title: "Align Pack",
       description: "Desc",
       author: "@author",
       ruleIds: ["rule-1", "rule-2"],
@@ -117,7 +117,7 @@ describe("buildCatalogPackRecord", () => {
 
     const record = buildCatalogPackRecord({
       id: "pack-1",
-      title: "Catalog Pack",
+      title: "Align Pack",
       description: "Desc",
       author: "@author",
       ruleIds: ["rule-1", "rule-2"],

@@ -35,7 +35,7 @@ export function toAlignSummary(record: AlignRecord): AlignSummary {
       displayAuthor = null;
       displayAuthorUrl = null;
     }
-    displayFilename = "Catalog Pack";
+    displayFilename = "Align Pack";
     externalUrl = null;
   } else {
     const { owner, ownerUrl } = parseGitHubUrl(record.normalizedUrl);

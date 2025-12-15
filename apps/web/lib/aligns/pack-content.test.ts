@@ -67,7 +67,7 @@ function makeStore(records: Record<string, AlignRecord>): AlignStore {
 }
 
 describe("isCatalogPack", () => {
-  it("returns true only for catalog packs", () => {
+  it("returns true only for align packs", () => {
     expect(
       isCatalogPack(makeAlign("p1", { source: "catalog", kind: "pack" })),
     ).toBe(true);
@@ -94,7 +94,7 @@ describe("fetchPackContent", () => {
     expect(fetchRawWithCache).not.toHaveBeenCalled();
   });
 
-  it("fetches catalog pack files and caches them", async () => {
+  it("fetches align pack files and caches them", async () => {
     vi.mocked(findSeedContent).mockReturnValue(null);
     vi.mocked(fetchRawWithCache)
       .mockResolvedValueOnce({ kind: "single", content: "abc" })

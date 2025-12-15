@@ -29,7 +29,7 @@ describe("toAlignSummary", () => {
     expect(summary.externalUrl).toBe(baseRecord.normalizedUrl);
   });
 
-  it("computes display fields for catalog pack", () => {
+  it("computes display fields for align pack", () => {
     const catalogPack: AlignRecord = {
       ...baseRecord,
       id: "pack-1",
@@ -42,11 +42,11 @@ describe("toAlignSummary", () => {
     const summary = toAlignSummary(catalogPack);
     expect(summary.displayAuthor).toBe("@author");
     expect(summary.displayAuthorUrl).toBeNull();
-    expect(summary.displayFilename).toBe("Catalog Pack");
+    expect(summary.displayFilename).toBe("Align Pack");
     expect(summary.externalUrl).toBeNull();
   });
 
-  it("falls back to parsed owner when catalog pack has no author", () => {
+  it("falls back to parsed owner when align pack has no author", () => {
     const catalogPack: AlignRecord = {
       ...baseRecord,
       id: "pack-2",
@@ -59,7 +59,7 @@ describe("toAlignSummary", () => {
     const summary = toAlignSummary(catalogPack);
     expect(summary.displayAuthor).toBeNull();
     expect(summary.displayAuthorUrl).toBeNull();
-    expect(summary.displayFilename).toBe("Catalog Pack");
+    expect(summary.displayFilename).toBe("Align Pack");
     expect(summary.externalUrl).toBeNull();
   });
 });

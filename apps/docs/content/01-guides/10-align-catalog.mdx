@@ -9,7 +9,7 @@ Use the Align Catalog to turn any GitHub rule file into agent-ready outputs with
 ## What you can do
 
 - Paste a GitHub URL and generate an Align (single file)
-- Bundle imported rules into a catalog pack (no manifest needed)
+- Bundle imported rules into an Align pack (no manifest needed)
 - Preview content and switch between agent formats
 - Share a link or download the converted file
 - Download packs as a zip that preserves folder structure
@@ -29,7 +29,7 @@ Use the Align Catalog to turn any GitHub rule file into agent-ready outputs with
 Use the **Bulk import** page (`/import`) when you have multiple URLs:
 
 - Paste multiple GitHub URLs (one per line). We validate format locally before fetching. Directory URLs (`.../tree/main/path`) expand to list contained rule files so you can remove any before importing.
-- Optionally check **Bundle as pack** to create a shareable catalog pack that keeps rules together.
+- Optionally check **Bundle as pack** to create a shareable Align pack that keeps rules together.
 - Title (60 chars) and description (280 chars) are required for packs. Author auto-populates when all URLs share the same GitHub owner.
 - Results show imported rules with share links; packs link to their catalog page.
 
@@ -76,7 +76,7 @@ aligntrue add source https://github.com/org/repo/path/to/rules.md
 aligntrue sync
 ```
 
-- Works for single files. Catalog packs are download-only today (no CLI install); add the individual rules from the downloaded zip if needed.
+- Works for single files. Align packs are download-only today (no CLI install); add the individual rules from the downloaded zip if needed.
 - Use `--exporters <agent>` to target a specific agent; otherwise all configured exporters run.
 - For reusable external Aligns, see [Working with external sources](/docs/01-guides/04-external-sources).
 

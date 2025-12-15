@@ -59,7 +59,7 @@ async function fetchCatalogPackContent(
   try {
     await setCachedContent(align.id, content);
   } catch (error) {
-    console.error("failed to cache catalog pack content", error);
+    console.error("failed to cache align pack content", error);
   }
   return content;
 }
@@ -77,14 +77,14 @@ export async function fetchPackContent(
   const seedContent = findSeedContent(align.id);
   if (seedContent) return seedContent;
 
-  // 2) Catalog packs
+  // 2) Align packs
   if (isCatalogPack(align)) {
     try {
       const content = await fetchCatalogPackContent(align, store, options);
       if (content) return content;
-      throw new Error("failed to fetch catalog pack content");
+      throw new Error("failed to fetch align pack content");
     } catch (error) {
-      console.error("failed to fetch catalog pack content", error);
+      console.error("failed to fetch align pack content", error);
       return await getCachedContent(align.id);
     }
   }

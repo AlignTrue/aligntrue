@@ -66,6 +66,10 @@ An Align can be:
 
 **Related:** [Align Spec v1](https://github.com/AlignTrue/aligntrue/blob/main/spec/align-spec-v1.md), [Creating Aligns](/docs/07-contributing/creating-aligns)
 
+### Align pack
+
+The user-facing name for a pack created in the Align Catalog. An Align pack bundles multiple Aligns (by ID) into a single downloadable/shareable unit with preserved paths. CLI install is not supported today—download the zip and add the files. Internal references to "catalog pack" refer to the same pack type.
+
 ---
 
 ## File types & formats

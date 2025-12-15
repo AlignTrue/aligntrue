@@ -145,7 +145,7 @@ export function AlignDetailPreview({
   }, [content, isPack, selectedFile]);
 
   const fileNameLabel = useMemo(() => {
-    if (catalogPack) return "Catalog Pack";
+    if (catalogPack) return "Align Pack";
     if (isPack) return display.displayFilename ?? "Pack";
     return (
       display.displayFilename ??
@@ -498,7 +498,7 @@ export function AlignDetailPreview({
                     Make it easy for others to use these rules. Copy this link
                     to share.
                     {catalogPack &&
-                      " Catalog packs can be shared or downloaded; CLI install is not yet supported for catalog packs."}
+                      " Align packs can be shared or downloaded; CLI install is not yet supported for align packs."}
                   </p>
                   <CommandBlock
                     code={shareText}

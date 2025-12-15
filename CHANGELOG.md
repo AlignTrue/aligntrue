@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Packs are catalog-only: create packs in the catalog UI; CLI no longer resolves `.align.yaml` manifests or installs packs
 - Align Catalog docs updated to describe catalog-native packs and download-only behavior for packs
+- Terminology: user-facing name is **Align pack**; internal references to “catalog pack” map to the same pack type
 
 ### Removed
 
@@ -28,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Example starter pack** - Added `examples/example-pack/` with `.align.yaml` manifest bundling global, testing, and TypeScript rules for testing and demonstration
-- **Pack testing infrastructure** - Added manifest parsing tests, pack resolver tests with mocked GitHub API, CLI integration tests for local pack sources, and catalog pack-fetcher/submit flow tests
+- **Pack testing infrastructure** - Added manifest parsing tests, pack resolver tests with mocked GitHub API, CLI integration tests for local pack sources, and align pack-fetcher/submit flow tests
 - **`aligntrue team join` subcommand** - Onboard new team members by creating their personal (gitignored) config without mutating team files. Replaces the previous auto-create behavior in sync
 - **`aligntrue add source` subcommand** - Add sources via CLI with `aligntrue add source <url>`. Replaces `--link` flag for the `add` command. Use `--personal` to mark source as personal scope
 - **`aligntrue add remote` subcommand** - Add push destinations via CLI with `aligntrue add remote <url>`. Use `--personal` or `--shared` to configure scope routing
