@@ -52,19 +52,55 @@ export default async function AlignDetailPage(props: {
   let alignForRender = align;
 
   if (align.kind === "pack" && align.pack) {
+    const isCatalogPack = align.source === "catalog";
     const packUrl = align.normalizedUrl || align.url;
     try {
-      const shouldRefresh =
-        align.sourceRemoved || (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
-      if (shouldRefresh) {
-        const pack = await fetchPackForWeb(packUrl);
-        content = { kind: "pack", files: pack.files };
+      if (isCatalogPack && align.containsAlignIds?.length) {
+        const ruleIds = align.containsAlignIds;
+        const rules = await store.getMultiple(ruleIds);
+        const filesResult = await Promise.all(
+          rules.filter(Boolean).map(async (rule) => {
+            try {
+              const ruleContent = await fetchRawWithCache(
+                rule!.id,
+                rule!.normalizedUrl || rule!.url,
+                256 * 1024,
+              );
+              if (ruleContent?.kind !== "single") return null;
+              const text = ruleContent.content;
+              return {
+                path: filenameFromUrl(rule!.normalizedUrl || rule!.url),
+                size: new TextEncoder().encode(text).length,
+                content: text,
+              };
+            } catch (err) {
+              console.error("failed to fetch rule content", err);
+              return null;
+            }
+          }),
+        );
+        const files = filesResult.filter(Boolean) as {
+          path: string;
+          size: number;
+          content: string;
+        }[];
+
+        content = { kind: "pack", files };
         await setCachedContent(align.id, content);
       } else {
-        content = await getCachedContent(align.id, async () => {
+        const shouldRefresh =
+          align.sourceRemoved ||
+          (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
+        if (shouldRefresh) {
           const pack = await fetchPackForWeb(packUrl);
-          return { kind: "pack", files: pack.files };
-        });
+          content = { kind: "pack", files: pack.files };
+          await setCachedContent(align.id, content);
+        } else {
+          content = await getCachedContent(align.id, async () => {
+            const pack = await fetchPackForWeb(packUrl);
+            return { kind: "pack", files: pack.files };
+          });
+        }
       }
     } catch (error) {
       if (content) {

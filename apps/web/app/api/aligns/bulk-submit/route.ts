@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     });
     await store.upsert(packRecord);
     await Promise.all(successIds.map((s) => addRuleToPack(s.id, id)));
-    pack = { id, url: `/a/${id}` };
+    pack = { id, url: `/a/${id}`, title };
   }
 
   return NextResponse.json({ results, pack });

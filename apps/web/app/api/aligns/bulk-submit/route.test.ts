@@ -81,6 +81,7 @@ describe("POST /api/aligns/bulk-submit", () => {
     expect(data.results).toHaveLength(2);
     expect(data.results[0].status).toBe("success");
     expect(data.pack?.id).toBeDefined();
+    expect(data.pack?.title).toBe("My Pack");
     expect(mockUpsert).toHaveBeenCalledTimes(1); // pack upsert
     expect(mockAddRuleToPack).toHaveBeenCalledTimes(2);
   });

@@ -23,6 +23,7 @@ import {
   validateAlignUrl,
   validateAlignUrls,
 } from "@/lib/aligns/url-validation";
+import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import {
   BULK_IMPORT_MAX_URLS,
   DESCRIPTION_MAX_CHARS,
@@ -81,6 +82,7 @@ export function BulkImportClient() {
   const [packResult, setPackResult] = useState<{
     id: string;
     url: string;
+    title: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<ValidatedItem[]>([]);
@@ -313,7 +315,14 @@ export function BulkImportClient() {
         setError(data?.error ?? "Bulk import failed");
       } else {
         setResults(data.results as BulkResult[]);
-        setPackResult(data.pack ?? null);
+        setPackResult(
+          data.pack
+            ? {
+                ...data.pack,
+                title: data.pack.title ?? packTitle.trim(),
+              }
+            : null,
+        );
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Bulk import failed");
@@ -405,20 +414,19 @@ export function BulkImportClient() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <CheckCircle
-                    className="text-green-600"
+                    className="text-green-600 shrink-0"
                     size={16}
                     aria-hidden
                   />
-                  <span>{packResult.url}</span>
+                  <a
+                    href={packResult.url}
+                    className="font-semibold text-foreground hover:underline truncate"
+                  >
+                    {packResult.title}
+                  </a>
                 </div>
-                <a
-                  href={packResult.url}
-                  className="text-primary hover:underline font-semibold text-sm"
-                >
-                  Open →
-                </a>
               </div>
             </CardContent>
           </Card>
@@ -441,23 +449,31 @@ export function BulkImportClient() {
                   : r.status === "error"
                     ? "text-destructive"
                     : "text-muted-foreground";
+              const label = r.title ?? filenameFromUrl(r.url);
               return (
                 <div
                   key={`${r.url}-${r.status}`}
                   className="flex items-center justify-between gap-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <Icon className={color} size={16} aria-hidden />
-                    <span className="truncate">{r.url}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Icon
+                      className={`${color} shrink-0`}
+                      size={16}
+                      aria-hidden
+                    />
+                    <span className="truncate">
+                      {r.status === "success" ? (
+                        <a
+                          href={`/a/${r.id}`}
+                          className="text-foreground hover:underline font-semibold"
+                        >
+                          {label}
+                        </a>
+                      ) : (
+                        label
+                      )}
+                    </span>
                   </div>
-                  {r.status === "success" && (
-                    <a
-                      href={`/a/${r.id}`}
-                      className="text-primary hover:underline font-semibold"
-                    >
-                      Open →
-                    </a>
-                  )}
                   {r.status === "error" && (
                     <span className="text-destructive text-xs">{r.error}</span>
                   )}

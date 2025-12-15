@@ -88,6 +88,7 @@ export function AlignDetailPreview({
     rules: AlignRecord[];
   } | null>(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const isCatalogPack = align.source === "catalog" && align.kind === "pack";
   const alignSharePath = `/a/${align.id}`;
   const shareUrl = `${BASE_URL}${alignSharePath}`;
 
@@ -121,10 +122,12 @@ export function AlignDetailPreview({
     }
   }, [isPack, packFiles]);
 
-  const { owner, ownerUrl } = useMemo(
-    () => parseGitHubUrl(align.normalizedUrl),
-    [align.normalizedUrl],
-  );
+  const { owner, ownerUrl } = useMemo(() => {
+    if (isCatalogPack && align.author) {
+      return { owner: align.author, ownerUrl: null };
+    }
+    return parseGitHubUrl(align.normalizedUrl);
+  }, [align.author, align.normalizedUrl, isCatalogPack]);
   const selectedFile = useMemo(() => {
     if (!isPack) return null;
     return (
@@ -142,13 +145,11 @@ export function AlignDetailPreview({
     return "";
   }, [content, isPack, selectedFile]);
 
-  const fileNameLabel = useMemo(
-    () =>
-      isPack
-        ? ".align.yaml"
-        : filenameFromUrl(align.normalizedUrl || align.url),
-    [align.normalizedUrl, align.url, isPack],
-  );
+  const fileNameLabel = useMemo(() => {
+    if (isCatalogPack) return "Catalog Pack";
+    if (isPack) return ".align.yaml";
+    return filenameFromUrl(align.normalizedUrl || align.url);
+  }, [align.normalizedUrl, align.url, isPack, isCatalogPack]);
 
   const fileCountLabel = useMemo(() => {
     if (!isPack) return null;
@@ -325,7 +326,7 @@ export function AlignDetailPreview({
               <div className="flex flex-col items-start sm:items-end gap-1.5 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <div className="flex items-center gap-2">
-                    {isArchived ? (
+                    {isArchived || isCatalogPack ? (
                       <span className="font-semibold text-foreground">
                         {fileNameLabel}
                       </span>
@@ -447,7 +448,7 @@ export function AlignDetailPreview({
                 </SelectContent>
               </Select>
 
-              {canExport && (
+              {canExport && !isCatalogPack && (
                 <Tabs
                   value={actionTab}
                   onValueChange={(v) => setActionTab(v as typeof actionTab)}
@@ -479,11 +480,13 @@ export function AlignDetailPreview({
             </div>
 
             <div className="pt-4 space-y-4">
-              {(!canExport || actionTab === "share") && (
+              {(!canExport || actionTab === "share" || isCatalogPack) && (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     Make it easy for others to use these rules. Copy this link
                     to share.
+                    {isCatalogPack &&
+                      " Catalog packs can be shared or downloaded; CLI install is not yet supported for catalog packs."}
                   </p>
                   <CommandBlock
                     code={shareText}
@@ -495,7 +498,7 @@ export function AlignDetailPreview({
                 </div>
               )}
 
-              {canExport && actionTab === "global" && (
+              {canExport && !isCatalogPack && actionTab === "global" && (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     New to AlignTrue? Install globally to manage rules across
@@ -514,7 +517,7 @@ export function AlignDetailPreview({
                 </div>
               )}
 
-              {canExport && actionTab === "temp" && (
+              {canExport && !isCatalogPack && actionTab === "temp" && (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     Quick one-off install. No global install required.
@@ -527,23 +530,26 @@ export function AlignDetailPreview({
                 </div>
               )}
 
-              {canExport && !isArchived && actionTab === "source" && (
-                <div className="space-y-3">
-                  <p className="m-0 text-muted-foreground">
-                    Already using AlignTrue? Add these rules as a connected
-                    source.{" "}
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="p-0 h-auto"
-                      onClick={() => setActionTab("global")}
-                    >
-                      New here? Use Global Install instead.
-                    </Button>
-                  </p>
-                  <CommandBlock code={commands.addSource} copyLabel="Copy" />
-                </div>
-              )}
+              {canExport &&
+                !isArchived &&
+                !isCatalogPack &&
+                actionTab === "source" && (
+                  <div className="space-y-3">
+                    <p className="m-0 text-muted-foreground">
+                      Already using AlignTrue? Add these rules as a connected
+                      source.{" "}
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto"
+                        onClick={() => setActionTab("global")}
+                      >
+                        New here? Use Global Install instead.
+                      </Button>
+                    </p>
+                    <CommandBlock code={commands.addSource} copyLabel="Copy" />
+                  </div>
+                )}
             </div>
           </div>
         </CardContent>
