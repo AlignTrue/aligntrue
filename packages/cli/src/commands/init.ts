@@ -21,6 +21,7 @@ import {
   writeRuleFile,
   type RuleFile,
   getBestFormat,
+  computeRulePaths,
 } from "@aligntrue/core";
 import { detectContext } from "../utils/detect-context.js";
 import {
@@ -631,8 +632,18 @@ export async function init(args: string[] = []): Promise<void> {
         // Update the rule's filename if needed
         const rule = result.rules.find((r) => r.filename === conflict.filename);
         if (rule && resolution.resolution !== "skip") {
-          rule.filename = resolution.finalFilename;
-          rule.path = resolution.finalFilename;
+          const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+          const finalRelative =
+            baseDir && baseDir !== "."
+              ? join(baseDir, resolution.finalFilename)
+              : resolution.finalFilename;
+          const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
+            cwd,
+            rulesDir,
+          });
+          rule.filename = updatedPaths.filename;
+          rule.relativePath = updatedPaths.relativePath;
+          rule.path = updatedPaths.path;
           if (resolution.backupPath) {
             logMessage(
               `Backed up existing rule to ${resolution.backupPath}`,
@@ -657,8 +668,18 @@ export async function init(args: string[] = []): Promise<void> {
         const resolution = resolveConflict(conflict, "keep-both", cwd);
         const rule = result.rules.find((r) => r.filename === conflict.filename);
         if (rule) {
-          rule.filename = resolution.finalFilename;
-          rule.path = resolution.finalFilename;
+          const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+          const finalRelative =
+            baseDir && baseDir !== "."
+              ? join(baseDir, resolution.finalFilename)
+              : resolution.finalFilename;
+          const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
+            cwd,
+            rulesDir,
+          });
+          rule.filename = updatedPaths.filename;
+          rule.relativePath = updatedPaths.relativePath;
+          rule.path = updatedPaths.path;
         }
       }
     } else {

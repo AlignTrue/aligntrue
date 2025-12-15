@@ -36,11 +36,11 @@ vi.mock("../../src/utils/catalog-resolver.js", () => ({
 
 vi.mock("../../src/utils/catalog-import.js", () => ({
   importFromCatalog: vi.fn(
-    async (_id: string, targetDir: string, _cwd: string) => {
+    async (_id: string, _targetDir: string, _cwd: string) => {
       const rule: RuleFile = {
         content: "Hello catalog",
         frontmatter: { title: "Catalog Rule" },
-        path: join(targetDir, "catalog-rule.md"),
+        path: ".aligntrue/rules/catalog-rule.md",
         filename: "catalog-rule.md",
         relativePath: "catalog-rule.md",
         hash: "hash",

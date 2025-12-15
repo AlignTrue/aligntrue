@@ -127,6 +127,14 @@ export {
   detectNonMdFiles,
   type RuleFile,
 } from "./rules/file-io.js";
+export {
+  computeRulePaths,
+  updateRulePathsForRename,
+  validateRulePaths,
+  type RulePaths,
+  type RulePathContext,
+  type RulePathValidationResult,
+} from "./rules/rule-paths.js";
 
 export {
   detectNestedRuleDirs,

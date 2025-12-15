@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bulk import results now show pack titles and filename links for imported rules, improving mobile readability
 - Catalog-created packs render correctly with aggregated rule content, accurate author/labels, and CLI messaging
+- Rule import conflict resolution now preserves workspace-relative paths (RuleFile.path) and nested relative paths, preventing metadata corruption when resolving conflicts
 
 ## [0.8.2] - 2025-12-10
 

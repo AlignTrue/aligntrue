@@ -11,7 +11,7 @@
  */
 
 import { existsSync, mkdirSync } from "fs";
-import { join, dirname, basename } from "path";
+import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import {
   patchConfig,
@@ -22,6 +22,7 @@ import {
   detectConflicts,
   isTeamModeActive,
   validateRelativePath,
+  computeRulePaths,
   type AlignTrueConfig,
   type ConflictInfo,
 } from "@aligntrue/core";
@@ -671,10 +672,14 @@ async function writeRulesWithConflicts(options: {
             baseDir && baseDir !== "."
               ? join(baseDir, resolved.finalFilename)
               : resolved.finalFilename;
+          const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
+            cwd,
+            rulesDir,
+          });
 
-          rule.filename = basename(resolved.finalFilename);
-          rule.relativePath = finalRelative;
-          rule.path = finalRelative;
+          rule.filename = updatedPaths.filename;
+          rule.relativePath = updatedPaths.relativePath;
+          rule.path = updatedPaths.path;
 
           if (resolved.backupPath && isTTY()) {
             clack.log.info(`Backed up existing rule to ${resolved.backupPath}`);

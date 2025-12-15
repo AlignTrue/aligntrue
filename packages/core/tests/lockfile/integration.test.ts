@@ -23,6 +23,8 @@ describe("lockfile integration", () => {
   function createMockRule(name: string, content: string): RuleFile {
     return {
       filename: `${name}.md`,
+      path: `.aligntrue/rules/${name}.md`,
+      relativePath: `${name}.md`,
       content,
       hash: computeHash(content),
       frontmatter: {},
