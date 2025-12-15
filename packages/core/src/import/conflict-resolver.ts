@@ -4,7 +4,7 @@
  */
 
 import { existsSync } from "fs";
-import { join, basename, dirname, extname } from "path";
+import { join, posix as pathPosix, win32 as pathWin32 } from "path";
 import { backupOverwrittenFile } from "../utils/overwritten-rules-manager.js";
 
 /**
@@ -82,6 +82,8 @@ export function resolveConflict(
   resolution: ConflictResolution,
   cwd: string,
 ): ResolvedConflict {
+  const pathOps = pickPathOps(conflict.existingPath, conflict.filename);
+
   switch (resolution) {
     case "replace": {
       // Backup existing file before replacing
@@ -96,8 +98,8 @@ export function resolveConflict(
 
     case "keep-both": {
       // Generate a unique filename (preserve directory structure)
-      const baseDir = dirname(conflict.filename);
-      const existingDir = dirname(conflict.existingPath);
+      const baseDir = pathOps.dirname(conflict.filename);
+      const existingDir = pathOps.dirname(conflict.existingPath);
 
       // Walk up from the existing file directory to the rules root by popping
       // each segment present in the relative filename directory.
@@ -105,16 +107,17 @@ export function resolveConflict(
         baseDir && baseDir !== "." ? baseDir.split(/[/\\]+/) : [];
       let rulesRoot = existingDir;
       for (let i = 0; i < segments.length; i += 1) {
-        rulesRoot = dirname(rulesRoot);
+        rulesRoot = pathOps.dirname(rulesRoot);
       }
 
       const uniqueFilename = generateUniqueFilename(
         conflict.filename,
         rulesRoot,
       );
+      const finalFilename = toPosix(uniqueFilename);
       return {
         originalFilename: conflict.filename,
-        finalFilename: uniqueFilename,
+        finalFilename,
         resolution: "keep-both",
       };
     }
@@ -137,21 +140,22 @@ export function resolveConflict(
  * @returns Unique filename preserving path (e.g., "deep/rule-1.md")
  */
 function generateUniqueFilename(filename: string, rulesDir: string): string {
-  const ext = extname(filename);
-  const base = basename(filename, ext);
-  const dir = dirname(filename);
+  const pathOps = pickPathOps(rulesDir, filename);
+  const ext = pathOps.extname(filename);
+  const base = pathOps.basename(filename, ext);
+  const dir = pathOps.dirname(filename);
 
   let counter = 1;
   let candidate =
     dir && dir !== "."
-      ? join(dir, `${base}-${counter}${ext}`)
+      ? pathOps.join(dir, `${base}-${counter}${ext}`)
       : `${base}-${counter}${ext}`;
 
-  while (existsSync(join(rulesDir, candidate))) {
+  while (existsSync(pathOps.join(rulesDir, candidate))) {
     counter++;
     candidate =
       dir && dir !== "."
-        ? join(dir, `${base}-${counter}${ext}`)
+        ? pathOps.join(dir, `${base}-${counter}${ext}`)
         : `${base}-${counter}${ext}`;
 
     // Safety limit to prevent infinite loop
@@ -179,4 +183,17 @@ export function resolveAllConflicts(
   return conflicts.map((conflict) =>
     resolveConflict(conflict, resolution, cwd),
   );
+}
+
+/**
+ * Choose path operations that are compatible with the incoming paths.
+ * If any path contains a backslash, use win32 helpers; otherwise use posix.
+ */
+function pickPathOps(...paths: Array<string | undefined>) {
+  const hasBackslash = paths.some((p) => p && p.includes("\\"));
+  return hasBackslash ? pathWin32 : pathPosix;
+}
+
+function toPosix(path: string): string {
+  return path.replace(/\\/g, "/");
 }
