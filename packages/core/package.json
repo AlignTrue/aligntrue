@@ -42,7 +42,8 @@
     "js-yaml": ">=4.1.1",
     "micromatch": "^4.0.8",
     "simple-git": "^3.30.0",
-    "yaml": "^2.8.2"
+    "yaml": "^2.8.2",
+    "tmp": "^0.2.5"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { randomBytes } from "crypto";
+import * as tmp from "tmp";
 import {
   detectConflicts,
   resolveConflict,
@@ -14,10 +15,7 @@ describe("conflict-resolver", () => {
 
   beforeEach(() => {
     // Create temp directory
-    testDir = join(
-      tmpdir(),
-      `aligntrue-conflict-test-${randomBytes(8).toString("hex")}`,
-    );
+    testDir = tmp.dirSync().name;
     rulesDir = join(testDir, ".aligntrue", "rules");
     mkdirSync(rulesDir, { recursive: true });
   });
