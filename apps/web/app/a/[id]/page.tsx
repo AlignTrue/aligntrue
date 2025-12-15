@@ -52,7 +52,7 @@ export default async function AlignDetailPage(props: {
   let alignForRender = align;
 
   if (align.kind === "pack" && align.pack) {
-    const isCatalogPack = align.source === "catalog";
+    const isCatalogPack = align.source === "catalog" && align.kind === "pack";
     const packUrl = align.normalizedUrl || align.url;
     try {
       if (isCatalogPack && align.containsAlignIds?.length) {
