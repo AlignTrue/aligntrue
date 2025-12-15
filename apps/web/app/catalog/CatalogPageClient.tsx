@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Search, X } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
-import { AlignCard, type AlignSummary } from "@/app/components/AlignCard";
+import { AlignCard } from "@/app/components/AlignCard";
 import { AlignDetailPreview } from "@/components/AlignDetailPreview";
 import { GitHubIcon } from "@/app/components/GitHubIcon";
 import { SkeletonCard } from "@/components/SkeletonCard";
@@ -24,6 +24,7 @@ import { RuleImportCard } from "@/components/RuleImportCard";
 import { isAbortError } from "@/lib/utils";
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent } from "@/lib/aligns/content-cache";
+import type { AlignSummary } from "@/lib/aligns/transforms";
 
 type SortBy = "recent" | "popular";
 type KindFilter = "all" | "rule" | "pack";

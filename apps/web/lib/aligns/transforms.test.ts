@@ -45,4 +45,21 @@ describe("toAlignSummary", () => {
     expect(summary.displayFilename).toBe("Catalog Pack");
     expect(summary.externalUrl).toBeNull();
   });
+
+  it("falls back to parsed owner when catalog pack has no author", () => {
+    const catalogPack: AlignRecord = {
+      ...baseRecord,
+      id: "pack-2",
+      source: "catalog",
+      kind: "pack",
+      author: null,
+      normalizedUrl: "https://aligntrue.ai/a/pack-2",
+      url: "https://aligntrue.ai/a/pack-2",
+    };
+    const summary = toAlignSummary(catalogPack);
+    expect(summary.displayAuthor).toBe("@a");
+    expect(summary.displayAuthorUrl).toBe("https://aligntrue.ai/a");
+    expect(summary.displayFilename).toBe("Catalog Pack");
+    expect(summary.externalUrl).toBeNull();
+  });
 });

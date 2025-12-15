@@ -22,10 +22,11 @@ import { getSubmittedUrlFromSearch } from "@/lib/aligns/urlFromSearch";
 import { CommandBlock } from "@/components/CommandBlock";
 import { PageLayout } from "@/components/PageLayout";
 import { SkeletonCard } from "@/components/SkeletonCard";
-import { AlignCard, type AlignSummary } from "./components/AlignCard";
+import { AlignCard } from "./components/AlignCard";
 import { RuleImportCard } from "@/components/RuleImportCard";
 import { useVisibilityRecovery } from "@/lib/useVisibilityRecovery";
 import { isAbortError } from "@/lib/utils";
+import type { AlignSummary } from "@/lib/aligns/transforms";
 
 async function fetchList(
   path: string,

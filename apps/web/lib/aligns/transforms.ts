@@ -28,8 +28,14 @@ export function toAlignSummary(record: AlignRecord): AlignSummary {
   let externalUrl: string | null;
 
   if (isCatalogPack) {
-    displayAuthor = record.author || "Unknown";
-    displayAuthorUrl = null;
+    if (record.author) {
+      displayAuthor = record.author;
+      displayAuthorUrl = null;
+    } else {
+      const { owner, ownerUrl } = parseGitHubUrl(record.normalizedUrl);
+      displayAuthor = owner;
+      displayAuthorUrl = ownerUrl;
+    }
     displayFilename = "Catalog Pack";
     externalUrl = null;
   } else {

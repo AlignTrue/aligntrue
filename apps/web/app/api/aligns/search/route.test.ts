@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { AlignRecord } from "@/lib/aligns/types";
+import { toAlignSummary } from "@/lib/aligns/transforms";
 
 const searchMock = vi.fn();
 
@@ -55,18 +56,7 @@ describe("GET /api/aligns/search", () => {
       offset: 0,
     });
     expect(json.total).toBe(1);
-    expect(json.items).toEqual([
-      {
-        id: record.id,
-        title: record.title,
-        description: record.description,
-        provider: record.provider,
-        normalizedUrl: record.normalizedUrl,
-        kind: record.kind,
-        url: record.url,
-        pack: record.pack,
-      },
-    ]);
+    expect(json.items).toEqual([toAlignSummary(record)]);
   });
 
   it("parses and clamps query params", async () => {
