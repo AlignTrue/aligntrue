@@ -11,7 +11,7 @@
  */
 
 import { existsSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, basename } from "path";
 import * as clack from "@clack/prompts";
 import {
   patchConfig,
@@ -666,8 +666,15 @@ async function writeRulesWithConflicts(options: {
           rulesToWrite.splice(ruleIndex, 1);
         } else {
           const rule = rulesToWrite[ruleIndex]!;
-          rule.filename = resolved.finalFilename;
-          rule.path = resolved.finalFilename;
+          const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+          const finalRelative =
+            baseDir && baseDir !== "."
+              ? join(baseDir, resolved.finalFilename)
+              : resolved.finalFilename;
+
+          rule.filename = basename(resolved.finalFilename);
+          rule.relativePath = finalRelative;
+          rule.path = finalRelative;
 
           if (resolved.backupPath && isTTY()) {
             clack.log.info(`Backed up existing rule to ${resolved.backupPath}`);

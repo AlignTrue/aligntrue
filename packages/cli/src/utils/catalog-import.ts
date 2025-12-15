@@ -85,7 +85,23 @@ async function buildRuleFile(
     return { warning: { id: record.id, reason: "missing normalizedUrl" } };
   }
 
-  const content = await fetchTextWithTimeout(rawUrl);
+  let content: string;
+  try {
+    content = await fetchTextWithTimeout(rawUrl);
+  } catch (error) {
+    return {
+      warning: {
+        id: record.id,
+        reason:
+          error instanceof Error
+            ? error.message
+            : typeof error === "string"
+              ? error
+              : "failed to fetch content",
+      },
+    };
+  }
+
   const parsed = safeMatter(content);
 
   const filename =
