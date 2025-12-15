@@ -6,6 +6,7 @@ import {
   type CachedContent,
 } from "@/lib/aligns/content-cache";
 import { findSeedContent } from "@/lib/aligns/seedData";
+import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export async function GET(
               );
               if (raw?.kind !== "single") return null;
               return {
-                path: rule!.normalizedUrl?.split("/").pop() ?? rule!.id,
+                path: filenameFromUrl(rule!.normalizedUrl || rule!.url),
                 size: raw.content.length,
                 content: raw.content,
               };
