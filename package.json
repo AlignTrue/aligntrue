@@ -47,7 +47,7 @@
     "prepare": "husky",
     "release": "node scripts/manual-release.mjs",
     "release:helper": "bash scripts/release-helper.sh",
-    "aligntrue": "pnpm --filter @aligntrue/cli exec aligntrue"
+    "aligntrue": "pnpm --filter @aligntrue/cli exec node ./dist/index.js"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

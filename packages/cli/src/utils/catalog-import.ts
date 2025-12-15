@@ -1,5 +1,5 @@
 import { mkdirSync } from "fs";
-import { dirname, join, relative } from "path";
+import { dirname, join, relative, basename } from "path";
 import matter from "gray-matter";
 import {
   computeContentHash,
@@ -106,8 +106,16 @@ async function buildRuleFile(
 
   const filename =
     filenameFromUrl(record.normalizedUrl ?? record.id) || `${record.id}.md`;
-  const relativePath =
+
+  const rawRelativePath =
     extractPathFromNormalizedUrl(record.normalizedUrl) ?? filename;
+  const normalizedRelativePath = normalizeImportPath(rawRelativePath);
+  const relativePath =
+    normalizedRelativePath ||
+    normalizeImportPath(filename) ||
+    `${record.id}.md`;
+  const normalizedFilename = basename(relativePath);
+
   const fullPath = join(targetDir, relativePath);
 
   mkdirSync(dirname(fullPath), { recursive: true });
@@ -123,7 +131,7 @@ async function buildRuleFile(
     content: parsed.content,
     frontmatter,
     path: relative(cwd, fullPath),
-    filename,
+    filename: normalizedFilename,
     relativePath,
     hash: computeContentHash({ content: parsed.content, frontmatter }),
   };
@@ -176,6 +184,39 @@ function filenameFromUrl(url?: string | null): string | null {
     const segments = url.split("/").filter(Boolean);
     return segments.pop() ?? null;
   }
+}
+
+function normalizeImportPath(urlPath: string): string {
+  if (!urlPath) return urlPath;
+
+  // Remove leading "./" to normalize relative paths
+  let normalized = urlPath.replace(/^\.?\//, "");
+
+  // Strip common agent-specific prefixes that should not live under .aligntrue/rules/
+  const prefixes = [
+    ".cursor/rules/",
+    ".cursor/",
+    ".vscode/",
+    ".augment/rules/",
+    ".amazonq/rules/",
+    ".kilocode/rules/",
+    ".trae/rules/",
+    ".goose/rules/",
+  ];
+
+  for (const prefix of prefixes) {
+    if (normalized.startsWith(prefix)) {
+      normalized = normalized.slice(prefix.length);
+      break;
+    }
+  }
+
+  // Convert Cursor-exported .mdc files back to canonical .md
+  if (normalized.endsWith(".mdc")) {
+    normalized = normalized.slice(0, -4) + ".md";
+  }
+
+  return normalized;
 }
 
 function extractPathFromNormalizedUrl(url?: string | null): string | null {

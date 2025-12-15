@@ -237,7 +237,7 @@ export class AgentsExporter extends ExporterBase {
 
       for (const rule of categoryRules) {
         const title =
-          rule.frontmatter.title || rule.filename.replace(/\.md$/, "");
+          rule.frontmatter.title || rule.filename.replace(/\.(md|mdc)$/, "");
         const description = rule.frontmatter.description || "";
         const conditions = this.formatConditions(rule.frontmatter);
 

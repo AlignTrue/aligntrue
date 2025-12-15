@@ -252,13 +252,10 @@ export async function add(args: string[]): Promise<void> {
 
   const baseUrl = normalizeUrl(urlArg);
 
-  // Detect source type and privacy
-  const sourceType = detectSourceType(baseUrl);
-  const privateSource = isPrivateSource(baseUrl);
-
   // Show spinner
   const spinner = createManagedSpinner({ disabled: !isTTY() });
 
+  // Early catalog handling to avoid detectSourceType rejecting catalog URLs
   const catalogId =
     !subcommand && isCatalogId(baseUrl) ? extractCatalogId(baseUrl) : null;
   if (!subcommand && catalogId) {
@@ -273,6 +270,10 @@ export async function add(args: string[]): Promise<void> {
     });
     return;
   }
+
+  // Detect source type and privacy (non-catalog paths)
+  const sourceType = detectSourceType(baseUrl);
+  const privateSource = isPrivateSource(baseUrl);
 
   if (subcommand === "source") {
     // Add as connected source

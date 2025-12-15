@@ -52,8 +52,9 @@ export class CursorExporter extends ExporterBase {
       const nestedLoc = rule.frontmatter.nested_location
         ? normalizePath(rule.frontmatter.nested_location)
         : undefined;
-      const ruleRelPath = rule.relativePath || rule.filename;
-      const filename = ruleRelPath.replace(/\.md$/, ".mdc");
+      const ruleRelPath = normalizePath(rule.relativePath || rule.filename);
+      const sanitizedRulePath = stripAgentPrefixes(ruleRelPath);
+      const filename = sanitizedRulePath.replace(/\.mdc?$/, ".mdc");
 
       let outputPath: string;
       if (nestedLoc) {
@@ -130,4 +131,20 @@ export class CursorExporter extends ExporterBase {
 
     return result;
   }
+}
+
+/**
+ * Remove agent-specific prefixes from rule paths to avoid double nesting
+ * when exporting to Cursor (.cursor/rules).
+ */
+function stripAgentPrefixes(rulePath: string): string {
+  let normalized = normalizePath(rulePath).replace(/^\.?\//, "");
+  const prefixes = [".cursor/rules/", "cursor/rules/", ".cursor/", "cursor/"];
+  for (const prefix of prefixes) {
+    if (normalized.startsWith(prefix)) {
+      normalized = normalized.slice(prefix.length);
+      break;
+    }
+  }
+  return normalized;
 }
