@@ -38,21 +38,25 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
                 {align.displayFilename}
               </span>
             )}
-            <span className="mx-1 text-border">•</span>
-            {align.displayAuthorUrl ? (
-              <a
-                href={align.displayAuthorUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-foreground hover:text-primary hover:underline"
-              >
-                {align.displayAuthor}
-              </a>
-            ) : (
-              <span className="font-semibold text-foreground">
-                {align.displayAuthor}
-              </span>
-            )}
+            {align.displayAuthor ? (
+              <>
+                <span className="mx-1 text-border">•</span>
+                {align.displayAuthorUrl ? (
+                  <a
+                    href={align.displayAuthorUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-foreground hover:text-primary hover:underline"
+                  >
+                    {align.displayAuthor}
+                  </a>
+                ) : (
+                  <span className="font-semibold text-foreground">
+                    {align.displayAuthor}
+                  </span>
+                )}
+              </>
+            ) : null}
           </span>
           <div className="flex items-center gap-2">
             <span
