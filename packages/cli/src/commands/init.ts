@@ -656,7 +656,7 @@ export async function init(args: string[] = []): Promise<void> {
         } else if (resolution.resolution === "skip") {
           // Remove skipped rule from the list
           const index = result.rules.findIndex(
-            (r) => r.filename === conflict.filename,
+            (r) => (r.relativePath || r.filename) === conflict.filename,
           );
           if (index !== -1) {
             result.rules.splice(index, 1);
