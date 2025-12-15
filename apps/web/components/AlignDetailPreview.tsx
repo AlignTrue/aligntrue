@@ -37,9 +37,10 @@ import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
 import { downloadFile } from "@/lib/download";
-import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { cn, formatBytes } from "@/lib/utils";
 import { PackMembershipBadges } from "./PackMembershipBadges";
+import { toAlignSummary } from "@/lib/aligns/transforms";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -91,6 +92,7 @@ export function AlignDetailPreview({
   const isCatalogPack = align.source === "catalog" && align.kind === "pack";
   const alignSharePath = `/a/${align.id}`;
   const shareUrl = `${BASE_URL}${alignSharePath}`;
+  const display = useMemo(() => toAlignSummary(align), [align]);
 
   useEffect(() => {
     void postEvent(align.id, "view");
@@ -122,12 +124,8 @@ export function AlignDetailPreview({
     }
   }, [isPack, packFiles]);
 
-  const { owner, ownerUrl } = useMemo(() => {
-    if (isCatalogPack && align.author) {
-      return { owner: align.author, ownerUrl: null };
-    }
-    return parseGitHubUrl(align.normalizedUrl);
-  }, [align.author, align.normalizedUrl, isCatalogPack]);
+  const owner = display.displayAuthor;
+  const ownerUrl = display.displayAuthorUrl;
   const selectedFile = useMemo(() => {
     if (!isPack) return null;
     return (
@@ -148,8 +146,17 @@ export function AlignDetailPreview({
   const fileNameLabel = useMemo(() => {
     if (isCatalogPack) return "Catalog Pack";
     if (isPack) return ".align.yaml";
-    return filenameFromUrl(align.normalizedUrl || align.url);
-  }, [align.normalizedUrl, align.url, isPack, isCatalogPack]);
+    return (
+      display.displayFilename ??
+      filenameFromUrl(align.normalizedUrl || align.url)
+    );
+  }, [
+    align.normalizedUrl,
+    align.url,
+    display.displayFilename,
+    isPack,
+    isCatalogPack,
+  ]);
 
   const fileCountLabel = useMemo(() => {
     if (!isPack) return null;
@@ -326,13 +333,13 @@ export function AlignDetailPreview({
               <div className="flex flex-col items-start sm:items-end gap-1.5 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <div className="flex items-center gap-2">
-                    {isArchived || isCatalogPack ? (
+                    {isArchived || isCatalogPack || !display.externalUrl ? (
                       <span className="font-semibold text-foreground">
                         {fileNameLabel}
                       </span>
                     ) : (
                       <a
-                        href={align.normalizedUrl}
+                        href={display.externalUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="font-semibold text-foreground hover:underline"

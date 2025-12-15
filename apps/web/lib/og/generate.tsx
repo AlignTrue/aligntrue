@@ -5,7 +5,7 @@ import sharp from "sharp";
 
 import { AlignTrueLogoOG } from "@/app/api/og/AlignTrueLogoOG";
 import { generateBarSegments, idToSeed } from "@/lib/aligns/hash-bar-utils";
-import { parseGitHubUrl } from "@/lib/aligns/urlUtils";
+import { toAlignSummary } from "@/lib/aligns/transforms";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 const COLORS = {
@@ -63,7 +63,7 @@ export async function buildOgImageResponse(options: {
   headers?: Record<string, string>;
 }) {
   const { align, id, headers } = options;
-  const { owner } = parseGitHubUrl(align.normalizedUrl);
+  const summary = toAlignSummary(align);
   const title = align.title || "Untitled Align";
   const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
@@ -179,7 +179,9 @@ export async function buildOgImageResponse(options: {
                 }}
               >
                 <span>by</span>
-                <span style={{ color: COLORS.foreground }}>{owner}</span>
+                <span style={{ color: COLORS.foreground }}>
+                  {summary.displayAuthor}
+                </span>
                 <span>via</span>
                 <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
               </div>

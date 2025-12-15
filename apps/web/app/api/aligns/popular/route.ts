@@ -1,4 +1,5 @@
 import { getAlignStore } from "@/lib/aligns/storeFactory";
+import { toAlignSummary } from "@/lib/aligns/transforms";
 
 export const dynamic = "force-dynamic";
 
@@ -15,5 +16,5 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const limit = parseLimit(searchParams);
   const aligns = await store.listPopular(limit);
-  return Response.json(aligns);
+  return Response.json(aligns.map(toAlignSummary));
 }

@@ -3,20 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { HashBar } from "@/components/HashBar";
-import { filenameFromUrl, parseGitHubUrl } from "@/lib/aligns/urlUtils";
-import type { AlignRecord } from "@/lib/aligns/types";
-
-export type AlignSummary = Pick<
-  AlignRecord,
-  | "id"
-  | "title"
-  | "description"
-  | "provider"
-  | "normalizedUrl"
-  | "kind"
-  | "url"
-  | "pack"
->;
+import type { AlignSummary } from "@/lib/aligns/transforms";
 
 type AlignCardProps = {
   align: AlignSummary;
@@ -25,9 +12,7 @@ type AlignCardProps = {
 };
 
 export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
-  const { owner, ownerUrl } = parseGitHubUrl(align.normalizedUrl);
   const isPack = align.kind === "pack";
-  const filename = filenameFromUrl(align.normalizedUrl || align.url);
 
   return (
     <Card
@@ -39,26 +24,34 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
       <CardContent className="p-4 space-y-3 text-left flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs sm:text-[11px] text-muted-foreground truncate">
-            <a
-              href={align.normalizedUrl || align.url}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-foreground/80 hover:text-foreground hover:underline"
-            >
-              {filename}
-            </a>
-            <span className="mx-1 text-border">•</span>
-            {ownerUrl ? (
+            {align.externalUrl ? (
               <a
-                href={ownerUrl}
+                href={align.externalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-foreground/80 hover:text-foreground hover:underline"
+              >
+                {align.displayFilename}
+              </a>
+            ) : (
+              <span className="font-medium text-foreground/80">
+                {align.displayFilename}
+              </span>
+            )}
+            <span className="mx-1 text-border">•</span>
+            {align.displayAuthorUrl ? (
+              <a
+                href={align.displayAuthorUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="font-semibold text-foreground hover:text-primary hover:underline"
               >
-                {owner}
+                {align.displayAuthor}
               </a>
             ) : (
-              <span className="font-semibold text-foreground">{owner}</span>
+              <span className="font-semibold text-foreground">
+                {align.displayAuthor}
+              </span>
             )}
           </span>
           <div className="flex items-center gap-2">

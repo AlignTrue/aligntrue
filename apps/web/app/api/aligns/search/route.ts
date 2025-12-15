@@ -1,5 +1,6 @@
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import type { AlignRecord } from "@/lib/aligns/types";
+import { toAlignSummary } from "@/lib/aligns/transforms";
 
 export const dynamic = "force-dynamic";
 
@@ -22,19 +23,6 @@ function parseNumber(
   return Math.min(Math.max(parsed, min), max);
 }
 
-function toSummary(record: AlignRecord) {
-  return {
-    id: record.id,
-    title: record.title,
-    description: record.description,
-    provider: record.provider,
-    normalizedUrl: record.normalizedUrl,
-    kind: record.kind,
-    url: record.url,
-    pack: record.pack,
-  };
-}
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -53,7 +41,7 @@ export async function GET(req: Request) {
     });
 
     return Response.json({
-      items: result.items.map(toSummary),
+      items: result.items.map((item: AlignRecord) => toAlignSummary(item)),
       total: result.total,
     });
   } catch (error) {
