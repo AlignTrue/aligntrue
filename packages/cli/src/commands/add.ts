@@ -658,9 +658,7 @@ async function writeRulesWithConflicts(options: {
 
       const ruleIndex = rulesToWrite.findIndex((r) => {
         const ruleName = r.relativePath || r.filename;
-        return (
-          ruleName === conflict.filename || r.filename === conflict.filename
-        );
+        return ruleName === conflict.filename;
       });
       if (ruleIndex !== -1) {
         if (resolved.resolution === "skip") {

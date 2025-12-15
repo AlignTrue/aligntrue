@@ -677,7 +677,7 @@ export async function importRules(
     // Detect conflicts with existing rules
     const conflicts = detectConflicts(
       rules.map((r) => ({
-        filename: r.filename,
+        filename: r.relativePath || r.filename,
         title: r.frontmatter.title || r.filename,
         source,
       })),

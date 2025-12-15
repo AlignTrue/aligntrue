@@ -630,7 +630,9 @@ export async function init(args: string[] = []): Promise<void> {
         );
 
         // Update the rule's filename if needed
-        const rule = result.rules.find((r) => r.filename === conflict.filename);
+        const rule = result.rules.find(
+          (r) => (r.relativePath || r.filename) === conflict.filename,
+        );
         if (rule && resolution.resolution !== "skip") {
           const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
           const finalRelative =
@@ -666,7 +668,9 @@ export async function init(args: string[] = []): Promise<void> {
       scanner.stop(`Found ${result.rules.length} rules`);
       for (const conflict of result.conflicts) {
         const resolution = resolveConflict(conflict, "keep-both", cwd);
-        const rule = result.rules.find((r) => r.filename === conflict.filename);
+        const rule = result.rules.find(
+          (r) => (r.relativePath || r.filename) === conflict.filename,
+        );
         if (rule) {
           const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
           const finalRelative =

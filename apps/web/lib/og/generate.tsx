@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import { ImageResponse } from "@vercel/og";
 import sharp from "sharp";
@@ -33,9 +34,10 @@ const COMMAND_PREFIX = "npx aligntrue init a:";
 const SOURCE_LABEL = "GitHub";
 
 // The font path is static and not influenced by user input; lint rule is a false positive here.
-const fontPromise =
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
-  readFile(new URL("../../public/fonts/NotoSans-Regular.ttf", import.meta.url));
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+const fontPromise = readFile(
+  join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf"),
+);
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
