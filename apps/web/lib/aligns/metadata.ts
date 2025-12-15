@@ -54,12 +54,35 @@ function parseSimpleFrontmatter(md: string): SimpleFrontmatter {
   const content = lines.slice(endIdx + 1).join("\n");
 
   const pick = (key: "title" | "description" | "author"): string | null => {
-    const match = frontmatterLines.find((line) =>
-      line.trim().toLowerCase().startsWith(`${key}:`),
-    );
-    if (!match) return null;
-    const [, value] = match.split(/:\s*(.*)/);
-    return normalizeValue(value ? value.trim() : null);
+    const lowerKey = `${key}:`;
+    let startLine: string | null = null;
+    let startIndex = -1;
+
+    for (const [i, line] of frontmatterLines.entries()) {
+      if (line.trim().toLowerCase().startsWith(lowerKey)) {
+        startLine = line;
+        startIndex = i;
+        break;
+      }
+    }
+
+    if (!startLine || startIndex === -1) return null;
+
+    const [, firstValue = ""] = startLine.split(/:\s*(.*)/);
+    const collected = [firstValue];
+
+    for (const next of frontmatterLines.slice(startIndex + 1)) {
+      if (!next) {
+        collected.push("");
+        continue;
+      }
+      const isIndented = /^\s+/.test(next);
+      if (!isIndented) break;
+      collected.push(next.trim());
+    }
+
+    const joined = collected.join("\n").trimEnd();
+    return normalizeValue(joined || null);
   };
 
   return {

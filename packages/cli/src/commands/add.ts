@@ -166,6 +166,17 @@ function detectSourceType(url: string): "git" | "local" {
   return "local";
 }
 
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim();
+  try {
+    const parsed = new URL(trimmed);
+    // Drop search/hash to avoid confusing downstream git URL parsing
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return trimmed;
+  }
+}
+
 /**
  * Add command implementation
  */
@@ -231,7 +242,7 @@ export async function add(args: string[]): Promise<void> {
   const nonInteractive = (flags["yes"] as boolean | undefined) || !isTTY();
   const noSync = (flags["no-sync"] as boolean | undefined) || false;
 
-  const baseUrl = urlArg.trim();
+  const baseUrl = normalizeUrl(urlArg);
 
   // Detect source type and privacy
   const sourceType = detectSourceType(baseUrl);
