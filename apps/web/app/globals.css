@@ -10,8 +10,8 @@
 
 @theme {
   /* Fonts: prefer runtime Next.js font variables with safe fallbacks */
-  --font-sans: var(--font-sans, "Plus Jakarta Sans", system-ui, sans-serif);
-  --font-mono: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  --font-sans: var(--font-sans, "Plus Jakarta Sans"), system-ui, sans-serif;
+  --font-mono: var(--font-mono, "JetBrains Mono"), ui-monospace, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
