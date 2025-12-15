@@ -572,6 +572,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         : resolve(cwd, ".aligntrue/rules");
 
     let align: Align;
+    let loadFailed = false;
     try {
       const setLoadOptions: Parameters<typeof loadIRAndResolvePlugs>[1] = {
         mode: config.mode,
@@ -582,6 +583,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
       const result = await loadIRAndResolvePlugs(sourcePath, setLoadOptions);
 
       if (!result.success || !result.ir) {
+        loadFailed = true;
         console.error("Warning: Could not load IR to validate slot format");
         console.error("  Proceeding without format validation\n");
         align = {
@@ -594,6 +596,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
         align = result.ir;
       }
     } catch {
+      loadFailed = true;
       console.error("Warning: Could not load IR to validate slot format");
       console.error("  Proceeding without format validation\n");
       align = {
@@ -626,7 +629,7 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
             : undefined);
 
     if (!slotDef) {
-      if (align.sections.length === 0) {
+      if (loadFailed) {
         console.warn(
           `Warning: Could not validate slot "${slotName}" because IR failed to load. Proceeding without slot validation.`,
         );
