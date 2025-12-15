@@ -182,6 +182,13 @@ This playbook uses a hybrid testing strategy to accurately validate user experie
 - 11 curated example files live under the `aligns/` subdirectory: `aligns/global.md`, `aligns/testing.md`, `aligns/security.md`, `aligns/debugging.md`, `aligns/docs.md`, `aligns/nextjs_app_router.md`, `aligns/rule-authoring.md`, `aligns/tdd.md`, `aligns/typescript.md`, `aligns/vercel_deployments.md`, `aligns/web_quality.md`
 - Use for testing git source integration, caching, and bundle merging
 - Note: Files are in markdown format (`.md`), not YAML packs
+
+**Pack testing (catalog-only):**
+
+- Align packs are created and stored only in the catalog UI; there is no `.align.yaml` or local pack authoring path
+- When testing pack-related flows, create an ephemeral pack in https://aligntrue.ai/catalog and delete it after the run
+- Prefer the AlignTrue/examples repo for rule fixtures; avoid inventing repo/demo packs that would pollute the catalog
+
 - Example config:
   ```yaml
   sources:

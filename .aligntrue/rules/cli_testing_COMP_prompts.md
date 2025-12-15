@@ -7,6 +7,8 @@ Put together a plan to systematically, thoroughly and manually execute this test
 
 DO NOT edit any code, except in your own test env for testing purposes. DO NOT try to fix any code. Your job is just to test thoroughly and report issues you find with recommendations.
 
+Catalog packs: Align packs are catalog-native only. When a workflow involves packs, create and use a real catalog entry via the catalog UI, and clean it up after testing. Do not create repo/demo packs or assume local pack manifests.
+
 ## Kick-Off Prompts
 
 Use these to invoke AI-driven test execution. Each prompt triggers actual command execution in a hermetic environment.

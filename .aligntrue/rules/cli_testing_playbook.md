@@ -54,6 +54,12 @@ enabled: false
 
 Complete each area sequentially. After finishing each area, record findings before moving to the next.
 
+Catalog packs (testing note):
+
+- Align packs are catalog-native only; there is no `.align.yaml` pack authoring path
+- To test pack flows, create a temporary pack in the catalog UI and clean it up after
+- Avoid creating repo/demo packs or assuming local pack manifests; use live catalog entries instead
+
 ### Area 1: Core Workflow
 
 **Goal:** Test basic solo developer setup and sync.
