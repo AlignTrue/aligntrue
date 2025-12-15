@@ -188,8 +188,8 @@ importers:
         specifier: ^0.554.0
         version: 0.554.0(react@19.2.0)
       mermaid:
-        specifier: ^11.2.0
-        version: 11.12.1
+        specifier: ^11.12.2
+        version: 11.12.2
       next:
         specifier: 16.0.10
         version: 16.0.10(react-dom@19.2.3(react@19.2.0))(react@19.2.0)
