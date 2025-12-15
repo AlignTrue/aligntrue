@@ -1,6 +1,7 @@
 import { getAlignStore } from "@/lib/aligns/storeFactory";
 import {
   getCachedContent,
+  setCachedContent,
   fetchRawWithCache,
   type CachedContent,
 } from "@/lib/aligns/content-cache";
@@ -58,7 +59,7 @@ export async function GET(
           content: string;
         }[];
         content = { kind: "pack", files };
-        await getCachedContent(align.id, async () => content!);
+        await setCachedContent(align.id, content);
       } catch (error) {
         console.error("failed to fetch catalog pack content", error);
         content = await getCachedContent(align.id);
