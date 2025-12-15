@@ -25,13 +25,7 @@ describe("hasAllowedExtension", () => {
     ).toBe(true);
   });
 
-  it("allows yaml and xml", () => {
-    expect(
-      hasAllowedExtension("https://github.com/org/repo/blob/main/rule.yaml"),
-    ).toBe(true);
-    expect(
-      hasAllowedExtension("https://github.com/org/repo/blob/main/rule.yml"),
-    ).toBe(true);
+  it("allows xml", () => {
     expect(
       hasAllowedExtension("https://github.com/org/repo/blob/main/rule.xml"),
     ).toBe(true);

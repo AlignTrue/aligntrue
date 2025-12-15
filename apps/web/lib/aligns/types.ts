@@ -20,7 +20,7 @@ export type AlignRecord = {
   title: string | null;
   description: string | null;
   author?: string | null;
-  fileType: "markdown" | "yaml" | "xml" | "unknown";
+  fileType: "markdown" | "xml" | "unknown";
   contentHash?: string;
   contentHashUpdatedAt?: string;
   contentHashMismatch?: boolean;

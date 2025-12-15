@@ -109,7 +109,7 @@ function buildSeeds(): SeedEntry[] {
     const viewCount = (i * 11) % 300;
 
     if (isPack) {
-      const manifestUrl = `https://github.com/aligntrue/demo/blob/main/packs/${baseSlug}/.align.yaml`;
+      const catalogUrl = `https://aligntrue.ai/a/${id}`;
       const packContent = makePackFiles(title, topic, stack);
       const totalBytes = packContent.files.reduce(
         (sum, file) => sum + (file.size ?? 0),
@@ -119,14 +119,15 @@ function buildSeeds(): SeedEntry[] {
       entries.push({
         record: {
           id,
-          url: manifestUrl,
-          normalizedUrl: manifestUrl,
-          provider: "github",
+          url: catalogUrl,
+          normalizedUrl: catalogUrl,
+          provider: "unknown",
+          source: "catalog",
           kind: "pack",
           title,
           description,
           author: "AlignTrue",
-          fileType: "yaml",
+          fileType: "unknown",
           createdAt,
           lastViewedAt,
           viewCount,
@@ -138,6 +139,7 @@ function buildSeeds(): SeedEntry[] {
             })),
             totalBytes,
           },
+          containsAlignIds: [],
         },
         content: packContent,
       });

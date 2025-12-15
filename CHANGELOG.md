@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Packs are catalog-only: create packs in the catalog UI; CLI no longer resolves `.align.yaml` manifests or installs packs
+- Align Catalog docs updated to describe catalog-native packs and download-only behavior for packs
+
+### Removed
+
+- GitHub pack support and manifest-based imports (`.align.yaml`) across web, CLI, core, schema, and sources packages
+- Example pack assets and validation scripts (`examples/example-pack/`, `examples/.align.yaml`, `scripts/validate-example-packs.mjs`)
+- Pack resolver logic in CLI/source resolver and pack manifest loaders in core/schema
+
 ### Fixed
 
 - Bulk import results now show pack titles and filename links for imported rules, improving mobile readability

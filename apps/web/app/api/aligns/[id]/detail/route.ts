@@ -4,7 +4,6 @@ import {
   fetchRawWithCache,
   type CachedContent,
 } from "@/lib/aligns/content-cache";
-import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import { findSeedContent } from "@/lib/aligns/seedData";
 
 export const dynamic = "force-dynamic";
@@ -27,14 +26,45 @@ export async function GET(
   }
 
   let content: CachedContent | null = null;
-  if (align.kind === "pack" && align.pack) {
-    try {
-      content = await getCachedContent(align.id, async () => {
-        const pack = await fetchPackForWeb(align.normalizedUrl);
-        return { kind: "pack", files: pack.files };
-      });
-    } catch (error) {
-      console.error("failed to fetch pack content", error);
+  if (align.kind === "pack") {
+    const isCatalogPack =
+      align.source === "catalog" && align.containsAlignIds?.length;
+    if (isCatalogPack) {
+      try {
+        const ruleIds = align.containsAlignIds!;
+        const rules = await store.getMultiple(ruleIds);
+        const filesResult = await Promise.all(
+          rules.filter(Boolean).map(async (rule) => {
+            try {
+              const raw = await fetchRawWithCache(
+                rule!.id,
+                rule!.normalizedUrl || rule!.url,
+              );
+              if (raw?.kind !== "single") return null;
+              return {
+                path: rule!.normalizedUrl?.split("/").pop() ?? rule!.id,
+                size: raw.content.length,
+                content: raw.content,
+              };
+            } catch (err) {
+              console.error("failed to fetch rule content", err);
+              return null;
+            }
+          }),
+        );
+        const files = filesResult.filter(Boolean) as {
+          path: string;
+          size: number;
+          content: string;
+        }[];
+        content = { kind: "pack", files };
+        await getCachedContent(align.id, async () => content!);
+      } catch (error) {
+        console.error("failed to fetch catalog pack content", error);
+        content = await getCachedContent(align.id);
+      }
+    } else {
+      // Fall back to any cached pack content if present (e.g., seed data)
       content = await getCachedContent(align.id);
     }
   } else {

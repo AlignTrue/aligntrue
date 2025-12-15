@@ -4,20 +4,21 @@ description: Use the Align Catalog to import, preview, convert, and share Aligns
 
 # Align Catalog guide
 
-Use the Align Catalog to turn any GitHub rule file or `.align.yaml` pack into agent-ready outputs without installing anything. Great for trying AlignTrue, sharing Aligns, and grabbing the right format for your agent.
+Use the Align Catalog to turn any GitHub rule file into agent-ready outputs without installing anything. Packs are created inside the catalog UI (no `.align.yaml`). Great for trying AlignTrue, sharing Aligns, and grabbing the right format for your agent.
 
 ## What you can do
 
-- Paste a GitHub URL and generate an Align (single file or pack)
+- Paste a GitHub URL and generate an Align (single file)
+- Bundle imported rules into a catalog pack (no manifest needed)
 - Preview content and switch between agent formats
 - Share a link or download the converted file
-- Download whole packs as a zip that preserves folder structure
+- Download packs as a zip that preserves folder structure
 - Jump into the CLI when you want local sync and automation
 
 ## Quick start (web)
 
 1. Go to the homepage and choose **Import Rules**.
-2. Paste a GitHub blob/raw URL (e.g., `.../blob/main/rules/align.md`), a gist URL (e.g., `https://gist.github.com/user/abc123`), **or** a repo path containing `.align.yaml`.
+2. Paste a GitHub blob/raw URL (e.g., `.../blob/main/rules/align.md`) or a gist URL (e.g., `https://gist.github.com/user/abc123`).
 3. Click **Import**.
 4. You’ll land on the Align detail page with previews and actions.
 
@@ -28,7 +29,7 @@ Use the Align Catalog to turn any GitHub rule file or `.align.yaml` pack into ag
 Use the **Bulk import** page (`/import`) when you have multiple URLs:
 
 - Paste multiple GitHub URLs (one per line). We validate format locally before fetching. Directory URLs (`.../tree/main/path`) expand to list contained rule files so you can remove any before importing.
-- Optionally check **Bundle as pack** to create a shareable Align Pack that keeps rules together.
+- Optionally check **Bundle as pack** to create a shareable catalog pack that keeps rules together.
 - Title (60 chars) and description (280 chars) are required for packs. Author auto-populates when all URLs share the same GitHub owner.
 - Results show imported rules with share links; packs link to their catalog page.
 
@@ -49,7 +50,7 @@ See supported agents in [Agent support](/docs/04-reference/agent-support).
 ## Download options
 
 - **Single file Aligns** — download the converted file for your selected agent.
-- **Packs** (`.align.yaml`) — use **Download All (.zip)** to get every file converted for the selected agent; folder paths are preserved.
+- **Packs** — use **Download All (.zip)** to get every file converted for the selected agent; folder paths are preserved.
 
 Learn how packs work in [Align packs](/docs/03-concepts/align-packs).
 
@@ -66,7 +67,7 @@ You can import rules shared as GitHub Gists:
 When you’re ready to keep rules in sync locally:
 
 ```bash
-# Install and import directly from the Catalog source URL
+# Install and import directly from a GitHub source URL
 npm install -g aligntrue
 aligntrue init --source https://github.com/org/repo/path/to/rules.md
 
@@ -75,7 +76,7 @@ aligntrue add source https://github.com/org/repo/path/to/rules.md
 aligntrue sync
 ```
 
-- Works for both single files and `.align.yaml` packs.
+- Works for single files. Catalog packs are download-only today (no CLI install); add the individual rules from the downloaded zip if needed.
 - Use `--exporters <agent>` to target a specific agent; otherwise all configured exporters run.
 - For reusable external Aligns, see [Working with external sources](/docs/01-guides/04-external-sources).
 

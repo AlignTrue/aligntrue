@@ -126,7 +126,7 @@ See [Agent Support](/docs/04-reference/agent-support) for all 50 available expor
 
 Where to load rules from. Supports local files and git repositories.
 
-> GitHub sources are resolved as `.align.yaml` packs first (repo root, subdirectory, or direct manifest). If no manifest is found, import falls back to recursive `.md/.mdc` scanning. See [Align packs](/docs/03-concepts/align-packs) for manifest fields and limits.
+> Pack manifests are no longer resolved. GitHub sources import markdown/XML files directly. Use catalog packs for bundling multiple rules; see [Align packs](/docs/03-concepts/align-packs).
 
 ```yaml
 sources:

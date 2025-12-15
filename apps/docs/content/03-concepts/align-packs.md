@@ -1,128 +1,37 @@
 ---
-description: Bundle multiple rules into a reusable .align.yaml pack for CLI and Catalog.
+description: Catalog-only packs that bundle multiple rules for sharing.
 ---
 
-# Align packs (.align.yaml)
+# Align packs (catalog-only)
 
-Use a `.align.yaml` manifest to publish a multi-file Align that keeps its folder structure for previews, downloads, and sync. Packs work in both the CLI and the Align Catalog.
+Align packs are now catalog-native only. There is no `.align.yaml` authoring or CLI pack install path. Create packs in the catalog UI and share the catalog link.
 
 ## When to use a pack
 
-- Share a curated bundle (multiple rules, skills, MCP configs) with a single URL.
-- Keep subdirectories intact (e.g., `frontend/`, `backend/`).
-- Ship author defaults (exporters, mode) and per-file customizations.
+- You want to share multiple rules with a single URL.
+- You want recipients to preview or download a zip in the browser.
 
-### What works today
+## How to create a pack
 
-- **Remote:** GitHub URLs (repo root, subdirectory, or direct manifest) are auto-resolved as packs first; if no `.align.yaml` is found, the CLI falls back to plain git import.
-- **Local:** Use a direct file path or a git URL to the repo that contains the manifest.
+1. Go to the catalog bulk import page.
+2. Paste one or more rule URLs and import them.
+3. Click **Create pack**, fill in title/description/author, and save.
+4. Share the catalog link (e.g., `https://aligntrue.ai/a/<id>`).
 
-## Manifest formats
+What is stored:
 
-> Catalog note: the Align Catalog only stores title, description, author, and files. Fields like `id`, `version`, `license`, `tags`, and `defaults` matter for CLI authoring but are not stored in the catalog; catalog-created packs auto-generate what they need.
+- Title, description, author
+- Member rule IDs (`containsAlignIds`)
+- Display metadata for the pack page
 
-> Catalog-created packs: Packs created via the catalog bulk import are stored without a `.align.yaml` manifest. They use a catalog-generated ID, keep member rule IDs, and remain linkable via the catalog detail page. Rules remain individually accessible.
+## What recipients can do
 
-### Minimal
+- Open the catalog link to preview rules in all agent formats.
+- Download a zip that preserves relative paths.
+- (CLI) Not yet supported for catalog packs; use download + manual add for now.
 
-```yaml
-id: aligntrue/example-starter
-version: 1.0.0
-summary: "Example starter pack with global, testing, and TypeScript rules"
-author: "@aligntrue"
-includes:
-  rules:
-    - "rules/*.md"
-```
+## Not supported
 
-### Full (all fields)
-
-```yaml
-id: author/pack-name
-version: 1.2.3
-summary: "One-line description"
-description: "Longer description for catalog previews"
-author: "@handle"
-license: MIT
-homepage: https://docs.example.com
-repository: https://github.com/author/repo
-tags: [security, frontend]
-compatible_agents: [cursor, claude, github-copilot]
-defaults:
-  exporters: [cursor, agents]
-  mode: solo
-includes:
-  rules:
-    - "rules/**/*.md"
-  skills:
-    - "skills/**/*.md"
-  mcp:
-    - "mcp/**/*.yaml"
-customizations:
-  rules/backend.md:
-    plugs:
-      service_name: payments
-    frontmatter:
-      globs: ["services/payments/**"]
-      enabled: true
-```
-
-## Field reference
-
-- **id** (required): `author/name` slug (`^[a-z0-9-]+/[a-z0-9-]+$`).
-- **version** (required): SemVer.
-- **summary, description, author, license, homepage, repository**: optional metadata for discovery. Use `description` for longer catalog blurbs.
-- **includes**:
-  - `rules`, `skills`, `mcp`: arrays of relative globs; no absolute paths or `..`; resolved from the manifest directory.
-- **defaults** (optional):
-  - `exporters`: default exporters to enable (e.g., `cursor`, `agents`).
-  - `mode`: `solo` or `team`.
-- **customizations** (optional): keyed by relative file path; supports `plugs` and `frontmatter` overrides (e.g., `globs`, `enabled`, additional frontmatter keys).
-- **tags**, **compatible_agents**: optional lists for discovery.
-
-## Limits
-
-- Up to **100 files** total.
-- Max **500KB per file**.
-- Max **2MB per pack**.
-
-## Create a pack
-
-1. Add your rule files under a folder (e.g., `rules/`).
-2. Create `.align.yaml` in that folder with `id`, `version`, and `includes`.
-3. Keep glob paths relative to the manifest location.
-4. Validate locally if needed: `pnpm validate path/to/.align.yaml`.
-5. See the live example in `examples/example-pack/`.
-
-## Use packs with the CLI
-
-- Import during init:  
-  `aligntrue init --source https://github.com/org/repo`  
-  (auto-detects `.align.yaml` in the repo or subdirectory)
-- Keep as a connected source:  
-  `aligntrue add source https://github.com/org/repo/path/to/pack`  
-  `aligntrue sync`
-- Pin a version or branch:  
-  `aligntrue add source https://github.com/org/repo@v1.2.3/path/to/pack`
-- Direct manifest URL also works:  
-  `aligntrue init --source https://raw.githubusercontent.com/org/repo/main/path/.align.yaml`
-
-Behavior:
-
-- Pack resolution runs first for GitHub URLs; on failure it falls back to regular git import.
-- Matching files keep their relative paths when exported or downloaded.
-
-## Use packs with the Align Catalog
-
-- Paste a GitHub URL to a repo, directory, or `.align.yaml` into the Catalog.
-- Preview individual files, switch agent formats, and download a zip that preserves paths.
-- See the full flow in the [Align Catalog guide](/docs/01-guides/10-align-catalog).
-
-## Examples
-
-- Starter pack: `examples/example-pack/`
-
-## Troubleshooting
-
-- **No .align.yaml found:** ensure the manifest exists on the target ref/path; GitHub only for automatic pack detection.
-- **No files matched includes:** verify relative globs from the manifest directory and avoid `..` or absolute paths.
+- `.align.yaml` manifest authoring
+- GitHub pack resolution in the CLI
+- Pack install via `aligntrue add <pack-url>`

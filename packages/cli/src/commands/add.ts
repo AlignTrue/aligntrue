@@ -16,7 +16,6 @@ import * as clack from "@clack/prompts";
 import {
   patchConfig,
   saveConfig,
-  parseAlignUrl,
   getAlignTruePaths,
   writeRuleFile,
   resolveConflict,
@@ -232,8 +231,7 @@ export async function add(args: string[]): Promise<void> {
   const nonInteractive = (flags["yes"] as boolean | undefined) || !isTTY();
   const noSync = (flags["no-sync"] as boolean | undefined) || false;
 
-  // Parse URL for any query parameters
-  const { baseUrl } = parseAlignUrl(urlArg);
+  const baseUrl = urlArg.trim();
 
   // Detect source type and privacy
   const sourceType = detectSourceType(baseUrl);

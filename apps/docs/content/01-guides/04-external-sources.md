@@ -30,7 +30,7 @@ aligntrue add https://github.com/org/rules
 - Specific version: `https://github.com/org/repo@v1.0.0`
 - SSH URLs: `git@github.com:org/repo.git`
 - Local paths: `./path/to/rules` or `/absolute/path`
-- **.align.yaml packs (GitHub):** repo root, subdirectory, or direct manifest URLs are auto-detected first; if no manifest is found, import falls back to regular git file scanning. See [Align packs](/docs/03-concepts/align-packs).
+- **Catalog packs:** Packs are created in the catalog UI only. CLI imports pull individual markdown rules; pack manifests are no longer supported. See [Align packs](/docs/03-concepts/align-packs).
 
 ### Connected sources (live updates)
 
@@ -481,7 +481,7 @@ sources:
 
 When you use `aligntrue add` or `aligntrue init --source`, the import process:
 
-- **Prefers .align.yaml packs on GitHub:** If a `.align.yaml` exists at the repo root, subdirectory, or direct path, pack resolution runs first and preserves manifest-relative paths. If no manifest is found, import falls back to normal recursive `.md`/`.mdc` scanning.
+- **Pack manifests removed:** CLI no longer resolves `.align.yaml`. Import pulls markdown/XML files directly.
 - **Targets any file or folder**: Local paths (relative or absolute), remote files, or directories
 - **Scans recursively**: Finds all `.md` and `.mdc` files in subdirectories
 - **Preserves filenames**: Uses the original filename instead of generating from the title

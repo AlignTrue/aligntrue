@@ -37,8 +37,7 @@ export function validateAlignUrl(url: string): UrlValidationResult {
     return {
       url,
       valid: false,
-      error:
-        "Unsupported file type. Use .md, .yaml, .xml, or allowed agent files",
+      error: "Unsupported file type. Use .md, .xml, or allowed agent files",
       normalized,
     };
   }

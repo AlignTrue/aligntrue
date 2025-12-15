@@ -145,7 +145,7 @@ export function AlignDetailPreview({
 
   const fileNameLabel = useMemo(() => {
     if (isCatalogPack) return "Catalog Pack";
-    if (isPack) return ".align.yaml";
+    if (isPack) return display.displayFilename ?? "Pack";
     return (
       display.displayFilename ??
       filenameFromUrl(align.normalizedUrl || align.url)

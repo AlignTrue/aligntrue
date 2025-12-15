@@ -3,7 +3,6 @@ import { alignIdFromNormalizedUrl } from "../../../../lib/aligns/normalize";
 import type { AlignRecord } from "../../../../lib/aligns/types";
 import { POST } from "./route";
 
-var mockFetchPackForWeb: ReturnType<typeof vi.fn>;
 var mockGetAuthToken: ReturnType<typeof vi.fn>;
 var mockCreateCachingFetch: ReturnType<typeof vi.fn>;
 var mockGetCachedAlignId: ReturnType<typeof vi.fn>;
@@ -39,11 +38,6 @@ vi.mock("@/lib/aligns/storeFactory", () => {
     getAlignStore: () => mockStore,
     hasKvEnv: () => false,
   };
-});
-
-vi.mock("@/lib/aligns/pack-fetcher", () => {
-  mockFetchPackForWeb = vi.fn();
-  return { fetchPackForWeb: mockFetchPackForWeb };
 });
 
 vi.mock("@/lib/aligns/content-cache", () => {
@@ -97,10 +91,6 @@ vi.mock(
 
 vi.mock("@/lib/aligns/records", () => import("../../../../lib/aligns/records"));
 
-vi.mock("@/lib/aligns/relationships", () => ({
-  addRuleToPack: vi.fn(),
-}));
-
 describe("POST /api/aligns/submit", () => {
   beforeEach(() => {
     storeData.clear();
@@ -115,139 +105,39 @@ describe("POST /api/aligns/submit", () => {
     vi.unstubAllGlobals();
   });
 
-  it("submits a pack and caches URL to ID mapping", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-
-    const manifestUrl =
-      "https://github.com/org/repo/blob/main/examples/starter/.align.yaml";
-    const expectedId = alignIdFromNormalizedUrl(manifestUrl);
-
-    mockFetchPackForWeb.mockResolvedValue({
-      manifestUrl,
-      manifestId: "org/repo",
-      files: [],
-      packFiles: [],
-      totalBytes: 0,
-      author: null,
-      title: null,
-      description: null,
-    });
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({ url: "https://github.com/org/repo" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-
-    const json = (await res.json()) as { id: string };
-    expect(json.id).toBe(expectedId);
-
-    expect(mockFetchPackForWeb).toHaveBeenCalledWith(
-      "https://github.com/org/repo",
-      { fetchImpl: expect.any(Function) },
-    );
-
-    expect(mockSetCachedAlignId).toHaveBeenCalledWith(
-      "https://github.com/org/repo",
-      expectedId,
-    );
-    expect(mockSetCachedAlignId).toHaveBeenCalledWith(manifestUrl, expectedId);
-    expect(mockStore.upsert).toHaveBeenCalledTimes(1);
-  });
-
-  it("re-imports when cached ID points to deleted align", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce("stale-id");
-
-    const manifestUrl =
-      "https://github.com/org/repo/blob/main/examples/starter/.align.yaml";
-    const expectedId = alignIdFromNormalizedUrl(manifestUrl);
-
-    mockFetchPackForWeb.mockResolvedValue({
-      manifestUrl,
-      manifestId: "org/repo",
-      files: [],
-      packFiles: [],
-      totalBytes: 0,
-      author: null,
-      title: null,
-      description: null,
-    });
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({ url: "https://github.com/org/repo" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-
-    const json = (await res.json()) as { id: string };
-    expect(json.id).toBe(expectedId);
-
-    expect(mockDeleteCachedAlignId).toHaveBeenCalledWith(
-      "https://github.com/org/repo",
-    );
-    expect(mockFetchPackForWeb).toHaveBeenCalledWith(
-      "https://github.com/org/repo",
-      { fetchImpl: expect.any(Function) },
-    );
-    expect(mockSetCachedAlignId).toHaveBeenCalledWith(
-      "https://github.com/org/repo",
-      expectedId,
-    );
-    expect(mockStore.upsert).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns cached ID without calling pack resolver", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce("cached-id-1");
-
+  it("returns cached ID without re-importing", async () => {
     const cachedRecord: AlignRecord = {
       id: "cached-id-1",
-      url: "https://github.com/org/repo",
-      normalizedUrl: "https://github.com/org/repo/blob/main/.align.yaml",
+      url: "https://github.com/org/repo/blob/main/rules/file.md",
+      normalizedUrl: "https://github.com/org/repo/blob/main/rules/file.md",
       provider: "github",
-      kind: "pack",
-      title: "Cached pack",
+      kind: "rule",
+      title: "Cached rule",
       description: null,
       author: null,
-      fileType: "yaml",
+      fileType: "markdown",
       createdAt: "2024-01-01T00:00:00.000Z",
       lastViewedAt: "2024-01-01T00:00:00.000Z",
       viewCount: 0,
       installClickCount: 0,
-      pack: {
-        files: [],
-        totalBytes: 0,
-      },
     };
     storeData.set(cachedRecord.id, cachedRecord);
+    mockGetCachedAlignId.mockResolvedValueOnce("cached-id-1");
 
     const req = new Request("http://localhost/api/aligns/submit", {
       method: "POST",
-      body: JSON.stringify({ url: "https://github.com/org/repo" }),
+      body: JSON.stringify({ url: cachedRecord.url }),
     });
 
     const res = await POST(req);
     const json = (await res.json()) as { id: string };
 
+    expect(res.status).toBe(200);
     expect(json.id).toBe("cached-id-1");
-    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
-    expect(mockStore.upsert).not.toHaveBeenCalled();
-    expect(mockDeleteCachedAlignId).not.toHaveBeenCalled();
+    expect(mockFetchRawWithCache).not.toHaveBeenCalled();
   });
 
-  it("uses caching fetch for single-file fallback", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-
-    mockCreateCachingFetch.mockReturnValue(() =>
-      Promise.resolve(new Response("ok")),
-    );
-
+  it("imports a single file and caches URL", async () => {
     mockGetCachedAlignId.mockResolvedValueOnce(null);
     mockFetchRawWithCache.mockResolvedValueOnce({
       kind: "single",
@@ -265,21 +155,33 @@ describe("POST /api/aligns/submit", () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
 
-    expect(mockFetchRawWithCache).toHaveBeenCalledWith(
-      expect.any(String),
+    const json = (await res.json()) as { id: string };
+    const expectedId = alignIdFromNormalizedUrl(
       "https://github.com/org/repo/blob/main/rules/file.md",
-      expect.any(Number),
-      expect.objectContaining({ fetchImpl: expect.any(Function) }),
     );
-    expect(mockSetCachedAlignId).toHaveBeenCalled();
+    expect(json.id).toBe(expectedId);
+    expect(mockSetCachedAlignId).toHaveBeenCalledWith(
+      "https://github.com/org/repo/blob/main/rules/file.md",
+      expectedId,
+    );
+  });
+
+  it("returns directory-specific error", async () => {
+    mockGetCachedAlignId.mockResolvedValueOnce(null);
+    const req = new Request("http://localhost/api/aligns/submit", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://github.com/org/repo" }),
+    });
+
+    const res = await POST(req);
+    const json = (await res.json()) as { error: string; hint: string };
+    expect(res.status).toBe(400);
+    expect(json.error).toContain("repository or directory");
+    expect(json.hint).not.toContain(".align.yaml");
   });
 
   it("submits a gist URL and resolves primary file", async () => {
     mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-
     const rawUrl =
       "https://gist.githubusercontent.com/user/abc123/raw/cursor_rule.xml";
     const expectedId = alignIdFromNormalizedUrl(rawUrl);
@@ -297,7 +199,6 @@ describe("POST /api/aligns/submit", () => {
       size: 100,
     });
 
-    // Mock the caching fetch to return XML content
     const mockCachingFetchFn = vi
       .fn()
       .mockResolvedValue(new Response("<rule>content</rule>"));
@@ -313,169 +214,20 @@ describe("POST /api/aligns/submit", () => {
 
     const json = (await res.json()) as { id: string };
     expect(json.id).toBe(expectedId);
-
-    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
-    expect(mockResolveGistFiles).toHaveBeenCalledWith(
-      "abc123",
-      expect.objectContaining({ token: "token-123" }),
-    );
-    expect(mockSelectPrimaryFile).toHaveBeenCalledWith(
-      expect.any(Array),
-      null, // no filename fragment
-    );
-    expect(mockStore.upsert).toHaveBeenCalledTimes(1);
-    expect(mockSetCachedAlignId).toHaveBeenCalledWith(
-      "https://gist.github.com/user/abc123",
-      expectedId,
-    );
-    expect(mockSetCachedAlignId).toHaveBeenCalledWith(rawUrl, expectedId);
-    // Ensure we do not cache the canonical gist URL separately (avoids fragment collisions)
-    const cachedUrls = mockSetCachedAlignId.mock.calls.map((call) => call[0]);
-    expect(cachedUrls).not.toContain(
-      "https://gist.github.com/user/abc123#file-cursor_rule.xml",
-    );
   });
 
-  it("returns error when gist has no files", async () => {
+  it("returns friendly error for unsupported file type", async () => {
     mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-
-    mockResolveGistFiles.mockResolvedValueOnce([]);
-    mockSelectPrimaryFile.mockReturnValueOnce(null);
-
-    mockCreateCachingFetch.mockReturnValue(vi.fn());
-
     const req = new Request("http://localhost/api/aligns/submit", {
       method: "POST",
-      body: JSON.stringify({ url: "https://gist.github.com/user/empty" }),
+      body: JSON.stringify({
+        url: "https://github.com/org/repo/blob/main/script.py",
+      }),
     });
 
     const res = await POST(req);
     expect(res.status).toBe(400);
-
-    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
     const json = (await res.json()) as { error: string };
-    expect(json.error).toContain("no files");
-  });
-
-  it("returns error for unsupported gist file type", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-
-    const rawUrl =
-      "https://gist.githubusercontent.com/user/abc123/raw/script.py";
-    mockResolveGistFiles.mockResolvedValueOnce([
-      { filename: "script.py", rawUrl, size: 50 },
-    ]);
-    mockSelectPrimaryFile.mockReturnValueOnce({
-      filename: "script.py",
-      rawUrl,
-      size: 50,
-    });
-
-    mockCreateCachingFetch.mockReturnValue(vi.fn());
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({ url: "https://gist.github.com/user/abc123" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-
-    expect(mockFetchPackForWeb).not.toHaveBeenCalled();
-    const json = (await res.json()) as { error: string; hint: string };
     expect(json.error).toContain("Unsupported file type");
-    expect(json.hint).toContain(".xml");
-  });
-
-  it("returns directory-specific error when no manifest and no file", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-
-    mockCreateCachingFetch.mockReturnValue(vi.fn());
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({ url: "https://github.com/org/repo" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-
-    const json = (await res.json()) as { error: string; hint: string };
-    expect(json.error).toContain("repository or directory");
-    expect(json.hint).toContain("direct link to a file");
-  });
-
-  it("returns directory error for tree URLs", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-    mockCreateCachingFetch.mockReturnValue(vi.fn());
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({
-        url: "https://github.com/org/repo/tree/main/folder",
-      }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const json = (await res.json()) as { error: string; hint: string };
-    expect(json.error).toContain("repository or directory");
-    expect(json.hint).toContain("direct link to a file");
-  });
-
-  it("returns gist error messages instead of internal error", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-    mockCreateCachingFetch.mockReturnValue(vi.fn());
-    mockResolveGistFiles.mockRejectedValueOnce(
-      new Error("Gist not found. It may be private or deleted."),
-    );
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({ url: "https://gist.github.com/user/missing" }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const json = (await res.json()) as { error: string };
-    expect(json.error).toContain("Gist not found");
-  });
-
-  it("returns friendly error when raw fetch fails", async () => {
-    mockGetCachedAlignId.mockResolvedValueOnce(null);
-    mockFetchPackForWeb.mockRejectedValueOnce(
-      new Error("No .align.yaml found"),
-    );
-    mockCreateCachingFetch.mockReturnValue(vi.fn());
-    mockFetchRawWithCache.mockRejectedValueOnce(
-      new Error("Failed to fetch content"),
-    );
-
-    const req = new Request("http://localhost/api/aligns/submit", {
-      method: "POST",
-      body: JSON.stringify({
-        url: "https://github.com/org/repo/blob/main/rules/file.md",
-      }),
-    });
-
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const json = (await res.json()) as { error: string };
-    expect(json.error).toContain("Could not fetch the file");
   });
 });

@@ -110,16 +110,4 @@ alwaysApply: false
       "Best practices for Templ, a Go-based HTML tempalting library",
     );
   });
-
-  it("falls back to humanized filename for yaml without title", () => {
-    const url = "https://github.com/org/repo/blob/main/ruleset.yml";
-    const content = `
-globs:
-  - "**/*.ts"
-`;
-
-    const meta = extractMetadata(url, content);
-    expect(meta.title).toBe("Ruleset");
-    expect(meta.fileType).toBe("yaml");
-  });
 });

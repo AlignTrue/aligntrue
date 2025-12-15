@@ -71,9 +71,6 @@ export * from "./cache/index.js";
 // Source management
 export * from "./sources/index.js";
 
-// Align manifest parsing
-export * from "./manifest/align-manifest.js";
-
 // Parsing utilities
 export type { Section } from "./parsing/section-extractor.js";
 

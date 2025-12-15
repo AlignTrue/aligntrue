@@ -37,7 +37,6 @@ export async function GET() {
     { url: BASE_URL, lastModified: now },
     { url: `${BASE_URL}/docs`, lastModified: now },
     { url: `${BASE_URL}/a/demo`, lastModified: now },
-    { url: `${BASE_URL}/a/demo-yaml`, lastModified: now },
   ];
 
   const xml = toXml(entries);

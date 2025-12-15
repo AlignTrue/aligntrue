@@ -6,7 +6,6 @@ import {
   setCachedContent,
   type CachedContent,
 } from "@/lib/aligns/content-cache";
-import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import { AlignDetailClient } from "./AlignDetailClient";
 import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { getOgUrlForAlign } from "@/lib/og/storage";
@@ -53,7 +52,6 @@ export default async function AlignDetailPage(props: {
 
   if (align.kind === "pack" && align.pack) {
     const isCatalogPack = align.source === "catalog" && align.kind === "pack";
-    const packUrl = align.normalizedUrl || align.url;
     try {
       if (isCatalogPack && align.containsAlignIds?.length) {
         const ruleIds = align.containsAlignIds;
@@ -92,14 +90,9 @@ export default async function AlignDetailPage(props: {
           align.sourceRemoved ||
           (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
         if (shouldRefresh) {
-          const pack = await fetchPackForWeb(packUrl);
-          content = { kind: "pack", files: pack.files };
-          await setCachedContent(align.id, content);
+          content = await getCachedContent(align.id);
         } else {
-          content = await getCachedContent(align.id, async () => {
-            const pack = await fetchPackForWeb(packUrl);
-            return { kind: "pack", files: pack.files };
-          });
+          content = await getCachedContent(align.id);
         }
       }
     } catch (error) {

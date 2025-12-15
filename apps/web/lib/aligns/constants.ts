@@ -3,8 +3,6 @@ export const ALLOWED_EXTENSIONS = [
   ".mdc",
   ".mdx",
   ".markdown",
-  ".yaml",
-  ".yml",
   ".xml",
 ] as const;
 

@@ -7,13 +7,10 @@ import {
 import { hasAllowedExtension } from "@/lib/aligns/url-validation";
 import {
   fetchWithLimit,
-  hashPackFiles,
   hashString,
-  isPackNotFoundError,
   getRedis,
   rateLimit,
 } from "@/lib/aligns/submit-helpers";
-import { fetchPackForWeb } from "@/lib/aligns/pack-fetcher";
 import {
   resolveGistFiles,
   selectPrimaryFile,
@@ -23,11 +20,7 @@ import {
   setCachedContent,
   type CachedContent,
 } from "@/lib/aligns/content-cache";
-import {
-  buildPackAlignRecord,
-  buildRuleFromPackFile,
-  buildSingleRuleRecord,
-} from "@/lib/aligns/records";
+import { buildSingleRuleRecord } from "@/lib/aligns/records";
 import type { AlignRecord } from "@/lib/aligns/types";
 import { getAuthToken } from "@/lib/aligns/github-app";
 import { createCachingFetch } from "@/lib/aligns/caching-fetch";
@@ -36,23 +29,11 @@ import {
   setCachedAlignId,
   deleteCachedAlignId,
 } from "@/lib/aligns/url-cache";
-import { addRuleToPack } from "@/lib/aligns/relationships";
 import { MAX_FILE_BYTES } from "@/lib/aligns/constants";
 
 export const dynamic = "force-dynamic";
 
 const store = getAlignStore();
-function isGistUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url.trim());
-    return (
-      parsed.hostname === "gist.github.com" ||
-      parsed.hostname === "gist.githubusercontent.com"
-    );
-  } catch {
-    return false;
-  }
-}
 
 export async function POST(req: Request) {
   try {
@@ -84,106 +65,7 @@ export async function POST(req: Request) {
       ttlSeconds: 3600,
     });
 
-    // 1) Try pack (.align.yaml) first - skip for gists (packs are repo-based)
-    if (!isGistUrl(trimmedUrl)) {
-      try {
-        const pack = await fetchPackForWeb(trimmedUrl, {
-          fetchImpl: cachingFetch,
-        });
-        const manifestParts = new URL(pack.manifestUrl).pathname
-          .split("/")
-          .filter(Boolean);
-        const org = manifestParts[0];
-        const repo = manifestParts[1];
-        const ref = manifestParts[3];
-        const id = alignIdFromNormalizedUrl(pack.manifestUrl);
-        const ruleEntries = pack.files.map((file) => {
-          const normalizedUrl = `https://github.com/${org}/${repo}/blob/${ref}/${file.path}`;
-          return {
-            file,
-            normalizedUrl,
-            id: alignIdFromNormalizedUrl(normalizedUrl),
-          };
-        });
-        const [existing, existingRules] = await Promise.all([
-          store.get(id),
-          store.getMultiple(ruleEntries.map((entry) => entry.id)),
-        ]);
-        const now = new Date().toISOString();
-        const contentHash = hashPackFiles(pack.files);
-
-        const record: AlignRecord = buildPackAlignRecord({
-          id,
-          pack,
-          sourceUrl: body.url,
-          existing,
-          now,
-          contentHash,
-          contentHashUpdatedAt: now,
-        });
-
-        const ruleRecords: AlignRecord[] = ruleEntries.map(
-          ({ file, id: ruleId, normalizedUrl }, index) => {
-            const existingRule = existingRules.at(index);
-            const ruleRecord = buildRuleFromPackFile({
-              packId: id,
-              file,
-              repo: { org, repo, ref },
-              sourceUrl: body.url,
-              now,
-              existing: existingRule,
-            });
-            const nextMemberOf = new Set(ruleRecord.memberOfPackIds ?? []);
-            nextMemberOf.add(id);
-            ruleRecord.memberOfPackIds = Array.from(nextMemberOf);
-            ruleRecord.contentHash = hashString(file.content);
-            ruleRecord.contentHashUpdatedAt = now;
-            // Ensure normalizedUrl matches computed value in case metadata changes.
-            ruleRecord.normalizedUrl = normalizedUrl;
-            ruleRecord.url = body.url;
-            ruleRecord.id = ruleId;
-            return ruleRecord;
-          },
-        );
-
-        const ruleIds = ruleRecords.map((rule) => rule.id);
-        record.containsAlignIds = ruleIds;
-
-        const contentMap = new Map(
-          ruleEntries.map((entry) => [entry.id, entry]),
-        );
-
-        await Promise.all([
-          store.upsert(record),
-          store.upsertMultiple(ruleRecords),
-          setCachedContent(id, { kind: "pack", files: pack.files }),
-          ...ruleRecords.map((rule) => {
-            const entry = contentMap.get(rule.id);
-            return setCachedContent(rule.id, {
-              kind: "single",
-              content: entry?.file.content ?? "",
-            });
-          }),
-          ...ruleRecords.map((rule) => addRuleToPack(rule.id, id)),
-          setCachedAlignId(trimmedUrl, id),
-          setCachedAlignId(pack.manifestUrl, id),
-        ]);
-
-        return Response.json({ id, title: record.title });
-      } catch (packError) {
-        if (!isPackNotFoundError(packError)) {
-          const message =
-            packError instanceof Error
-              ? packError.message
-              : "Pack import failed";
-          console.error("submit pack error", packError);
-          return Response.json({ error: message }, { status: 400 });
-        }
-        // Otherwise fall through to single-file handling
-      }
-    }
-
-    // 2) Single file fallback
+    // Single file flow
     const normalized = normalizeGitUrl(trimmedUrl);
     if (normalized.provider !== "github") {
       return Response.json(
@@ -200,7 +82,7 @@ export async function POST(req: Request) {
         {
           error:
             "This URL points to a repository or directory without a specific file.",
-          hint: "Paste a direct link to a file (e.g., .../blob/main/rules/file.md) or a repository containing .align.yaml.",
+          hint: "Paste a direct link to a file (e.g., .../blob/main/rules/file.md).",
         },
         { status: 400 },
       );
@@ -242,7 +124,7 @@ export async function POST(req: Request) {
         return Response.json(
           {
             error: `Unsupported file type: ${filename}`,
-            hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, .xml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
+            hint: "We support .md, .mdc, .mdx, .markdown, .xml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
             issueUrl:
               "https://github.com/AlignTrue/aligntrue/issues/new?title=Support%20new%20file%20type&labels=enhancement",
           },
@@ -308,7 +190,7 @@ export async function POST(req: Request) {
       return Response.json(
         {
           error: `Unsupported file type: ${filename}`,
-          hint: "We support .md, .mdc, .mdx, .markdown, .yaml, .yml, .xml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
+          hint: "We support .md, .mdc, .mdx, .markdown, .xml, and agent-specific files like .clinerules, .cursorrules, and .goosehints.",
           issueUrl:
             "https://github.com/AlignTrue/aligntrue/issues/new?title=Support%20new%20file%20type&labels=enhancement",
         },

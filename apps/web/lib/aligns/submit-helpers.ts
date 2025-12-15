@@ -7,7 +7,6 @@ import {
   RATE_LIMIT_REQUESTS,
   RATE_LIMIT_WINDOW_SECONDS,
 } from "./constants";
-import type { CachedPackFile } from "./content-cache";
 
 let redisClient: Redis | null = null;
 export function getRedis(): Redis {
@@ -46,24 +45,8 @@ export async function rateLimit(ip: string): Promise<boolean> {
   return count <= RATE_LIMIT_REQUESTS;
 }
 
-export function isPackNotFoundError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  const message = error.message.toLowerCase();
-  return (
-    message.includes("no .align.yaml") || message.includes("manifest not found")
-  );
-}
-
 export function hashString(content: string): string {
   return crypto.createHash("sha256").update(content).digest("hex");
-}
-
-export function hashPackFiles(files: CachedPackFile[]): string {
-  const ordered = [...files].sort((a, b) => a.path.localeCompare(b.path));
-  const payload = JSON.stringify(
-    ordered.map((file) => ({ path: file.path, content: file.content })),
-  );
-  return hashString(payload);
 }
 
 export async function fetchWithLimit(
