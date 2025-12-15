@@ -521,7 +521,9 @@ export async function buildSyncContext(
           loadedCount++;
         }
       } else {
-        clack.log.warn(`Exporter not found: ${exporterName}`);
+        clack.log.info(
+          `Exporter not found: ${exporterName}. Run 'pnpm build' to regenerate exporter manifests or disable this exporter.`,
+        );
       }
     }
 

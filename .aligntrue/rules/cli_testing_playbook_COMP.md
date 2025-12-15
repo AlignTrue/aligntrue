@@ -299,9 +299,9 @@ rm -rf /tmp/aligntrue-test-*
 - Personal rule in remote → modify → sync → verify git operations
 - Ignore file management (auto-detection of format conflicts)
 - Backup creation and restoration on destructive operations
-- **New file detection → extract to extracted-rules.md → enable as export target**
-- **Multiple new files → extract all → enable as export targets → verify extracted-rules.md**
-- **Content deduplication → verify only unique content extracted**
+- **New file detection → auto-enable exporters → backups before overwrite**
+- **Multiple new files → auto-enable exporters → verify backups captured original content**
+- **Content deduplication (current behavior: overwrite with canonical rules; no extracted-rules.md)**
 
 #### Ignore file management workflow
 
@@ -325,15 +325,11 @@ aligntrue sync
 # They are only created when multiple exporters target the same agent
 test -f .cursorignore && echo "PASS: .cursorignore created" || echo "INFO: No conflicts detected, ignore file not needed"
 
-# Test format priority override (optional)
-aligntrue config set sync.ignore_file_priority custom
-aligntrue config set sync.custom_format_priority '{"agents-md":"cursor"}'
+# Manage ignore files automatically (current option)
+aligntrue config set sync.auto_manage_ignore_files true
 
-# Sync again and verify custom priority applied
+# Sync again and verify ignore files are managed
 aligntrue sync
-
-# Verify behavior: Cursor format should be preferred when custom priority set
-# Note: This affects which format is used when both cursor and agents exporters are enabled
 ```
 
 **Expected:**
@@ -564,162 +560,49 @@ grep -q "# START AlignTrue Gitignore Rules" .gitignore && echo "PASS: section ma
 - Managed section uses "AlignTrue Gitignore Rules" markers
 - Works for both frontmatter and source-level gitignore settings
 
-#### New file detection workflow
+#### New file detection workflow (current behavior)
 
-Test automatic detection and extraction of new agent files with content:
+The CLI no longer creates `extracted-rules.md`. New agent files with content are detected, exporters are auto-enabled, and backups are taken before overwriting those files with the canonical rules.
 
 ```bash
 cd /tmp/test-new-file-detection
 aligntrue init --mode solo --yes
 
-# Verify initial state
-test -f AGENTS.md || echo "FAIL: AGENTS.md not created"
-aligntrue config get sync.edit_source
-# Expected: "AGENTS.md"
-
-# Add new files with content (simulating copy/paste from online)
+# Add new agent files with content
 cat > CLAUDE.md <<'EOF'
 ## Claude-specific tips
-
 Use clear, structured prompts.
-
-## Code review
-
-Review code carefully before suggesting changes.
 EOF
 
-mkdir -p .cursor/rules
-cat > .aligntrue/rules/backend.mdc <<'EOF'
-## Backend guidelines
-
-Use async/await for all I/O operations.
-EOF
-
-# Run sync - should detect new files
-aligntrue sync
-# Expected prompts:
-# - "Detected files with content outside your edit source"
-# - Shows: CLAUDE.md (2 sections), .aligntrue/rules/backend.mdc (1 section)
-# - Prompt: "Enable these files as export targets?"
-#   Explains: existing content will be extracted to extracted-rules.md
-
-# In automated test, use --yes flag to auto-enable
-aligntrue sync --yes
-# Auto-enables files as export targets
-
-# Verify extraction occurred
-test -f .aligntrue/extracted-rules.md || echo "FAIL: extracted-rules.md not created"
-grep "Extracted from: CLAUDE.md" .aligntrue/extracted-rules.md || echo "FAIL: extraction missing"
-
-# Verify files added to exporters (not edit_source)
-aligntrue config get sync.edit_source
-# Expected: "AGENTS.md" (unchanged - NOT updated to include new files)
-
-aligntrue config get exporters
-# Expected: ["agents", "claude", "cursor"] (new agents added)
-
-# Verify extracted content format
-grep -A 5 "Extracted from: CLAUDE.md" .aligntrue/extracted-rules.md
-# Should show: date, section counts, extracted vs skipped
-
-# Verify deduplication (if content matches IR, should be skipped)
-# Add file with content that already exists in IR
 cat > GEMINI.md <<'EOF'
 ## Security
-
 Always use HTTPS for API calls.
 EOF
-# (Assuming "Security" section already exists in AGENTS.md/IR)
 
+# Sync detects new agent files and enables exporters
 aligntrue sync --yes
-# Should extract GEMINI.md but skip "Security" section (duplicate)
 
-grep -A 10 "Extracted from: GEMINI.md" .aligntrue/extracted-rules.md
-# Should show: Skipped: 1 (already in current rules)
+# Verify backups were created (content is preserved here before overwrite)
+test -d .aligntrue/.backups || echo "FAIL: backups directory missing"
 
-# Verify files synced with current rules (overwritten)
-cat CLAUDE.md
-# Should contain content from AGENTS.md (current edit_source), not original content
-```
-
-**Expected:**
-
-- New files with content detected automatically
-- Interactive prompt explains extraction and overwriting
-- Content extracted to `.aligntrue/extracted-rules.md` before overwriting
-- Files added to exporters list (NOT to edit_source)
-- Content-based deduplication skips sections already in IR
-- Files overwritten with current rules from edit_source on next sync
-- `extracted-rules.md` is append-only (never deleted by AlignTrue)
-
-#### Content extraction and deduplication workflow
-
-Test extraction of content from multiple files with overlapping sections:
-
-```bash
-cd /tmp/test-extraction-dedup
-aligntrue init --mode solo --yes
-
-# Create edit_source with initial content
-cat > AGENTS.md <<'EOF'
-## Security
-
-Always validate input.
-
-## Testing
-
-Run tests before commit.
-EOF
-
-# Sync to establish IR
-aligntrue sync
-
-# Create new file with overlapping and unique sections
-cat > CLAUDE.md <<'EOF'
-## Security
-
-Use parameterized queries to prevent SQL injection.
-
-## Documentation
-
-Document all public APIs.
-EOF
-
-# Sync - should detect CLAUDE.md
-aligntrue sync --yes
-# Expected:
-# - Detects CLAUDE.md (2 sections)
-# - Extracts content to extracted-rules.md
-# - "Security" section should be skipped (content hash matches existing)
-# - "Documentation" section should be extracted (unique)
-
-# Verify extraction results
-grep -A 10 "Extracted from: CLAUDE.md" .aligntrue/extracted-rules.md
-# Should show:
-# - Extracted: 1 (Documentation section)
-# - Skipped: 1 (Security section - duplicate)
-
-# Verify CLAUDE.md was overwritten with current rules
-cat CLAUDE.md
-# Should contain content from AGENTS.md (Security, Testing sections)
-# Should NOT contain original "Documentation" section (that's in extracted-rules.md)
-
-# Verify edit_source unchanged
-aligntrue config get sync.edit_source
-# Expected: "AGENTS.md" (unchanged)
-
-# Verify exporters updated
+# Verify exporters were auto-enabled for detected agents
 aligntrue config get exporters
-# Expected: ["agents", "claude"] (claude added)
+# Expected: includes agents, cursor, claude, gemini (order not guaranteed)
+
+# After sync, CLAUDE.md and GEMINI.md contain the exported rules (not original content)
+head -5 CLAUDE.md
+head -5 GEMINI.md
+
+# To inspect original content, check the latest backup under .aligntrue/.backups/
+ls .aligntrue/.backups/ | tail -1
 ```
 
 **Expected:**
 
-- Content-based deduplication skips sections already in IR
-- Only unique sections extracted to extracted-rules.md
-- Files overwritten with current rules from edit_source
-- edit_source remains unchanged
-- Exporters list updated with new agents
+- New agent files are detected and corresponding exporters are auto-enabled
+- Original file content is preserved in `.aligntrue/.backups/` before overwrite
+- No `extracted-rules.md` is created
+- Exported agent files contain canonical rules after sync
 
 #### Rule import workflow
 
@@ -1813,16 +1696,17 @@ EOF
 aligntrue sync
 aligntrue scopes  # Should show 3 scopes with correct paths
 
-# Verify scope-specific exports exist
-test -f .aligntrue/rules/web.mdc || echo "FAIL: web scope export missing"
-test -f .aligntrue/rules/api.mdc || echo "FAIL: api scope export missing"
-test -f .aligntrue/rules/worker.mdc || echo "FAIL: worker scope export missing"
+# Verify scoped rules are applied (no scope-specific export files are created)
+# Scopes control applicability; use nested_location frontmatter for nested exports if needed
+aligntrue scopes | grep "apps/web" || echo "FAIL: web scope missing"
+aligntrue scopes | grep "packages/api" || echo "FAIL: api scope missing"
+aligntrue scopes | grep "services/worker" || echo "FAIL: worker scope missing"
 ```
 
 **Expected:**
 
 - 3 scopes configured and listed
-- Scope-specific rule exports generated
+- Scopes control which paths rules apply to; exports stay under configured exporters
 - Hierarchical merge order applied
 
 **2. Include/exclude pattern validation:**

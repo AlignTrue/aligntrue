@@ -626,9 +626,15 @@ async function setPlugFill(args: string[], configPath: string): Promise<void> {
             : undefined);
 
     if (!slotDef) {
-      console.warn(
-        `Warning: Slot "${slotName}" is not declared in your rules. Set the slot in plugs.slots to enable validation.`,
-      );
+      if (align.sections.length === 0) {
+        console.warn(
+          `Warning: Could not validate slot "${slotName}" because IR failed to load. Proceeding without slot validation.`,
+        );
+      } else {
+        console.warn(
+          `Warning: Slot "${slotName}" is not declared in your rules. Set the slot in plugs.slots to enable validation.`,
+        );
+      }
     }
 
     if (format) {

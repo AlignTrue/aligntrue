@@ -22,7 +22,6 @@ import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
 const ALIGN_KEY_PREFIX = "v1:align:";
-const CONTENT_PREFIX = "v1:align:content:"; // left untouched
 const KIND_PACK_SET = "idx:kind:pack";
 
 function requireEnv(name) {
