@@ -86,14 +86,8 @@ export default async function AlignDetailPage(props: {
         content = { kind: "pack", files };
         await setCachedContent(align.id, content);
       } else {
-        const shouldRefresh =
-          align.sourceRemoved ||
-          (align.fetchFailCount ?? 0) >= FAILURE_THRESHOLD;
-        if (shouldRefresh) {
-          content = await getCachedContent(align.id);
-        } else {
-          content = await getCachedContent(align.id);
-        }
+        // Legacy non-catalog packs: only serve cached content if present
+        content = await getCachedContent(align.id);
       }
     } catch (error) {
       if (content) {

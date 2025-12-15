@@ -57,8 +57,8 @@ describe("toAlignSummary", () => {
       url: "https://aligntrue.ai/a/pack-2",
     };
     const summary = toAlignSummary(catalogPack);
-    expect(summary.displayAuthor).toBe("@a");
-    expect(summary.displayAuthorUrl).toBe("https://aligntrue.ai/a");
+    expect(summary.displayAuthor).toBeNull();
+    expect(summary.displayAuthorUrl).toBeNull();
     expect(summary.displayFilename).toBe("Catalog Pack");
     expect(summary.externalUrl).toBeNull();
   });

@@ -13,7 +13,7 @@ export type AlignSummary = {
   source?: string;
   author?: string | null;
   // Precomputed display fields for UI
-  displayAuthor: string;
+  displayAuthor: string | null;
   displayAuthorUrl: string | null;
   displayFilename: string;
   externalUrl: string | null;
@@ -22,7 +22,7 @@ export type AlignSummary = {
 export function toAlignSummary(record: AlignRecord): AlignSummary {
   const isCatalogPack = record.source === "catalog" && record.kind === "pack";
 
-  let displayAuthor: string;
+  let displayAuthor: string | null;
   let displayAuthorUrl: string | null;
   let displayFilename: string;
   let externalUrl: string | null;
@@ -32,9 +32,8 @@ export function toAlignSummary(record: AlignRecord): AlignSummary {
       displayAuthor = record.author;
       displayAuthorUrl = null;
     } else {
-      const { owner, ownerUrl } = parseGitHubUrl(record.normalizedUrl);
-      displayAuthor = owner;
-      displayAuthorUrl = ownerUrl;
+      displayAuthor = null;
+      displayAuthorUrl = null;
     }
     displayFilename = "Catalog Pack";
     externalUrl = null;
