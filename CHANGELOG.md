@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- CLI support for installing Align packs by catalog ID (`aligntrue add <pack-id>`)
 - **Example starter pack** - Added `examples/example-pack/` with `.align.yaml` manifest bundling global, testing, and TypeScript rules for testing and demonstration
 - **Pack testing infrastructure** - Added manifest parsing tests, pack resolver tests with mocked GitHub API, CLI integration tests for local pack sources, and align pack-fetcher/submit flow tests
 - **`aligntrue team join` subcommand** - Onboard new team members by creating their personal (gitignored) config without mutating team files. Replaces the previous auto-create behavior in sync

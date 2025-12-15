@@ -19,10 +19,12 @@ import {
   getAlignTruePaths,
   writeRuleFile,
   resolveConflict,
+  detectConflicts,
   isTeamModeActive,
   validateRelativePath,
   type AlignTrueConfig,
 } from "@aligntrue/core";
+import type { RuleFile } from "@aligntrue/schema";
 import { importRules } from "../utils/source-resolver.js";
 import { isTTY } from "../utils/tty-helper.js";
 import {
@@ -39,6 +41,8 @@ import {
   selectFilesToImport,
   type ImportFile,
 } from "../utils/selective-import-ui.js";
+import { extractCatalogId, isCatalogId } from "../utils/catalog-resolver.js";
+import { importFromCatalog } from "../utils/catalog-import.js";
 
 /**
  * Argument definitions for add command
@@ -191,6 +195,8 @@ export async function add(args: string[]): Promise<void> {
       usage: "aligntrue add [source|remote] <url> [options]",
       args: ARG_DEFINITIONS,
       examples: [
+        "aligntrue add abc123defgh                         # Catalog pack or rule by ID",
+        "aligntrue add https://aligntrue.ai/a/abc123defgh  # Catalog pack or rule by URL",
         "aligntrue add https://github.com/org/rules           # One-time copy",
         "aligntrue add source https://github.com/org/rules    # Add as source (updates on sync)",
         "aligntrue add source <url> --personal                # Personal source",
@@ -250,6 +256,21 @@ export async function add(args: string[]): Promise<void> {
 
   // Show spinner
   const spinner = createManagedSpinner({ disabled: !isTTY() });
+
+  const catalogId =
+    !subcommand && isCatalogId(baseUrl) ? extractCatalogId(baseUrl) : null;
+  if (!subcommand && catalogId) {
+    await importCatalogCommand({
+      catalogId,
+      cwd,
+      paths,
+      configPath,
+      nonInteractive,
+      noSync,
+      spinner,
+    });
+    return;
+  }
 
   if (subcommand === "source") {
     // Add as connected source
@@ -588,6 +609,87 @@ async function addSource(options: {
   }
 }
 
+async function writeRulesWithConflicts(options: {
+  rules: RuleFile[];
+  conflicts: {
+    filename: string;
+    title: string;
+    source: string;
+  }[];
+  cwd: string;
+  rulesDir: string;
+  nonInteractive: boolean;
+  spinner: ReturnType<typeof createManagedSpinner>;
+}): Promise<string[]> {
+  const { rules, conflicts, cwd, rulesDir, nonInteractive, spinner } = options;
+  const rulesToWrite = [...rules];
+
+  if (conflicts.length > 0) {
+    spinner.stop(`Found ${rules.length} rules (conflicts detected)`);
+
+    for (const conflict of conflicts) {
+      let resolution: "replace" | "keep-both" | "skip";
+
+      if (nonInteractive) {
+        resolution = "keep-both";
+      } else {
+        const choice = await clack.select({
+          message: `Rule "${conflict.filename}" already exists. What do you want to do?`,
+          options: [
+            {
+              value: "replace",
+              label: "Replace - Overwrite existing (backup saved)",
+            },
+            {
+              value: "keep-both",
+              label: "Keep both - Save incoming as new file",
+            },
+            { value: "skip", label: "Skip - Don't import this rule" },
+          ],
+        });
+
+        if (clack.isCancel(choice)) {
+          clack.cancel("Import cancelled");
+          process.exit(0);
+        }
+
+        resolution = choice as "replace" | "keep-both" | "skip";
+      }
+
+      const resolved = resolveConflict(conflict, resolution, cwd);
+
+      const ruleIndex = rulesToWrite.findIndex(
+        (r) => r.filename === conflict.filename,
+      );
+      if (ruleIndex !== -1) {
+        if (resolved.resolution === "skip") {
+          rulesToWrite.splice(ruleIndex, 1);
+        } else {
+          const rule = rulesToWrite[ruleIndex]!;
+          rule.filename = resolved.finalFilename;
+          rule.path = resolved.finalFilename;
+
+          if (resolved.backupPath && isTTY()) {
+            clack.log.info(`Backed up existing rule to ${resolved.backupPath}`);
+          }
+        }
+      }
+    }
+
+    spinner.start("Writing rules...");
+  }
+
+  const createdFiles: string[] = [];
+  for (const rule of rulesToWrite) {
+    const fullPath = join(rulesDir, rule.relativePath || rule.filename);
+    mkdirSync(dirname(fullPath), { recursive: true });
+    writeRuleFile(fullPath, rule);
+    createdFiles.push(rule.relativePath || rule.filename);
+  }
+
+  return createdFiles;
+}
+
 /**
  * Add a remote to config (pushes rules on sync)
  */
@@ -870,76 +972,14 @@ async function copyRulesToLocal(options: {
       spinner.start("Writing selected rules...");
     }
 
-    // Handle conflicts
-    const rulesToWrite = [...selectedRules];
-
-    if (result.conflicts.length > 0) {
-      spinner.stop(`Found ${selectedRules.length} rules (conflicts detected)`);
-
-      for (const conflict of result.conflicts) {
-        let resolution: "replace" | "keep-both" | "skip";
-
-        if (nonInteractive) {
-          // Non-interactive: keep both
-          resolution = "keep-both";
-        } else {
-          const choice = await clack.select({
-            message: `Rule "${conflict.filename}" already exists. What do you want to do?`,
-            options: [
-              {
-                value: "replace",
-                label: "Replace - Overwrite existing (backup saved)",
-              },
-              {
-                value: "keep-both",
-                label: "Keep both - Save incoming as new file",
-              },
-              { value: "skip", label: "Skip - Don't import this rule" },
-            ],
-          });
-
-          if (clack.isCancel(choice)) {
-            clack.cancel("Import cancelled");
-            process.exit(0);
-          }
-
-          resolution = choice as "replace" | "keep-both" | "skip";
-        }
-
-        const resolved = resolveConflict(conflict, resolution, cwd);
-
-        // Update the rule's filename if needed
-        const ruleIndex = rulesToWrite.findIndex(
-          (r) => r.filename === conflict.filename,
-        );
-        if (ruleIndex !== -1) {
-          if (resolved.resolution === "skip") {
-            rulesToWrite.splice(ruleIndex, 1);
-          } else {
-            const rule = rulesToWrite[ruleIndex]!;
-            rule.filename = resolved.finalFilename;
-            rule.path = resolved.finalFilename;
-
-            if (resolved.backupPath && isTTY()) {
-              clack.log.info(
-                `Backed up existing rule to ${resolved.backupPath}`,
-              );
-            }
-          }
-        }
-      }
-
-      spinner.start("Writing rules...");
-    }
-
-    // Write rules to .aligntrue/rules/
-    const createdFiles: string[] = [];
-    for (const rule of rulesToWrite) {
-      const fullPath = join(rulesDir, rule.relativePath || rule.filename);
-      mkdirSync(dirname(fullPath), { recursive: true });
-      writeRuleFile(fullPath, rule);
-      createdFiles.push(rule.relativePath || rule.filename);
-    }
+    const createdFiles = await writeRulesWithConflicts({
+      rules: selectedRules,
+      conflicts: result.conflicts,
+      cwd,
+      rulesDir,
+      nonInteractive,
+      spinner,
+    });
 
     spinner.stop(`Imported ${createdFiles.length} rules from ${source}`);
 
@@ -1034,5 +1074,133 @@ async function copyRulesToLocal(options: {
       },
       2,
     );
+  }
+}
+
+async function importCatalogCommand(options: {
+  catalogId: string;
+  cwd: string;
+  paths: ReturnType<typeof getAlignTruePaths>;
+  configPath: string;
+  nonInteractive: boolean;
+  noSync: boolean;
+  spinner: ReturnType<typeof createManagedSpinner>;
+}): Promise<void> {
+  const { catalogId, cwd, paths, configPath, nonInteractive, noSync, spinner } =
+    options;
+
+  const rulesDir = join(paths.aligntrueDir, "rules");
+  mkdirSync(rulesDir, { recursive: true });
+
+  // Ensure config exists
+  if (!existsSync(configPath)) {
+    const config: AlignTrueConfig = {
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      exporters: ["agents"],
+    };
+    mkdirSync(dirname(configPath), { recursive: true });
+    await saveConfig(config, configPath);
+  }
+
+  spinner.start("Fetching from catalog...");
+
+  let importResult: Awaited<ReturnType<typeof importFromCatalog>>;
+  try {
+    importResult = await importFromCatalog(catalogId, rulesDir);
+  } catch (error) {
+    spinner.stopSilent();
+    exitWithError(
+      {
+        title: "Catalog import failed",
+        message: error instanceof Error ? error.message : String(error),
+        hint: "Check the ID or try again later.",
+        code: "CATALOG_IMPORT_FAILED",
+      },
+      2,
+    );
+    return;
+  }
+
+  if (importResult.rules.length === 0) {
+    spinner.stop("No rules imported from catalog", 1);
+    if (importResult.warnings.length > 0 && isTTY()) {
+      clack.log.warn(
+        [
+          "No rules were imported:",
+          ...importResult.warnings.map(
+            (w) => `• ${w.id}: ${w.reason || "skipped"}`,
+          ),
+        ].join("\n"),
+      );
+    }
+    return;
+  }
+
+  const conflicts = detectConflicts(
+    importResult.rules.map((r) => ({
+      filename: r.relativePath || r.filename,
+      title: r.frontmatter.title || r.filename,
+      source: `catalog:${catalogId}`,
+    })),
+    rulesDir,
+  );
+
+  const createdFiles = await writeRulesWithConflicts({
+    rules: importResult.rules,
+    conflicts,
+    cwd,
+    rulesDir,
+    nonInteractive,
+    spinner,
+  });
+
+  spinner.stop(
+    `Imported ${createdFiles.length} rule${createdFiles.length === 1 ? "" : "s"} from "${importResult.title}"`,
+  );
+  formatCreatedFiles(
+    createdFiles.map((f) => `.aligntrue/rules/${f}`),
+    { nonInteractive: !isTTY() },
+  );
+
+  if (importResult.warnings.length > 0) {
+    const warningLines = importResult.warnings.map(
+      (w) => `  • ${w.id}: ${w.reason || "skipped"}`,
+    );
+    if (isTTY()) {
+      clack.log.warn(`Some rules were skipped:\n${warningLines.join("\n")}`);
+    } else {
+      console.warn(`Some rules were skipped:\n${warningLines.join("\n")}`);
+    }
+  }
+
+  let syncPerformed = false;
+  if (!noSync) {
+    spinner.start("Syncing to agents...");
+    try {
+      await sync(["--quiet"]);
+      syncPerformed = true;
+      spinner.stop("Imported and synced to agents");
+    } catch {
+      spinner.stop("Imported (sync failed)", 1);
+      if (isTTY()) {
+        clack.log.warn("Sync failed. Run 'aligntrue sync' to retry.");
+      }
+    }
+  }
+
+  const tips: string[] = [
+    "To remove: delete the files and run 'aligntrue sync'",
+    "To add as connected source: use 'aligntrue add source <github-url>'",
+  ];
+  if (!syncPerformed) {
+    tips.push("To apply to agents: run 'aligntrue sync'");
+  }
+
+  if (isTTY()) {
+    clack.note(tips.map((t) => `• ${t}`).join("\n"), "Tips");
+    clack.outro("Done");
+  } else {
+    console.log("\nTips:");
+    tips.forEach((t) => console.log(`  • ${t}`));
   }
 }

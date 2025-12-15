@@ -76,19 +76,19 @@ aligntrue add source https://github.com/org/repo/path/to/rules.md
 aligntrue sync
 ```
 
-- Works for single files. Align packs are download-only today (no CLI install); add the individual rules from the downloaded zip if needed.
+- Works for single files and Align packs. Install packs via CLI with `aligntrue add <pack-id>` or `aligntrue add https://aligntrue.ai/a/<pack-id>`.
 - Use `--exporters <agent>` to target a specific agent; otherwise all configured exporters run.
 - For reusable external Aligns, see [Working with external sources](/docs/01-guides/04-external-sources).
 
 ## Installing from social media
 
-- OG cards now include a quick-start command that works even if you don’t have AlignTrue installed yet:
+- OG cards include a quick-start command that works even if you don’t have AlignTrue installed yet:
 
 ```bash
-npx aligntrue init a:<align-id>
+npx aligntrue add <align-id>
 ```
 
-- The `a:<align-id>` form resolves through AlignTrue to the original GitHub URL and then stores the GitHub URL in your config for transparency.
+- The catalog ID (`<align-id>`) resolves through AlignTrue to the original GitHub URL and then stores the GitHub URL in your config for transparency.
 - If the source is temporarily unavailable, the command still works using the cached copy from the catalog.
 - You can always use the full GitHub URL instead; both forms are supported.
 

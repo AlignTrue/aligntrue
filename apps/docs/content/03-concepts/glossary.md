@@ -68,7 +68,7 @@ An Align can be:
 
 ### Align pack
 
-The user-facing name for a pack created in the Align Catalog. An Align pack bundles multiple Aligns (by ID) into a single downloadable/shareable unit with preserved paths. CLI install is not supported today—download the zip and add the files. Internal references to "catalog pack" refer to the same pack type.
+The user-facing name for a pack created in the Align Catalog. An Align pack bundles multiple Aligns (by ID) into a single downloadable/shareable unit with preserved paths. Install via CLI with `aligntrue add <pack-id>` or `aligntrue add https://aligntrue.ai/a/<pack-id>`. Internal references to "catalog pack" refer to the same pack type.
 
 ---
 

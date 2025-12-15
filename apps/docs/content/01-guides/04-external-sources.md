@@ -30,7 +30,7 @@ aligntrue add https://github.com/org/rules
 - Specific version: `https://github.com/org/repo@v1.0.0`
 - SSH URLs: `git@github.com:org/repo.git`
 - Local paths: `./path/to/rules` or `/absolute/path`
-- **Align packs:** Packs are created in the catalog UI only. CLI imports pull individual markdown rules; pack manifests are no longer supported. See [Align packs](/docs/03-concepts/align-packs).
+- **Align packs:** Packs are created in the catalog UI only. Install via `aligntrue add <pack-id>` (or the catalog URL). Pack manifests are no longer supported. See [Align packs](/docs/03-concepts/align-packs).
 
 ### Connected sources (live updates)
 

@@ -28,7 +28,7 @@ What is stored:
 
 - Open the catalog link to preview rules in all agent formats.
 - Download a zip that preserves relative paths.
-- (CLI) Not yet supported for Align packs; use download + manual add for now.
+- (CLI) Install via `aligntrue add <pack-id>` or `aligntrue add https://aligntrue.ai/a/<pack-id>`.
 
 ## Not supported
 

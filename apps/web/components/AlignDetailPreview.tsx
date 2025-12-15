@@ -496,9 +496,7 @@ export function AlignDetailPreview({
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
                     Make it easy for others to use these rules. Copy this link
-                    to share.
-                    {catalogPack &&
-                      " Align packs can be shared or downloaded; CLI install is not yet supported for align packs."}
+                    to share, or install via CLI.
                   </p>
                   <CommandBlock
                     code={shareText}
@@ -507,6 +505,15 @@ export function AlignDetailPreview({
                     promptSymbol=">"
                     showPrompt
                   />
+                  {catalogPack ? (
+                    <CommandBlock
+                      code={`aligntrue add ${align.id}`}
+                      copyLabel="Copy CLI install"
+                      variant="terminal"
+                      promptSymbol=">"
+                      showPrompt
+                    />
+                  ) : null}
                 </div>
               )}
 

@@ -126,7 +126,7 @@ See [Agent Support](/docs/04-reference/agent-support) for all 50 available expor
 
 Where to load rules from. Supports local files and git repositories.
 
-> Pack manifests are no longer resolved. GitHub sources import markdown/XML files directly. Use Align packs for bundling multiple rules; see [Align packs](/docs/03-concepts/align-packs).
+> Pack manifests are no longer resolved. GitHub sources import markdown/XML files directly. Use Align packs for bundling multiple rules (`aligntrue add <pack-id>`); see [Align packs](/docs/03-concepts/align-packs).
 
 ```yaml
 sources:
