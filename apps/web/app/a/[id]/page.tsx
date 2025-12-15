@@ -53,8 +53,8 @@ export default async function AlignDetailPage(props: {
   if (align.kind === "pack" && align.pack) {
     const isCatalogPack = align.source === "catalog" && align.kind === "pack";
     try {
-      if (isCatalogPack && align.containsAlignIds?.length) {
-        const ruleIds = align.containsAlignIds;
+      if (isCatalogPack) {
+        const ruleIds = align.containsAlignIds ?? [];
         const rules = await store.getMultiple(ruleIds);
         const filesResult = await Promise.all(
           rules.filter(Boolean).map(async (rule) => {

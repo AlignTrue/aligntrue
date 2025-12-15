@@ -29,11 +29,10 @@ export async function GET(
 
   let content: CachedContent | null = null;
   if (align.kind === "pack") {
-    const isCatalogPack =
-      align.source === "catalog" && align.containsAlignIds?.length;
+    const isCatalogPack = align.source === "catalog" && align.kind === "pack";
     if (isCatalogPack) {
       try {
-        const ruleIds = align.containsAlignIds!;
+        const ruleIds = align.containsAlignIds ?? [];
         const rules = await store.getMultiple(ruleIds);
         const filesResult = await Promise.all(
           rules.filter(Boolean).map(async (rule) => {
