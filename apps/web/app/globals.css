@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-@source "./app/**/*.{js,ts,jsx,tsx,mdx}";
-@source "./components/**/*.{js,ts,jsx,tsx,mdx}";
-@source "./lib/**/*.{js,ts,jsx,tsx,mdx}";
+@source "./**/*.{js,ts,jsx,tsx,mdx}";
+@source "../components/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../lib/**/*.{js,ts,jsx,tsx,mdx}";
 
 @plugin "tailwindcss-animate";
 
