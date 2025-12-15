@@ -11,6 +11,7 @@ import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { getOgUrlForAlign } from "@/lib/og/storage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { findSeedContent } from "@/lib/aligns/seedData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 const FAILURE_THRESHOLD = 3;
@@ -44,6 +45,11 @@ export default async function AlignDetailPage(props: {
   const align = await store.get(id);
   if (!align) {
     notFound();
+  }
+
+  const seedContent = findSeedContent(id);
+  if (seedContent) {
+    return <AlignDetailClient align={align} content={seedContent} />;
   }
 
   let content: CachedContent | null = null;
