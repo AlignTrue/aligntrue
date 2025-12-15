@@ -128,8 +128,8 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.7)
       fast-xml-parser:
-        specifier: ^5.3.1
-        version: 5.3.2
+        specifier: ^5.3.3
+        version: 5.3.3
       pagefind:
         specifier: ^1.1.0
         version: 1.4.0
@@ -3037,6 +3037,10 @@ packages:
 
   fast-xml-parser@5.3.2:
     resolution: {integrity: sha512-n8v8b6p4Z1sMgqRmqLJm3awW4NX7NkaKPfb3uJIBTSH7Pdvufi3PQ3/lJLQrvxcMYl7JI2jnDO90siPEpD8JBA==}
+    hasBin: true
+
+  fast-xml-parser@5.3.3:
+    resolution: {integrity: sha512-2O3dkPAAC6JavuMm8+4+pgTk+5hoAs+CjZ+sWcQLkX9+/tHRuTkQh/Oaifr8qDmZ8iEHb771Ea6G8CdwkrgvYA==}
     hasBin: true
 
   fastq@1.19.1:
@@ -7560,6 +7564,10 @@ snapshots:
   fast-uri@3.1.0: {}
 
   fast-xml-parser@5.3.2:
+    dependencies:
+      strnum: 2.1.1
+
+  fast-xml-parser@5.3.3:
     dependencies:
       strnum: 2.1.1
 
