@@ -147,6 +147,21 @@ describe("conflict-resolver", () => {
       expect(result.finalFilename).toBe("deep/rule-1.md");
     });
 
+    it("preserves directory structure on Windows-style paths", () => {
+      // Simulate Windows path separators in existingPath
+      const conflict = {
+        filename: "nested/rule.md",
+        existingPath:
+          "C:\\\\workspace\\\\.aligntrue\\\\rules\\\\nested\\\\rule.md",
+        incomingTitle: "Incoming Nested Rule",
+        incomingSource: "https://example.com/nested",
+      };
+
+      const result = resolveConflict(conflict, "keep-both", "C:\\\\workspace");
+
+      expect(result.finalFilename).toBe("nested/rule-1.md");
+    });
+
     it("creates backup for replace resolution", () => {
       // Create existing file
       writeFileSync(join(rulesDir, "rule.md"), "# Existing");

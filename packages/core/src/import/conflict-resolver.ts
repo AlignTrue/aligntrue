@@ -96,10 +96,18 @@ export function resolveConflict(
 
     case "keep-both": {
       // Generate a unique filename (preserve directory structure)
-      const rulesRoot = conflict.existingPath.slice(
-        0,
-        conflict.existingPath.length - conflict.filename.length,
-      );
+      const baseDir = dirname(conflict.filename);
+      const existingDir = dirname(conflict.existingPath);
+
+      // Walk up from the existing file directory to the rules root by popping
+      // each segment present in the relative filename directory.
+      const segments =
+        baseDir && baseDir !== "." ? baseDir.split(/[/\\]+/) : [];
+      let rulesRoot = existingDir;
+      for (let i = 0; i < segments.length; i += 1) {
+        rulesRoot = dirname(rulesRoot);
+      }
+
       const uniqueFilename = generateUniqueFilename(
         conflict.filename,
         rulesRoot,
