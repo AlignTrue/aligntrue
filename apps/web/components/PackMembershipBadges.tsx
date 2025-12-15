@@ -12,9 +12,11 @@ export function PackMembershipBadges({
   className,
 }: PackMembershipBadgesProps) {
   if (!packs.length) return null;
+  const label =
+    packs.length === 1 ? "Part of this pack" : "Part of these packs";
   return (
     <div className={className}>
-      <p className="text-sm text-muted-foreground mb-2">Part of these packs</p>
+      <p className="text-sm text-muted-foreground mb-2">{label}</p>
       <div className="flex flex-wrap gap-2">
         {packs.map((pack) => (
           <Badge key={pack.id} variant="secondary" className="text-xs">

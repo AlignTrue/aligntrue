@@ -53,6 +53,17 @@ export type AlignDetailPreviewProps = {
   className?: string;
 };
 
+type ActionTabId = "share" | "global" | "temp" | "source" | "add";
+
+type ActionTabConfig = {
+  id: ActionTabId;
+  label: string;
+  description: string;
+  command: string;
+  showDocsLink?: boolean;
+  trackInstall?: boolean;
+};
+
 async function postEvent(id: string, type: "view" | "install") {
   await fetch(`/api/aligns/${id}/event`, {
     method: "POST",
@@ -69,9 +80,7 @@ export function AlignDetailPreview({
   const isArchived = align.sourceRemoved === true;
   const [agent, setAgent] = useState<AgentId>("all");
   const [format, setFormat] = useState<TargetFormat>("align-md");
-  const [actionTab, setActionTab] = useState<
-    "share" | "global" | "temp" | "source"
-  >("share");
+  const [actionTab, setActionTab] = useState<ActionTabId>("share");
   const [convertedCache, setConvertedCache] = useState<
     Map<string, ConvertedContent>
   >(new Map());
@@ -91,6 +100,7 @@ export function AlignDetailPreview({
   } | null>(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const catalogPack = isCatalogPack(align);
+  const itemLabel = isPack ? "pack" : "align";
   const alignSharePath = `/a/${align.id}`;
   const shareUrl = `${BASE_URL}${alignSharePath}`;
   const display = useMemo(() => toAlignSummary(align), [align]);
@@ -188,18 +198,83 @@ export function AlignDetailPreview({
     [agent],
   );
   const canExport = selectedAgent?.capabilities?.cliExport !== false;
+  const exporterFlag =
+    canExport && selectedAgent?.exporter
+      ? ` --exporters ${selectedAgent.exporter}`
+      : "";
 
-  const commands = useMemo(() => {
-    const selected = selectedAgent ?? agentOptions[0];
-    const exporter = selected.exporter;
-    const exporterFlag =
-      canExport && exporter ? ` --exporters ${exporter}` : "";
-    const globalInstall = "npm install -g aligntrue";
-    const globalInit = `aligntrue init --source ${align.url}${exporterFlag}`;
-    const tempInstall = `npx aligntrue init --source ${align.url}${exporterFlag}`;
-    const addSource = `aligntrue add source ${align.url}\naligntrue sync${exporterFlag}`;
-    return { globalInstall, globalInit, tempInstall, addSource, selected };
-  }, [align.url, canExport, selectedAgent]);
+  const actionTabs = useMemo((): ActionTabConfig[] => {
+    if (catalogPack) {
+      return [
+        {
+          id: "share",
+          label: "Share Link",
+          description:
+            "Make it easy for others to use these rules. Copy this link to share, or install via CLI.",
+          command: shareUrl,
+        },
+        {
+          id: "add",
+          label: "Add Source",
+          description:
+            "Already using AlignTrue? Add this pack as a connected source and the CLI will fetch and sync all included rules.",
+          command: `aligntrue add ${align.id}`,
+          trackInstall: true,
+        },
+      ];
+    }
+
+    const tabs: ActionTabConfig[] = [
+      {
+        id: "share",
+        label: "Share Link",
+        description: `Make it easy for others to use this ${itemLabel}.`,
+        command: shareUrl,
+      },
+      {
+        id: "global",
+        label: "Global Install",
+        description: `Install globally to manage ${itemLabel}s across projects.`,
+        command: `npm install -g aligntrue\naligntrue init --source ${align.url}${exporterFlag}`,
+        showDocsLink: true,
+        trackInstall: true,
+      },
+      {
+        id: "temp",
+        label: "Temp Install",
+        description: "Quick one-off install. No global install required.",
+        command: `npx aligntrue init --source ${align.url}${exporterFlag}`,
+        trackInstall: true,
+      },
+    ];
+
+    if (!isArchived) {
+      tabs.push({
+        id: "source",
+        label: "Add Source",
+        description: `Already using AlignTrue? Add this ${itemLabel} as a connected source.`,
+        command: `aligntrue add source ${align.url}\naligntrue sync${exporterFlag}`,
+        trackInstall: true,
+      });
+    }
+
+    return tabs;
+  }, [
+    catalogPack,
+    isArchived,
+    itemLabel,
+    align.id,
+    align.url,
+    shareUrl,
+    exporterFlag,
+  ]);
+
+  useEffect(() => {
+    const validTabIds = actionTabs.map((tab) => tab.id);
+    if (!validTabIds.includes(actionTab)) {
+      setActionTab("share");
+    }
+  }, [actionTabs, actionTab, align.id]);
 
   const cacheKey = useMemo(() => {
     const fileKey = isPack ? (selectedFile?.path ?? "single") : "single";
@@ -406,10 +481,19 @@ export function AlignDetailPreview({
 
             {isPack && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground m-0">
-                  Contains {relatedRules.length || 0} aligns
-                  {relatedLoading ? " (loading...)" : ""}
-                </p>
+                {(() => {
+                  const count = relatedRules.length || 0;
+                  const label =
+                    count === 1
+                      ? "Includes 1 file:"
+                      : `Includes ${count} files:`;
+                  return (
+                    <p className="text-sm text-muted-foreground m-0">
+                      {label}
+                      {relatedLoading ? " (loading...)" : ""}
+                    </p>
+                  );
+                })()}
                 {relatedRules.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {relatedRules.map((rule) => (
@@ -460,43 +544,72 @@ export function AlignDetailPreview({
                 </SelectContent>
               </Select>
 
-              {canExport && !catalogPack && (
+              {canExport && actionTabs.length > 0 ? (
                 <Tabs
                   value={actionTab}
-                  onValueChange={(v) => setActionTab(v as typeof actionTab)}
+                  onValueChange={(v) => setActionTab(v as ActionTabId)}
                   className="sm:ml-auto"
                 >
                   <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm sm:justify-end">
-                    {[
-                      { id: "share", label: "Share Link" },
-                      { id: "global", label: "Global Install" },
-                      { id: "temp", label: "Temp Install" },
-                    ]
-                      .concat(
-                        isArchived
-                          ? []
-                          : [{ id: "source", label: "Add Source" }],
-                      )
-                      .map((tab) => (
-                        <TabsTrigger
-                          key={tab.id}
-                          value={tab.id}
-                          className="font-semibold rounded-lg px-4 py-2 text-sm"
-                        >
-                          {tab.label}
-                        </TabsTrigger>
-                      ))}
+                    {actionTabs.map((tab) => (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="font-semibold rounded-lg px-4 py-2 text-sm"
+                      >
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
                   </TabsList>
                 </Tabs>
-              )}
+              ) : null}
             </div>
 
             <div className="pt-4 space-y-4">
-              {(!canExport || actionTab === "share" || catalogPack) && (
+              {canExport && actionTabs.length > 0 ? (
+                (() => {
+                  const currentTab = actionTabs.find((t) => t.id === actionTab);
+                  if (!currentTab) return null;
+                  return (
+                    <div className="space-y-3">
+                      <p className="text-muted-foreground">
+                        {currentTab.description}
+                        {currentTab.showDocsLink && (
+                          <>
+                            {" "}
+                            <a
+                              href="/docs"
+                              className="text-foreground font-semibold hover:underline"
+                            >
+                              Learn more about AlignTrue
+                            </a>
+                          </>
+                        )}
+                      </p>
+                      <CommandBlock
+                        code={currentTab.command}
+                        copyLabel="Copy"
+                        variant={
+                          currentTab.id === "share" ? "terminal" : undefined
+                        }
+                        promptSymbol={
+                          currentTab.id === "share" ? ">" : undefined
+                        }
+                        showPrompt={currentTab.id === "share"}
+                        onCopy={
+                          currentTab.trackInstall
+                            ? () => void postEvent(align.id, "install")
+                            : undefined
+                        }
+                      />
+                    </div>
+                  );
+                })()
+              ) : (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
-                    Make it easy for others to use these rules. Copy this link
-                    to share, or install via CLI.
+                    Make it easy for others to use this {itemLabel}. Copy this
+                    link to share.
                   </p>
                   <CommandBlock
                     code={shareText}
@@ -505,70 +618,8 @@ export function AlignDetailPreview({
                     promptSymbol=">"
                     showPrompt
                   />
-                  {catalogPack ? (
-                    <CommandBlock
-                      code={`aligntrue add ${align.id}`}
-                      copyLabel="Copy CLI install"
-                      variant="terminal"
-                      promptSymbol=">"
-                      showPrompt
-                    />
-                  ) : null}
                 </div>
               )}
-
-              {canExport && !catalogPack && actionTab === "global" && (
-                <div className="space-y-3">
-                  <p className="text-muted-foreground">
-                    New to AlignTrue? Install globally to manage rules across
-                    all your projects. Copy and run both commands together.{" "}
-                    <a
-                      href="/docs"
-                      className="text-foreground font-semibold hover:underline"
-                    >
-                      Learn more about AlignTrue
-                    </a>
-                  </p>
-                  <CommandBlock
-                    code={`${commands.globalInstall}\n${commands.globalInit}`}
-                    copyLabel="Copy"
-                  />
-                </div>
-              )}
-
-              {canExport && !catalogPack && actionTab === "temp" && (
-                <div className="space-y-3">
-                  <p className="text-muted-foreground">
-                    Quick one-off install. No global install required.
-                  </p>
-                  <CommandBlock
-                    code={commands.tempInstall}
-                    copyLabel="Copy"
-                    onCopy={() => void postEvent(align.id, "install")}
-                  />
-                </div>
-              )}
-
-              {canExport &&
-                !isArchived &&
-                !catalogPack &&
-                actionTab === "source" && (
-                  <div className="space-y-3">
-                    <p className="m-0 text-muted-foreground">
-                      Already using AlignTrue? Add these rules as a connected
-                      source.{" "}
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="p-0 h-auto"
-                        onClick={() => setActionTab("global")}
-                      >
-                        New here? Use Global Install instead.
-                      </Button>
-                    </p>
-                    <CommandBlock code={commands.addSource} copyLabel="Copy" />
-                  </div>
-                )}
             </div>
           </div>
         </CardContent>
