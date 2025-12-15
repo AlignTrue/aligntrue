@@ -39,7 +39,7 @@ import {
 
 type BulkResult =
   | { url: string; status: "success"; id: string; title?: string | null }
-  | { url: string; status: "error"; error: string };
+  | { url: string; status: "error"; error: string; title?: string | null };
 
 type BulkSubmitPayload = {
   urls: string[];

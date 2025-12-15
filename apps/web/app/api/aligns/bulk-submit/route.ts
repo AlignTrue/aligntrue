@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     }
   }
 
-  let pack: { id: string; url: string } | undefined;
+  let pack: { id: string; url: string; title?: string } | undefined;
   const createPack = body.createPack;
   if (createPack && successIds.length > 0) {
     const { title, description, author } = createPack as {
