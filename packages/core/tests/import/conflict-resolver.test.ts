@@ -68,6 +68,29 @@ describe("conflict-resolver", () => {
       expect(conflicts[0]!.filename).toBe("existing.md");
       expect(conflicts[0]!.incomingTitle).toBe("Incoming Rule");
     });
+
+    it("detects conflicts with nested paths", () => {
+      const nestedDir = join(rulesDir, "deep");
+      mkdirSync(nestedDir, { recursive: true });
+      writeFileSync(join(nestedDir, "rule.md"), "# Existing Rule");
+
+      const conflicts = detectConflicts(
+        [
+          {
+            filename: "deep/rule.md",
+            title: "Incoming Nested Rule",
+            source: "https://example.com/nested",
+          },
+        ],
+        rulesDir,
+      );
+
+      expect(conflicts).toHaveLength(1);
+      expect(conflicts[0]!.filename).toBe("deep/rule.md");
+      expect(conflicts[0]!.existingPath).toBe(
+        join(rulesDir, "deep", "rule.md"),
+      );
+    });
   });
 
   describe("resolveConflict", () => {
@@ -104,6 +127,24 @@ describe("conflict-resolver", () => {
       const result = resolveConflict(conflict, "keep-both", testDir);
 
       expect(result.finalFilename).toBe("rule-2.md");
+    });
+
+    it("preserves directory structure for nested keep-both", () => {
+      const nestedDir = join(rulesDir, "deep");
+      mkdirSync(nestedDir, { recursive: true });
+      writeFileSync(join(nestedDir, "rule.md"), "# Existing");
+
+      const conflict = {
+        filename: "deep/rule.md",
+        existingPath: join(rulesDir, "deep", "rule.md"),
+        incomingTitle: "Incoming Nested Rule",
+        incomingSource: "https://example.com/nested",
+      };
+
+      const result = resolveConflict(conflict, "keep-both", testDir);
+
+      expect(result.resolution).toBe("keep-both");
+      expect(result.finalFilename).toBe("deep/rule-1.md");
     });
 
     it("creates backup for replace resolution", () => {

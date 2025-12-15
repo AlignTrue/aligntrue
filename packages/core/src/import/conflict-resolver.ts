@@ -95,10 +95,14 @@ export function resolveConflict(
     }
 
     case "keep-both": {
-      // Generate a unique filename
+      // Generate a unique filename (preserve directory structure)
+      const rulesRoot = conflict.existingPath.slice(
+        0,
+        conflict.existingPath.length - conflict.filename.length,
+      );
       const uniqueFilename = generateUniqueFilename(
         conflict.filename,
-        dirname(conflict.existingPath),
+        rulesRoot,
       );
       return {
         originalFilename: conflict.filename,
@@ -120,20 +124,27 @@ export function resolveConflict(
 /**
  * Generate a unique filename by appending a number
  *
- * @param filename - Original filename
- * @param directory - Directory to check for existing files
- * @returns Unique filename (e.g., "rules-1.md", "rules-2.md")
+ * @param filename - Original filename (may include nested path, e.g., "deep/rule.md")
+ * @param rulesDir - Rules directory root (absolute)
+ * @returns Unique filename preserving path (e.g., "deep/rule-1.md")
  */
-function generateUniqueFilename(filename: string, directory: string): string {
+function generateUniqueFilename(filename: string, rulesDir: string): string {
   const ext = extname(filename);
   const base = basename(filename, ext);
+  const dir = dirname(filename);
 
   let counter = 1;
-  let candidate = `${base}-${counter}${ext}`;
+  let candidate =
+    dir && dir !== "."
+      ? join(dir, `${base}-${counter}${ext}`)
+      : `${base}-${counter}${ext}`;
 
-  while (existsSync(join(directory, candidate))) {
+  while (existsSync(join(rulesDir, candidate))) {
     counter++;
-    candidate = `${base}-${counter}${ext}`;
+    candidate =
+      dir && dir !== "."
+        ? join(dir, `${base}-${counter}${ext}`)
+        : `${base}-${counter}${ext}`;
 
     // Safety limit to prevent infinite loop
     if (counter > 100) {

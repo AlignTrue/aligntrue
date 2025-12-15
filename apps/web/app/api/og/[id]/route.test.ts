@@ -156,6 +156,6 @@ describe("GET /api/og/[id]", () => {
 describe("helper utilities", () => {
   it("buildInstallCommand returns npx init command with id", async () => {
     const { buildInstallCommand } = await import("./route");
-    expect(buildInstallCommand("abc123")).toBe("npx aligntrue init a:abc123");
+    expect(buildInstallCommand("abc123")).toBe("npx aligntrue add abc123");
   });
 });

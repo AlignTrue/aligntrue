@@ -635,10 +635,11 @@ export async function init(args: string[] = []): Promise<void> {
         );
         if (rule && resolution.resolution !== "skip") {
           const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+          const resolvedName = resolution.finalFilename;
           const finalRelative =
-            baseDir && baseDir !== "."
-              ? join(baseDir, resolution.finalFilename)
-              : resolution.finalFilename;
+            /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
+              ? resolvedName
+              : join(baseDir, resolvedName);
           const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
             cwd,
             rulesDir,
@@ -673,10 +674,11 @@ export async function init(args: string[] = []): Promise<void> {
         );
         if (rule) {
           const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+          const resolvedName = resolution.finalFilename;
           const finalRelative =
-            baseDir && baseDir !== "."
-              ? join(baseDir, resolution.finalFilename)
-              : resolution.finalFilename;
+            /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
+              ? resolvedName
+              : join(baseDir, resolvedName);
           const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
             cwd,
             rulesDir,

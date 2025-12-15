@@ -666,10 +666,11 @@ async function writeRulesWithConflicts(options: {
         } else {
           const rule = rulesToWrite[ruleIndex]!;
           const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+          const resolvedName = resolved.finalFilename;
           const finalRelative =
-            baseDir && baseDir !== "."
-              ? join(baseDir, resolved.finalFilename)
-              : resolved.finalFilename;
+            /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
+              ? resolvedName
+              : join(baseDir, resolvedName);
           const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
             cwd,
             rulesDir,
