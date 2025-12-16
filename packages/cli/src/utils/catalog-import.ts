@@ -1,6 +1,7 @@
 import { mkdirSync } from "fs";
 import { dirname, join, relative, basename } from "path";
 import matter from "gray-matter";
+import { parse as parseYaml } from "yaml";
 import {
   computeContentHash,
   type RuleFile,
@@ -102,7 +103,15 @@ async function buildRuleFile(
     };
   }
 
-  const parsed = safeMatter(content);
+  let parsed = safeMatter(content);
+  if (parsed.content.trimStart().startsWith("---")) {
+    const stripped = stripFrontmatter(parsed.content);
+    parsed = {
+      ...parsed,
+      data: { ...(parsed.data as object), ...stripped.data },
+      content: stripped.body,
+    } as matter.GrayMatterFile<string>;
+  }
 
   const filename =
     filenameFromUrl(record.normalizedUrl ?? record.id) || `${record.id}.md`;
@@ -160,6 +169,19 @@ function safeMatter(content: string): matter.GrayMatterFile<string> {
   try {
     return matter(content);
   } catch {
+    if (content.trimStart().startsWith("---")) {
+      const stripped = stripFrontmatter(content);
+      return {
+        data: stripped.data,
+        content: stripped.body,
+        excerpt: "",
+        orig: "",
+        language: "",
+        matter: "",
+        stringify: () => "",
+        toString: () => stripped.body,
+      } as matter.GrayMatterFile<string>;
+    }
     return {
       data: {},
       content,
@@ -171,6 +193,24 @@ function safeMatter(content: string): matter.GrayMatterFile<string> {
       toString: () => content,
     } as matter.GrayMatterFile<string>;
   }
+}
+
+function stripFrontmatter(content: string): { data: object; body: string } {
+  const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+  if (!match) {
+    return { data: {}, body: content };
+  }
+
+  const frontmatterRaw = match[1] ?? "";
+  let data: object = {};
+  try {
+    data = (parseYaml(frontmatterRaw) as object) || {};
+  } catch {
+    data = {};
+  }
+
+  const body = content.slice(match[0].length);
+  return { data, body };
 }
 
 function filenameFromUrl(url?: string | null): string | null {

@@ -409,6 +409,11 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Import rules from URL or path (skips auto-detect)",
   },
   {
+    flag: "--no-starters",
+    hasValue: false,
+    description: "Skip creating default starter rules when no rules are found",
+  },
+  {
     flag: "--ref",
     hasValue: true,
     description: "Git ref (branch/tag/commit) for git sources",
@@ -486,6 +491,8 @@ export async function init(args: string[] = []): Promise<void> {
   const noSync = (parsed.flags["no-sync"] as boolean | undefined) || false;
   const sourceArg = parsed.flags["source"] as string | undefined;
   const refArg = parsed.flags["ref"] as string | undefined;
+  const skipStarters =
+    (parsed.flags["no-starters"] as boolean | undefined) || false;
 
   // Validate mode if provided
   if (mode && mode !== "solo" && mode !== "team") {
@@ -696,8 +703,13 @@ export async function init(args: string[] = []): Promise<void> {
 
     if (rulesToWrite.length === 0) {
       logMessage(`No rules found at ${sourceArg}`, "info", nonInteractive);
-      isFreshStart = true;
-      rulesToWrite = createStarterTemplates();
+      if (skipStarters) {
+        isFreshStart = false;
+        rulesToWrite = [];
+      } else {
+        isFreshStart = true;
+        rulesToWrite = createStarterTemplates();
+      }
     }
   } else {
     // Auto-detect existing rules with overlap detection
@@ -736,8 +748,13 @@ export async function init(args: string[] = []): Promise<void> {
       }
     } else {
       // No rules found, will use starter templates
-      isFreshStart = true;
-      rulesToWrite = createStarterTemplates();
+      if (skipStarters) {
+        isFreshStart = false;
+        rulesToWrite = [];
+      } else {
+        isFreshStart = true;
+        rulesToWrite = createStarterTemplates();
+      }
     }
   }
 

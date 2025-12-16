@@ -10,7 +10,7 @@
  *   aligntrue add remote <url> --shared     # Set as remotes.shared
  */
 
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, rmSync } from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import {
@@ -76,6 +76,16 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     alias: "-y",
     hasValue: false,
     description: "Non-interactive mode (keep both on conflicts)",
+  },
+  {
+    flag: "--replace",
+    hasValue: false,
+    description: "On conflict, replace existing files (backup saved)",
+  },
+  {
+    flag: "--skip-conflicts",
+    hasValue: false,
+    description: "On conflict, skip incoming files (do not import)",
   },
   {
     flag: "--no-sync",
@@ -247,8 +257,23 @@ export async function add(args: string[]): Promise<void> {
   const gitPath = flags["path"] as string | undefined;
   const personalFlag = (flags["personal"] as boolean | undefined) || false;
   const sharedFlag = (flags["shared"] as boolean | undefined) || false;
+  const replaceConflicts = (flags["replace"] as boolean | undefined) || false;
+  const skipConflicts =
+    (flags["skip-conflicts"] as boolean | undefined) || false;
   const nonInteractive = (flags["yes"] as boolean | undefined) || !isTTY();
   const noSync = (flags["no-sync"] as boolean | undefined) || false;
+
+  if (replaceConflicts && skipConflicts) {
+    exitWithError(
+      {
+        title: "Invalid options",
+        message: "Use only one of --replace or --skip-conflicts",
+        hint: "Choose --replace to overwrite existing files or --skip-conflicts to ignore incoming duplicates",
+        code: "INVALID_OPTIONS",
+      },
+      2,
+    );
+  }
 
   const baseUrl = normalizeUrl(urlArg);
 
@@ -266,6 +291,8 @@ export async function add(args: string[]): Promise<void> {
       configPath,
       nonInteractive,
       noSync,
+      replaceConflicts,
+      skipConflicts,
       spinner,
     });
     return;
@@ -321,6 +348,8 @@ export async function add(args: string[]): Promise<void> {
       nonInteractive,
       noSync,
       privateSource,
+      replaceConflicts,
+      skipConflicts,
       spinner,
     });
   }
@@ -618,18 +647,48 @@ async function writeRulesWithConflicts(options: {
   cwd: string;
   rulesDir: string;
   nonInteractive: boolean;
+  replaceConflicts?: boolean;
+  skipConflicts?: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<string[]> {
-  const { rules, conflicts, cwd, rulesDir, nonInteractive, spinner } = options;
+  const {
+    rules,
+    conflicts,
+    cwd,
+    rulesDir,
+    nonInteractive,
+    replaceConflicts,
+    skipConflicts,
+    spinner,
+  } = options;
   const rulesToWrite = [...rules];
 
   if (conflicts.length > 0) {
-    spinner.stop(`Found ${rules.length} rules (conflicts detected)`);
+    spinner.stop(`Found ${rules.length} rules`);
+
+    const conflictHeader = `${conflicts.length} conflict${
+      conflicts.length === 1 ? "" : "s"
+    } detected:`;
+    if (isTTY()) {
+      clack.log.warn(conflictHeader);
+      conflicts.forEach((c) =>
+        clack.log.info(`  • ${c.filename} (already exists)`),
+      );
+    } else {
+      console.warn(conflictHeader);
+      conflicts.forEach((c) =>
+        console.warn(`  • ${c.filename} (already exists)`),
+      );
+    }
 
     for (const conflict of conflicts) {
       let resolution: "replace" | "keep-both" | "skip";
 
-      if (nonInteractive) {
+      if (skipConflicts) {
+        resolution = "skip";
+      } else if (replaceConflicts) {
+        resolution = "replace";
+      } else if (nonInteractive) {
         resolution = "keep-both";
       } else {
         const choice = await clack.select({
@@ -676,6 +735,18 @@ async function writeRulesWithConflicts(options: {
             cwd,
             rulesDir,
           });
+
+          const actionDescription =
+            resolved.resolution === "replace"
+              ? `replaced existing${resolved.backupPath ? ` (backup: ${resolved.backupPath})` : ""}`
+              : resolved.resolution === "keep-both"
+                ? `kept both as ${resolved.finalFilename}`
+                : "skipped";
+          if (isTTY()) {
+            clack.log.info(`  → ${conflict.filename}: ${actionDescription}`);
+          } else {
+            console.log(`  -> ${conflict.filename}: ${actionDescription}`);
+          }
 
           rule.filename = updatedPaths.filename;
           rule.relativePath = updatedPaths.relativePath;
@@ -878,6 +949,8 @@ async function copyRulesToLocal(options: {
   nonInteractive: boolean;
   noSync: boolean;
   privateSource: boolean;
+  replaceConflicts: boolean;
+  skipConflicts: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<void> {
   const {
@@ -889,6 +962,8 @@ async function copyRulesToLocal(options: {
     nonInteractive,
     noSync,
     privateSource,
+    replaceConflicts,
+    skipConflicts,
     spinner,
   } = options;
 
@@ -990,6 +1065,8 @@ async function copyRulesToLocal(options: {
       cwd,
       rulesDir,
       nonInteractive,
+      replaceConflicts,
+      skipConflicts,
       spinner,
     });
 
@@ -1096,10 +1173,21 @@ async function importCatalogCommand(options: {
   configPath: string;
   nonInteractive: boolean;
   noSync: boolean;
+  replaceConflicts: boolean;
+  skipConflicts: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<void> {
-  const { catalogId, cwd, paths, configPath, nonInteractive, noSync, spinner } =
-    options;
+  const {
+    catalogId,
+    cwd,
+    paths,
+    configPath,
+    nonInteractive,
+    noSync,
+    replaceConflicts,
+    skipConflicts,
+    spinner,
+  } = options;
 
   const rulesDir = join(paths.aligntrueDir, "rules");
   mkdirSync(rulesDir, { recursive: true });
@@ -1150,6 +1238,43 @@ async function importCatalogCommand(options: {
     return;
   }
 
+  const starterStatus = detectStarterRules(rulesDir);
+  let removeStarterRules = false;
+
+  if (starterStatus.onlyStarters && importResult.rules.length > 0) {
+    if (nonInteractive) {
+      if (isTTY()) {
+        clack.log.info(
+          "Starter rules detected; keeping both starter and pack rules. Use --replace or remove starters manually to replace them.",
+        );
+      } else {
+        console.log(
+          "Starter rules detected; keeping both starter and pack rules.",
+        );
+      }
+    } else {
+      const replaceStarters = await clack.confirm({
+        message:
+          "Starter rules detected. Replace starters with pack rules instead of keeping both?",
+        initialValue: false,
+      });
+      if (clack.isCancel(replaceStarters)) {
+        clack.cancel("Import cancelled");
+        return;
+      }
+      removeStarterRules = Boolean(replaceStarters);
+    }
+  }
+
+  if (removeStarterRules) {
+    starterStatus.starterFiles.forEach((file) =>
+      rmSync(join(rulesDir, file), { force: true }),
+    );
+    if (isTTY()) {
+      clack.log.info("Removed starter rules before importing pack.");
+    }
+  }
+
   const conflicts = detectConflicts(
     importResult.rules.map((r) => ({
       filename: r.relativePath || r.filename,
@@ -1165,6 +1290,8 @@ async function importCatalogCommand(options: {
     cwd,
     rulesDir,
     nonInteractive,
+    replaceConflicts,
+    skipConflicts,
     spinner,
   });
 
@@ -1218,4 +1345,28 @@ async function importCatalogCommand(options: {
     console.log("\nTips:");
     tips.forEach((t) => console.log(`  • ${t}`));
   }
+}
+
+function detectStarterRules(rulesDir: string): {
+  starterFiles: string[];
+  onlyStarters: boolean;
+} {
+  const starterNames = new Set([
+    "global.md",
+    "testing.md",
+    "ai-guidance.md",
+    "security.md",
+  ]);
+
+  const files = readdirSync(rulesDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && !entry.name.startsWith("."))
+    .map((entry) => entry.name);
+
+  const starterFiles = files.filter((file) => starterNames.has(file));
+  const nonStarterFiles = files.filter((file) => !starterNames.has(file));
+
+  return {
+    starterFiles,
+    onlyStarters: starterFiles.length > 0 && nonStarterFiles.length === 0,
+  };
 }

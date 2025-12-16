@@ -1,8 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { existsSync, mkdirSync, rmSync, readFileSync } from "fs";
+import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { add } from "../../src/commands/add.js";
 import type { RuleFile } from "@aligntrue/schema";
+
+vi.mock("../../src/utils/tty-helper.js", () => ({
+  isTTY: () => true,
+}));
+
+let confirmResponse = true;
 
 vi.mock("@clack/prompts", () => ({
   log: {
@@ -17,7 +23,7 @@ vi.mock("@clack/prompts", () => ({
     stop: vi.fn(),
     stopSilent: vi.fn(),
   })),
-  confirm: vi.fn(() => Promise.resolve(true)),
+  confirm: vi.fn(() => Promise.resolve(confirmResponse)),
   isCancel: vi.fn(() => false),
   select: vi.fn(() => Promise.resolve("replace")),
   cancel: vi.fn(),
@@ -62,6 +68,7 @@ describe("add command - catalog import", () => {
 
   beforeEach(() => {
     originalCwd = process.cwd();
+    confirmResponse = true;
 
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
@@ -85,5 +92,49 @@ describe("add command - catalog import", () => {
     const content = readFileSync(writtenPath, "utf-8");
     expect(content).toContain("Catalog Rule");
     expect(content).toContain("Hello catalog");
+  });
+
+  it("replaces starter rules when confirmed", async () => {
+    // Seed starter files that should be removed
+    const starters = [
+      "global.md",
+      "testing.md",
+      "ai-guidance.md",
+      "security.md",
+    ];
+    starters.forEach((name) =>
+      writeFileSync(join(aligntrueDir, "rules", name), "# starter", "utf-8"),
+    );
+
+    await add(["abc123defgh"]);
+
+    starters.forEach((name) =>
+      expect(existsSync(join(aligntrueDir, "rules", name))).toBe(false),
+    );
+    expect(existsSync(join(aligntrueDir, "rules", "catalog-rule.md"))).toBe(
+      true,
+    );
+  });
+
+  it("keeps starter rules when user declines replacement", async () => {
+    confirmResponse = false;
+    const starters = [
+      "global.md",
+      "testing.md",
+      "ai-guidance.md",
+      "security.md",
+    ];
+    starters.forEach((name) =>
+      writeFileSync(join(aligntrueDir, "rules", name), "# starter", "utf-8"),
+    );
+
+    await add(["abc123defgh"]);
+
+    starters.forEach((name) =>
+      expect(existsSync(join(aligntrueDir, "rules", name))).toBe(true),
+    );
+    expect(existsSync(join(aligntrueDir, "rules", "catalog-rule.md"))).toBe(
+      true,
+    );
   });
 });
