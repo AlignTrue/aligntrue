@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { tmpdir } from "os";
 import * as yaml from "yaml";
 
 // Mock clack
@@ -51,7 +52,7 @@ vi.mock("../../src/commands/sync/index.js", () => ({
 }));
 
 describe("add command", () => {
-  const testDir = join(__dirname, "..", "..", "..", "temp-add-cli-test");
+  const testDir = join(tmpdir(), "temp-add-cli-test");
   const aligntrueDir = join(testDir, ".aligntrue");
   let originalCwd: string;
 
@@ -104,6 +105,7 @@ describe("add command", () => {
       expect(config.sources[1]).toEqual({
         type: "git",
         url: "https://github.com/test/rules",
+        personal: true,
       });
     });
 
@@ -124,6 +126,7 @@ describe("add command", () => {
         type: "git",
         url: "https://github.com/test/rules",
         personal: true,
+        gitignore: true,
       });
     });
 

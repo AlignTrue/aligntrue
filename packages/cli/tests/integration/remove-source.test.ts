@@ -62,16 +62,16 @@ describe("remove command", () => {
 
   it("returns non-zero when no matching source is removed", async () => {
     await expect(
-      remove(["https://not-configured.example.com/rules.git"]),
+      remove(["link", "https://not-configured.example.com/rules.git"]),
     ).rejects.toThrow("process.exit(2)");
 
     const errors = errorSpy.mock.calls.flat().join(" ");
-    expect(errors).toContain("No source found matching");
+    expect(errors).toContain("No link found matching");
     expect(errors).toContain("not-configured.example.com");
   });
 
   it("removes the matching source and keeps others intact", async () => {
-    await remove(["https://example.com/rules.git"]);
+    await remove(["link", "https://example.com/rules.git"]);
 
     expect(exitSpy).not.toHaveBeenCalled();
 

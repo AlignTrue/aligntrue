@@ -3,6 +3,7 @@ import { backupCommand } from "../../src/commands/backup";
 import { BackupManager } from "@aligntrue/core";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { tmpdir } from "os";
 import { ValidationError } from "../../src/utils/error-types.js";
 
 // Mock clack
@@ -23,7 +24,7 @@ vi.mock("@clack/prompts", () => ({
 }));
 
 describe("backup command", () => {
-  const testDir = join(__dirname, "..", "..", "..", "temp-backup-cli-test");
+  const testDir = join(tmpdir(), "temp-backup-cli-test");
   const aligntrueDir = join(testDir, ".aligntrue");
   let originalCwd: string;
 

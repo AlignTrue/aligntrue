@@ -54,7 +54,7 @@ export type AlignDetailPreviewProps = {
   className?: string;
 };
 
-type ActionTabId = "share" | "global" | "temp" | "source" | "add";
+type ActionTabId = "share" | "existing" | "new";
 
 type ActionTabConfig = {
   id: ActionTabId;

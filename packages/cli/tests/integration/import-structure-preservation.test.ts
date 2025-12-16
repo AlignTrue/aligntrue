@@ -15,8 +15,9 @@ import {
 } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
+import { tmpdir } from "os";
 
-const TEST_DIR = join(__dirname, "../../../temp-test-import");
+const TEST_DIR = join(tmpdir(), "temp-test-import");
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
 // Skip on Windows due to unreliable file cleanup in CI

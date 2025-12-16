@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import { tmpdir } from "os";
 import { join } from "path";
 import * as yaml from "yaml";
 
@@ -54,7 +55,7 @@ vi.mock("../../src/utils/config-loader.js", () => ({
 }));
 
 describe("remove command", () => {
-  const testDir = join(__dirname, "..", "..", "..", "temp-remove-cli-test");
+  const testDir = join(tmpdir(), "temp-remove-cli-test");
   const aligntrueDir = join(testDir, ".aligntrue");
   const configPath = join(aligntrueDir, "config.yaml");
   const sourceUrl = "https://github.com/org/rules";
