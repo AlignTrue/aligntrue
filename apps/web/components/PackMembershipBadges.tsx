@@ -13,7 +13,7 @@ export function PackMembershipBadges({
 }: PackMembershipBadgesProps) {
   if (!packs.length) return null;
   const label =
-    packs.length === 1 ? "Part of this pack" : "Part of these packs";
+    packs.length === 1 ? "Part of this pack:" : "Part of these packs:";
   return (
     <div className={className}>
       <p className="text-sm text-muted-foreground mb-2">{label}</p>

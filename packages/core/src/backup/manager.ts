@@ -53,18 +53,21 @@ export class BackupManager {
 
     // Generate timestamp for this backup (with process ID and sequence for uniqueness)
     // Format: 2025-11-18T23-54-39-705-1a2b-0 (timestamp + PID in base36 + sequence)
+    // Keep sequence stable across retry attempts to avoid nondeterministic names.
+    backupSequence++;
+    const baseTimestamp =
+      new Date()
+        .toISOString()
+        .replace(/:/g, "-")
+        .replace(/\./g, "-")
+        .replace(/Z$/, "") +
+      `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
     let timestamp = "";
     let backupDir = "";
     let createdBackupDir = false;
     for (let attempt = 0; attempt < 100; attempt++) {
-      backupSequence++;
-      timestamp =
-        new Date()
-          .toISOString()
-          .replace(/:/g, "-")
-          .replace(/\./g, "-")
-          .replace(/Z$/, "") +
-        `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
+      const retrySuffix = attempt === 0 ? "" : `-r${attempt.toString(36)}`;
+      timestamp = `${baseTimestamp}${retrySuffix}`;
       backupDir = join(backupsDir, timestamp);
 
       try {

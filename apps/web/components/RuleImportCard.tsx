@@ -100,7 +100,10 @@ export function RuleImportCard({
     <Card className={cardClassName} variant="surface">
       <CardContent className="p-6 md:p-7 space-y-6">
         <div className="space-y-3">
-          <label className="font-semibold text-foreground" htmlFor="align-url">
+          <label
+            className="font-semibold text-foreground block mb-2"
+            htmlFor="align-url"
+          >
             Import AI rules (.mdc, .md, Align packs, etc.) directly from GitHub.
           </label>
           <div className="flex flex-col sm:flex-row gap-3">

@@ -399,9 +399,9 @@ export function AlignDetailPreview({
             height={4}
             className="-mx-6 -mt-6 rounded-t-xl mb-4"
           />
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-              <div className="min-w-0 flex-1 space-y-2">
+              <div className="min-w-0 flex-1 flex flex-col gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
                     {align.title || "Untitled align"}
@@ -421,12 +421,57 @@ export function AlignDetailPreview({
                   {align.description ||
                     `Use this AI ${align.kind || "rule"} in any agent format, including AGENTS.md, CLAUDE.md, Cursor, Copilot, Gemini and 20+ others.`}
                 </p>
-                {!isPack && relatedPacks.length > 0 && (
-                  <PackMembershipBadges packs={relatedPacks} className="pt-2" />
+                {(isPack || relatedPacks.length > 0) && (
+                  <div className="mt-auto space-y-2 pt-2">
+                    {!isPack && relatedPacks.length > 0 && (
+                      <PackMembershipBadges packs={relatedPacks} />
+                    )}
+                    {isPack && (
+                      <div className="space-y-2">
+                        {(() => {
+                          const count = relatedRules.length || 0;
+                          const label =
+                            count === 1
+                              ? "Includes 1 file:"
+                              : `Includes ${count} files:`;
+                          return (
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {label}
+                              {relatedLoading ? " (loading...)" : ""}
+                            </p>
+                          );
+                        })()}
+                        {relatedRules.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {relatedRules.map((rule) => (
+                              <Badge
+                                key={rule.id}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                <a
+                                  href={`/a/${rule.id}`}
+                                  className="hover:underline"
+                                >
+                                  {rule.title || rule.id}
+                                </a>
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          !relatedLoading && (
+                            <p className="text-sm text-muted-foreground m-0">
+                              No linked aligns yet.
+                            </p>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
-              <div className="flex flex-col items-start sm:items-end gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-col items-start sm:items-end gap-2.5 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <div className="flex items-center gap-2">
                     {isArchived || catalogPack || !display.externalUrl ? (
@@ -489,76 +534,28 @@ export function AlignDetailPreview({
                     </Badge>
                   )}
                 </div>
-                <CommunityContentNotice
-                  alignId={align.id}
-                  alignUrl={align.normalizedUrl || align.url}
-                  compact
-                  variant="inline"
-                  className="mt-1"
-                />
-                <div className="mt-3 rounded-lg border border-accent/30 bg-accent/5 p-3 w-full sm:w-[320px]">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Link2
-                        size={16}
-                        className="text-accent shrink-0"
-                        aria-hidden
-                      />
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {shareUrl.replace("https://", "")}
-                      </span>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="shrink-0 border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
-                      onClick={() => void copyShare(shareUrl)}
-                    >
-                      {shareCopied ? "Copied!" : "Copy Share Link"}
-                    </Button>
+                <div className="mt-3 rounded-lg border border-accent/30 bg-accent/5 p-2.5 space-y-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Link2
+                      size={16}
+                      className="text-accent shrink-0"
+                      aria-hidden
+                    />
+                    <span className="text-sm font-medium text-foreground font-mono truncate">
+                      {shareUrl.replace("https://", "")}
+                    </span>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full justify-center border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
+                    onClick={() => void copyShare(shareUrl)}
+                  >
+                    {shareCopied ? "Copied!" : "Copy Share Link"}
+                  </Button>
                 </div>
               </div>
             </div>
-
-            {isPack && (
-              <div className="space-y-2">
-                {(() => {
-                  const count = relatedRules.length || 0;
-                  const label =
-                    count === 1
-                      ? "Includes 1 file:"
-                      : `Includes ${count} files:`;
-                  return (
-                    <p className="text-sm text-muted-foreground m-0">
-                      {label}
-                      {relatedLoading ? " (loading...)" : ""}
-                    </p>
-                  );
-                })()}
-                {relatedRules.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {relatedRules.map((rule) => (
-                      <Badge
-                        key={rule.id}
-                        variant="outline"
-                        className="text-xs font-semibold"
-                      >
-                        <a href={`/a/${rule.id}`} className="hover:underline">
-                          {rule.title || rule.id}
-                        </a>
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  !relatedLoading && (
-                    <p className="text-sm text-muted-foreground m-0">
-                      No linked aligns yet.
-                    </p>
-                  )
-                )}
-              </div>
-            )}
 
             <hr className="border-t border-border my-6" />
             <div className="flex flex-col gap-4">
@@ -622,7 +619,7 @@ export function AlignDetailPreview({
 
               {canExport && installTabs.length > 0 ? (
                 <div className="space-y-4">
-                  <h3 className="text-base font-semibold text-foreground m-0">
+                  <h3 className="text-base font-semibold text-foreground m-0 mb-2">
                     {installTab === "new" ? "Install via CLI" : "Add via CLI"}
                   </h3>
                   {(() => {
@@ -667,23 +664,35 @@ export function AlignDetailPreview({
           <CodePreview
             filename={previewFilename}
             fileSelector={
-              isPack && packFiles.length > 0 ? (
-                <Select
-                  value={selectedPath}
-                  onValueChange={(value) => setSelectedPath(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px] max-w-full border border-border bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {packFiles.map((file) => (
-                      <SelectItem key={file.path} value={file.path}>
-                        {file.path} ({formatBytes(file.size)})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : undefined
+              <div className="flex items-center gap-3">
+                {isPack && packFiles.length > 0 ? (
+                  <Select
+                    value={selectedPath}
+                    onValueChange={(value) => setSelectedPath(value)}
+                  >
+                    <SelectTrigger className="w-full sm:w-auto sm:min-w-[220px] max-w-full border border-border bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packFiles.map((file) => (
+                        <SelectItem key={file.path} value={file.path}>
+                          {file.path} ({formatBytes(file.size)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className="text-sm font-medium text-foreground">
+                    {previewFilename}
+                  </span>
+                )}
+                <CommunityContentNotice
+                  alignId={align.id}
+                  alignUrl={align.normalizedUrl || align.url}
+                  compact
+                  variant="inline"
+                />
+              </div>
             }
             content={converting ? "Converting..." : previewText}
             loading={converting}
