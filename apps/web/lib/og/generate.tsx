@@ -31,7 +31,7 @@ const KINDS: Record<string, string> = {
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
-const COMMAND_PREFIX = "npx aligntrue add ";
+const COMMAND_PREFIX = "npx aligntrue ";
 const SOURCE_LABEL = "GitHub";
 
 // The font path is static and not influenced by user input; lint rule is a false positive here.

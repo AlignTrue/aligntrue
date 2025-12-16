@@ -34,6 +34,7 @@ import {
 } from "../utils/command-utilities.js";
 import { shouldUseInteractive } from "../utils/tty-helper.js";
 import { createSpinner } from "../utils/spinner.js";
+import { extractCatalogId, isCatalogId } from "../utils/catalog-resolver.js";
 
 import {
   scanForExistingRulesWithOverlap,
@@ -47,6 +48,7 @@ import {
 } from "./init/ruler-detector.js";
 import { addToGitignore } from "../utils/gitignore-helpers.js";
 import { createEmptyLockfile } from "../utils/lockfile-helpers.js";
+import { importFromCatalog } from "../utils/catalog-import.js";
 
 /**
  * Infer agent type from file path
@@ -404,11 +406,6 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
     description: "Comma-separated list of exporters (default: auto-detect)",
   },
   {
-    flag: "--source",
-    hasValue: true,
-    description: "Import rules from URL or path (skips auto-detect)",
-  },
-  {
     flag: "--no-starters",
     hasValue: false,
     description: "Skip creating default starter rules when no rules are found",
@@ -455,19 +452,19 @@ export async function init(args: string[] = []): Promise<void> {
     showStandardHelp({
       name: "init",
       description: "Initialize AlignTrue in a project",
-      usage: "aligntrue init [options]",
+      usage: "aligntrue init [options] [url-or-id]",
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue init",
         "aligntrue init --yes",
-        "aligntrue init --source https://github.com/org/rules",
-        "aligntrue init --source ./path/to/rules",
+        "aligntrue init https://github.com/org/rules",
+        "aligntrue init abc123defgh",
         "aligntrue init --non-interactive --exporters cursor,agents",
       ],
       notes: [
-        "- Without --source: auto-detects existing rules and imports them",
-        "- With --source: imports from URL/path (skips auto-detect)",
-        "- To keep sources connected for updates, use 'aligntrue add source <url>'",
+        "- Without URL/ID: auto-detects existing rules and imports them",
+        "- With URL/ID: imports from git or catalog (skips auto-detect)",
+        "- To keep sources connected for updates, use 'aligntrue add link <url>'",
         "- Creates .aligntrue/rules/ directory as the single source of truth",
       ],
     });
@@ -489,7 +486,8 @@ export async function init(args: string[] = []): Promise<void> {
     ? exportersArg.split(",").map((e) => e.trim())
     : undefined;
   const noSync = (parsed.flags["no-sync"] as boolean | undefined) || false;
-  const sourceArg = parsed.flags["source"] as string | undefined;
+  const positionalArg = parsed.positional[0];
+  const sourceArg = positionalArg ? (positionalArg as string) : undefined;
   const refArg = parsed.flags["ref"] as string | undefined;
   const skipStarters =
     (parsed.flags["no-starters"] as boolean | undefined) || false;
@@ -562,7 +560,7 @@ export async function init(args: string[] = []): Promise<void> {
     process.exit(0);
   }
 
-  // Step 1b: Check for Ruler migration opportunity (skip if --source provided)
+  // Step 1b: Check for Ruler migration opportunity (skip if explicit source provided)
   let rulerConfig: Partial<AlignTrueConfig> | undefined;
   if (!sourceArg && detectRulerProject(cwd)) {
     rulerConfig = await promptRulerMigration(cwd);
@@ -570,145 +568,197 @@ export async function init(args: string[] = []): Promise<void> {
 
   const finalMode: AlignTrueMode = mode ?? rulerConfig?.mode ?? "solo";
 
-  // Step 2: Get rules - either from --source or by scanning
+  // Step 2: Get rules - either from provided source/ID or by scanning
   const scanner = createSpinner({ disabled: nonInteractive });
   let rulesToWrite: RuleFile[] = [];
   let isFreshStart = false;
   let isFromExternalSource = false;
 
   if (sourceArg) {
-    // Import from specified source (skip auto-detect)
-    scanner.start(`Importing rules from ${sourceArg}...`);
-
-    const { resolveConflict } = await import("@aligntrue/core");
-    const { importRules } = await import("../utils/source-resolver.js");
     const rulesDir = join(paths.aligntrueDir, "rules");
 
-    const result = await importRules({
-      source: sourceArg,
-      ref: refArg,
-      cwd,
-      targetDir: rulesDir,
-    });
+    if (isCatalogId(sourceArg)) {
+      const catalogId = extractCatalogId(sourceArg);
+      const resolvedId = catalogId || sourceArg;
+      scanner.start(`Importing from catalog ${resolvedId}...`);
 
-    if (result.error) {
-      scanner.stop("Import failed");
+      const importResult = await importFromCatalog(resolvedId, rulesDir, cwd);
 
-      const { formatError } = await import("../utils/error-formatter.js");
-      const error: import("../utils/error-formatter.js").CLIError = {
-        title: "Import failed",
-        message: result.error,
-        code: "ERR_IMPORT_FAILED",
-      };
-      formatError(error);
-      exitWithError(1, `Import failed: ${result.error}`);
-    }
-
-    // Handle conflicts
-    if (result.conflicts.length > 0 && !nonInteractive) {
-      scanner.stop(`Found ${result.rules.length} rules (conflicts detected)`);
-
-      for (const conflict of result.conflicts) {
-        const choice = await clack.select({
-          message: `Rule "${conflict.filename}" already exists. What do you want to do?`,
-          options: [
-            {
-              value: "replace",
-              label: "Replace - Overwrite existing (backup saved)",
-            },
-            {
-              value: "keep-both",
-              label: "Keep both - Save incoming as new file",
-            },
-            { value: "skip", label: "Skip - Don't import this rule" },
-          ],
-        });
-
-        if (clack.isCancel(choice)) {
-          clack.cancel("Import cancelled");
-          process.exit(0);
-        }
-
-        const resolution = resolveConflict(
-          conflict,
-          choice as "replace" | "keep-both" | "skip",
-          cwd,
+      if (importResult.warnings.length > 0) {
+        const warningLines = importResult.warnings.map(
+          (w) => `  • ${w.id}: ${w.reason || "skipped"}`,
         );
-
-        // Update the rule's filename if needed
-        const rule = result.rules.find(
-          (r) => (r.relativePath || r.filename) === conflict.filename,
-        );
-        if (rule && resolution.resolution !== "skip") {
-          const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
-          const resolvedName = resolution.finalFilename;
-          const finalRelative =
-            /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
-              ? resolvedName
-              : join(baseDir, resolvedName);
-          const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
-            cwd,
-            rulesDir,
-          });
-          rule.filename = updatedPaths.filename;
-          rule.relativePath = updatedPaths.relativePath;
-          rule.path = updatedPaths.path;
-          if (resolution.backupPath) {
-            logMessage(
-              `Backed up existing rule to ${resolution.backupPath}`,
-              "info",
-              nonInteractive,
-            );
-          }
-        } else if (resolution.resolution === "skip") {
-          // Remove skipped rule from the list
-          const index = result.rules.findIndex(
-            (r) => (r.relativePath || r.filename) === conflict.filename,
+        if (nonInteractive) {
+          console.warn(
+            `Warnings while importing from catalog:\n${warningLines.join("\n")}`,
           );
-          if (index !== -1) {
-            result.rules.splice(index, 1);
-          }
+        } else {
+          clack.log.warn(
+            `Warnings while importing from catalog:\n${warningLines.join("\n")}`,
+          );
         }
       }
-    } else if (result.conflicts.length > 0) {
-      // Non-interactive: keep both by default
-      scanner.stop(`Found ${result.rules.length} rules`);
-      for (const conflict of result.conflicts) {
-        const resolution = resolveConflict(conflict, "keep-both", cwd);
-        const rule = result.rules.find(
-          (r) => (r.relativePath || r.filename) === conflict.filename,
+
+      rulesToWrite = importResult.rules;
+      isFromExternalSource = true;
+
+      scanner.stop(
+        `Imported ${rulesToWrite.length} rule${rulesToWrite.length === 1 ? "" : "s"} from catalog`,
+      );
+
+      if (rulesToWrite.length === 0) {
+        logMessage(
+          `No rules imported for catalog ID ${resolvedId}`,
+          "info",
+          nonInteractive,
         );
-        if (rule) {
-          const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
-          const resolvedName = resolution.finalFilename;
-          const finalRelative =
-            /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
-              ? resolvedName
-              : join(baseDir, resolvedName);
-          const updatedPaths = computeRulePaths(join(rulesDir, finalRelative), {
-            cwd,
-            rulesDir,
-          });
-          rule.filename = updatedPaths.filename;
-          rule.relativePath = updatedPaths.relativePath;
-          rule.path = updatedPaths.path;
+        if (skipStarters) {
+          isFreshStart = false;
+          rulesToWrite = [];
+        } else {
+          isFreshStart = true;
+          rulesToWrite = createStarterTemplates();
         }
       }
     } else {
-      scanner.stop(`Found ${result.rules.length} rules`);
-    }
+      // Import from git or local path (skip auto-detect)
+      scanner.start(`Importing rules from ${sourceArg}...`);
 
-    rulesToWrite = result.rules;
-    isFromExternalSource = true;
+      const { resolveConflict } = await import("@aligntrue/core");
+      const { importRules } = await import("../utils/source-resolver.js");
 
-    if (rulesToWrite.length === 0) {
-      logMessage(`No rules found at ${sourceArg}`, "info", nonInteractive);
-      if (skipStarters) {
-        isFreshStart = false;
-        rulesToWrite = [];
+      const result = await importRules({
+        source: sourceArg,
+        ref: refArg,
+        cwd,
+        targetDir: rulesDir,
+      });
+
+      if (result.error) {
+        scanner.stop("Import failed");
+
+        const { formatError } = await import("../utils/error-formatter.js");
+        const error: import("../utils/error-formatter.js").CLIError = {
+          title: "Import failed",
+          message: result.error,
+          code: "ERR_IMPORT_FAILED",
+        };
+        formatError(error);
+        exitWithError(1, `Import failed: ${result.error}`);
+      }
+
+      // Handle conflicts
+      if (result.conflicts.length > 0 && !nonInteractive) {
+        scanner.stop(`Found ${result.rules.length} rules (conflicts detected)`);
+
+        for (const conflict of result.conflicts) {
+          const choice = await clack.select({
+            message: `Rule "${conflict.filename}" already exists. What do you want to do?`,
+            options: [
+              {
+                value: "replace",
+                label: "Replace - Overwrite existing (backup saved)",
+              },
+              {
+                value: "keep-both",
+                label: "Keep both - Save incoming as new file",
+              },
+              { value: "skip", label: "Skip - Don't import this rule" },
+            ],
+          });
+
+          if (clack.isCancel(choice)) {
+            clack.cancel("Import cancelled");
+            process.exit(0);
+          }
+
+          const resolution = resolveConflict(
+            conflict,
+            choice as "replace" | "keep-both" | "skip",
+            cwd,
+          );
+
+          // Update the rule's filename if needed
+          const rule = result.rules.find(
+            (r) => (r.relativePath || r.filename) === conflict.filename,
+          );
+          if (rule && resolution.resolution !== "skip") {
+            const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+            const resolvedName = resolution.finalFilename;
+            const finalRelative =
+              /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
+                ? resolvedName
+                : join(baseDir, resolvedName);
+            const updatedPaths = computeRulePaths(
+              join(rulesDir, finalRelative),
+              {
+                cwd,
+                rulesDir,
+              },
+            );
+            rule.filename = updatedPaths.filename;
+            rule.relativePath = updatedPaths.relativePath;
+            rule.path = updatedPaths.path;
+            if (resolution.backupPath) {
+              logMessage(
+                `Backed up existing rule to ${resolution.backupPath}`,
+                "info",
+                nonInteractive,
+              );
+            }
+          } else if (resolution.resolution === "skip") {
+            // Remove skipped rule from the list
+            const index = result.rules.findIndex(
+              (r) => (r.relativePath || r.filename) === conflict.filename,
+            );
+            if (index !== -1) {
+              result.rules.splice(index, 1);
+            }
+          }
+        }
+      } else if (result.conflicts.length > 0) {
+        // Non-interactive: keep both by default
+        scanner.stop(`Found ${result.rules.length} rules`);
+        for (const conflict of result.conflicts) {
+          const resolution = resolveConflict(conflict, "keep-both", cwd);
+          const rule = result.rules.find(
+            (r) => (r.relativePath || r.filename) === conflict.filename,
+          );
+          if (rule) {
+            const baseDir = rule.relativePath ? dirname(rule.relativePath) : "";
+            const resolvedName = resolution.finalFilename;
+            const finalRelative =
+              /[\\/]/.test(resolvedName) || !baseDir || baseDir === "."
+                ? resolvedName
+                : join(baseDir, resolvedName);
+            const updatedPaths = computeRulePaths(
+              join(rulesDir, finalRelative),
+              {
+                cwd,
+                rulesDir,
+              },
+            );
+            rule.filename = updatedPaths.filename;
+            rule.relativePath = updatedPaths.relativePath;
+            rule.path = updatedPaths.path;
+          }
+        }
       } else {
-        isFreshStart = true;
-        rulesToWrite = createStarterTemplates();
+        scanner.stop(`Found ${result.rules.length} rules`);
+      }
+
+      rulesToWrite = result.rules;
+      isFromExternalSource = true;
+
+      if (rulesToWrite.length === 0) {
+        logMessage(`No rules found at ${sourceArg}`, "info", nonInteractive);
+        if (skipStarters) {
+          isFreshStart = false;
+          rulesToWrite = [];
+        } else {
+          isFreshStart = true;
+          rulesToWrite = createStarterTemplates();
+        }
       }
     }
   } else {

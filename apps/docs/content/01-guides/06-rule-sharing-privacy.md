@@ -333,7 +333,7 @@ Add a git source using the CLI or config:
 
 ```bash
 # Add as a connected source (pulls on sync)
-aligntrue add source git@github.com:yourusername/personal-rules.git --personal
+aligntrue add link git@github.com:yourusername/personal-rules.git --personal
 ```
 
 **Config:**
@@ -420,7 +420,7 @@ FAQs:
 Add the repository as a source to get ongoing updates:
 
 ```bash
-aligntrue add source https://github.com/username/shared-rules.git
+aligntrue add link https://github.com/username/shared-rules.git
 ```
 
 Or manually add to config:
@@ -551,7 +551,7 @@ Using CLI commands:
 aligntrue add git@github.com:yourusername/aligntrue-personal-rules.git
 
 # OR add as connected source (pulls updates on sync)
-aligntrue add source git@github.com:yourusername/aligntrue-personal-rules.git --personal
+aligntrue add link git@github.com:yourusername/aligntrue-personal-rules.git --personal
 
 # Add as push destination
 aligntrue add remote git@github.com:yourusername/aligntrue-personal-rules.git --personal

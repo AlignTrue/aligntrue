@@ -14,6 +14,11 @@ describe("agentOptions", () => {
     expect(original?.capabilities.cliExport).toBe(false);
   });
 
+  it("omits exporter for original since it is not CLI-exportable", () => {
+    const original = agentOptions.find((opt) => opt.id === "original");
+    expect(original?.exporter).toBeUndefined();
+  });
+
   it("marks aligntrue as non-CLI-exportable", () => {
     const aligntrue = agentOptions.find((opt) => opt.id === "aligntrue");
     expect(aligntrue?.capabilities.cliExport).toBe(false);

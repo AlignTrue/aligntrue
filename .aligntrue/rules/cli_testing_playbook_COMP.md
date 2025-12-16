@@ -628,8 +628,8 @@ grep "source:" .aligntrue/rules/testing.md || echo "FAIL: source field missing"
 grep "source_added:" .aligntrue/rules/testing.md || echo "FAIL: source_added field missing"
 
 # Test linked source
-aligntrue add source https://github.com/org/rules/security.md
-# Expected: Source added to config.yaml for continuous updates
+aligntrue add link https://github.com/org/rules/security.md
+# Expected: Link added to config.yaml for continuous updates
 
 # Verify config
 grep "security.md" .aligntrue/config.yaml || echo "FAIL: source not in config"
@@ -641,14 +641,14 @@ aligntrue add https://github.com/org/rules/testing.md
 
 # Test init with source
 cd /tmp/test-init-source
-aligntrue init --source https://github.com/org/rules --yes
+aligntrue init https://github.com/org/rules --yes
 # Expected: Rules imported, auto-detect skipped
 ```
 
 **Expected:**
 
 - One-time import copies rules to `.aligntrue/rules/`
-- `aligntrue add source <url>` adds source to config for continuous updates
+- `aligntrue add link <url>` adds link to config for continuous updates
 - Conflicts prompt for resolution with backup
 - `init --source` skips auto-detection
 
@@ -682,7 +682,7 @@ aligntrue add git@github.com:user/private-rules --no-sync
 # Test linked private source
 cd /tmp/test-private-linked
 aligntrue init --mode solo --yes
-aligntrue add source git@github.com:user/private-rules
+aligntrue add link git@github.com:user/private-rules
 # Expected:
 # - Source added to config with auto-gitignore
 # - "Run 'aligntrue sync' to pull rules" message
@@ -706,7 +706,7 @@ aligntrue sync
 - SSH URLs (`git@`, `ssh://`) auto-detected as personal sources
 - Personal source rules are auto-added to .gitignore (both source and exports)
 - Auto-sync happens after import (unless `--no-sync`)
-- Sources added with `aligntrue add source` get appropriate security flags
+- Links added with `aligntrue add link` get appropriate security flags
 - Frontmatter `gitignore: true` overrides source settings
 - Enhanced tips section shows security-aware guidance
 
@@ -1458,7 +1458,7 @@ cd /tmp/test-git-updates
 aligntrue init --yes --mode team
 
 # Add git source using HTTPS URL (from AlignTrue examples repo)
-aligntrue add source https://github.com/AlignTrue/examples --personal
+aligntrue add link https://github.com/AlignTrue/examples --personal
 aligntrue sync
 
 # Test update detection (branch reference checks daily)
@@ -2278,7 +2278,7 @@ Some commands require special setup or are destructive and may have lower covera
 - `doctor` - Health check command (requires workspace setup)
 - `remove` - Removes sources (requires configured sources)
 - `rules list` - Lists rules by agent (requires rules to be defined)
-- `add source` / `add remote` - New subcommands (covered in golden path tests)
+- `add link` / `add remote` - New subcommands (covered in golden path tests)
 
 Comprehensive coverage for these commands is provided by dedicated integration tests in `packages/cli/tests/integration/`. When adding or updating commands, verify related integration tests exist at `packages/cli/tests/` and that your command implementation is exported from `packages/cli/src/commands/index.ts`.
 

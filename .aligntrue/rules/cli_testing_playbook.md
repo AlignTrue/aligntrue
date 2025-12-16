@@ -146,7 +146,7 @@ Catalog packs (testing note):
    - Shows local rules directory?
    - Section counts accurate?
 
-2. Add an external source (one-time import; use `add source <url>` for linked sources):
+2. Add an external source (one-time import; use `add link <url>` for linked sources):
 
    ```bash
    $CLI add https://github.com/AlignTrue/examples/blob/main/aligns/global.md --yes

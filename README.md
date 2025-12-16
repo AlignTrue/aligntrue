@@ -35,7 +35,7 @@ Auto-detects agents, imports existing rules, or creates AGENTS.md. Generates and
 
 > **Start with existing rules?** Import from any git source:
 >
-> `aligntrue init --source https://github.com/org/rules`
+> `aligntrue init https://github.com/org/rules`
 >
 > Supports GitHub, GitLab, SSH URLs, version tags, and local paths.
 > [See all source options →](https://aligntrue.ai/docs/01-guides/04-external-sources)
@@ -58,7 +58,7 @@ aligntrue init --source https://github.com/your/rules
 aligntrue sync
 ```
 
-Import rules from GitHub. Use `aligntrue add source <url>` to keep a connected source for ongoing updates; use `aligntrue add <url>` for a one-time import. [More examples →](https://aligntrue.ai/docs/01-guides/04-external-sources#managing-sources)
+Import rules from GitHub. Use `aligntrue add link <url>` to keep a connected source for ongoing updates; use `aligntrue add <url>` for a one-time import. [More examples →](https://aligntrue.ai/docs/01-guides/04-external-sources#managing-sources)
 
 **Team mode (opt-in):**
 

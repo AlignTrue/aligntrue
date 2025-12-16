@@ -211,6 +211,10 @@ export function AlignDetailPreview({
       : "";
 
   const actionTabs = useMemo((): ActionTabConfig[] => {
+    const installTarget = align.url || shareUrl || align.id;
+    const existingCommand = `aligntrue add ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# Keep updated\naligntrue add link ${installTarget}\naligntrue sync${exporterFlag}`;
+    const newUsersCommand = `npm install -g aligntrue\naligntrue init ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# One-off (no install)\nnpx aligntrue init ${catalogPack ? align.id : installTarget}${exporterFlag}`;
+
     if (catalogPack) {
       return [
         {
@@ -221,17 +225,25 @@ export function AlignDetailPreview({
           command: shareUrl,
         },
         {
-          id: "add",
-          label: "Add Source",
+          id: "existing",
+          label: "Existing Users",
           description:
-            "Already using AlignTrue? Add this pack as a connected source and the CLI will fetch and sync all included rules.",
-          command: `aligntrue add ${align.id}`,
+            "Already using AlignTrue? Add this pack and optionally keep it linked for updates.",
+          command: existingCommand,
+          trackInstall: true,
+        },
+        {
+          id: "new",
+          label: "New Users",
+          description:
+            "New to AlignTrue? Install the CLI and initialize with this pack.",
+          command: newUsersCommand,
           trackInstall: true,
         },
       ];
     }
 
-    const tabs: ActionTabConfig[] = [
+    return [
       {
         id: "share",
         label: "Share Link",
@@ -239,33 +251,21 @@ export function AlignDetailPreview({
         command: shareUrl,
       },
       {
-        id: "global",
-        label: "Global Install",
-        description: `Install globally to manage ${itemLabel}s across projects.`,
-        command: `npm install -g aligntrue\naligntrue init --source ${align.url}${exporterFlag}`,
+        id: "new",
+        label: "New Users",
+        description: "New to AlignTrue? Install globally or run one-off.",
+        command: newUsersCommand,
         showDocsLink: true,
         trackInstall: true,
       },
       {
-        id: "temp",
-        label: "Temp Install",
-        description: "Quick one-off install. No global install required.",
-        command: `npx aligntrue init --source ${align.url}${exporterFlag}`,
+        id: "existing",
+        label: "Existing Users",
+        description: `Already using AlignTrue? Add one-time or link for updates.`,
+        command: existingCommand,
         trackInstall: true,
       },
     ];
-
-    if (!isArchived) {
-      tabs.push({
-        id: "source",
-        label: "Add Source",
-        description: `Already using AlignTrue? Add this ${itemLabel} as a connected source.`,
-        command: `aligntrue add source ${align.url}\naligntrue sync${exporterFlag}`,
-        trackInstall: true,
-      });
-    }
-
-    return tabs;
   }, [
     catalogPack,
     isArchived,

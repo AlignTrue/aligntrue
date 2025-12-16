@@ -8,7 +8,7 @@ Commands for adding and managing rule sources from git repositories and local pa
 
 ## `aligntrue add`
 
-Add rules from a git repository or local path. Default: copy rules to `.aligntrue/rules/`. Use `add source` subcommand to keep git sources connected for ongoing updates.
+Add rules from a git repository or local path. Default: copy rules to `.aligntrue/rules/`. Use `add link` subcommand to keep git sources connected for ongoing updates.
 
 **Usage:**
 
@@ -38,10 +38,10 @@ aligntrue add <git-url|path> [options]
 - Rules become your local copy
 - Source is not tracked
 
-**With `source` subcommand (track source):**
+**With `link` subcommand (track source):**
 
-- Use `aligntrue add source <url>` instead
-- Adds source to config for ongoing updates
+- Use `aligntrue add link <url>` instead
+- Adds link to config for ongoing updates
 - Rules sync with source on each `aligntrue sync`
 
 **Examples:**
@@ -53,8 +53,8 @@ aligntrue add https://github.com/org/rules
 # Copy from local path
 aligntrue add ./path/to/rules
 
-# Keep source connected for updates (use add source)
-aligntrue add source https://github.com/org/rules
+# Keep source connected for updates (use add link)
+aligntrue add link https://github.com/org/rules
 
 # Pin to specific version (one-time copy)
 aligntrue add https://github.com/org/rules --ref v2.0.0
@@ -90,18 +90,18 @@ Done
 - `1` - Invalid URL, failed import
 - `2` - System error (permissions, disk space)
 
-**See also:** [Remove command](#aligntrue-remove) to remove sources
+**See also:** [Remove command](#aligntrue-remove) to remove links
 
 ---
 
-## `aligntrue add source`
+## `aligntrue add link`
 
 Keep a git source connected for ongoing updates on each `aligntrue sync`.
 
 **Usage:**
 
 ```bash
-aligntrue add source <git-url> [options]
+aligntrue add link <git-url> [options]
 ```
 
 **Arguments:**
@@ -129,13 +129,13 @@ aligntrue add source <git-url> [options]
 
 ```bash
 # Connect a shared source
-aligntrue add source https://github.com/org/rules
+aligntrue add link https://github.com/org/rules
 
 # Pin to tag
-aligntrue add source https://github.com/org/rules --ref v2.0.0
+aligntrue add link https://github.com/org/rules --ref v2.0.0
 
 # Team mode: write to personal config
-aligntrue add source https://github.com/org/rules --personal
+aligntrue add link https://github.com/org/rules --personal
 ```
 
 **Exit codes:** `0` success, `1` invalid URL, `2` system error
@@ -183,14 +183,14 @@ aligntrue add remote git@github.com:me/aligntrue-rules.git --personal
 
 ---
 
-## `aligntrue remove source`
+## `aligntrue remove link`
 
 Remove a linked source from your configuration.
 
 **Usage:**
 
 ```bash
-aligntrue remove source <url> [options]
+aligntrue remove link <url> [options]
 ```
 
 **Arguments:**
@@ -214,11 +214,11 @@ aligntrue remove source <url> [options]
 **Examples:**
 
 ```bash
-# Remove a source
-aligntrue remove source https://github.com/org/rules
+# Remove a link
+aligntrue remove link https://github.com/org/rules
 
 # Non-interactive removal (CI)
-aligntrue remove source https://github.com/org/rules --yes
+aligntrue remove link https://github.com/org/rules --yes
 
 # Then sync to apply changes
 aligntrue sync

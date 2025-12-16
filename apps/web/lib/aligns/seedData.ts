@@ -44,7 +44,7 @@ function makeRuleContent(title: string, topic: string, stack: string) {
 
 - Enforces ${topic} patterns for ${stack} projects.
 - Ready to export to Cursor, AGENTS.md, Claude, Gemini, Copilot, and more.
-- Includes quickstart commands for aligntrue sync and add source.
+- Includes quickstart commands for aligntrue sync and add link.
 `;
 }
 

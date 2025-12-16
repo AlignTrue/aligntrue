@@ -515,7 +515,7 @@ const scenarios: TeamScenario[] = [
       try {
         runCommand("aligntrue init --yes --mode team", workspace);
         runCommand(
-          "aligntrue add source https://github.com/AlignTrue/examples --personal",
+          "aligntrue add link https://github.com/AlignTrue/examples --personal",
           workspace,
         );
         runCommand("aligntrue sync", workspace);

@@ -7,7 +7,7 @@ export type AgentOption = {
   path: string;
   label: string;
   format: TargetFormat;
-  exporter: string;
+  exporter?: string;
   capabilities: AgentCapabilities;
 };
 
@@ -25,7 +25,6 @@ const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
       path: "(as authored)",
       label: "Original (as authored)",
       format: "original",
-      exporter: "original",
       capabilities: { cliExport: false },
     },
   ],
@@ -175,7 +174,10 @@ export const agentOptions: AgentOption[] = SUPPORTED_AGENT_IDS.map((id) => {
   const path = override.path ?? "AGENTS.md";
   const label = override.label ?? `${name} (${path})`;
   const format = override.format ?? "align-md";
-  const exporter = override.exporter ?? id;
   const capabilities = { ...defaultCapabilities, ...override.capabilities };
+  const exporter =
+    capabilities.cliExport === false
+      ? override.exporter
+      : (override.exporter ?? id);
   return { id, name, path, label, format, exporter, capabilities };
 });

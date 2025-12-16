@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import { buildCommandRegistry, generateHelpText } from "./commands/manifest.js";
 import { exitWithError } from "./utils/command-utilities.js";
 import { AlignTrueError } from "./utils/error-types.js";
+import { isCatalogId } from "./utils/catalog-resolver.js";
 
 // Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -39,6 +40,15 @@ async function main() {
 
   // Build command registry from manifest
   const COMMANDS = buildCommandRegistry();
+
+  // Shortcut: allow catalog IDs directly (`aligntrue <id>` routes to add)
+  if (command && isCatalogId(command)) {
+    const addHandler = COMMANDS.get("add");
+    if (addHandler) {
+      await addHandler([command, ...commandArgs]);
+      return;
+    }
+  }
 
   // Check if user provided a flag-like argument as command
   if (command && (command.startsWith("--") || command.startsWith("-"))) {

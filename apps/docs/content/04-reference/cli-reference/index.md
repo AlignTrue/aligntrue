@@ -24,7 +24,7 @@ New to AlignTrue? Start here:
 Browse commands by category:
 
 - **[Core commands](./core)** - Essential daily workflow (init, sync, check, status, doctor)
-- **[Sources](./sources)** - Manage rule imports and git sources (add, add source, add remote, remove, sources)
+- **[Sources](./sources)** - Manage rule imports and git sources (add, add link, add remote, remove, sources)
 - **[Exporters](./exporters)** - Manage agents (list, enable, disable, detect, ignore)
 - **[Plugs](./plugs)** - Stack-agnostic variable management (list, resolve, set)
 - **[Overlays](./overlays)** - Customize rules without forking (add, status, diff, remove)
@@ -45,9 +45,9 @@ Browse commands by category:
 | `aligntrue status`          | Show current status and exporters          | [Core](./core#aligntrue-status)                      |
 | `aligntrue doctor`          | Run health checks and verification         | [Core](./core#aligntrue-doctor)                      |
 | `aligntrue add`             | One-time import from git URL or local path | [Sources](./sources#aligntrue-add)                   |
-| `aligntrue add source`      | Keep a git source connected for updates    | [Sources](./sources#aligntrue-add-source)            |
+| `aligntrue add link`        | Keep a git source connected for updates    | [Sources](./sources#aligntrue-add-link)              |
 | `aligntrue add remote`      | Add a push destination for rules           | [Sources](./sources#aligntrue-add-remote)            |
-| `aligntrue remove source`   | Remove a source                            | [Sources](./sources#aligntrue-remove-source)         |
+| `aligntrue remove link`     | Remove a link                              | [Sources](./sources#aligntrue-remove-link)           |
 | `aligntrue sources`         | Manage rule sources                        | [Sources](./sources#aligntrue-sources)               |
 | `aligntrue exporters`       | Manage exporters                           | [Exporters](./exporters#aligntrue-exporters)         |
 | `aligntrue plugs list`      | List slots and fills                       | [Plugs](./plugs#aligntrue-plugs-list)                |

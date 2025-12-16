@@ -143,9 +143,9 @@ EXECUTION PROTOCOL:
    - aligntrue backup cleanup: Test cleanup with retention_days and minimum_keep
    - aligntrue remotes push: Test remote push to configured destinations
    - aligntrue remotes status: Test remote status display with file assignments
-   - aligntrue add source/remote: Test new subcommand structure
+   - aligntrue add link/remote: Test new subcommand structure
    - aligntrue rules list: Test rule listing by agent
-   - aligntrue remove: Test source removal from config
+   - aligntrue remove: Test link removal from config
    - aligntrue uninstall: Test clean removal with options
 5. Capture all outputs and error messages
 6. Validate error messages include what/why/how

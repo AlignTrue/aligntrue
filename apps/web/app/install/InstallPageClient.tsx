@@ -93,7 +93,7 @@ const faqs = [
   {
     question: "Does AlignTrue require network access?",
     answer:
-      "No, it is local-first. Network is only used when you opt to pull rules from remote git sources (e.g., aligntrue init --source <repo>).",
+      "No, it is local-first. Network is only used when you opt to pull rules from remote git sources (e.g., aligntrue init <repo>).",
   },
 ] as const;
 

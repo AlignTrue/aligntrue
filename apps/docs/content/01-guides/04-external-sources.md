@@ -17,7 +17,7 @@ Import rules from a git repository or local path. Rules are copied to `.aligntru
 
 ```bash
 # During init (new project)
-aligntrue init --source https://github.com/org/rules
+aligntrue init https://github.com/org/rules
 
 # After init (existing project)
 aligntrue add https://github.com/org/rules
@@ -34,11 +34,11 @@ aligntrue add https://github.com/org/rules
 
 ### Connected sources (live updates)
 
-Use `aligntrue add source` to add a connected source. Rules will be fetched on each `aligntrue sync`:
+Use `aligntrue add link` to add a connected source. Rules will be fetched on each `aligntrue sync`:
 
 ```bash
 # Add as connected source (updates on sync)
-aligntrue add source https://github.com/org/rules
+aligntrue add link https://github.com/org/rules
 ```
 
 **When to use connected sources:**
@@ -47,7 +47,7 @@ aligntrue add source https://github.com/org/rules
 - Your personal rules stored in a separate repo
 - Community rule packs you want to track
 
-> **Team mode:** `aligntrue add source` and `aligntrue add remote` prompt for which config to update (personal vs. team). In non-interactive mode, pass `--personal` or `--shared`; otherwise the command errors.
+> **Team mode:** `aligntrue add link` and `aligntrue add remote` prompt for which config to update (personal vs. team). In non-interactive mode, pass `--personal` or `--shared`; otherwise the command errors.
 
 ### Quick reference
 
@@ -56,7 +56,7 @@ aligntrue add source https://github.com/org/rules
 | New project, auto-detect existing rules | `aligntrue init`                    |
 | New project, import from git repo       | `aligntrue init --source <git-url>` |
 | Existing project, one-time import       | `aligntrue add <git-url>`           |
-| Existing project, add as source         | `aligntrue add source <git-url>`    |
+| Existing project, add as source         | `aligntrue add link <git-url>`      |
 | Add push destination (remote)           | `aligntrue add remote <git-url>`    |
 | Find untracked agent files              | `aligntrue sources detect`          |
 | Import detected files                   | `aligntrue sources detect --import` |
@@ -351,7 +351,7 @@ aligntrue sync
 Use the remove command:
 
 ```bash
-aligntrue remove source https://github.com/org/rules
+aligntrue remove link https://github.com/org/rules
 aligntrue sync
 ```
 
@@ -366,7 +366,7 @@ For git sources, pin to a specific version:
 aligntrue add https://github.com/org/rules --ref v1.0.0
 
 # Add as connected source with version
-aligntrue add source https://github.com/org/rules --ref v1.0.0
+aligntrue add link https://github.com/org/rules --ref v1.0.0
 
 # Branch
 aligntrue add https://github.com/org/rules --ref develop
@@ -425,7 +425,7 @@ Keep your rules in a repo and use them everywhere:
 
 ```bash
 # In each project, add as a connected source
-aligntrue add source https://github.com/me/my-rules
+aligntrue add link https://github.com/me/my-rules
 
 # Update rules in your repo, then in any project:
 aligntrue sync  # Pulls latest
@@ -435,7 +435,7 @@ aligntrue sync  # Pulls latest
 
 ```bash
 # Add team standards as a connected source
-aligntrue add source https://github.com/company/standards
+aligntrue add link https://github.com/company/standards
 
 # Add local overrides in .aligntrue/rules/
 # Local rules take precedence over linked sources
@@ -479,7 +479,7 @@ sources:
 
 ## How import works
 
-When you use `aligntrue add` or `aligntrue init --source`, the import process:
+When you use `aligntrue add` or `aligntrue init <url|id>`, the import process:
 
 - **Pack manifests removed:** CLI no longer resolves `.align.yaml`. Import pulls markdown/XML files directly.
 - **Targets any file or folder**: Local paths (relative or absolute), remote files, or directories

@@ -6,7 +6,7 @@
  * - Clean removal without affecting other sources
  *
  * Usage:
- *   aligntrue remove source https://github.com/org/rules
+ *   aligntrue remove link https://github.com/org/rules
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -59,27 +59,27 @@ export async function remove(args: string[]): Promise<void> {
   if (help) {
     showStandardHelp({
       name: "remove",
-      description: "Remove an align source from your configuration",
-      usage: "aligntrue remove source <url>",
+      description: "Remove an align link from your configuration",
+      usage: "aligntrue remove link <url>",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue remove source https://github.com/org/rules  # Remove git source",
-        "aligntrue remove source https://example.com/rules.md  # Remove URL source",
+        "aligntrue remove link https://github.com/org/rules  # Remove git link",
+        "aligntrue remove link https://example.com/rules.md  # Remove URL link",
       ],
     });
     return;
   }
 
-  // Expect subcommand "source" for clarity and symmetry with add
+  // Expect subcommand "link" for clarity and symmetry with add
   const subcommand = positional[0];
   const urlArg = positional[1];
 
-  if (subcommand !== "source") {
+  if (subcommand !== "link") {
     exitWithError(
       {
         title: "Invalid usage",
-        message: "Use: aligntrue remove source <url>",
-        hint: "To remove a linked source, run: aligntrue remove source <git-url>",
+        message: "Use: aligntrue remove link <url>",
+        hint: "To remove a linked source, run: aligntrue remove link <git-url>",
         code: "INVALID_SUBCOMMAND",
       },
       2,
@@ -88,7 +88,7 @@ export async function remove(args: string[]): Promise<void> {
 
   if (!urlArg) {
     exitWithError(
-      Errors.missingArgument("url", "aligntrue remove source <url>"),
+      Errors.missingArgument("url", "aligntrue remove link <url>"),
       2,
     );
   }
@@ -113,7 +113,7 @@ export async function remove(args: string[]): Promise<void> {
   // Confirm removal in interactive mode unless skipped
   if (isTTY() && !skipConfirmations) {
     const confirmed = await clack.confirm({
-      message: `Remove source ${urlToRemove}?`,
+      message: `Remove link ${urlToRemove}?`,
       active: "Remove",
       inactive: "Cancel",
     });
@@ -126,7 +126,7 @@ export async function remove(args: string[]): Promise<void> {
 
   // Show spinner
   const spinner = createManagedSpinner({ disabled: !isTTY() });
-  spinner.start("Removing align source...");
+  spinner.start("Removing align link...");
 
   try {
     // Load config
@@ -154,12 +154,12 @@ export async function remove(args: string[]): Promise<void> {
 
     // Check if sources exist
     if (!config.sources || config.sources.length === 0) {
-      spinner.stop("No sources configured", 1);
+      spinner.stop("No links configured", 1);
 
       if (isTTY()) {
-        clack.log.warn("No sources are configured. Nothing to remove.");
+        clack.log.warn("No links are configured. Nothing to remove.");
       } else {
-        console.log("\nWarning: No sources are configured. Nothing to remove.");
+        console.log("\nWarning: No links are configured. Nothing to remove.");
       }
       return;
     }
@@ -177,20 +177,20 @@ export async function remove(args: string[]): Promise<void> {
 
     // Check if anything was removed
     if (config.sources.length === originalLength) {
-      spinner.stop("Source not found", 1);
+      spinner.stop("Link not found", 1);
       const sourcesList = config.sources.map((source) =>
         source.type === "git" ? `git: ${source.url}` : `local: ${source.path}`,
       );
       exitWithError(
         {
-          title: "Source not found",
-          message: `No source found matching: ${urlToRemove}`,
+          title: "Link not found",
+          message: `No link found matching: ${urlToRemove}`,
           details:
             sourcesList.length > 0
               ? ["Current sources:", ...sourcesList]
               : ["No sources are configured."],
-          hint: "Check the URL and run 'aligntrue sources list' to view configured sources.",
-          code: "ERR_SOURCE_NOT_FOUND",
+          hint: "Check the URL and run 'aligntrue sources list' to view configured links.",
+          code: "ERR_LINK_NOT_FOUND",
         },
         2,
       );
@@ -199,10 +199,10 @@ export async function remove(args: string[]): Promise<void> {
     // Patch config - only update sources, preserve everything else
     await patchConfig({ sources: config.sources }, configPath);
 
-    spinner.stop("Align source removed");
+    spinner.stop("Align link removed");
 
     // Consolidated outro
-    const outroMessage = `Removed source: ${urlToRemove}\nRun 'aligntrue sync' to update agent files.`;
+    const outroMessage = `Removed link: ${urlToRemove}\nRun 'aligntrue sync' to update agent files.`;
 
     if (isTTY()) {
       clack.outro(outroMessage);
@@ -222,7 +222,7 @@ export async function remove(args: string[]): Promise<void> {
 
     exitWithError({
       title: "Remove failed",
-      message: `Failed to remove align source: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Failed to remove align link: ${error instanceof Error ? error.message : String(error)}`,
       hint: "Check the configuration file and try again.",
       code: "REMOVE_FAILED",
     });

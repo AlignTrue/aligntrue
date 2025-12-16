@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING: Catalog shortcut and command renames** - `aligntrue <id>` now installs catalog IDs directly; `aligntrue init <url|id>` replaces `--source`; `aligntrue add link <url>` replaces `add source`; `aligntrue remove link <url>` replaces `remove source`
 - Packs are catalog-only: create packs in the catalog UI; CLI no longer resolves `.align.yaml` manifests or installs packs
 - Align Catalog docs updated to describe catalog-native packs and download-only behavior for packs
 - Terminology: user-facing name is **Align pack**; internal references to “catalog pack” map to the same pack type
-- CLI remove command is now `aligntrue remove source <url>` with `--yes` support; help text and docs now reflect the source-only scope
 
 ### Removed
 
@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `aligntrue remove source` now honors `--yes` for non-interactive runs and respects `--config` when selecting the config file
+- `aligntrue remove link` now honors `--yes` for non-interactive runs and respects `--config` when selecting the config file
 - Bulk import results now show pack titles and filename links for imported rules, improving mobile readability
 - Catalog-created packs render correctly with aggregated rule content, accurate author/labels, and CLI messaging
 - Rule import conflict resolution now preserves workspace-relative paths (RuleFile.path) and nested relative paths, preventing metadata corruption when resolving conflicts

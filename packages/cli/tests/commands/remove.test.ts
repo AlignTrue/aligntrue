@@ -99,7 +99,7 @@ describe("remove command", () => {
   it("skips confirmation when --yes is provided", async () => {
     const { remove } = await import("../../src/commands/remove.js");
 
-    await remove(["source", sourceUrl, "--yes"]);
+    await remove(["link", sourceUrl, "--yes"]);
 
     expect(confirmMock).not.toHaveBeenCalled();
     expect(patchConfigMock).toHaveBeenCalledTimes(1);
@@ -114,7 +114,7 @@ describe("remove command", () => {
     confirmMock.mockResolvedValueOnce(false);
     const { remove } = await import("../../src/commands/remove.js");
 
-    await remove(["source", sourceUrl]);
+    await remove(["link", sourceUrl]);
 
     expect(confirmMock).toHaveBeenCalled();
     expect(cancelMock).toHaveBeenCalledWith("Removal cancelled");

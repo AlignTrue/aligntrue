@@ -574,7 +574,7 @@ EXAMPLES
 NOTE
   To add external rules:
     aligntrue add <git-url>       # Copy rules locally
-    aligntrue add source <git-url> # Keep connected for updates
+    aligntrue add link <git-url> # Keep connected for updates
   
   For more information: aligntrue sources --help
 `);

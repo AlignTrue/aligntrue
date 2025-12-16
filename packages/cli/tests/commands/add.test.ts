@@ -88,10 +88,10 @@ describe("add command", () => {
   });
 
   describe("subcommand parsing", () => {
-    it("should parse 'add source' subcommand", async () => {
+    it("should parse 'add link' subcommand", async () => {
       const { add } = await import("../../src/commands/add.js");
 
-      await add(["source", "https://github.com/test/rules"]);
+      await add(["link", "https://github.com/test/rules"]);
 
       // Verify source was added to config
       const configContent = readFileSync(
@@ -107,10 +107,10 @@ describe("add command", () => {
       });
     });
 
-    it("should parse 'add source --personal' flag", async () => {
+    it("should parse 'add link --personal' flag", async () => {
       const { add } = await import("../../src/commands/add.js");
 
-      await add(["source", "https://github.com/test/rules", "--personal"]);
+      await add(["link", "https://github.com/test/rules", "--personal"]);
 
       // Verify source was added with personal flag
       const configContent = readFileSync(

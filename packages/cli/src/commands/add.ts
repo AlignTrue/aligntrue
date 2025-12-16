@@ -1,13 +1,13 @@
 /**
- * Add command - Add rules, sources, or remotes
+ * Add command - Add rules, links (connected sources), or remotes
  *
  * Usage:
- *   aligntrue add <url>                     # One-time copy to .aligntrue/rules/
- *   aligntrue add source <url>              # Add as connected source (gets updates on sync)
- *   aligntrue add source <url> --personal   # Mark source as personal
- *   aligntrue add remote <url>              # Add as push destination
- *   aligntrue add remote <url> --personal   # Set as remotes.personal
- *   aligntrue add remote <url> --shared     # Set as remotes.shared
+ *   aligntrue add <url>                    # One-time copy to .aligntrue/rules/
+ *   aligntrue add link <url>               # Add as connected link (gets updates on sync)
+ *   aligntrue add link <url> --personal    # Mark link as personal
+ *   aligntrue add remote <url>             # Add as push destination
+ *   aligntrue add remote <url> --personal  # Set as remotes.personal
+ *   aligntrue add remote <url> --shared    # Set as remotes.shared
  */
 
 import { existsSync, mkdirSync, readdirSync, rmSync } from "fs";
@@ -21,7 +21,6 @@ import {
   resolveConflict,
   detectConflicts,
   isTeamModeActive,
-  validateRelativePath,
   computeRulePaths,
   type AlignTrueConfig,
   type ConflictInfo,
@@ -203,33 +202,37 @@ export async function add(args: string[]): Promise<void> {
   if (help) {
     showStandardHelp({
       name: "add",
-      description: "Add rules, sources, or remotes",
-      usage: "aligntrue add [source|remote] <url> [options]",
+      description: "Add rules, links, or remotes",
+      usage: "aligntrue add [link|remote] <url> [options]",
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue add abc123defgh                         # Catalog pack or rule by ID",
         "aligntrue add https://aligntrue.ai/a/abc123defgh  # Catalog pack or rule by URL",
         "aligntrue add https://github.com/org/rules           # One-time copy",
-        "aligntrue add source https://github.com/org/rules    # Add as source (updates on sync)",
-        "aligntrue add source <url> --personal                # Personal source",
+        "aligntrue add link https://github.com/org/rules     # Add as link (updates on sync)",
+        "aligntrue add link <url> --personal                 # Personal link",
         "aligntrue add remote https://github.com/me/backup    # Add as push destination",
         "aligntrue add remote <url> --personal                # Set as remotes.personal",
         "aligntrue add remote <url> --shared                  # Set as remotes.shared",
       ],
       notes: [
         "- Default (no subcommand): copies rules to .aligntrue/rules/ (one-time import)",
-        "- 'add source': adds to config sources (gets updates on sync)",
+        "- 'add link': adds to config sources (gets updates on sync)",
         "- 'add remote': adds to config remotes (pushes rules on sync)",
-        "- To remove: 'aligntrue remove source <url>'",
+        "- To remove: 'aligntrue remove link <url>'",
       ],
     });
     return;
   }
 
-  // Check for subcommand (source or remote)
+  // Check for subcommand (link/source or remote)
   const firstArg = positional[0];
   const subcommand =
-    firstArg === "source" || firstArg === "remote" ? firstArg : null;
+    firstArg === "remote"
+      ? "remote"
+      : firstArg === "link" || firstArg === "source"
+        ? "link"
+        : null;
   const urlArg = subcommand ? positional[1] : positional[0];
 
   // Validate URL provided
@@ -243,7 +246,7 @@ export async function add(args: string[]): Promise<void> {
       exitWithError(
         Errors.missingArgument(
           "url",
-          "aligntrue add <url> or aligntrue add source/remote <url>",
+          "aligntrue add <url> or aligntrue add link/remote <url>",
         ),
         2,
       );
@@ -302,9 +305,9 @@ export async function add(args: string[]): Promise<void> {
   const sourceType = detectSourceType(baseUrl);
   const privateSource = isPrivateSource(baseUrl);
 
-  if (subcommand === "source") {
-    // Add as connected source
-    await addSource({
+  if (subcommand === "link") {
+    // Add as connected link (alias: source)
+    await addLink({
       baseUrl,
       sourceType,
       gitRef,
@@ -363,7 +366,7 @@ async function determineTargetConfig(options: {
   configPath: string;
   personal: boolean;
   shared: boolean;
-  operationType: "source" | "remote";
+  operationType: "link" | "remote";
 }): Promise<{ targetPath: string; isPersonalConfig: boolean }> {
   const { cwd, configPath, personal, shared, operationType } = options;
   const paths = getAlignTruePaths(cwd);
@@ -413,11 +416,11 @@ async function determineTargetConfig(options: {
   }
 
   // Non-interactive team mode without flags: error
-  // For sources, --shared is not supported (only --personal or edit config.team.yaml directly)
+  // For links, --shared is not supported (only --personal or edit config.team.yaml directly)
   // For remotes, both --personal and --shared are valid
   const hintMessage =
-    operationType === "source"
-      ? `Use --personal for personal config, or edit config.team.yaml directly for shared sources`
+    operationType === "link"
+      ? `Use --personal for personal config, or edit config.team.yaml directly for shared links`
       : `Use: aligntrue add ${operationType} <url> --personal (or --shared)`;
 
   exitWithError(
@@ -434,10 +437,7 @@ async function determineTargetConfig(options: {
   return { targetPath: configPath, isPersonalConfig: true };
 }
 
-/**
- * Add a source to config (gets updates on sync)
- */
-async function addSource(options: {
+async function addLink(options: {
   baseUrl: string;
   sourceType: "git" | "local";
   gitRef?: string | undefined;
@@ -459,185 +459,85 @@ async function addSource(options: {
   } = options;
 
   const cwd = process.cwd();
-
-  // Determine target config file
   const { targetPath, isPersonalConfig } = await determineTargetConfig({
     cwd,
     configPath,
-    personal: personal || privateSource, // Private sources default to personal
+    personal,
     shared: false,
-    operationType: "source",
+    operationType: "link",
   });
 
-  spinner.start("Adding source...");
+  spinner.start("Adding align link...");
 
-  try {
-    // Load or create config
-    let config: AlignTrueConfig;
-
-    if (existsSync(targetPath)) {
-      config = await loadConfigWithValidation(targetPath);
-    } else {
-      // Create minimal config
-      config = {
-        version: undefined,
-        mode: "solo",
-        sources: [{ type: "local", path: ".aligntrue/rules" }],
-        exporters: ["agents"],
-      };
-    }
-
-    // Initialize sources array if not exists
-    if (!config.sources) {
-      config.sources = [];
-    }
-
-    // Check if source already exists
-    const existingSource = config.sources.find((s) => {
-      if (s.type === "git" && sourceType === "git") {
-        return s.url === baseUrl;
-      }
-      if (s.type === "local" && sourceType === "local") {
-        return s.path === baseUrl;
-      }
-      return false;
-    });
-
-    if (existingSource) {
-      spinner.stop("Source already exists", 1);
-
-      if (isTTY()) {
-        clack.log.warn(
-          `This source is already in your configuration:\n  ${baseUrl}`,
-        );
-        clack.log.info(
-          `To update it, edit ${targetPath} directly or remove and re-add.`,
-        );
-      } else {
-        console.log(`\nWarning: This source already exists: ${baseUrl}`);
-      }
-      return;
-    }
-
-    if (sourceType === "local") {
-      const validation = validateRelativePath(baseUrl, "Source path");
-      if (!validation.valid) {
-        const firstError = validation.errors?.[0];
-        const pathPrefix =
-          firstError?.path && firstError.path !== "(root)"
-            ? `${firstError.path}: `
-            : "";
-
-        exitWithError(
-          {
-            title: "Invalid source path",
-            message: firstError?.message
-              ? `${pathPrefix}${firstError.message}`
-              : "Source path is invalid",
-            hint:
-              firstError?.hint ||
-              "Use a relative path like .aligntrue/rules or ./my-rules",
-            code: "INVALID_SOURCE_PATH",
-          },
-          2,
-        );
-      }
-    }
-
-    // Build source configuration
-    let newSource: {
-      type: string;
-      url?: string;
-      path?: string;
-      ref?: string;
-      personal?: boolean;
-      gitignore?: boolean;
+  // Load or create config
+  let config: AlignTrueConfig;
+  const targetExists = existsSync(targetPath);
+  if (targetExists) {
+    config = await loadConfigWithValidation(targetPath);
+  } else {
+    config = {
+      version: undefined,
+      mode: "solo",
+      sources: [{ type: "local", path: ".aligntrue/rules" }],
+      exporters: ["agents"],
     };
+    mkdirSync(dirname(targetPath), { recursive: true });
+    await saveConfig(config, targetPath);
+  }
 
-    if (sourceType === "git") {
-      newSource = {
-        type: "git",
-        url: baseUrl,
-      };
-      if (gitRef) {
-        newSource.ref = gitRef;
-      }
-      if (gitPath) {
-        newSource.path = gitPath;
-      }
-      // Mark as personal if flag or SSH source (only in personal config)
-      if ((personal || privateSource) && isPersonalConfig) {
-        newSource.personal = true;
-      }
-      // Auto-set gitignore for SSH sources
-      if (privateSource) {
-        newSource.gitignore = true;
-      }
-    } else {
-      newSource = {
-        type: "local",
-        path: baseUrl,
-      };
-      if (personal && isPersonalConfig) {
-        newSource.personal = true;
-      }
+  const sources: NonNullable<AlignTrueConfig["sources"]> = config.sources ?? [];
+
+  type SourceEntry = NonNullable<AlignTrueConfig["sources"]>[number];
+  const newSource: SourceEntry =
+    sourceType === "git"
+      ? {
+          type: "git",
+          url: baseUrl,
+          ...(gitRef ? { ref: gitRef } : {}),
+          ...(gitPath ? { path: gitPath } : {}),
+          ...(personal || isPersonalConfig ? { personal: true } : {}),
+          ...(privateSource || personal ? { gitignore: true } : {}),
+        }
+      : {
+          type: "local",
+          path: baseUrl,
+        };
+
+  const exists = sources.some((source) => {
+    if (source.type !== newSource.type) {
+      return false;
     }
-
-    // Add to sources (preserving existing sources)
-    const updatedSources = [...(config.sources || [])];
-    updatedSources.push(
-      newSource as NonNullable<AlignTrueConfig["sources"]>[number],
-    );
-
-    // Patch config - only update sources, preserve everything else
-    await patchConfig({ sources: updatedSources }, targetPath);
-
-    spinner.stop("Source added");
-
-    // Show which config was updated
-    const configType = isPersonalConfig ? "personal" : "team";
-    if (isTTY()) {
-      clack.log.success(`Added to ${configType} config: ${targetPath}`);
-    }
-
-    // Show notes
-    if (privateSource && isTTY()) {
-      clack.log.info(
-        "Private source detected (SSH authentication)\n" +
-          "  Source marked as personal. Rules will be auto-gitignored on sync.",
-      );
-    } else if (personal && isTTY()) {
-      clack.log.info(
-        "Source marked as personal (scope: personal for all rules from this source)",
+    if (source.type === "git" && newSource.type === "git") {
+      return (
+        source.url === newSource.url &&
+        (source.ref ?? "") === (newSource.ref ?? "") &&
+        (source.path ?? "") === (newSource.path ?? "")
       );
     }
+    if (source.type === "local" && newSource.type === "local") {
+      return source.path === newSource.path;
+    }
+    return false;
+  });
 
-    // Consolidated outro
-    const sourceDesc =
-      sourceType === "git"
-        ? `${baseUrl}${gitRef ? ` (${gitRef})` : ""}`
-        : baseUrl;
-
-    const outroMessage = `Added source: ${sourceDesc}\nRun 'aligntrue sync' to pull rules.`;
-
+  if (exists) {
+    spinner.stop("Link already exists", 1);
     if (isTTY()) {
-      clack.outro(outroMessage);
-    } else {
-      console.log("\n" + outroMessage);
+      clack.log.info("Link already exists in configuration.");
     }
-  } catch (error) {
-    spinner.stop("Failed to add source", 1);
+    return;
+  }
 
-    if (error && typeof error === "object" && "code" in error) {
-      throw error;
-    }
+  const updatedSources = [...sources, newSource];
+  await patchConfig({ sources: updatedSources }, targetPath);
 
-    exitWithError({
-      title: "Add source failed",
-      message: `Failed to add source: ${error instanceof Error ? error.message : String(error)}`,
-      hint: "Check the URL format and try again.",
-      code: "ADD_SOURCE_FAILED",
-    });
+  spinner.stop("Align link added");
+
+  const outroMessage = `Added link: ${baseUrl}\nRun 'aligntrue sync' to pull updates.`;
+  if (isTTY()) {
+    clack.outro(outroMessage);
+  } else {
+    console.log("\n" + outroMessage);
   }
 }
 
@@ -1133,7 +1033,7 @@ async function copyRulesToLocal(options: {
     }
 
     tips.push("To remove: delete the files and run 'aligntrue sync'");
-    tips.push("To add as connected source: use 'aligntrue add source <url>'");
+    tips.push("To add as connected link: use 'aligntrue add link <url>'");
 
     if (!syncPerformed) {
       tips.push("To apply to agents: run 'aligntrue sync'");
@@ -1332,7 +1232,7 @@ async function importCatalogCommand(options: {
 
   const tips: string[] = [
     "To remove: delete the files and run 'aligntrue sync'",
-    "To add as connected source: use 'aligntrue add source <github-url>'",
+    "To add as connected link: use 'aligntrue add link <github-url>'",
   ];
   if (!syncPerformed) {
     tips.push("To apply to agents: run 'aligntrue sync'");
