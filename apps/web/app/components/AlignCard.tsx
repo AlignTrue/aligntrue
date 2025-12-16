@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { HashBar } from "@/components/HashBar";
+import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
 import type { AlignSummary } from "@/lib/aligns/transforms";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
 type AlignCardProps = {
   align: AlignSummary;
@@ -13,6 +17,8 @@ type AlignCardProps = {
 
 export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
   const isPack = align.kind === "pack";
+  const { copied, copy } = useCopyToClipboard();
+  const shareUrl = `${BASE_URL}/a/${align.id}`;
 
   return (
     <Card
@@ -83,9 +89,20 @@ export function AlignCard({ align, onSelect, isSelected }: AlignCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 items-center justify-between gap-3">
-        <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">
-          ID: {align.id}
-        </span>
+        <button
+          type="button"
+          onClick={() => void copy(shareUrl)}
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-accent bg-accent/5 rounded px-2 py-0.5 border border-accent/40 hover:bg-accent/10 hover:text-accent transition-colors cursor-pointer"
+          title="Copy share link"
+          aria-live="polite"
+        >
+          {copied ? (
+            <Check size={12} aria-hidden />
+          ) : (
+            <Link2 size={12} aria-hidden />
+          )}
+          Copy share link
+        </button>
         <div className="flex items-center gap-2">
           {onSelect && (
             <Button

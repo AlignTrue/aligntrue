@@ -5,7 +5,7 @@
  * of the .aligntrue/ directory.
  */
 
-import { join, dirname, relative, basename } from "path";
+import { join, dirname, relative } from "path";
 import {
   existsSync,
   mkdirSync,
@@ -15,7 +15,6 @@ import {
   rmSync,
   cpSync,
   statSync,
-  mkdtempSync,
 } from "fs";
 import micromatch from "micromatch";
 import { globSync } from "glob";
@@ -54,16 +53,42 @@ export class BackupManager {
 
     // Generate timestamp for this backup (with process ID and sequence for uniqueness)
     // Format: 2025-11-18T23-54-39-705-1a2b-0 (timestamp + PID in base36 + sequence)
-    backupSequence++;
-    const baseTimestamp =
-      new Date()
-        .toISOString()
-        .replace(/:/g, "-")
-        .replace(/\./g, "-")
-        .replace(/Z$/, "") +
-      `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
-    const backupDir = mkdtempSync(join(backupsDir, `${baseTimestamp}-`));
-    const timestamp = basename(backupDir);
+    let timestamp = "";
+    let backupDir = "";
+    let createdBackupDir = false;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      backupSequence++;
+      timestamp =
+        new Date()
+          .toISOString()
+          .replace(/:/g, "-")
+          .replace(/\./g, "-")
+          .replace(/Z$/, "") +
+        `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
+      backupDir = join(backupsDir, timestamp);
+
+      try {
+        // Avoid randomness: this name is the backup key and should be predictable.
+        mkdirSync(backupDir, { recursive: false });
+        createdBackupDir = true;
+        break;
+      } catch (err) {
+        const code =
+          err && typeof err === "object" && "code" in err
+            ? String((err as { code?: unknown }).code)
+            : null;
+        if (code === "EEXIST") {
+          // Extremely unlikely (PID+sequence), but retry deterministically.
+          continue;
+        }
+        throw err;
+      }
+    }
+    if (!createdBackupDir) {
+      throw new Error(
+        "Failed to create backup directory (too many name collisions)",
+      );
+    }
 
     // Collect files to backup (everything except .backups/)
     const files: string[] = [];
