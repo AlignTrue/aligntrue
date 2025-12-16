@@ -366,9 +366,10 @@ export function AlignDetailPreview({
             content: file.content,
           }))
         : packFiles.map((file) => {
+            const path = file.path || "rules.md";
             const converted = convertContent(file.content, agent);
-            const dir = file.path.includes("/")
-              ? file.path.slice(0, file.path.lastIndexOf("/"))
+            const dir = path.includes("/")
+              ? path.slice(0, path.lastIndexOf("/"))
               : "";
             const zipPath = dir
               ? `${dir}/${converted.filename}`

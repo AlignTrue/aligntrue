@@ -75,17 +75,21 @@ export async function remove(args: string[]): Promise<void> {
   const urlArg = positional[1];
 
   if (subcommand !== "source") {
-    exitWithError({
-      title: "Invalid usage",
-      message: "Use: aligntrue remove source <url>",
-      hint: "To remove a linked source, run: aligntrue remove source <git-url>",
-      code: "INVALID_SUBCOMMAND",
-    });
+    exitWithError(
+      {
+        title: "Invalid usage",
+        message: "Use: aligntrue remove source <url>",
+        hint: "To remove a linked source, run: aligntrue remove source <git-url>",
+        code: "INVALID_SUBCOMMAND",
+      },
+      2,
+    );
   }
 
   if (!urlArg) {
     exitWithError(
       Errors.missingArgument("url", "aligntrue remove source <url>"),
+      2,
     );
   }
 
@@ -95,12 +99,15 @@ export async function remove(args: string[]): Promise<void> {
 
   // Check if config exists
   if (!existsSync(configPath)) {
-    exitWithError({
-      title: "Config not found",
-      message: `Configuration file not found: ${configPath}`,
-      hint: "Run 'aligntrue init' to create a configuration file.",
-      code: "CONFIG_NOT_FOUND",
-    });
+    exitWithError(
+      {
+        title: "Config not found",
+        message: `Configuration file not found: ${configPath}`,
+        hint: "Run 'aligntrue init' to create a configuration file.",
+        code: "CONFIG_NOT_FOUND",
+      },
+      2,
+    );
   }
 
   // Confirm removal in interactive mode unless skipped
