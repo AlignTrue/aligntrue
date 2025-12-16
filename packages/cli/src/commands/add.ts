@@ -458,6 +458,33 @@ async function addLink(options: {
     spinner,
   } = options;
 
+  // Validate link input: allow git URLs and explicit local paths, but reject ambiguous strings
+  if (sourceType === "local") {
+    const looksLikeExplicitPath =
+      baseUrl.startsWith("./") ||
+      baseUrl.startsWith("../") ||
+      baseUrl.startsWith("/");
+
+    if (!looksLikeExplicitPath) {
+      exitWithError(
+        {
+          title: "Invalid URL for add link",
+          message: `"${baseUrl}" is not a recognized git URL.`,
+          hint: [
+            "Supported formats for 'add link':",
+            "  • GitHub/GitLab: https://github.com/org/repo",
+            "  • SSH: git@github.com:org/repo.git",
+            "",
+            "For local paths, use 'add link ./path' with a leading './', '../', or '/'",
+            "Or copy rules directly: 'aligntrue add ./local-rules'",
+          ].join("\n"),
+          code: "INVALID_LINK_URL",
+        },
+        2,
+      );
+    }
+  }
+
   const cwd = process.cwd();
   const { targetPath, isPersonalConfig } = await determineTargetConfig({
     cwd,
