@@ -9,13 +9,20 @@ describe("agentOptions", () => {
     expect(optionIds).toEqual(SUPPORTED_AGENT_IDS);
   });
 
+  it("marks original as non-CLI-exportable", () => {
+    const original = agentOptions.find((opt) => opt.id === "original");
+    expect(original?.capabilities.cliExport).toBe(false);
+  });
+
   it("marks aligntrue as non-CLI-exportable", () => {
     const aligntrue = agentOptions.find((opt) => opt.id === "aligntrue");
     expect(aligntrue?.capabilities.cliExport).toBe(false);
   });
 
   it("defaults other agents to cliExport true", () => {
-    const others = agentOptions.filter((opt) => opt.id !== "aligntrue");
+    const others = agentOptions.filter(
+      (opt) => opt.id !== "aligntrue" && opt.id !== "original",
+    );
     expect(others.every((opt) => opt.capabilities.cliExport)).toBe(true);
   });
 });

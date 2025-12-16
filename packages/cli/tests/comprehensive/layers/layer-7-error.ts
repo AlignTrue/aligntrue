@@ -23,10 +23,10 @@ const tests: ErrorTest[] = [
   {
     name: "Invalid command shows helpful error",
     command: "aligntrue invalid-cmd",
-    expectedExitCode: 1,
+    expectedExitCode: 2,
     validation: (output, exitCode) => ({
       passed:
-        exitCode === 1 &&
+        exitCode === 2 &&
         (output.includes("Command not implemented") || output.includes("not")),
       error: !output.includes("not") ? "Error message not helpful" : undefined,
     }),
@@ -34,7 +34,7 @@ const tests: ErrorTest[] = [
   {
     name: "Missing required argument for add command",
     command: "aligntrue add",
-    expectedExitCode: 1,
+    expectedExitCode: 2,
     validation: (output) => ({
       passed:
         output.includes("required") ||
@@ -46,7 +46,7 @@ const tests: ErrorTest[] = [
   {
     name: "Non-existent command error is clear",
     command: "aligntrue nonexistent-command",
-    expectedExitCode: 1,
+    expectedExitCode: 2,
     validation: (output) => ({
       passed:
         output.includes("not implemented") || output.includes("Command not"),

@@ -40,7 +40,7 @@ const scenarios: TestScenario[] = [
   {
     name: "Invalid command shows helpful error",
     command: "aligntrue invalid-command",
-    expectedExitCode: 1,
+    expectedExitCode: 2,
     expectedOutput: /Command not implemented|not found/i,
   },
 ];

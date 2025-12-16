@@ -135,6 +135,7 @@ Body
 
   it("maps supported agents to expected filenames", () => {
     const expectations: Record<AgentId, string> = {
+      original: "rules.md",
       aligntrue: "rules.md",
       all: "AGENTS.md",
       cursor: "rules.mdc",
