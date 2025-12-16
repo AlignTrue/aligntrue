@@ -299,6 +299,7 @@ async function handleOverlapDetection(
   if (clack.isCancel(choice)) {
     clack.cancel("Run 'aligntrue init' when you're ready to start.");
     process.exit(0);
+    return { rules, importAll: false };
   }
 
   if (choice === "all") {
@@ -557,6 +558,7 @@ export async function init(args: string[] = []): Promise<void> {
         clack.outro(message);
       }
       process.exit(0);
+      return;
     }
   }
 
@@ -671,6 +673,7 @@ export async function init(args: string[] = []): Promise<void> {
           if (clack.isCancel(choice)) {
             clack.cancel("Import cancelled");
             process.exit(0);
+            return;
           }
 
           const resolution = resolveConflict(
@@ -855,6 +858,7 @@ export async function init(args: string[] = []): Promise<void> {
     if (clack.isCancel(confirm) || !confirm) {
       clack.cancel("Run 'aligntrue init' when you're ready to start.");
       process.exit(0);
+      return;
     }
   }
 
@@ -910,6 +914,7 @@ export async function init(args: string[] = []): Promise<void> {
     if (clack.isCancel(selected)) {
       clack.cancel("Run 'aligntrue init' when you're ready to start.");
       process.exit(0);
+      return;
     }
 
     selectedExporters = selected as string[];
