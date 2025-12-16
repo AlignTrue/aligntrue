@@ -60,18 +60,20 @@ export async function remove(args: string[]): Promise<void> {
     showStandardHelp({
       name: "remove",
       description: "Remove an align link from your configuration",
-      usage: "aligntrue remove link <url>",
+      usage: "aligntrue remove link <url>  (alias: source)",
       args: ARG_DEFINITIONS,
       examples: [
         "aligntrue remove link https://github.com/org/rules  # Remove git link",
         "aligntrue remove link https://example.com/rules.md  # Remove URL link",
+        "aligntrue remove source https://github.com/org/rules  # Legacy alias",
       ],
     });
     return;
   }
 
-  // Expect subcommand "link" for clarity and symmetry with add
-  const subcommand = positional[0];
+  // Expect subcommand "link"; accept legacy alias "source" for backwards compatibility
+  const subcommandRaw = positional[0];
+  const subcommand = subcommandRaw === "source" ? "link" : subcommandRaw;
   const urlArg = positional[1];
 
   if (subcommand !== "link") {
@@ -79,7 +81,7 @@ export async function remove(args: string[]): Promise<void> {
       {
         title: "Invalid usage",
         message: "Use: aligntrue remove link <url>",
-        hint: "To remove a linked source, run: aligntrue remove link <git-url>",
+        hint: "To remove a linked source, run: aligntrue remove link <git-url> (alias: aligntrue remove source <git-url>)",
         code: "INVALID_SUBCOMMAND",
       },
       2,
@@ -88,7 +90,10 @@ export async function remove(args: string[]): Promise<void> {
 
   if (!urlArg) {
     exitWithError(
-      Errors.missingArgument("url", "aligntrue remove link <url>"),
+      Errors.missingArgument(
+        "url",
+        "aligntrue remove link <url> (alias: aligntrue remove source <url>)",
+      ),
       2,
     );
   }
