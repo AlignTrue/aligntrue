@@ -703,6 +703,9 @@ function main() {
     const results = scenarios.map((scenario) => {
       const result = runScenario(scenario, workspace);
       console.log(`  ${result.passed ? "✓ PASS" : "✗ FAIL"}\n`);
+      if (!result.passed && result.error) {
+        console.log(`    Error: ${result.error}\n`);
+      }
       return { scenario, result };
     });
 
