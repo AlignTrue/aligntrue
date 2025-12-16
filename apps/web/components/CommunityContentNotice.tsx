@@ -5,6 +5,11 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 type CommunityContentNoticeProps = {
@@ -36,41 +41,41 @@ export function CommunityContentNotice({
 
   if (variant === "inline") {
     return (
-      <TooltipProvider delayDuration={100}>
-        <div className={cn("flex items-center gap-2", textClass, className)}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info
-                size={12}
-                className="text-muted-foreground shrink-0 cursor-help"
-                aria-label="Community content"
-              />
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start">
-              Community-submitted content — review before using.
-            </TooltipContent>
-          </Tooltip>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            aria-label="Community content info"
+            className={cn(
+              "inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-muted/60 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
+              className,
+            )}
+          >
+            <Info size={14} className="shrink-0" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent side="top" align="start" className="w-72 text-xs">
+          <p className="mb-2 text-muted-foreground">
+            Community-submitted content — review before using.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 font-medium">
             <a
               href={learnMoreHref}
-              className="text-muted-foreground hover:text-foreground hover:underline underline-offset-4 whitespace-nowrap"
+              className="text-foreground hover:underline underline-offset-4"
             >
-              Community content
+              Learn more
             </a>
-            <span aria-hidden className="text-muted-foreground/80 px-0.5">
-              •
-            </span>
             <a
               href={reportHref}
-              className="text-muted-foreground hover:text-foreground hover:underline underline-offset-4"
+              className="text-foreground hover:underline underline-offset-4"
               target="_blank"
               rel="noreferrer"
             >
               Report
             </a>
           </div>
-        </div>
-      </TooltipProvider>
+        </PopoverContent>
+      </Popover>
     );
   }
 

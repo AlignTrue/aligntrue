@@ -560,19 +560,28 @@ export function AlignDetailPreview({
                         </SelectContent>
                       </Select>
                       {formatWarning.message && (
+                        // Show a compact indicator with tooltip; label reflects warning type
+                        // mixed  -> Mixed formats (author provided multiple formats)
+                        // transform -> Format conversion (content will be converted to selection)
                         <TooltipProvider delayDuration={100}>
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground cursor-help">
-                                <Info size={14} />
-                                Mixed formats
-                              </span>
-                            </TooltipTrigger>
+                            {(() => {
+                              const label =
+                                formatWarning.type === "mixed"
+                                  ? "Mixed formats"
+                                  : "Format conversion";
+                              return (
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                                    <Info size={14} />
+                                    {label}
+                                  </span>
+                                </TooltipTrigger>
+                              );
+                            })()}
                             <TooltipContent className="max-w-xs space-y-2">
                               <p className="text-sm leading-snug">
-                                This pack has multiple formats. AlignTrue
-                                simplifies to a single source. All rules work
-                                with any agent you select.
+                                {formatWarning.message}
                               </p>
                               <a
                                 href="/docs/03-concepts/align-packs#mixed-format-packs"

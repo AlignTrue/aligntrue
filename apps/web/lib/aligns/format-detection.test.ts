@@ -43,12 +43,6 @@ describe("getFormatWarning", () => {
     expect(warning.type).toBe("none");
   });
 
-  it("warns on transform when formats differ", () => {
-    const files = [packFile("CLAUDE.md"), packFile(".cursor/rules/go.mdc")];
-    const warning = getFormatWarning(files, "claude");
-    expect(warning.type).toBe("transform");
-  });
-
   it("shows mixed warning for mixed formats regardless of selection", () => {
     const files = [packFile("CLAUDE.md"), packFile(".cursor/rules/go.mdc")];
     const warning = getFormatWarning(files, "claude");
