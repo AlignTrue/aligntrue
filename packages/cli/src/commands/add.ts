@@ -458,26 +458,6 @@ async function addLink(options: {
     spinner,
   } = options;
 
-  // Require git-style URLs for connected links; reject unparseable strings that default to local
-  if (sourceType === "local") {
-    exitWithError(
-      {
-        title: "Invalid URL for add link",
-        message: `"${baseUrl}" is not a recognized git URL.`,
-        hint: [
-          "Supported formats for 'add link':",
-          "  • GitHub/GitLab: https://github.com/org/repo",
-          "  • SSH: git@github.com:org/repo.git",
-          "",
-          "For local paths, use 'add link ./path' with a leading './' or '/'",
-          "Or copy rules directly: 'aligntrue add ./local-rules'",
-        ].join("\n"),
-        code: "INVALID_LINK_URL",
-      },
-      2,
-    );
-  }
-
   const cwd = process.cwd();
   const { targetPath, isPersonalConfig } = await determineTargetConfig({
     cwd,

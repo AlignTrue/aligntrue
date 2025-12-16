@@ -212,7 +212,8 @@ export function AlignDetailPreview({
 
   const actionTabs = useMemo((): ActionTabConfig[] => {
     const installTarget = align.url || shareUrl || align.id;
-    const existingCommand = `aligntrue add ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# Keep updated\naligntrue add link ${installTarget}\naligntrue sync${exporterFlag}`;
+    const linkTarget = catalogPack ? align.id : installTarget;
+    const existingCommand = `aligntrue add ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# Keep updated\naligntrue add link ${linkTarget}\naligntrue sync${exporterFlag}`;
     const newUsersCommand = `npm install -g aligntrue\naligntrue init ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# One-off (no install)\nnpx aligntrue init ${catalogPack ? align.id : installTarget}${exporterFlag}`;
 
     if (catalogPack) {
