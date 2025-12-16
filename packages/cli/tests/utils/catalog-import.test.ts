@@ -10,7 +10,7 @@ vi.mock("../../src/utils/catalog-client.js", () => ({
 }));
 
 describe("catalog-import", () => {
-  const testDir = join(__dirname, "..", "..", "..", "temp-catalog-import");
+  const testDir = join(__dirname, "..", "tmp", "catalog-import");
   const rulesDir = join(testDir, ".aligntrue", "rules");
 
   beforeEach(() => {
