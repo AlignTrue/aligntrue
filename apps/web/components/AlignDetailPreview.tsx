@@ -306,10 +306,14 @@ export function AlignDetailPreview({
           const filename = isPack
             ? selectedFile?.path || "rules.md"
             : singleFilename || "rules.md";
+          const lastSegment = filename.split("/").pop() ?? filename;
+          const extension = lastSegment.includes(".")
+            ? (lastSegment.split(".").pop() ?? "md")
+            : "md";
           const converted: ConvertedContent = {
             text: selectedContent,
             filename,
-            extension: filename.split(".").pop() ?? "md",
+            extension,
           };
           const next = new Map(prev);
           next.set(cacheKey, converted);
