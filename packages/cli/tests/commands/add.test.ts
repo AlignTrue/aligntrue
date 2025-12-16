@@ -212,6 +212,36 @@ describe("add command", () => {
         code: "INVALID_OPTIONS",
       });
     });
+
+    it("should reject non-git URLs for add link", async () => {
+      vi.resetModules();
+
+      vi.doMock("../../src/utils/error-formatter.js", () => ({
+        exitWithError: vi.fn((error) => {
+          throw error;
+        }),
+      }));
+
+      const { add } = await import("../../src/commands/add.js");
+
+      await expect(async () => {
+        await add(["link", "not-a-valid-url"]);
+      }).rejects.toMatchObject({
+        code: "INVALID_LINK_URL",
+      });
+
+      // Config should remain unchanged (only default local source)
+      const configContent = readFileSync(
+        join(aligntrueDir, "config.yaml"),
+        "utf-8",
+      );
+      const config = yaml.parse(configContent);
+      expect(config.sources).toHaveLength(1);
+      expect(config.sources[0]).toEqual({
+        type: "local",
+        path: ".aligntrue/rules",
+      });
+    });
   });
 
   describe("source already exists", () => {
