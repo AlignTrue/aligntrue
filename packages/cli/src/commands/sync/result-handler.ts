@@ -274,9 +274,8 @@ export async function handleSyncResult(
         });
 
         if (exportersWithIgnoreDisabled.length > 0) {
-          const { getAgentIgnoreSpec, removeAlignTruePatterns } = await import(
-            "@aligntrue/core/agent-ignore"
-          );
+          const { getAgentIgnoreSpec, removeAlignTruePatterns } =
+            await import("@aligntrue/core/agent-ignore");
           for (const agentName of exportersWithIgnoreDisabled) {
             const spec = getAgentIgnoreSpec(agentName);
             if (spec) {

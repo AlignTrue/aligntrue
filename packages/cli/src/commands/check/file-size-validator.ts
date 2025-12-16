@@ -22,12 +22,10 @@ export async function validateFileOrganization(
   const warnings: string[] = [];
 
   try {
-    const { analyzeFiles, getLargeFiles } = await import(
-      "../../utils/file-size-detector.js"
-    );
-    const { DEFAULT_THRESHOLDS } = await import(
-      "../../utils/file-size-detector.js"
-    );
+    const { analyzeFiles, getLargeFiles } =
+      await import("../../utils/file-size-detector.js");
+    const { DEFAULT_THRESHOLDS } =
+      await import("../../utils/file-size-detector.js");
 
     // In new architecture, analyze .aligntrue/rules/*.md files
     const rulesDir = join(cwd, ".aligntrue", "rules");

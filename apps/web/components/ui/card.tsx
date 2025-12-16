@@ -13,8 +13,7 @@ const cardVariantStyles: Record<CardVariant, string> = {
 };
 
 export interface CardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    React.PropsWithChildren {
+  extends React.HTMLAttributes<HTMLDivElement>, React.PropsWithChildren {
   variant?: CardVariant;
 }
 

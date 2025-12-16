@@ -434,9 +434,8 @@ async function teamEnable(
     }
 
     // Create empty lockfile immediately (for new setup or re-enable)
-    const { createEmptyLockfile } = await import(
-      "../utils/lockfile-helpers.js"
-    );
+    const { createEmptyLockfile } =
+      await import("../utils/lockfile-helpers.js");
     const lockfileResult = await createEmptyLockfile(process.cwd(), "team");
 
     if (!lockfileResult.success && lockfileResult.error) {

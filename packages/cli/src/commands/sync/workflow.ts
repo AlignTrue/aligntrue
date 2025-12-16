@@ -227,12 +227,10 @@ export async function executeSyncWorkflow(
     !options.dryRun
   ) {
     try {
-      const { generateLockfile, writeLockfile } = await import(
-        "@aligntrue/core/lockfile"
-      );
-      const { loadRulesDirectory, getAlignTruePaths } = await import(
-        "@aligntrue/core"
-      );
+      const { generateLockfile, writeLockfile } =
+        await import("@aligntrue/core/lockfile");
+      const { loadRulesDirectory, getAlignTruePaths } =
+        await import("@aligntrue/core");
 
       const paths = getAlignTruePaths(cwd);
       const rules = await loadRulesDirectory(paths.rules, cwd);

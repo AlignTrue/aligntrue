@@ -700,9 +700,8 @@ This rule tests that drift detection passes after sync.
       }
 
       // Import drift detection
-      const { detectDriftForConfig } = await import(
-        "@aligntrue/core/team/drift.js"
-      );
+      const { detectDriftForConfig } =
+        await import("@aligntrue/core/team/drift.js");
 
       // Run drift detection
       const driftResult = await detectDriftForConfig({

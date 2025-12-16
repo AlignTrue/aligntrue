@@ -520,9 +520,8 @@ async function configSet(
     // Auto-generate lockfile when switching to team mode
     if (changingToTeam) {
       const cwd = process.cwd();
-      const { ensureLockfileExists } = await import(
-        "../utils/lockfile-helpers.js"
-      );
+      const { ensureLockfileExists } =
+        await import("../utils/lockfile-helpers.js");
       const { loadConfig } = await import("@aligntrue/core");
 
       console.log(""); // Blank line

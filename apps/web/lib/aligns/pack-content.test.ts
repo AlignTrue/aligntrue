@@ -15,9 +15,8 @@ vi.mock("./content-cache", () => ({
 }));
 
 const { findSeedContent } = await import("./seedData");
-const { fetchRawWithCache, getCachedContent, setCachedContent } = await import(
-  "./content-cache"
-);
+const { fetchRawWithCache, getCachedContent, setCachedContent } =
+  await import("./content-cache");
 
 function makeAlign(
   id: string,

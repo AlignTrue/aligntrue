@@ -480,9 +480,8 @@ async function detectSources(flags: Record<string, unknown>): Promise<void> {
       }
 
       // Import using the existing scanner (disable overlap detection for explicit import)
-      const { scanForExistingRulesWithOverlap } = await import(
-        "./init/rule-importer.js"
-      );
+      const { scanForExistingRulesWithOverlap } =
+        await import("./init/rule-importer.js");
       const scanResult = await scanForExistingRulesWithOverlap(cwd, {
         detectOverlap: false,
       });

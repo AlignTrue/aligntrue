@@ -134,8 +134,8 @@ async function setCachedToken(token: CachedToken): Promise<void> {
 export function hasGitHubAppConfig(): boolean {
   return Boolean(
     process.env.GITHUB_APP_ID &&
-      process.env.GITHUB_APP_INSTALLATION_ID &&
-      process.env.GITHUB_APP_PRIVATE_KEY,
+    process.env.GITHUB_APP_INSTALLATION_ID &&
+    process.env.GITHUB_APP_PRIVATE_KEY,
   );
 }
 

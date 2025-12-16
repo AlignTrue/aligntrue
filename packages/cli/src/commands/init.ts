@@ -307,9 +307,8 @@ async function handleOverlapDetection(
 
   if (choice === "all") {
     // User wants all files - combine rules with duplicates converted to rules
-    const { scanForExistingRulesWithOverlap: rescan } = await import(
-      "./init/rule-importer.js"
-    );
+    const { scanForExistingRulesWithOverlap: rescan } =
+      await import("./init/rule-importer.js");
     const allResult = await rescan(cwd, { detectOverlap: false });
     clack.log.info("Importing all files as separate rules.");
     return { rules: allResult.rules, importAll: true };

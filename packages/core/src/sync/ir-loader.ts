@@ -283,9 +283,8 @@ export async function loadIR(
   } else if (ext === ".md" || ext === ".markdown") {
     // Parse markdown with optional YAML frontmatter
     try {
-      const { parseNaturalMarkdown } = await import(
-        "../parsing/natural-markdown.js"
-      );
+      const { parseNaturalMarkdown } =
+        await import("../parsing/natural-markdown.js");
       const parsed = parseNaturalMarkdown(content);
 
       // Convert to Align format

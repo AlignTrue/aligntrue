@@ -717,12 +717,10 @@ async function checkAgentsWithCache(
   if (options.dryRun) {
     return;
   }
-  const { loadDetectionCache, saveDetectionCache } = await import(
-    "@aligntrue/core"
-  );
-  const { detectAgentsWithValidation, shouldWarnAboutDetection } = await import(
-    "../../utils/detect-agents.js"
-  );
+  const { loadDetectionCache, saveDetectionCache } =
+    await import("@aligntrue/core");
+  const { detectAgentsWithValidation, shouldWarnAboutDetection } =
+    await import("../../utils/detect-agents.js");
 
   const detection = detectAgentsWithValidation(
     cwd,

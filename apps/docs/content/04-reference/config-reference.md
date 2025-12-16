@@ -262,6 +262,7 @@ Drift enforcement happens in CI using `aligntrue drift --gates`.
 modules:
   lockfile: true # Enable lockfile generation
 
+
 # CI enforcement:
 # aligntrue drift --gates  # Fails CI if drift detected
 ```

@@ -173,9 +173,8 @@ describe("add command", () => {
 
     it("should use one-time copy mode when no subcommand", async () => {
       const { add } = await import("../../src/commands/add.js");
-      const { importRules } = await import(
-        "../../src/utils/source-resolver.js"
-      );
+      const { importRules } =
+        await import("../../src/utils/source-resolver.js");
 
       await add(["./local/path", "--no-sync"]);
 

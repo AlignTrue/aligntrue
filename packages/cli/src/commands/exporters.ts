@@ -39,9 +39,8 @@ function getExportersPath(): string {
   try {
     // Try to resolve exporters package at runtime
     // This works with npm global installs, symlinks, and dev environments
-    const exportersPackage = require.resolve(
-      "@aligntrue/exporters/package.json",
-    );
+    const exportersPackage =
+      require.resolve("@aligntrue/exporters/package.json");
     const exportersRoot = dirname(exportersPackage);
     return join(exportersRoot, "dist");
   } catch {

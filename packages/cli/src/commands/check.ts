@@ -312,9 +312,8 @@ export async function check(args: string[]): Promise<void> {
     overlayWarnings = overlayResult.warnings;
 
     // Step 5: Check file organization (warnings only, non-blocking)
-    const { validateFileOrganization } = await import(
-      "./check/file-size-validator.js"
-    );
+    const { validateFileOrganization } =
+      await import("./check/file-size-validator.js");
     const fileOrgWarnings = await validateFileOrganization(
       config,
       process.cwd(),

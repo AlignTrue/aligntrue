@@ -401,9 +401,8 @@ describe("json-utils", () => {
     });
 
     it("uses same hashing as computeHash", async () => {
-      const { canonicalizeJson, computeHash } = await import(
-        "../src/canonicalize.js"
-      );
+      const { canonicalizeJson, computeHash } =
+        await import("../src/canonicalize.js");
 
       const obj = { id: "rule1", content: "test" };
       const util = computeContentHash(obj);

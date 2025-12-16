@@ -92,9 +92,8 @@ export async function discoverExporterManifests(
   const searchPaths: string[] = [];
 
   try {
-    const exportersPackagePath = await import.meta.resolve(
-      "@aligntrue/exporters",
-    );
+    const exportersPackagePath = await import.meta
+      .resolve("@aligntrue/exporters");
     const exportersIndexPath = fileURLToPath(exportersPackagePath);
     searchPaths.push(dirname(exportersIndexPath));
   } catch {
