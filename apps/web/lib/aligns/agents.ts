@@ -19,13 +19,23 @@ const defaultCapabilities: AgentCapabilities = { cliExport: true };
 
 const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
   [
+    "default",
+    {
+      name: "Default",
+      path: "(choose during setup)",
+      label: "Default (choose during setup)",
+      format: "align-md",
+      capabilities: { cliExport: true },
+    },
+  ],
+  [
     "original",
     {
       name: "Original",
       path: "(as authored)",
       label: "Original (as authored)",
       format: "original",
-      capabilities: { cliExport: false },
+      capabilities: { cliExport: true },
     },
   ],
   [
@@ -97,15 +107,6 @@ const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
       path: "WINDSURF.md",
       label: "Windsurf (WINDSURF.md)",
       exporter: "windsurf",
-    },
-  ],
-  [
-    "copilot",
-    {
-      name: "GitHub Copilot",
-      path: "AGENTS.md",
-      label: "GitHub Copilot (AGENTS.md)",
-      exporter: "agents",
     },
   ],
   [

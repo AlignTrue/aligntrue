@@ -50,14 +50,7 @@ export function CommandBlock({
     >
       <div className="flex-1 min-w-0 w-full">
         {description && (
-          <div
-            className={cn(
-              "px-4 pt-3 text-sm",
-              variant === "terminal"
-                ? "text-white/80"
-                : "text-muted-foreground",
-            )}
-          >
+          <div className={cn("px-4 pt-3 text-sm font-medium text-primary")}>
             {description}
           </div>
         )}

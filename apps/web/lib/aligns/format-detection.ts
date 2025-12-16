@@ -110,10 +110,12 @@ export function getFormatWarning(
   // Original: tell users which formats the author used
   if (selectedFormat === "original") {
     const labels = formatLabelsFromIds(detectedFormats);
-    const message = labels
-      ? `Downloads files exactly as the author created them, preserving the original directory structure and formats. This format assumes use of: ${labels}. If you're not using these, select another export format.`
-      : "Downloads files exactly as the author created them, preserving the original directory structure and formats.";
-    return { type: "original", message };
+    return {
+      type: "original",
+      message: labels
+        ? `Includes ${labels} file(s), matching the author's config.`
+        : null,
+    };
   }
 
   // If everything aligns with the selected format, no warning
@@ -124,8 +126,8 @@ export function getFormatWarning(
   // Mixed or differing formats -> warn about transformation
   const selectedLabel = agentOptions.find((a) => a.id === selectedFormat)?.name;
   const message = selectedLabel
-    ? `Transforms and downloads files into ${selectedLabel} format, so review after adding to ensure it's working as intended.`
-    : "Transforms and downloads files into the selected format, so review after adding to ensure it's working as intended.";
+    ? `Converts all files to ${selectedLabel} format. Review after importing to ensure compatibility.`
+    : "Converts all files to the selected format. Review after importing to ensure compatibility.";
 
   return { type: "transform", message };
 }

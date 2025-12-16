@@ -2,13 +2,11 @@ import matter from "gray-matter";
 import yaml from "js-yaml";
 
 export const SUPPORTED_AGENT_IDS = [
-  "original",
-  "aligntrue",
-  "all",
+  "default",
   "cursor",
+  "all",
   "claude",
   "windsurf",
-  "copilot",
   "gemini",
   "zed",
   "warp",
@@ -18,6 +16,8 @@ export const SUPPORTED_AGENT_IDS = [
   "openhands",
   "antigravity",
   "kiro",
+  "original",
+  "aligntrue",
 ] as const;
 
 export type AgentId = (typeof SUPPORTED_AGENT_IDS)[number];

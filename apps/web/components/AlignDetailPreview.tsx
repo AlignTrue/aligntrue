@@ -43,6 +43,8 @@ import { cn, formatBytes } from "@/lib/utils";
 import { PackMembershipBadges } from "./PackMembershipBadges";
 import { toAlignSummary } from "@/lib/aligns/transforms";
 import { isCatalogPack } from "@/lib/aligns/pack-helpers";
+import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
+import { Link2 } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -54,15 +56,18 @@ export type AlignDetailPreviewProps = {
   className?: string;
 };
 
-type ActionTabId = "share" | "existing" | "new";
-
 type ActionTabConfig = {
-  id: ActionTabId;
+  id: InstallTabId;
   label: string;
+  commands: CommandGroup[];
+  trackInstall?: boolean;
+};
+
+type InstallTabId = "new" | "existing";
+
+type CommandGroup = {
   description: string;
   command: string;
-  showDocsLink?: boolean;
-  trackInstall?: boolean;
 };
 
 async function postEvent(id: string, type: "view" | "install") {
@@ -78,10 +83,11 @@ export function AlignDetailPreview({
   content,
   className,
 }: AlignDetailPreviewProps) {
+  const { copied: shareCopied, copy: copyShare } = useCopyToClipboard();
   const isArchived = align.sourceRemoved === true;
-  const [agent, setAgent] = useState<AgentId>("all");
+  const [agent, setAgent] = useState<AgentId>("default");
   const [format, setFormat] = useState<TargetFormat>("align-md");
-  const [actionTab, setActionTab] = useState<ActionTabId>("share");
+  const [installTab, setInstallTab] = useState<InstallTabId>("new");
   const [convertedCache, setConvertedCache] = useState<
     Map<string, ConvertedContent>
   >(new Map());
@@ -101,7 +107,6 @@ export function AlignDetailPreview({
   } | null>(null);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const catalogPack = isCatalogPack(align);
-  const itemLabel = isPack ? "pack" : "align";
   const alignSharePath = `/a/${align.id}`;
   const shareUrl = `${BASE_URL}${alignSharePath}`;
   const display = useMemo(() => toAlignSummary(align), [align]);
@@ -205,84 +210,58 @@ export function AlignDetailPreview({
     [agent],
   );
   const canExport = selectedAgent?.capabilities?.cliExport !== false;
-  const exporterFlag =
-    canExport && selectedAgent?.exporter
-      ? ` --exporters ${selectedAgent.exporter}`
-      : "";
+  const exporterFlagForNew =
+    agent === "default"
+      ? ""
+      : canExport && selectedAgent?.exporter
+        ? ` --exporters ${selectedAgent.exporter}`
+        : "";
 
-  const actionTabs = useMemo((): ActionTabConfig[] => {
+  const installTabs = useMemo((): ActionTabConfig[] => {
     const installTarget = align.url || shareUrl || align.id;
     const linkTarget = catalogPack ? align.id : installTarget;
-    const existingCommand = `aligntrue add ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# Keep updated\naligntrue add link ${linkTarget}\naligntrue sync${exporterFlag}`;
-    const newUsersCommand = `npm install -g aligntrue\naligntrue init ${catalogPack ? align.id : installTarget}${exporterFlag}\n\n# One-off (no install)\nnpx aligntrue init ${catalogPack ? align.id : installTarget}${exporterFlag}`;
-
-    if (catalogPack) {
-      return [
-        {
-          id: "share",
-          label: "Share Link",
-          description:
-            "Make it easy for others to use these rules. Copy this link to share, or install via CLI.",
-          command: shareUrl,
-        },
-        {
-          id: "existing",
-          label: "Existing Users",
-          description:
-            "Already using AlignTrue? Add this pack and optionally keep it linked for updates.",
-          command: existingCommand,
-          trackInstall: true,
-        },
-        {
-          id: "new",
-          label: "New Users",
-          description:
-            "New to AlignTrue? Install the CLI and initialize with this pack.",
-          command: newUsersCommand,
-          trackInstall: true,
-        },
-      ];
-    }
+    const addCommandExisting = `aligntrue add ${catalogPack ? align.id : installTarget}`;
+    const linkCommandExisting = `aligntrue add link ${linkTarget}\naligntrue sync`;
+    const installCommand = `npm install -g aligntrue\naligntrue init ${
+      catalogPack ? align.id : installTarget
+    }${exporterFlagForNew}`;
+    const oneOffCommand = `npx aligntrue init ${
+      catalogPack ? align.id : installTarget
+    }${exporterFlagForNew}`;
 
     return [
       {
-        id: "share",
-        label: "Share Link",
-        description: `Make it easy for others to use this ${itemLabel}.`,
-        command: shareUrl,
-      },
-      {
         id: "new",
-        label: "New Users",
-        description: "New to AlignTrue? Install globally or run one-off.",
-        command: newUsersCommand,
-        showDocsLink: true,
+        label: "New to AlignTrue",
+        commands: [
+          {
+            description: "Install globally",
+            command: installCommand,
+          },
+          {
+            description: "One-off (no install)",
+            command: oneOffCommand,
+          },
+        ],
         trackInstall: true,
       },
       {
         id: "existing",
-        label: "Existing Users",
-        description: `Already using AlignTrue? Add one-time or link for updates.`,
-        command: existingCommand,
+        label: "Existing users",
+        commands: [
+          {
+            description: "Add to project",
+            command: addCommandExisting,
+          },
+          {
+            description: "Link for updates",
+            command: linkCommandExisting,
+          },
+        ],
         trackInstall: true,
       },
     ];
-  }, [
-    catalogPack,
-    isArchived,
-    itemLabel,
-    align.id,
-    align.url,
-    shareUrl,
-    exporterFlag,
-  ]);
-
-  useEffect(() => {
-    const validTabIds = actionTabs.map((tab) => tab.id);
-    if (!validTabIds.includes(actionTab)) {
-      setActionTab("share");
-    }
-  }, [actionTabs, actionTab, align.id]);
+  }, [align.id, align.url, catalogPack, exporterFlagForNew, shareUrl]);
 
   const cacheKey = useMemo(() => {
     const fileKey = isPack
@@ -332,7 +311,6 @@ export function AlignDetailPreview({
 
   const cachedConverted = convertedCache.get(cacheKey);
 
-  const shareText = shareUrl || align.normalizedUrl || align.url;
   const previewText =
     cachedConverted?.text ?? selectedContent ?? "Content unavailable.";
   const downloadFilename =
@@ -428,9 +406,6 @@ export function AlignDetailPreview({
                   <h1 className="text-3xl font-bold text-foreground m-0 leading-tight">
                     {align.title || "Untitled align"}
                   </h1>
-                  <span className="inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted rounded px-2 py-0.5 border border-border/80">
-                    ID: {align.id}
-                  </span>
                   {isArchived && (
                     <Badge variant="secondary" className="text-xs">
                       Archived copy (source removed)
@@ -521,6 +496,28 @@ export function AlignDetailPreview({
                   variant="inline"
                   className="mt-1"
                 />
+                <div className="mt-3 rounded-lg border border-accent/30 bg-accent/5 p-3 w-full sm:w-[320px]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Link2
+                        size={16}
+                        className="text-accent shrink-0"
+                        aria-hidden
+                      />
+                      <span className="text-sm font-medium text-foreground truncate">
+                        {shareUrl.replace("https://", "")}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="shrink-0 border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
+                      onClick={() => void copyShare(shareUrl)}
+                    >
+                      {shareCopied ? "Copied!" : "Copy Share Link"}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -564,112 +561,96 @@ export function AlignDetailPreview({
             )}
 
             <hr className="border-t border-border my-4" />
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Select
-                value={agent}
-                onValueChange={(value) => setAgent(value as AgentId)}
-              >
-                <SelectTrigger className="w-full sm:w-auto sm:min-w-[200px] max-w-full">
-                  <SelectValue placeholder="Select agent format" />
-                </SelectTrigger>
-                <SelectContent>
-                  {agentOptions.map((opt) => (
-                    <SelectItem key={opt.id} value={opt.id}>
-                      <span className="flex items-center gap-2">
-                        {opt.name}
-                        <Badge
-                          variant="secondary"
-                          className="text-xs font-mono"
-                        >
-                          {opt.path}
-                        </Badge>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formatWarning.message && (
-                <p className="text-xs text-muted-foreground sm:max-w-[420px]">
-                  {formatWarning.message}
-                </p>
-              )}
-
-              {canExport && actionTabs.length > 0 ? (
-                <Tabs
-                  value={actionTab}
-                  onValueChange={(v) => setActionTab(v as ActionTabId)}
-                  className="sm:ml-auto"
-                >
-                  <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm sm:justify-end">
-                    {actionTabs.map((tab) => (
-                      <TabsTrigger
-                        key={tab.id}
-                        value={tab.id}
-                        className="font-semibold rounded-lg px-4 py-2 text-sm"
-                      >
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              ) : null}
-            </div>
-
-            <div className="pt-4 space-y-4">
-              {canExport && actionTabs.length > 0 ? (
-                (() => {
-                  const currentTab = actionTabs.find((t) => t.id === actionTab);
-                  if (!currentTab) return null;
-                  return (
-                    <div className="space-y-3">
-                      <p className="text-muted-foreground">
-                        {currentTab.description}
-                        {currentTab.showDocsLink && (
-                          <>
-                            {" "}
-                            <a
-                              href="/docs"
-                              className="text-foreground font-semibold hover:underline"
-                            >
-                              Learn more about AlignTrue
-                            </a>
-                          </>
-                        )}
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                {installTab === "new" && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Agent export format:
+                    </label>
+                    <Select
+                      value={agent}
+                      onValueChange={(value) => setAgent(value as AgentId)}
+                    >
+                      <SelectTrigger className="w-full sm:w-auto sm:min-w-[300px] max-w-full">
+                        <SelectValue placeholder="Select agent format" />
+                      </SelectTrigger>
+                      <SelectContent className="min-w-[300px]">
+                        {agentOptions.map((opt) => (
+                          <SelectItem key={opt.id} value={opt.id}>
+                            <span className="flex items-center gap-2">
+                              {opt.name}
+                              <Badge
+                                variant="secondary"
+                                className="text-xs font-mono"
+                              >
+                                {opt.path}
+                              </Badge>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {agent === "original" && formatWarning.message && (
+                      <p className="text-xs text-muted-foreground max-w-[300px]">
+                        {formatWarning.message}
                       </p>
-                      <CommandBlock
-                        code={currentTab.command}
-                        copyLabel="Copy"
-                        variant={
-                          currentTab.id === "share" ? "terminal" : undefined
-                        }
-                        promptSymbol={
-                          currentTab.id === "share" ? ">" : undefined
-                        }
-                        showPrompt={currentTab.id === "share"}
-                        onCopy={
-                          currentTab.trackInstall
-                            ? () => void postEvent(align.id, "install")
-                            : undefined
-                        }
-                      />
-                    </div>
-                  );
-                })()
-              ) : (
+                    )}
+                  </div>
+                )}
+
+                {canExport && installTabs.length > 0 ? (
+                  <Tabs
+                    value={installTab}
+                    onValueChange={(v) => setInstallTab(v as InstallTabId)}
+                    className="sm:ml-auto"
+                  >
+                    <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm sm:justify-end">
+                      {installTabs.map((tab) => (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className="font-semibold rounded-lg px-4 py-2 text-sm"
+                        >
+                          {tab.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                ) : null}
+              </div>
+
+              {canExport && installTabs.length > 0 ? (
                 <div className="space-y-3">
-                  <p className="text-muted-foreground">
-                    Make it easy for others to use this {itemLabel}. Copy this
-                    link to share.
-                  </p>
-                  <CommandBlock
-                    code={shareText}
-                    copyLabel="Copy"
-                    variant="terminal"
-                    promptSymbol=">"
-                    showPrompt
-                  />
+                  <h3 className="text-sm font-semibold text-foreground m-0">
+                    {installTab === "new" ? "Install via CLI" : "Add via CLI"}
+                  </h3>
+                  {(() => {
+                    const currentTab = installTabs.find(
+                      (t) => t.id === installTab,
+                    );
+                    if (!currentTab) return null;
+
+                    return (
+                      <div className="space-y-3">
+                        {currentTab.commands.map((group) => (
+                          <CommandBlock
+                            key={group.description}
+                            code={group.command}
+                            description={group.description}
+                            copyLabel="Copy"
+                            onCopy={
+                              currentTab.trackInstall
+                                ? () => void postEvent(align.id, "install")
+                                : undefined
+                            }
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </CardContent>
