@@ -14,6 +14,12 @@ describe("agentOptions", () => {
     expect(original?.capabilities.cliExport).toBe(false);
   });
 
+  it("omits exporter for default while keeping CLI export enabled", () => {
+    const defaultAgent = agentOptions.find((opt) => opt.id === "default");
+    expect(defaultAgent?.capabilities.cliExport).toBe(true);
+    expect(defaultAgent?.exporter).toBeUndefined();
+  });
+
   it("omits exporter for original since it is not CLI-exportable", () => {
     const original = agentOptions.find((opt) => opt.id === "original");
     expect(original?.exporter).toBeUndefined();

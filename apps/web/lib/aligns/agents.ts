@@ -177,8 +177,11 @@ export const agentOptions: AgentOption[] = SUPPORTED_AGENT_IDS.map((id) => {
   const format = override.format ?? "align-md";
   const capabilities = { ...defaultCapabilities, ...override.capabilities };
   const exporter =
-    capabilities.cliExport === false
-      ? override.exporter
-      : (override.exporter ?? id);
+    override.exporter ??
+    (capabilities.cliExport === false
+      ? undefined
+      : id === "default"
+        ? undefined
+        : id);
   return { id, name, path, label, format, exporter, capabilities };
 });
