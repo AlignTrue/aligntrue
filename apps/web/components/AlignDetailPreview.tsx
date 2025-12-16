@@ -360,7 +360,9 @@ export function AlignDetailPreview({
         ? packFiles.map((file) => ({
             path: file.path || "rules.md",
             size:
-              file.size ?? new TextEncoder().encode(file.content).length ?? 0,
+              file.size ??
+              new TextEncoder().encode(file.content ?? "").length ??
+              0,
             content: file.content,
           }))
         : packFiles.map((file) => {
