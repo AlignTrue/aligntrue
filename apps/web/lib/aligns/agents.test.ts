@@ -9,31 +9,14 @@ describe("agentOptions", () => {
     expect(optionIds).toEqual(SUPPORTED_AGENT_IDS);
   });
 
-  it("marks original as non-CLI-exportable", () => {
-    const original = agentOptions.find((opt) => opt.id === "original");
-    expect(original?.capabilities.cliExport).toBe(false);
-  });
-
   it("omits exporter for default while keeping CLI export enabled", () => {
     const defaultAgent = agentOptions.find((opt) => opt.id === "default");
     expect(defaultAgent?.capabilities.cliExport).toBe(true);
     expect(defaultAgent?.exporter).toBeUndefined();
   });
 
-  it("omits exporter for original since it is not CLI-exportable", () => {
-    const original = agentOptions.find((opt) => opt.id === "original");
-    expect(original?.exporter).toBeUndefined();
-  });
-
-  it("marks aligntrue as non-CLI-exportable", () => {
-    const aligntrue = agentOptions.find((opt) => opt.id === "aligntrue");
-    expect(aligntrue?.capabilities.cliExport).toBe(false);
-  });
-
-  it("defaults other agents to cliExport true", () => {
-    const others = agentOptions.filter(
-      (opt) => opt.id !== "aligntrue" && opt.id !== "original",
-    );
+  it("enables cliExport for all non-default agents", () => {
+    const others = agentOptions.filter((opt) => opt.id !== "default");
     expect(others.every((opt) => opt.capabilities.cliExport)).toBe(true);
   });
 });

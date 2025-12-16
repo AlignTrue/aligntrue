@@ -62,20 +62,6 @@ Body text without closing fence.`;
     expect(result.text).toContain("description: AlignTrue rules for Cursor");
   });
 
-  it("passes through AlignTrue format with full frontmatter", () => {
-    const result = convertContent(baseContent, "aligntrue");
-    const parsed = parseFrontmatter(result.text);
-
-    expect(result.filename).toBe("rules.md");
-    expect(result.extension).toBe("md");
-    expect(parsed.data).toEqual({
-      title: "Test Title",
-      description: "Test Description",
-      globs: ["**/*.ts"],
-    });
-    expect(parsed.content.trim()).toContain("Body text.");
-  });
-
   it("preserves minimal frontmatter for all-agents export", () => {
     const result = convertContent(baseContent, "all");
     const parsed = parseFrontmatter(result.text);
@@ -150,10 +136,7 @@ Body
   it("maps supported agents to expected filenames", () => {
     const expectations: Record<AgentId, string> = {
       default: "align.md",
-      original: "rules.md",
-      aligntrue: "rules.md",
       all: "AGENTS.md",
-      copilot: "AGENTS.md",
       cursor: "rules.mdc",
       claude: "CLAUDE.md",
       windsurf: "WINDSURF.md",

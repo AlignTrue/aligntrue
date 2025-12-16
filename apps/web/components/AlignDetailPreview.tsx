@@ -291,23 +291,6 @@ export function AlignDetailPreview({
     try {
       setConvertedCache((prev) => {
         if (prev.get(cacheKey)) return prev;
-        if (agent === "original") {
-          const filename = isPack
-            ? selectedFile?.path || "rules.md"
-            : singleFilename || "rules.md";
-          const lastSegment = filename.split("/").pop() ?? filename;
-          const extension = lastSegment.includes(".")
-            ? (lastSegment.split(".").pop() ?? "md")
-            : "md";
-          const converted: ConvertedContent = {
-            text: selectedContent,
-            filename,
-            extension,
-          };
-          const next = new Map(prev);
-          next.set(cacheKey, converted);
-          return next;
-        }
         const converted = convertContent(selectedContent, agent);
         const next = new Map(prev);
         next.set(cacheKey, converted);
@@ -316,7 +299,7 @@ export function AlignDetailPreview({
     } finally {
       setConverting(false);
     }
-  }, [agent, cacheKey, selectedContent, singleFilename]);
+  }, [agent, cacheKey, isPack, selectedContent, selectedFile, singleFilename]);
 
   const cachedConverted = convertedCache.get(cacheKey);
 
@@ -347,28 +330,16 @@ export function AlignDetailPreview({
 
   const handleDownloadAll = async () => {
     if (!isPack || !packFiles.length) return;
-    const zipFiles: CachedPackFile[] =
-      agent === "original"
-        ? packFiles.map((file) => ({
-            path: file.path || "rules.md",
-            size:
-              file.size ??
-              new TextEncoder().encode(file.content ?? "").length ??
-              0,
-            content: file.content,
-          }))
-        : packFiles.map((file) => {
-            const path = file.path || "rules.md";
-            const converted = convertContent(file.content, agent);
-            const dir = path.includes("/")
-              ? path.slice(0, path.lastIndexOf("/"))
-              : "";
-            const zipPath = dir
-              ? `${dir}/${converted.filename}`
-              : converted.filename;
-            const size = new TextEncoder().encode(converted.text).length;
-            return { path: zipPath, size, content: converted.text };
-          });
+    const zipFiles: CachedPackFile[] = packFiles.map((file) => {
+      const path = file.path || "rules.md";
+      const converted = convertContent(file.content, agent);
+      const dir = path.includes("/")
+        ? path.slice(0, path.lastIndexOf("/"))
+        : "";
+      const zipPath = dir ? `${dir}/${converted.filename}` : converted.filename;
+      const size = new TextEncoder().encode(converted.text).length;
+      return { path: zipPath, size, content: converted.text };
+    });
     const zipBlob = await buildPackZip(zipFiles);
     const zipWithMime =
       zipBlob.type === "application/zip"
@@ -588,7 +559,7 @@ export function AlignDetailPreview({
                           ))}
                         </SelectContent>
                       </Select>
-                      {agent === "original" && formatWarning.message && (
+                      {formatWarning.message && (
                         <p className="text-xs text-muted-foreground">
                           {formatWarning.message}
                         </p>

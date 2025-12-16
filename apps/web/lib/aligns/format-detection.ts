@@ -26,7 +26,6 @@ const legacyFilenameMap = new Map<string, AgentId>([
 const pathPrefixMap: { prefix: string; agent: AgentId }[] = [
   { prefix: ".cursor/rules/", agent: "cursor" },
   { prefix: ".clinerules/", agent: "cline" },
-  { prefix: ".aligntrue/rules/", agent: "aligntrue" },
   { prefix: ".augment/rules/", agent: "augmentcode" },
   { prefix: ".amazonq/rules/", agent: "amazonq" },
   { prefix: ".openhands/", agent: "openhands" },
@@ -70,7 +69,7 @@ export function detectPackFormats(files: CachedPackFile[]): Set<AgentId> {
   return formats;
 }
 
-type WarningType = "none" | "original" | "transform";
+type WarningType = "none" | "mixed" | "transform";
 
 export type FormatWarning = {
   type: WarningType;
@@ -90,10 +89,6 @@ function allFilesMatchFormat(
 ): boolean {
   if (detected.size === 0) return true;
   if (detected.size === 1 && detected.has(selected)) return true;
-  // Copilot uses AGENTS.md (same as "all")
-  if (selected === "copilot" && detected.size === 1 && detected.has("all")) {
-    return true;
-  }
   return false;
 }
 
@@ -107,14 +102,16 @@ export function getFormatWarning(
 
   const detectedFormats = detectPackFormats(packFiles);
 
-  // Original: tell users which formats the author used
-  if (selectedFormat === "original") {
+  // Mixed formats: surface a clear note for all users
+  if (detectedFormats.size > 1) {
     const labels = formatLabelsFromIds(detectedFormats);
+    const labelText = labels ? ` (${labels})` : "";
     return {
-      type: "original",
-      message: labels
-        ? `Includes ${labels} file(s), matching the author's config.`
-        : null,
+      type: "mixed",
+      message:
+        `This pack has multiple formats${labelText}, likely from a custom or symlinked config. ` +
+        "AlignTrue simplifies this to a single edit source. All rules will work with any agent(s) you select. " +
+        "After install, review source files in `.aligntrue/rules/` to meet your intent.",
     };
   }
 

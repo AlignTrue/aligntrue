@@ -5,7 +5,6 @@ export const SUPPORTED_AGENT_IDS = [
   "default",
   "cursor",
   "all",
-  "copilot",
   "claude",
   "windsurf",
   "gemini",
@@ -17,8 +16,6 @@ export const SUPPORTED_AGENT_IDS = [
   "openhands",
   "antigravity",
   "kiro",
-  "original",
-  "aligntrue",
 ] as const;
 
 export type AgentId = (typeof SUPPORTED_AGENT_IDS)[number];
@@ -134,20 +131,6 @@ export function convertContent(
         extension: "md",
       };
     }
-    case "original": {
-      return {
-        text: rawContent,
-        filename: "rules.md",
-        extension: "md",
-      };
-    }
-    case "aligntrue": {
-      return {
-        text: rawContent,
-        filename: "rules.md",
-        extension: "md",
-      };
-    }
     case "all": {
       const fm = minimalFrontmatter(data);
       return {
@@ -250,14 +233,6 @@ export function convertContent(
       return {
         text: withFrontmatter(fm, body),
         filename: "WINDSURF.md",
-        extension: "md",
-      };
-    }
-    case "copilot": {
-      const fm = minimalFrontmatter(data);
-      return {
-        text: withFrontmatter(fm, body),
-        filename: "AGENTS.md",
         extension: "md",
       };
     }

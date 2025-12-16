@@ -43,24 +43,17 @@ describe("getFormatWarning", () => {
     expect(warning.type).toBe("none");
   });
 
-  it("warns for original with mixed formats", () => {
-    const files = [packFile("CLAUDE.md"), packFile(".cursor/rules/go.mdc")];
-    const warning = getFormatWarning(files, "original");
-    expect(warning.type).toBe("original");
-    expect(warning.message).toContain("Claude Code");
-    expect(warning.message).toContain("Cursor");
-  });
-
   it("warns on transform when formats differ", () => {
     const files = [packFile("CLAUDE.md"), packFile(".cursor/rules/go.mdc")];
     const warning = getFormatWarning(files, "claude");
     expect(warning.type).toBe("transform");
   });
 
-  it("does not warn when AGENTS.md compatible formats are used with copilot", () => {
-    const files = [packFile("AGENTS.md"), packFile("docs/rules.md")];
-    const warning = getFormatWarning(files, "copilot");
-    expect(warning.type).toBe("none");
+  it("shows mixed warning for mixed formats regardless of selection", () => {
+    const files = [packFile("CLAUDE.md"), packFile(".cursor/rules/go.mdc")];
+    const warning = getFormatWarning(files, "claude");
+    expect(warning.type).toBe("mixed");
+    expect(warning.message).toContain("multiple formats");
   });
 });
 

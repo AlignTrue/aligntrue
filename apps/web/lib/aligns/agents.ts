@@ -29,32 +29,11 @@ const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
     },
   ],
   [
-    "original",
-    {
-      name: "Original",
-      path: "(as authored)",
-      label: "Original (as authored)",
-      format: "original",
-      capabilities: { cliExport: false },
-    },
-  ],
-  [
-    "aligntrue",
-    {
-      name: "AlignTrue",
-      path: ".aligntrue/rules/*.md",
-      label: "AlignTrue (.aligntrue/rules/*.md)",
-      format: "align-md",
-      exporter: "aligntrue",
-      capabilities: { cliExport: false },
-    },
-  ],
-  [
     "all",
     {
-      name: "All agents",
+      name: "AGENTS.md",
       path: "AGENTS.md",
-      label: "All agents (AGENTS.md)",
+      label: "AGENTS.md (all agents)",
       format: "align-md",
       exporter: "agents",
     },
