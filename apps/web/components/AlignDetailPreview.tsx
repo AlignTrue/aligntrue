@@ -428,19 +428,9 @@ export function AlignDetailPreview({
                     )}
                     {isPack && (
                       <div className="space-y-2">
-                        {(() => {
-                          const count = relatedRules.length || 0;
-                          const label =
-                            count === 1
-                              ? "Includes 1 file:"
-                              : `Includes ${count} files:`;
-                          return (
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {label}
-                              {relatedLoading ? " (loading...)" : ""}
-                            </p>
-                          );
-                        })()}
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Includes:{relatedLoading ? " (loading...)" : ""}
+                        </p>
                         {relatedRules.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {relatedRules.map((rule) => (

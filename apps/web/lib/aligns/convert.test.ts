@@ -153,6 +153,7 @@ Body
       original: "rules.md",
       aligntrue: "rules.md",
       all: "AGENTS.md",
+      copilot: "AGENTS.md",
       cursor: "rules.mdc",
       claude: "CLAUDE.md",
       windsurf: "WINDSURF.md",

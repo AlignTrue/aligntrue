@@ -5,6 +5,7 @@ export const SUPPORTED_AGENT_IDS = [
   "default",
   "cursor",
   "all",
+  "copilot",
   "claude",
   "windsurf",
   "gemini",

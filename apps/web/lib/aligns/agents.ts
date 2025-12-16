@@ -35,7 +35,7 @@ const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
       path: "(as authored)",
       label: "Original (as authored)",
       format: "original",
-      capabilities: { cliExport: true },
+      capabilities: { cliExport: false },
     },
   ],
   [
