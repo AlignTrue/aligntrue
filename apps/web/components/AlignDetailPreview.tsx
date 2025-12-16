@@ -220,8 +220,9 @@ export function AlignDetailPreview({
   const installTabs = useMemo((): ActionTabConfig[] => {
     const installTarget = align.url || shareUrl || align.id;
     const linkTarget = catalogPack ? align.id : installTarget;
-    const addCommandExisting = `aligntrue add ${catalogPack ? align.id : installTarget}${exporterFlagForNew}`;
-    const linkCommandExisting = `aligntrue add link ${linkTarget}${exporterFlagForNew}`;
+    // add/add link don't support --exporters flag; user's config determines export format
+    const addCommandExisting = `aligntrue add ${catalogPack ? align.id : installTarget}`;
+    const linkCommandExisting = `aligntrue add link ${linkTarget}`;
     const installCommand = `npm install -g aligntrue\naligntrue init ${
       catalogPack ? align.id : installTarget
     }${exporterFlagForNew}`;
@@ -588,7 +589,7 @@ export function AlignDetailPreview({
                   </div>
                 )}
 
-                {canExport && installTabs.length > 0 ? (
+                {installTabs.length > 0 ? (
                   <Tabs
                     value={installTab}
                     onValueChange={(v) => setInstallTab(v as InstallTabId)}
@@ -609,7 +610,7 @@ export function AlignDetailPreview({
                 ) : null}
               </div>
 
-              {canExport && installTabs.length > 0 ? (
+              {installTabs.length > 0 ? (
                 <div className="space-y-4">
                   <h3 className="text-base font-semibold text-foreground m-0 mb-2">
                     {installTab === "new" ? "Install via CLI" : "Add via CLI"}
