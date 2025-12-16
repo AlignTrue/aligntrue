@@ -217,6 +217,9 @@ aligntrue remove source <url> [options]
 # Remove a source
 aligntrue remove source https://github.com/org/rules
 
+# Non-interactive removal (CI)
+aligntrue remove source https://github.com/org/rules --yes
+
 # Then sync to apply changes
 aligntrue sync
 

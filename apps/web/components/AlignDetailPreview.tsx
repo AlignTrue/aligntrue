@@ -155,6 +155,12 @@ export function AlignDetailPreview({
     return "";
   }, [content, isPack, selectedFile]);
 
+  const singleFilename = useMemo(() => {
+    if (isPack) return null;
+    const fromUrl = filenameFromUrl(align.normalizedUrl || align.url);
+    return fromUrl || "rules.md";
+  }, [align.normalizedUrl, align.url, isPack]);
+
   const fileNameLabel = useMemo(() => {
     if (catalogPack) return "Align Pack";
     if (isPack) return display.displayFilename ?? "Pack";
@@ -278,9 +284,11 @@ export function AlignDetailPreview({
   }, [actionTabs, actionTab, align.id]);
 
   const cacheKey = useMemo(() => {
-    const fileKey = isPack ? (selectedFile?.path ?? "single") : "single";
+    const fileKey = isPack
+      ? (selectedFile?.path ?? "single")
+      : (singleFilename ?? "single");
     return `${agent}::${fileKey}`;
-  }, [agent, isPack, selectedFile]);
+  }, [agent, isPack, selectedFile, singleFilename]);
 
   const formatWarning = useMemo(() => {
     if (!isPack) return { type: "none", message: null };
@@ -297,7 +305,7 @@ export function AlignDetailPreview({
         if (agent === "original") {
           const filename = isPack
             ? selectedFile?.path || "rules.md"
-            : fileNameLabel || "rules.md";
+            : singleFilename || "rules.md";
           const converted: ConvertedContent = {
             text: selectedContent,
             filename,
@@ -315,7 +323,7 @@ export function AlignDetailPreview({
     } finally {
       setConverting(false);
     }
-  }, [agent, cacheKey, selectedContent]);
+  }, [agent, cacheKey, selectedContent, singleFilename]);
 
   const cachedConverted = convertedCache.get(cacheKey);
 

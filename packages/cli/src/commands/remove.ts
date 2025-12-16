@@ -53,6 +53,7 @@ const ARG_DEFINITIONS: ArgDefinition[] = [
  */
 export async function remove(args: string[]): Promise<void> {
   const { flags, positional, help } = parseCommonArgs(args, ARG_DEFINITIONS);
+  const skipConfirmations = Boolean(flags["yes"]);
 
   // Show help if requested
   if (help) {
@@ -90,7 +91,7 @@ export async function remove(args: string[]): Promise<void> {
 
   const urlToRemove = urlArg!;
   const configPath =
-    (flags["--config"] as string | undefined) || ".aligntrue/config.yaml";
+    (flags["config"] as string | undefined) || ".aligntrue/config.yaml";
 
   // Check if config exists
   if (!existsSync(configPath)) {
@@ -100,6 +101,20 @@ export async function remove(args: string[]): Promise<void> {
       hint: "Run 'aligntrue init' to create a configuration file.",
       code: "CONFIG_NOT_FOUND",
     });
+  }
+
+  // Confirm removal in interactive mode unless skipped
+  if (isTTY() && !skipConfirmations) {
+    const confirmed = await clack.confirm({
+      message: `Remove source ${urlToRemove}?`,
+      active: "Remove",
+      inactive: "Cancel",
+    });
+
+    if (clack.isCancel(confirmed) || !confirmed) {
+      clack.cancel("Removal cancelled");
+      return;
+    }
   }
 
   // Show spinner
