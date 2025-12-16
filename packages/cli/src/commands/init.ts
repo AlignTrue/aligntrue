@@ -4,7 +4,7 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync, cpSync } from "fs";
-import { join, dirname } from "path";
+import { join, dirname, relative } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
 import {
@@ -424,6 +424,33 @@ function logMessage(
     console.log(message);
   } else {
     clack.log[type](message);
+  }
+}
+
+function isEexistError(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    !!error &&
+    typeof error === "object" &&
+    "code" in error &&
+    (error as NodeJS.ErrnoException).code === "EEXIST"
+  );
+}
+
+function writeConfigFileSafely(
+  targetPath: string,
+  contents: string,
+  options: { cwd: string; description: string },
+): void {
+  try {
+    writeFileSync(targetPath, contents, { encoding: "utf-8", flag: "wx" });
+  } catch (error) {
+    if (isEexistError(error)) {
+      const relPath = relative(options.cwd, targetPath);
+      exitWithError(1, `${options.description} already exists at ${relPath}.`, {
+        hint: "Remove or rename the existing file, then rerun: aligntrue init --yes",
+      });
+    }
+    throw error;
   }
 }
 
@@ -969,10 +996,16 @@ export async function init(args: string[] = []): Promise<void> {
 
     // Write team + personal configs
     mkdirSync(dirname(teamConfigPath), { recursive: true });
-    writeFileSync(teamConfigPath, yaml.stringify(teamConfig), "utf-8");
+    writeConfigFileSafely(teamConfigPath, yaml.stringify(teamConfig), {
+      cwd,
+      description: "Team config",
+    });
     createdFiles.push(".aligntrue/config.team.yaml");
 
-    writeFileSync(configPath, yaml.stringify(personalConfig), "utf-8");
+    writeConfigFileSafely(configPath, yaml.stringify(personalConfig), {
+      cwd,
+      description: "Personal config",
+    });
     createdFiles.push(".aligntrue/config.yaml");
 
     // Gitignore personal config
@@ -993,7 +1026,10 @@ export async function init(args: string[] = []): Promise<void> {
     }
   } else {
     // Solo mode: single config.yaml
-    writeFileSync(configPath, yaml.stringify(config), "utf-8");
+    writeConfigFileSafely(configPath, yaml.stringify(config), {
+      cwd,
+      description: "Config",
+    });
     createdFiles.push(".aligntrue/config.yaml");
   }
 
