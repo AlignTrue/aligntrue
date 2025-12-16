@@ -58,3 +58,11 @@ export function extractRuleSettings(content: string): RuleSettings {
     scope,
   };
 }
+
+export function hasNonDefaultSettings(settings: RuleSettings): boolean {
+  return (
+    settings.appliesTo !== null ||
+    settings.activation !== null ||
+    settings.scope !== null
+  );
+}

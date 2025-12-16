@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractRuleSettings,
   humanizeGlobs,
+  hasNonDefaultSettings,
   stripFrontmatter,
 } from "./rule-settings";
 
@@ -44,5 +45,32 @@ describe("rule-settings", () => {
     expect(humanizeGlobs(["**/*.ts"])).toBe("**/*.ts");
     expect(humanizeGlobs(["a", "b"])).toBe("a, b");
     expect(humanizeGlobs([])).toBeNull();
+  });
+
+  it("detects when settings differ from defaults", () => {
+    const defaults = { appliesTo: null, activation: null, scope: null };
+    expect(hasNonDefaultSettings(defaults)).toBe(false);
+
+    expect(
+      hasNonDefaultSettings({
+        appliesTo: "**/*.ts",
+        activation: null,
+        scope: null,
+      }),
+    ).toBe(true);
+    expect(
+      hasNonDefaultSettings({
+        appliesTo: null,
+        activation: "Manual activation",
+        scope: null,
+      }),
+    ).toBe(true);
+    expect(
+      hasNonDefaultSettings({
+        appliesTo: null,
+        activation: null,
+        scope: "apps/web",
+      }),
+    ).toBe(true);
   });
 });

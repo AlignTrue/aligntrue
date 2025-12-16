@@ -36,7 +36,7 @@ import {
   extractRuleSettings,
   stripFrontmatter,
 } from "@/lib/aligns/rule-settings";
-import { RuleSettingsCard } from "./RuleSettingsCard";
+import { RuleSettingsBadges } from "./RuleSettingsBadges";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -78,6 +78,8 @@ export function AlignDetailPreview({
   const { copied: shareCopied, copy: copyShare } = useCopyToClipboard();
   const isArchived = align.sourceRemoved === true;
   const [installTab, setInstallTab] = useState<InstallTabId>("new");
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const isPack =
     align.kind === "pack" &&
     content?.kind === "pack" &&
@@ -415,7 +417,7 @@ export function AlignDetailPreview({
                   </div>
                 )}
 
-                {installTabs.length > 0 ? (
+                {hydrated && installTabs.length > 0 ? (
                   <Tabs
                     value={installTab}
                     onValueChange={(v) => setInstallTab(v as InstallTabId)}
@@ -472,7 +474,7 @@ export function AlignDetailPreview({
         </CardContent>
       </Card>
 
-      <RuleSettingsCard settings={ruleSettings} />
+      <RuleSettingsBadges settings={ruleSettings} className="mb-2" />
 
       <div className="space-y-3">
         {!previewText && (
