@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { HelpCircle, Info } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HashBar } from "@/components/HashBar";
@@ -21,28 +21,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { CodePreview } from "@/components/CodePreview";
 import { CommandBlock } from "@/components/CommandBlock";
-import { agentOptions } from "@/lib/aligns/agents";
-import {
-  convertAlignContentForFormat,
-  type TargetFormat,
-} from "@/lib/aligns/format";
-import {
-  convertContent,
-  type AgentId,
-  type ConvertedContent,
-} from "@/lib/aligns/convert";
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
-import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
-import { getFormatWarning } from "@/lib/aligns/format-detection";
-import { downloadFile } from "@/lib/download";
 import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { cn, formatBytes } from "@/lib/utils";
 import { PackMembershipBadges } from "./PackMembershipBadges";
@@ -50,6 +32,11 @@ import { toAlignSummary } from "@/lib/aligns/transforms";
 import { isCatalogPack } from "@/lib/aligns/pack-helpers";
 import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
 import { Link2 } from "lucide-react";
+import {
+  extractRuleSettings,
+  stripFrontmatter,
+} from "@/lib/aligns/rule-settings";
+import { RuleSettingsCard } from "./RuleSettingsCard";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -90,13 +77,7 @@ export function AlignDetailPreview({
 }: AlignDetailPreviewProps) {
   const { copied: shareCopied, copy: copyShare } = useCopyToClipboard();
   const isArchived = align.sourceRemoved === true;
-  const [agent, setAgent] = useState<AgentId>("default");
-  const [format, setFormat] = useState<TargetFormat>("align-md");
   const [installTab, setInstallTab] = useState<InstallTabId>("new");
-  const [convertedCache, setConvertedCache] = useState<
-    Map<string, ConvertedContent>
-  >(new Map());
-  const [converting, setConverting] = useState(false);
   const isPack =
     align.kind === "pack" &&
     content?.kind === "pack" &&
@@ -132,11 +113,6 @@ export function AlignDetailPreview({
       .catch(() => {})
       .finally(() => setRelatedLoading(false));
   }, [align.id]);
-
-  useEffect(() => {
-    const selected = agentOptions.find((a) => a.id === agent);
-    if (selected) setFormat(selected.format);
-  }, [agent]);
 
   useEffect(() => {
     if (isPack) {
@@ -210,31 +186,15 @@ export function AlignDetailPreview({
     [totalBytes],
   );
 
-  const selectedAgent = useMemo(
-    () => agentOptions.find((a) => a.id === agent),
-    [agent],
-  );
-  const canExport = selectedAgent?.capabilities?.cliExport !== false;
-  const exporterFlagForNew =
-    agent === "default"
-      ? ""
-      : canExport && selectedAgent?.exporter
-        ? ` --exporters ${selectedAgent.exporter}`
-        : "";
-
   const installTabs = useMemo((): ActionTabConfig[] => {
-    if (!canExport) return [];
     const installTarget = align.url || shareUrl || align.id;
     const linkTarget = catalogPack ? align.id : installTarget;
-    // add/add link don't support --exporters flag; user's config determines export format
     const addCommandExisting = `aligntrue add ${catalogPack ? align.id : installTarget}`;
     const linkCommandExisting = `aligntrue add link ${linkTarget}`;
     const installCommand = `npm install -g aligntrue\naligntrue init ${
       catalogPack ? align.id : installTarget
-    }${exporterFlagForNew}`;
-    const oneOffCommand = `npx aligntrue init ${
-      catalogPack ? align.id : installTarget
-    }${exporterFlagForNew}`;
+    }`;
+    const oneOffCommand = `npx aligntrue init ${catalogPack ? align.id : installTarget}`;
 
     return [
       {
@@ -268,112 +228,23 @@ export function AlignDetailPreview({
         trackInstall: true,
       },
     ];
-  }, [
-    align.id,
-    align.url,
-    canExport,
-    catalogPack,
-    exporterFlagForNew,
-    shareUrl,
-  ]);
+  }, [align.id, align.url, catalogPack, shareUrl]);
 
-  const cacheKey = useMemo(() => {
-    const fileKey = isPack
-      ? (selectedFile?.path ?? "single")
-      : (singleFilename ?? "single");
-    return `${agent}::${fileKey}`;
-  }, [agent, isPack, selectedFile, singleFilename]);
+  const previewText = selectedContent
+    ? stripFrontmatter(selectedContent)
+    : "Content unavailable.";
 
-  const formatWarning = useMemo(() => {
-    if (!isPack) return { type: "none", message: null };
-    return getFormatWarning(packFiles, agent);
-  }, [agent, isPack, packFiles]);
-
-  // Live conversion (client-side using convertContent for now)
-  useEffect(() => {
-    if (!selectedContent) return;
-    setConverting(true);
-    try {
-      setConvertedCache((prev) => {
-        if (prev.get(cacheKey)) return prev;
-        const converted = convertContent(selectedContent, agent);
-        const next = new Map(prev);
-        next.set(cacheKey, converted);
-        return next;
-      });
-    } finally {
-      setConverting(false);
-    }
-  }, [agent, cacheKey, isPack, selectedContent, selectedFile, singleFilename]);
-
-  const cachedConverted = convertedCache.get(cacheKey);
-
-  const previewText =
-    cachedConverted?.text ?? selectedContent ?? "Content unavailable.";
-  const downloadFilename =
-    cachedConverted?.filename ||
-    (selectedContent
-      ? convertAlignContentForFormat(selectedContent, format).filename
-      : "align.md");
   const previewFilename = isPack
     ? selectedPath || "rules.md"
-    : downloadFilename;
-  const downloadAllFilename = useMemo(
-    () => buildZipFilename(align.title ?? align.id),
-    [align.id, align.title],
+    : singleFilename || "rules.md";
+
+  const ruleSettings = useMemo(
+    () => extractRuleSettings(selectedContent || ""),
+    [selectedContent],
   );
+
   const relatedPacks = related?.packs ?? [];
   const relatedRules = related?.rules ?? [];
-
-  const handleDownload = async () => {
-    if (!selectedContent) return;
-    const converted =
-      cachedConverted ?? convertAlignContentForFormat(selectedContent, format);
-    if (!converted.text) return;
-    await downloadFile(converted.text, converted.filename);
-  };
-
-  const handleDownloadAll = async () => {
-    if (!isPack || !packFiles.length) return;
-    const zipFiles: CachedPackFile[] = packFiles.map((file) => {
-      const path = file.path || "rules.md";
-      const converted = convertContent(file.content, agent);
-      const dir = path.includes("/")
-        ? path.slice(0, path.lastIndexOf("/"))
-        : "";
-      const zipPath = dir ? `${dir}/${converted.filename}` : converted.filename;
-      const size = new TextEncoder().encode(converted.text).length;
-      return { path: zipPath, size, content: converted.text };
-    });
-    const zipBlob = await buildPackZip(zipFiles);
-    const zipWithMime =
-      zipBlob.type === "application/zip"
-        ? zipBlob
-        : zipBlob.slice(0, zipBlob.size, "application/zip");
-    await downloadFile(zipWithMime, downloadAllFilename);
-  };
-
-  const downloadButton = isPack ? (
-    packFiles.length ? (
-      <Button
-        onClick={handleDownloadAll}
-        variant="outline"
-        size="sm"
-        className="font-semibold w-full sm:w-auto sm:min-w-[140px] h-10 text-sm"
-      >
-        Download All (.zip)
-      </Button>
-    ) : null
-  ) : selectedContent ? (
-    <Button
-      onClick={handleDownload}
-      variant="outline"
-      size="sm"
-      className="font-semibold w-full sm:w-auto sm:min-w-[140px] h-10 text-sm"
-    >
-      Download ({downloadFilename})
-    </Button>
-  ) : null;
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -537,62 +408,10 @@ export function AlignDetailPreview({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 {installTab === "new" && installTabs.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-foreground">
-                        Select your agent
-                      </label>
-                      {formatWarning.message && (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                            >
-                              <Info size={14} />
-                              {formatWarning.type === "mixed"
-                                ? "Mixed pack"
-                                : "Format conversion"}
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72 text-sm space-y-2">
-                            <p className="leading-snug">
-                              {formatWarning.message}
-                            </p>
-                            <a
-                              href="/docs/03-concepts/align-packs#mixed-format-packs"
-                              className="text-xs text-accent hover:underline"
-                            >
-                              Learn more
-                            </a>
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Select
-                        value={agent}
-                        onValueChange={(value) => setAgent(value as AgentId)}
-                      >
-                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[300px] max-w-full">
-                          <SelectValue placeholder="Select agent format" />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[300px]">
-                          {agentOptions.map((opt) => (
-                            <SelectItem key={opt.id} value={opt.id}>
-                              <span className="flex items-center gap-2">
-                                {opt.name}
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs font-mono"
-                                >
-                                  {opt.path}
-                                </Badge>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Customize your agent preferences during setup. AlignTrue
+                      will configure exports automatically.
+                    </p>
                   </div>
                 )}
 
@@ -602,7 +421,7 @@ export function AlignDetailPreview({
                     onValueChange={(v) => setInstallTab(v as InstallTabId)}
                     className="sm:ml-auto"
                   >
-                    <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm sm:justify-end">
+                    <TabsList className="flex flex-wrap gap-2 rounded-xl bg-muted/70 border border-border p-1.5 shadow-sm justify-center">
                       {installTabs.map((tab) => (
                         <TabsTrigger
                           key={tab.id}
@@ -653,6 +472,8 @@ export function AlignDetailPreview({
         </CardContent>
       </Card>
 
+      <RuleSettingsCard settings={ruleSettings} />
+
       <div className="space-y-3">
         {!previewText && (
           <p className="text-muted-foreground">
@@ -694,9 +515,7 @@ export function AlignDetailPreview({
                 />
               </div>
             }
-            content={converting ? "Converting..." : previewText}
-            loading={converting}
-            secondaryAction={downloadButton}
+            content={previewText}
           />
         )}
       </div>

@@ -4,7 +4,7 @@ import type { CachedPackFile } from "./content-cache";
 import {
   detectFileFormat,
   detectPackFormats,
-  getFormatWarning,
+  isMixedPack,
 } from "./format-detection";
 
 function packFile(path: string, content = "content"): CachedPackFile {
@@ -31,23 +31,19 @@ describe("detectFileFormat", () => {
   });
 });
 
-describe("getFormatWarning", () => {
-  it("returns none for single file", () => {
-    const warning = getFormatWarning([packFile("rules.md")], "claude");
-    expect(warning.type).toBe("none");
+describe("isMixedPack", () => {
+  it("returns false for single file", () => {
+    expect(isMixedPack([packFile("rules.md")])).toBe(false);
   });
 
-  it("returns none when all files match selected format", () => {
+  it("returns false when formats are consistent", () => {
     const files = [packFile("CLAUDE.md"), packFile("README/CLAUDE.md")];
-    const warning = getFormatWarning(files, "claude");
-    expect(warning.type).toBe("none");
+    expect(isMixedPack(files)).toBe(false);
   });
 
-  it("shows mixed warning for mixed formats regardless of selection", () => {
+  it("returns true when formats differ", () => {
     const files = [packFile("CLAUDE.md"), packFile(".cursor/rules/go.mdc")];
-    const warning = getFormatWarning(files, "claude");
-    expect(warning.type).toBe("mixed");
-    expect(warning.message).toContain("multiple formats");
+    expect(isMixedPack(files)).toBe(true);
   });
 });
 

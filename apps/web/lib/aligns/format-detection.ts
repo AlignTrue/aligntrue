@@ -1,6 +1,5 @@
 import type { CachedPackFile } from "./content-cache";
 import type { AgentId } from "./convert";
-import { agentOptions } from "./agents";
 
 const exactFilenameMap = new Map<string, AgentId>([
   ["claude.md", "claude"],
@@ -69,62 +68,8 @@ export function detectPackFormats(files: CachedPackFile[]): Set<AgentId> {
   return formats;
 }
 
-type WarningType = "none" | "mixed" | "transform";
-
-export type FormatWarning = {
-  type: WarningType;
-  message: string | null;
-};
-
-function formatLabelsFromIds(ids: Set<AgentId>): string {
-  const labels = Array.from(ids)
-    .map((id) => agentOptions.find((a) => a.id === id)?.name)
-    .filter(Boolean);
-  return labels.join(", ");
-}
-
-function allFilesMatchFormat(
-  detected: Set<AgentId>,
-  selected: AgentId,
-): boolean {
-  if (detected.size === 0) return true;
-  if (detected.size === 1 && detected.has(selected)) return true;
-  return false;
-}
-
-export function getFormatWarning(
-  packFiles: CachedPackFile[],
-  selectedFormat: AgentId,
-): FormatWarning {
-  if (packFiles.length <= 1) {
-    return { type: "none", message: null };
-  }
-
+export function isMixedPack(packFiles: CachedPackFile[]): boolean {
+  if (!packFiles.length) return false;
   const detectedFormats = detectPackFormats(packFiles);
-
-  // Mixed pack formats: surface a clear note for all users
-  if (detectedFormats.size > 1) {
-    const labels = formatLabelsFromIds(detectedFormats);
-    const labelText = labels ? ` (${labels})` : "";
-    return {
-      type: "mixed",
-      message:
-        `This pack has multiple formats${labelText}, likely from a custom or symlinked config. ` +
-        "AlignTrue simplifies this to a single edit source. All rules will work with any agent(s) you select. " +
-        "After install, review source files in `.aligntrue/rules/` to meet your intent.",
-    };
-  }
-
-  // If everything aligns with the selected format, no warning
-  if (allFilesMatchFormat(detectedFormats, selectedFormat)) {
-    return { type: "none", message: null };
-  }
-
-  // Mixed or differing formats -> warn about transformation
-  const selectedLabel = agentOptions.find((a) => a.id === selectedFormat)?.name;
-  const message = selectedLabel
-    ? `Converts all files to ${selectedLabel} format. Review after importing to ensure compatibility.`
-    : "Converts all files to the selected format. Review after importing to ensure compatibility.";
-
-  return { type: "transform", message };
+  return detectedFormats.size > 1;
 }
