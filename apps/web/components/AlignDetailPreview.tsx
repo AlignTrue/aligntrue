@@ -21,6 +21,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CodePreview } from "@/components/CodePreview";
 import { CommandBlock } from "@/components/CommandBlock";
 import { agentOptions } from "@/lib/aligns/agents";
@@ -531,10 +536,38 @@ export function AlignDetailPreview({
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 {installTab === "new" && installTabs.length > 0 && (
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-foreground">
-                      Agent export format:
-                    </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Select your agent
+                      </label>
+                      {formatWarning.message && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                            >
+                              <Info size={14} />
+                              {formatWarning.type === "mixed"
+                                ? "Mixed pack"
+                                : "Format conversion"}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 text-sm space-y-2">
+                            <p className="leading-snug">
+                              {formatWarning.message}
+                            </p>
+                            <a
+                              href="/docs/03-concepts/align-packs#mixed-format-packs"
+                              className="text-xs text-accent hover:underline"
+                            >
+                              Learn more
+                            </a>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
                     <div className="flex items-center gap-3">
                       <Select
                         value={agent}
@@ -559,40 +592,6 @@ export function AlignDetailPreview({
                           ))}
                         </SelectContent>
                       </Select>
-                      {formatWarning.message && (
-                        // Show a compact indicator with tooltip; label reflects warning type
-                        // mixed  -> Mixed formats (author provided multiple formats)
-                        // transform -> Format conversion (content will be converted to selection)
-                        <TooltipProvider delayDuration={100}>
-                          <Tooltip>
-                            {(() => {
-                              const label =
-                                formatWarning.type === "mixed"
-                                  ? "Mixed formats"
-                                  : "Format conversion";
-                              return (
-                                <TooltipTrigger asChild>
-                                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground cursor-help">
-                                    <Info size={14} />
-                                    {label}
-                                  </span>
-                                </TooltipTrigger>
-                              );
-                            })()}
-                            <TooltipContent className="max-w-xs space-y-2">
-                              <p className="text-sm leading-snug">
-                                {formatWarning.message}
-                              </p>
-                              <a
-                                href="/docs/03-concepts/align-packs#mixed-format-packs"
-                                className="text-xs text-accent hover:underline"
-                              >
-                                Learn more
-                              </a>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
                     </div>
                   </div>
                 )}

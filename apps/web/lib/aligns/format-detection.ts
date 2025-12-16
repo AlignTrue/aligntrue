@@ -102,7 +102,7 @@ export function getFormatWarning(
 
   const detectedFormats = detectPackFormats(packFiles);
 
-  // Mixed formats: surface a clear note for all users
+  // Mixed pack formats: surface a clear note for all users
   if (detectedFormats.size > 1) {
     const labels = formatLabelsFromIds(detectedFormats);
     const labelText = labels ? ` (${labels})` : "";
