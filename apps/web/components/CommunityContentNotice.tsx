@@ -53,7 +53,7 @@ export function CommunityContentNotice({
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <a
               href={learnMoreHref}
-              className="text-muted-foreground hover:text-foreground hover:underline underline-offset-4"
+              className="text-muted-foreground hover:text-foreground hover:underline underline-offset-4 whitespace-nowrap"
             >
               Community content
             </a>

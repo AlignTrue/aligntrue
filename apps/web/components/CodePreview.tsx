@@ -28,13 +28,13 @@ export function CodePreview({
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 border-b border-border bg-muted">
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <span className="flex-1 min-w-0">
             {fileSelector ?? <span className="block">{filename}</span>}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
           <Button
             size="sm"
             variant="default"
