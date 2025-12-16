@@ -299,7 +299,7 @@ export function HomePageClient() {
 
           <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent dark:via-white/15" />
 
-          <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto place-items-center">
+          <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto items-stretch">
             {[
               {
                 icon: Zap,
@@ -319,7 +319,7 @@ export function HomePageClient() {
             ].map((feature) => (
               <Card
                 key={feature.title}
-                className="h-full border-[var(--card-border-subtle)] bg-card/90"
+                className="h-full w-full border-[var(--card-border-subtle)] bg-card/90"
                 variant="feature"
               >
                 <CardContent className="p-6 space-y-3 text-center">
