@@ -183,14 +183,14 @@ aligntrue add remote git@github.com:me/aligntrue-rules.git --personal
 
 ---
 
-## `aligntrue remove`
+## `aligntrue remove source`
 
 Remove a linked source from your configuration.
 
 **Usage:**
 
 ```bash
-aligntrue remove <url> [options]
+aligntrue remove source <url> [options]
 ```
 
 **Arguments:**
@@ -199,9 +199,10 @@ aligntrue remove <url> [options]
 
 **Options:**
 
-| Flag       | Alias | Description             | Default                  |
-| ---------- | ----- | ----------------------- | ------------------------ |
-| `--config` | `-c`  | Custom config file path | `.aligntrue/config.yaml` |
+| Flag       | Alias | Description                               | Default                  |
+| ---------- | ----- | ----------------------------------------- | ------------------------ |
+| `--config` | `-c`  | Custom config file path                   | `.aligntrue/config.yaml` |
+| `--yes`    | `-y`  | Non-interactive mode (skip confirmations) | `false`                  |
 
 **What it does:**
 
@@ -214,7 +215,7 @@ aligntrue remove <url> [options]
 
 ```bash
 # Remove a source
-aligntrue remove https://github.com/org/rules
+aligntrue remove source https://github.com/org/rules
 
 # Then sync to apply changes
 aligntrue sync

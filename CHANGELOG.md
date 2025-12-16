@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Packs are catalog-only: create packs in the catalog UI; CLI no longer resolves `.align.yaml` manifests or installs packs
 - Align Catalog docs updated to describe catalog-native packs and download-only behavior for packs
 - Terminology: user-facing name is **Align pack**; internal references to “catalog pack” map to the same pack type
+- CLI remove command is now `aligntrue remove source <url>` with `--yes` support; help text and docs now reflect the source-only scope
 
 ### Removed
 

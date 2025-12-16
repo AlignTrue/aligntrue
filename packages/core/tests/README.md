@@ -17,7 +17,7 @@ tests/
   config.test.ts            # Configuration (43 tests)
   scope.test.ts             # Scope resolution (40 tests)
   fixtures/                 # Shared test fixtures
-    valid-align.yaml         # Valid IR example
+    valid-rule.md           # Valid markdown rule example
 ```
 
 ## Running Tests
@@ -111,7 +111,7 @@ rules:
    - Fix volatile field handling test expectations
 
 **Reference fixture:**
-See `tests/fixtures/valid-align.yaml` for a complete valid example.
+See `tests/fixtures/valid-rule.md` for a complete valid example.
 
 ## Mock Exporters
 

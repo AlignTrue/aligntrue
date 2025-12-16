@@ -214,7 +214,7 @@ const align: Align = {
 ### Validate an Align align
 
 ```bash
-pnpm validate path/to/align.yaml
+pnpm validate path/to/rule.md
 ```
 
 Output shows schema validation, integrity validation, and overall status.

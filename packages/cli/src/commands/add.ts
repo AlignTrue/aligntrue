@@ -210,7 +210,7 @@ export async function add(args: string[]): Promise<void> {
         "- Default (no subcommand): copies rules to .aligntrue/rules/ (one-time import)",
         "- 'add source': adds to config sources (gets updates on sync)",
         "- 'add remote': adds to config remotes (pushes rules on sync)",
-        "- To remove: 'aligntrue remove <url>'",
+        "- To remove: 'aligntrue remove source <url>'",
       ],
     });
     return;

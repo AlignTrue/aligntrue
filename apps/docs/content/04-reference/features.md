@@ -45,7 +45,7 @@ description: "Up-to-date feature list: unidirectional sync, lockfile, determinis
 - `sources` — Manage multi-file rule organization (list, split)
 - `plugs` — Manage plug slots and fills (list, resolve, validate)
 - `add` — Add an align source from a URL
-- `remove` — Remove an align source from configuration
+- `remove source` — Remove an align source from configuration
 
 **Team mode:**
 

@@ -6,8 +6,7 @@
  * - Clean removal without affecting other sources
  *
  * Usage:
- *   aligntrue remove https://github.com/org/rules
- *   aligntrue remove https://example.com/my-align.yaml
+ *   aligntrue remove source https://github.com/org/rules
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -29,6 +28,12 @@ import { createManagedSpinner } from "../utils/spinner.js";
  * Argument definitions for remove command
  */
 const ARG_DEFINITIONS: ArgDefinition[] = [
+  {
+    flag: "--yes",
+    alias: "-y",
+    hasValue: false,
+    description: "Non-interactive mode (skip confirmations)",
+  },
   {
     flag: "--config",
     alias: "-c",
@@ -54,22 +59,36 @@ export async function remove(args: string[]): Promise<void> {
     showStandardHelp({
       name: "remove",
       description: "Remove an align source from your configuration",
-      usage: "aligntrue remove <url>",
+      usage: "aligntrue remove source <url>",
       args: ARG_DEFINITIONS,
       examples: [
-        "aligntrue remove https://github.com/org/rules  # Remove git source",
-        "aligntrue remove https://example.com/align.yaml  # Remove URL source",
+        "aligntrue remove source https://github.com/org/rules  # Remove git source",
+        "aligntrue remove source https://example.com/rules.md  # Remove URL source",
       ],
     });
     return;
   }
 
-  // Validate URL provided
-  if (positional.length === 0) {
-    exitWithError(Errors.missingArgument("url", "aligntrue remove <url>"));
+  // Expect subcommand "source" for clarity and symmetry with add
+  const subcommand = positional[0];
+  const urlArg = positional[1];
+
+  if (subcommand !== "source") {
+    exitWithError({
+      title: "Invalid usage",
+      message: "Use: aligntrue remove source <url>",
+      hint: "To remove a linked source, run: aligntrue remove source <git-url>",
+      code: "INVALID_SUBCOMMAND",
+    });
   }
 
-  const urlToRemove = positional[0]!;
+  if (!urlArg) {
+    exitWithError(
+      Errors.missingArgument("url", "aligntrue remove source <url>"),
+    );
+  }
+
+  const urlToRemove = urlArg!;
   const configPath =
     (flags["--config"] as string | undefined) || ".aligntrue/config.yaml";
 

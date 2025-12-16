@@ -351,7 +351,7 @@ aligntrue sync
 Use the remove command:
 
 ```bash
-aligntrue remove https://github.com/org/rules
+aligntrue remove source https://github.com/org/rules
 aligntrue sync
 ```
 
