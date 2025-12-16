@@ -218,6 +218,7 @@ export function AlignDetailPreview({
         : "";
 
   const installTabs = useMemo((): ActionTabConfig[] => {
+    if (!canExport) return [];
     const installTarget = align.url || shareUrl || align.id;
     const linkTarget = catalogPack ? align.id : installTarget;
     // add/add link don't support --exporters flag; user's config determines export format
@@ -262,7 +263,14 @@ export function AlignDetailPreview({
         trackInstall: true,
       },
     ];
-  }, [align.id, align.url, catalogPack, exporterFlagForNew, shareUrl]);
+  }, [
+    align.id,
+    align.url,
+    canExport,
+    catalogPack,
+    exporterFlagForNew,
+    shareUrl,
+  ]);
 
   const cacheKey = useMemo(() => {
     const fileKey = isPack
@@ -551,7 +559,7 @@ export function AlignDetailPreview({
             <hr className="border-t border-border my-6" />
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                {installTab === "new" && (
+                {installTab === "new" && installTabs.length > 0 && (
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-foreground">
                       Agent export format:
