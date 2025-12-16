@@ -19,6 +19,17 @@ const defaultCapabilities: AgentCapabilities = { cliExport: true };
 
 const agentOverrides = new Map<AgentId, Partial<AgentOption>>([
   [
+    "original",
+    {
+      name: "Original",
+      path: "(as authored)",
+      label: "Original (as authored)",
+      format: "original",
+      exporter: "original",
+      capabilities: { cliExport: false },
+    },
+  ],
+  [
     "aligntrue",
     {
       name: "AlignTrue",

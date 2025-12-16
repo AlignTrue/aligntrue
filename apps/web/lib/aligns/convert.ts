@@ -2,6 +2,7 @@ import matter from "gray-matter";
 import yaml from "js-yaml";
 
 export const SUPPORTED_AGENT_IDS = [
+  "original",
   "aligntrue",
   "all",
   "cursor",
@@ -125,6 +126,13 @@ export function convertContent(
   const { data, body } = parseFrontmatter(rawContent);
 
   switch (targetAgent) {
+    case "original": {
+      return {
+        text: rawContent,
+        filename: "rules.md",
+        extension: "md",
+      };
+    }
     case "aligntrue": {
       return {
         text: rawContent,

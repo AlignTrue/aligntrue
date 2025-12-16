@@ -36,6 +36,7 @@ import {
 import type { AlignRecord } from "@/lib/aligns/types";
 import type { CachedContent, CachedPackFile } from "@/lib/aligns/content-cache";
 import { buildPackZip, buildZipFilename } from "@/lib/aligns/zip-builder";
+import { getFormatWarning } from "@/lib/aligns/format-detection";
 import { downloadFile } from "@/lib/download";
 import { filenameFromUrl } from "@/lib/aligns/urlUtils";
 import { cn, formatBytes } from "@/lib/utils";
@@ -281,6 +282,11 @@ export function AlignDetailPreview({
     return `${agent}::${fileKey}`;
   }, [agent, isPack, selectedFile]);
 
+  const formatWarning = useMemo(() => {
+    if (!isPack) return { type: "none", message: null };
+    return getFormatWarning(packFiles, agent);
+  }, [agent, isPack, packFiles]);
+
   // Live conversion (client-side using convertContent for now)
   useEffect(() => {
     if (!selectedContent) return;
@@ -288,6 +294,19 @@ export function AlignDetailPreview({
     try {
       setConvertedCache((prev) => {
         if (prev.get(cacheKey)) return prev;
+        if (agent === "original") {
+          const filename = isPack
+            ? selectedFile?.path || "rules.md"
+            : fileNameLabel || "rules.md";
+          const converted: ConvertedContent = {
+            text: selectedContent,
+            filename,
+            extension: filename.split(".").pop() ?? "md",
+          };
+          const next = new Map(prev);
+          next.set(cacheKey, converted);
+          return next;
+        }
         const converted = convertContent(selectedContent, agent);
         const next = new Map(prev);
         next.set(cacheKey, converted);
@@ -328,15 +347,25 @@ export function AlignDetailPreview({
 
   const handleDownloadAll = async () => {
     if (!isPack || !packFiles.length) return;
-    const zipFiles: CachedPackFile[] = packFiles.map((file) => {
-      const converted = convertContent(file.content, agent);
-      const dir = file.path.includes("/")
-        ? file.path.slice(0, file.path.lastIndexOf("/"))
-        : "";
-      const zipPath = dir ? `${dir}/${converted.filename}` : converted.filename;
-      const size = new TextEncoder().encode(converted.text).length;
-      return { path: zipPath, size, content: converted.text };
-    });
+    const zipFiles: CachedPackFile[] =
+      agent === "original"
+        ? packFiles.map((file) => ({
+            path: file.path || "rules.md",
+            size:
+              file.size ?? new TextEncoder().encode(file.content).length ?? 0,
+            content: file.content,
+          }))
+        : packFiles.map((file) => {
+            const converted = convertContent(file.content, agent);
+            const dir = file.path.includes("/")
+              ? file.path.slice(0, file.path.lastIndexOf("/"))
+              : "";
+            const zipPath = dir
+              ? `${dir}/${converted.filename}`
+              : converted.filename;
+            const size = new TextEncoder().encode(converted.text).length;
+            return { path: zipPath, size, content: converted.text };
+          });
     const zipBlob = await buildPackZip(zipFiles);
     const zipWithMime =
       zipBlob.type === "application/zip"
@@ -543,6 +572,11 @@ export function AlignDetailPreview({
                   ))}
                 </SelectContent>
               </Select>
+              {formatWarning.message && (
+                <p className="text-xs text-muted-foreground sm:max-w-[420px]">
+                  {formatWarning.message}
+                </p>
+              )}
 
               {canExport && actionTabs.length > 0 ? (
                 <Tabs
