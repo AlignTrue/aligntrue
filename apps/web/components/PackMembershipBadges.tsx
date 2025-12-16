@@ -14,7 +14,7 @@ export function PackMembershipBadges({
   if (!packs.length) return null;
   return (
     <div className={className}>
-      <p className="text-sm text-muted-foreground mb-2">Included in:</p>
+      <p className="text-sm font-medium text-foreground mb-2">Included in:</p>
       <div className="flex flex-wrap gap-2">
         {packs.map((pack) => (
           <Badge key={pack.id} variant="secondary" className="text-xs">

@@ -10,7 +10,9 @@ import { join } from "path";
  * Project context types
  */
 export type ProjectContext =
-  | "already-initialized" // Has .aligntrue/ directory
+  | "already-initialized" // Has config + rules under .aligntrue/
+  | "partial-rules-only" // .aligntrue/rules/*.md exist but config missing
+  | "partial-stale" // .aligntrue exists with only cache/backups/empty
   | "import-cursor" // Has .cursor/rules/ but no .aligntrue/
   | "import-cursorrules" // Has .cursorrules but no .aligntrue/
   | "import-agents" // Has AGENTS.md but no .aligntrue/
@@ -55,10 +57,70 @@ export function detectContext(cwd: string = process.cwd()): ContextResult {
   // Check for .aligntrue/ directory
   const aligntruePath = join(cwd, ".aligntrue");
   if (existsSync(aligntruePath) && statSync(aligntruePath).isDirectory()) {
-    existingFiles.push(".aligntrue/");
+    const rulesDir = join(aligntruePath, "rules");
+    const configPath = join(aligntruePath, "config.yaml");
+    const teamConfigPath = join(aligntruePath, "config.team.yaml");
+    const hasConfig = existsSync(configPath) || existsSync(teamConfigPath);
+    const hasRulesDir =
+      existsSync(rulesDir) && statSync(rulesDir).isDirectory();
+
+    const hasRuleFiles = hasRulesDir
+      ? (() => {
+          const stack = [rulesDir];
+          while (stack.length > 0) {
+            const current = stack.pop();
+            if (!current) continue;
+            const entries = readdirSync(current, { withFileTypes: true });
+            for (const entry of entries) {
+              const fullPath = join(current, entry.name);
+              if (entry.isDirectory()) {
+                stack.push(fullPath);
+              } else if (/\.md$/i.test(entry.name)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        })()
+      : false;
+
+    const hasBackups = existsSync(join(aligntruePath, ".backups"));
+    const hasCache =
+      existsSync(join(aligntruePath, ".cache")) ||
+      existsSync(join(aligntruePath, ".last-sync"));
+
+    if (hasConfig && hasRuleFiles) {
+      existingFiles.push(".aligntrue/");
+      return {
+        context: "already-initialized",
+        existingFiles,
+        allDetectedAgents: [],
+      };
+    }
+
+    if (!hasConfig && hasRuleFiles) {
+      return {
+        context: "partial-rules-only",
+        existingFiles: [".aligntrue/rules/"],
+        allDetectedAgents: [],
+      };
+    }
+
+    if (!hasConfig && !hasRuleFiles && (hasBackups || hasCache)) {
+      return {
+        context: "partial-stale",
+        existingFiles: [
+          ...(hasBackups ? [".aligntrue/.backups/"] : []),
+          ...(hasCache ? [".aligntrue/.cache/"] : []),
+        ],
+        allDetectedAgents: [],
+      };
+    }
+
+    // Empty .aligntrue or unknown contents - treat as stale so init can recover
     return {
-      context: "already-initialized",
-      existingFiles,
+      context: "partial-stale",
+      existingFiles: [".aligntrue/"],
       allDetectedAgents: [],
     };
   }
@@ -196,6 +258,10 @@ export function getContextDescription(context: ProjectContext): string {
   switch (context) {
     case "already-initialized":
       return "AlignTrue already initialized";
+    case "partial-rules-only":
+      return "AlignTrue rules found without config";
+    case "partial-stale":
+      return "AlignTrue directory present without config/rules";
     case "import-cursor":
       return "Existing Cursor rules found";
     case "import-cursorrules":

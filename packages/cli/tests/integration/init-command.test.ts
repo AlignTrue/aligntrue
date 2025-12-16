@@ -11,6 +11,7 @@ import {
   writeFileSync,
   readFileSync,
   existsSync,
+  readdirSync,
   mkdtempSync,
   mkdirSync,
   rmSync,
@@ -142,10 +143,47 @@ describeSkipWindows("Init Command Integration", () => {
       mkdirSync(aligntrueDir, { recursive: true });
       chmodSync(aligntrueDir, 0o555); // read/execute only to simulate permission issue
 
-      await expect(init(["--yes"])).rejects.toThrow(/partial AlignTrue setup/i);
+      await expect(init(["--yes"])).rejects.toThrow(/EACCES|EPERM|permission/i);
 
       // Restore permissions for cleanup
       chmodSync(aligntrueDir, 0o755);
+    });
+  });
+
+  describe("Partial recovery", () => {
+    it("completes setup when rules exist but config is missing", async () => {
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      const rulesDir = join(aligntrueDir, "rules");
+      mkdirSync(rulesDir, { recursive: true });
+      const rulePath = join(rulesDir, "global.md");
+      const originalContent = "# Global\n\nExisting content.\n";
+      writeFileSync(rulePath, originalContent, "utf-8");
+
+      await init(["--yes"]);
+
+      // Config should be created
+      const configPath = join(aligntrueDir, "config.yaml");
+      expect(existsSync(configPath)).toBe(true);
+      const config = yaml.parse(readFileSync(configPath, "utf-8"));
+      expect(config.exporters?.length).toBeGreaterThan(0);
+
+      // Existing rule should remain unchanged
+      expect(readFileSync(rulePath, "utf-8")).toBe(originalContent);
+    });
+
+    it("treats stale .aligntrue with cache only as fresh start", async () => {
+      const aligntrueDir = join(TEST_DIR, ".aligntrue");
+      mkdirSync(join(aligntrueDir, ".cache"), { recursive: true });
+      writeFileSync(join(aligntrueDir, ".cache", "state.json"), "{}", "utf-8");
+
+      await init(["--yes"]);
+
+      const configPath = join(aligntrueDir, "config.yaml");
+      expect(existsSync(configPath)).toBe(true);
+
+      const rulesDir = join(aligntrueDir, "rules");
+      const files = readdirSync(rulesDir).filter((f) => f.endsWith(".md"));
+      expect(files.length).toBeGreaterThan(0);
     });
   });
 

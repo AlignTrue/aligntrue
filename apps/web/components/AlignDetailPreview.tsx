@@ -552,37 +552,39 @@ export function AlignDetailPreview({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 {installTab === "new" && (
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label className="text-sm font-medium text-foreground">
                       Agent export format:
                     </label>
-                    <Select
-                      value={agent}
-                      onValueChange={(value) => setAgent(value as AgentId)}
-                    >
-                      <SelectTrigger className="w-full sm:w-auto sm:min-w-[300px] max-w-full">
-                        <SelectValue placeholder="Select agent format" />
-                      </SelectTrigger>
-                      <SelectContent className="min-w-[300px]">
-                        {agentOptions.map((opt) => (
-                          <SelectItem key={opt.id} value={opt.id}>
-                            <span className="flex items-center gap-2">
-                              {opt.name}
-                              <Badge
-                                variant="secondary"
-                                className="text-xs font-mono"
-                              >
-                                {opt.path}
-                              </Badge>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {agent === "original" && formatWarning.message && (
-                      <p className="text-xs text-muted-foreground max-w-[300px]">
-                        {formatWarning.message}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <Select
+                        value={agent}
+                        onValueChange={(value) => setAgent(value as AgentId)}
+                      >
+                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[300px] max-w-full">
+                          <SelectValue placeholder="Select agent format" />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[300px]">
+                          {agentOptions.map((opt) => (
+                            <SelectItem key={opt.id} value={opt.id}>
+                              <span className="flex items-center gap-2">
+                                {opt.name}
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs font-mono"
+                                >
+                                  {opt.path}
+                                </Badge>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {agent === "original" && formatWarning.message && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatWarning.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 

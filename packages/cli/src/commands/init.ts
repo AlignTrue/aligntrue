@@ -3,14 +3,7 @@
  * Handles fresh starts, imports, and team joins with smart context detection
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  writeFileSync,
-  cpSync,
-  accessSync,
-  constants as fsConstants,
-} from "fs";
+import { existsSync, mkdirSync, writeFileSync, cpSync } from "fs";
 import { join, dirname } from "path";
 import * as clack from "@clack/prompts";
 import * as yaml from "yaml";
@@ -40,6 +33,7 @@ import {
   scanForExistingRulesWithOverlap,
   type DuplicateFile,
   type ScanResult,
+  scanExistingAlignTrueRules,
 } from "./init/rule-importer.js";
 import { createStarterTemplates } from "./init/starter-templates.js";
 import {
@@ -433,15 +427,6 @@ function logMessage(
   }
 }
 
-function isWritable(path: string): boolean {
-  try {
-    accessSync(path, fsConstants.W_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Init command implementation
  */
@@ -509,55 +494,43 @@ export async function init(args: string[] = []): Promise<void> {
   // Step 1: Detect project context
   const paths = getAlignTruePaths(cwd);
   const contextResult = detectContext(cwd);
+  const aligntrueDir = paths.aligntrueDir;
+  const configPath = paths.config;
+  const teamConfigPath = paths.teamConfig;
+  const rulesDir = join(aligntrueDir, "rules");
+  const hasConfig = existsSync(configPath) || existsSync(teamConfigPath);
+  const hasLockArtifacts =
+    existsSync(join(cwd, ".aligntrue", "lock.json")) ||
+    existsSync(join(cwd, ".aligntrue", "bundle.yaml")) ||
+    existsSync(join(cwd, ".aligntrue.lock.json")) ||
+    existsSync(join(cwd, ".aligntrue.bundle.yaml"));
+
+  if (!hasConfig && hasLockArtifacts) {
+    exitWithError(
+      1,
+      "Found partial AlignTrue setup (lockfile without config).",
+      {
+        hint: "Restore the missing config or remove .aligntrue artifacts, then rerun: aligntrue init --yes",
+      },
+    );
+  }
 
   // Handle already-initialized case
   if (contextResult.context === "already-initialized") {
-    const aligntrueDir = paths.aligntrueDir;
-    const configPath = paths.config;
-    const teamConfigPath = paths.teamConfig;
-    const rulesDir = join(aligntrueDir, "rules");
-
-    const hasConfig = existsSync(configPath) || existsSync(teamConfigPath);
     const hasRulesDir = existsSync(rulesDir);
-    const dirWritable = existsSync(aligntrueDir)
-      ? isWritable(aligntrueDir)
-      : false;
-    const configWritable =
-      existsSync(configPath) && dirWritable
-        ? isWritable(configPath)
-        : dirWritable;
+    if (hasConfig && hasRulesDir) {
+      const message =
+        "AlignTrue already initialized in this project.\n" +
+        "Your rules are in .aligntrue/rules/ - run 'aligntrue sync' to update agents.\n" +
+        "To switch modes: 'aligntrue team enable' or 'aligntrue team disable'";
 
-    const partialIssues: string[] = [];
-    if (!hasConfig) partialIssues.push("missing config.yaml");
-    if (!hasRulesDir) partialIssues.push("missing rules directory");
-    if (!dirWritable) partialIssues.push("directory not writable");
-    if (hasConfig && !configWritable) {
-      partialIssues.push("config.yaml not writable");
+      if (nonInteractive) {
+        console.log(message);
+      } else {
+        clack.outro(message);
+      }
+      process.exit(0);
     }
-
-    if (partialIssues.length > 0) {
-      const issueSummary = partialIssues.join("; ");
-      const nextSteps = [
-        `Fix permissions on ${aligntrueDir} (e.g., chmod u+w ${aligntrueDir})`,
-        "Or remove .aligntrue and re-run: aligntrue init --yes",
-      ];
-      exitWithError(1, `Found partial AlignTrue setup (${issueSummary}).`, {
-        hint: "Recover by fixing permissions or reinitializing .aligntrue",
-        nextSteps,
-      });
-    }
-
-    const message =
-      "AlignTrue already initialized in this project.\n" +
-      "Your rules are in .aligntrue/rules/ - run 'aligntrue sync' to update agents.\n" +
-      "To switch modes: 'aligntrue team enable' or 'aligntrue team disable'";
-
-    if (nonInteractive) {
-      console.log(message);
-    } else {
-      clack.outro(message);
-    }
-    process.exit(0);
   }
 
   // Step 1b: Check for Ruler migration opportunity (skip if explicit source provided)
@@ -573,6 +546,7 @@ export async function init(args: string[] = []): Promise<void> {
   let rulesToWrite: RuleFile[] = [];
   let isFreshStart = false;
   let isFromExternalSource = false;
+  let rulesAlreadyExist = false;
 
   if (sourceArg) {
     const rulesDir = join(paths.aligntrueDir, "rules");
@@ -761,6 +735,36 @@ export async function init(args: string[] = []): Promise<void> {
         }
       }
     }
+  } else if (contextResult.context === "partial-rules-only") {
+    const existingRules = await scanExistingAlignTrueRules(cwd);
+
+    if (existingRules.length === 0) {
+      // Fall back to stale handling if we couldn't read any rules
+      isFreshStart = !skipStarters;
+      rulesToWrite = skipStarters ? [] : createStarterTemplates();
+    } else {
+      const discoveryFiles = existingRules.map((r) => ({
+        path: r.path,
+        relativePath: r.path,
+        type: "align-md",
+      }));
+      const discoveryMsg = formatDiscoveredFiles(discoveryFiles, {
+        groupBy: "type",
+      });
+      logMessage(discoveryMsg, "info", nonInteractive);
+
+      rulesToWrite = existingRules;
+      rulesAlreadyExist = true;
+    }
+  } else if (contextResult.context === "partial-stale") {
+    // Treat as a fresh start but keep existing directory
+    if (skipStarters) {
+      isFreshStart = false;
+      rulesToWrite = [];
+    } else {
+      isFreshStart = true;
+      rulesToWrite = createStarterTemplates();
+    }
   } else {
     // Auto-detect existing rules with overlap detection
     scanner.start("Scanning for existing rules...");
@@ -901,23 +905,22 @@ export async function init(args: string[] = []): Promise<void> {
   }
 
   // Step 4: Create files
-  const aligntrueDir = paths.aligntrueDir;
-  const configPath = paths.config;
-
   mkdirSync(aligntrueDir, { recursive: true });
 
   // Create rules directory and write rules
-  const rulesDir = join(aligntrueDir, "rules");
   mkdirSync(rulesDir, { recursive: true });
 
   const createdFiles: string[] = [];
 
-  for (const rule of rulesToWrite) {
-    const rulePath = rule.relativePath || rule.filename;
-    const fullPath = join(rulesDir, rulePath);
-    mkdirSync(dirname(fullPath), { recursive: true });
-    writeRuleFile(fullPath, rule);
-    createdFiles.push(join(".aligntrue/rules", rulePath));
+  const shouldWriteRules = !rulesAlreadyExist;
+  if (shouldWriteRules) {
+    for (const rule of rulesToWrite) {
+      const rulePath = rule.relativePath || rule.filename;
+      const fullPath = join(rulesDir, rulePath);
+      mkdirSync(dirname(fullPath), { recursive: true });
+      writeRuleFile(fullPath, rule);
+      createdFiles.push(join(".aligntrue/rules", rulePath));
+    }
   }
 
   // Use selected exporters, preferring ruler config if available

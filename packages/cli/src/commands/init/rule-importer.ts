@@ -9,8 +9,8 @@
  * backup the rest.
  */
 
-import { readFileSync } from "fs";
-import { dirname } from "path";
+import { existsSync, readFileSync } from "fs";
+import { dirname, join } from "path";
 import {
   detectNestedAgentFiles,
   parseRuleFile,
@@ -121,6 +121,18 @@ export interface ScanOptions {
   similarityThreshold?: number;
   /** Whether to detect and deduplicate overlapping files, default true */
   detectOverlap?: boolean;
+}
+
+/**
+ * Load existing AlignTrue rules from .aligntrue/rules (if present)
+ */
+export async function scanExistingAlignTrueRules(
+  cwd: string,
+): Promise<RuleFile[]> {
+  const rulesDir = join(cwd, ".aligntrue", "rules");
+  if (!existsSync(rulesDir)) return [];
+  const { loadRulesDirectory } = await import("@aligntrue/core");
+  return loadRulesDirectory(rulesDir, cwd, { recursive: true });
 }
 
 /**
