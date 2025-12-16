@@ -165,8 +165,8 @@ const commands: CommandTest[] = [
     input: "",
   },
   {
-    command: "aligntrue plugs list",
-    description: "Plugs list after init",
+    command: "aligntrue plugs",
+    description: "Plugs status after init",
     expectedExitCode: 0,
     requiresSetup: true,
   },
