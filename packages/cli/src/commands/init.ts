@@ -1026,6 +1026,7 @@ export async function init(args: string[] = []): Promise<void> {
     }
   } else {
     // Solo mode: single config.yaml
+    mkdirSync(dirname(configPath), { recursive: true });
     writeConfigFileSafely(configPath, yaml.stringify(config), {
       cwd,
       description: "Config",
