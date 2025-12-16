@@ -232,9 +232,10 @@ export function AlignDetailPreview({
     ];
   }, [align.id, align.url, catalogPack, shareUrl]);
 
-  const previewText = selectedContent
+  const strippedContent = selectedContent
     ? stripFrontmatter(selectedContent)
-    : "Content unavailable.";
+    : "";
+  const previewText = strippedContent ? strippedContent : null;
 
   const previewFilename = isPack
     ? selectedPath || "rules.md"
