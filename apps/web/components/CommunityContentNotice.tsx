@@ -1,5 +1,4 @@
 import { Info } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -36,15 +35,11 @@ export function CommunityContentNotice({
   variant = "callout",
   className,
 }: CommunityContentNoticeProps) {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => setHydrated(true), []);
-
   const learnMoreHref = "/docs/01-guides/11-catalog-safety";
   const reportHref = buildReportUrl(alignId, alignUrl);
   const textClass = compact ? "text-[11px]" : "text-xs";
 
   if (variant === "inline") {
-    if (!hydrated) return null;
     return (
       <Popover>
         <PopoverTrigger asChild>
