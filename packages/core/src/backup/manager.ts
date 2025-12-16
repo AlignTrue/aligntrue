@@ -5,7 +5,7 @@
  * of the .aligntrue/ directory.
  */
 
-import { join, dirname, relative } from "path";
+import { join, dirname, relative, basename } from "path";
 import {
   existsSync,
   mkdirSync,
@@ -15,6 +15,7 @@ import {
   rmSync,
   cpSync,
   statSync,
+  mkdtempSync,
 } from "fs";
 import micromatch from "micromatch";
 import { globSync } from "glob";
@@ -54,17 +55,15 @@ export class BackupManager {
     // Generate timestamp for this backup (with process ID and sequence for uniqueness)
     // Format: 2025-11-18T23-54-39-705-1a2b-0 (timestamp + PID in base36 + sequence)
     backupSequence++;
-    const timestamp =
+    const baseTimestamp =
       new Date()
         .toISOString()
         .replace(/:/g, "-")
         .replace(/\./g, "-")
         .replace(/Z$/, "") +
       `-${process.pid.toString(36)}-${backupSequence.toString(36)}`;
-    const backupDir = join(backupsDir, timestamp);
-
-    // Create backup directory
-    mkdirSync(backupDir, { recursive: true });
+    const backupDir = mkdtempSync(join(backupsDir, `${baseTimestamp}-`));
+    const timestamp = basename(backupDir);
 
     // Collect files to backup (everything except .backups/)
     const files: string[] = [];

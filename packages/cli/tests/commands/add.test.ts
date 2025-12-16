@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+  mkdtempSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import * as yaml from "yaml";
@@ -52,16 +59,15 @@ vi.mock("../../src/commands/sync/index.js", () => ({
 }));
 
 describe("add command", () => {
-  const testDir = join(tmpdir(), "temp-add-cli-test");
-  const aligntrueDir = join(testDir, ".aligntrue");
+  let testDir: string;
+  let aligntrueDir: string;
   let originalCwd: string;
 
   beforeEach(() => {
     originalCwd = process.cwd();
 
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-add-cli-"));
+    aligntrueDir = join(testDir, ".aligntrue");
     mkdirSync(aligntrueDir, { recursive: true });
     mkdirSync(join(aligntrueDir, "rules"), { recursive: true });
 

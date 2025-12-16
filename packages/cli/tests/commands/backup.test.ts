@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { backupCommand } from "../../src/commands/backup";
 import { BackupManager } from "@aligntrue/core";
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+  mkdtempSync,
+} from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { ValidationError } from "../../src/utils/error-types.js";
@@ -24,16 +31,15 @@ vi.mock("@clack/prompts", () => ({
 }));
 
 describe("backup command", () => {
-  const testDir = join(tmpdir(), "temp-backup-cli-test");
-  const aligntrueDir = join(testDir, ".aligntrue");
+  let testDir: string;
+  let aligntrueDir: string;
   let originalCwd: string;
 
   beforeEach(() => {
     originalCwd = process.cwd();
 
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-backup-cli-"));
+    aligntrueDir = join(testDir, ".aligntrue");
     mkdirSync(aligntrueDir, { recursive: true });
 
     // Create sample files

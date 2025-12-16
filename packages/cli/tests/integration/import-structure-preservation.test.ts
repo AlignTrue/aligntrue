@@ -12,12 +12,13 @@ import {
   rmSync,
   readFileSync,
   readdirSync,
+  mkdtempSync,
 } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 import { tmpdir } from "os";
 
-const TEST_DIR = join(tmpdir(), "temp-test-import");
+let testDir: string;
 const CLI_PATH = join(__dirname, "../../dist/index.js");
 
 // Skip on Windows due to unreliable file cleanup in CI
@@ -26,24 +27,20 @@ const describeSkipWindows =
 
 describeSkipWindows("Import Structure Preservation", () => {
   beforeEach(() => {
-    // Clean and create test directory
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
-    }
-    mkdirSync(TEST_DIR, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "aligntrue-import-"));
   });
 
   afterEach(() => {
     // Cleanup
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
     }
   });
 
   describe("Local import", () => {
     it("should preserve directory structure when importing from local path", () => {
       // Create source directory with nested structure
-      const sourceDir = join(TEST_DIR, "source-rules");
+      const sourceDir = join(testDir, "source-rules");
       mkdirSync(sourceDir, { recursive: true });
       mkdirSync(join(sourceDir, "backend"), { recursive: true });
       mkdirSync(join(sourceDir, "frontend"), { recursive: true });
@@ -67,7 +64,7 @@ describeSkipWindows("Import Structure Preservation", () => {
       );
 
       // Create project and initialize
-      const projectDir = join(TEST_DIR, "project");
+      const projectDir = join(testDir, "project");
       mkdirSync(projectDir, { recursive: true });
       mkdirSync(join(projectDir, ".aligntrue"), { recursive: true });
 
@@ -112,7 +109,7 @@ exporters:
 
     it("should preserve original filename when importing", () => {
       // Create source directory
-      const sourceDir = join(TEST_DIR, "source-names");
+      const sourceDir = join(testDir, "source-names");
       mkdirSync(sourceDir, { recursive: true });
 
       // Create file with specific name
@@ -122,7 +119,7 @@ exporters:
       );
 
       // Create project
-      const projectDir = join(TEST_DIR, "project");
+      const projectDir = join(testDir, "project");
       mkdirSync(projectDir, { recursive: true });
       mkdirSync(join(projectDir, ".aligntrue"), { recursive: true });
 
@@ -156,7 +153,7 @@ exporters:
 
     it("should convert .mdc files to .md while preserving structure", () => {
       // Create source directory with .mdc files
-      const sourceDir = join(TEST_DIR, "source-mdc");
+      const sourceDir = join(testDir, "source-mdc");
       mkdirSync(sourceDir, { recursive: true });
       mkdirSync(join(sourceDir, "cursor"), { recursive: true });
 
@@ -173,7 +170,7 @@ Some cursor guidance`,
       );
 
       // Create project
-      const projectDir = join(TEST_DIR, "project");
+      const projectDir = join(testDir, "project");
       mkdirSync(projectDir, { recursive: true });
       mkdirSync(join(projectDir, ".aligntrue"), { recursive: true });
 
@@ -211,7 +208,7 @@ exporters:
   describe("Export structure preservation", () => {
     it("should preserve rule subdirectory structure in multi-file exports", () => {
       // Create project with nested rules
-      const projectDir = join(TEST_DIR, "export-project");
+      const projectDir = join(testDir, "export-project");
       mkdirSync(projectDir, { recursive: true });
       mkdirSync(join(projectDir, ".aligntrue/rules/backend"), {
         recursive: true,
@@ -281,7 +278,7 @@ exporters:
 
     it("should include full path in AGENTS.md links for nested rules", () => {
       // Create project with nested rules
-      const projectDir = join(TEST_DIR, "agents-project");
+      const projectDir = join(testDir, "agents-project");
       mkdirSync(projectDir, { recursive: true });
       mkdirSync(join(projectDir, ".aligntrue/rules/backend"), {
         recursive: true,
