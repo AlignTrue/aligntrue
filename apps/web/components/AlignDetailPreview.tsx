@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HashBar } from "@/components/HashBar";
@@ -560,9 +560,29 @@ export function AlignDetailPreview({
                         </SelectContent>
                       </Select>
                       {formatWarning.message && (
-                        <p className="text-xs text-muted-foreground">
-                          {formatWarning.message}
-                        </p>
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                                <Info size={14} />
+                                Mixed formats
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs space-y-2">
+                              <p className="text-sm leading-snug">
+                                This pack has multiple formats. AlignTrue
+                                simplifies to a single source. All rules work
+                                with any agent you select.
+                              </p>
+                              <a
+                                href="/docs/03-concepts/align-packs#mixed-format-packs"
+                                className="text-xs text-accent hover:underline"
+                              >
+                                Learn more
+                              </a>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </div>
                   </div>

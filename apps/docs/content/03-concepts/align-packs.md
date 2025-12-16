@@ -35,3 +35,23 @@ What is stored:
 - `.align.yaml` manifest authoring
 - GitHub pack resolution in the CLI
 - Pack install via `aligntrue add <pack-url>`
+
+## Mixed format packs
+
+Some packs in the catalog contain rules authored in multiple agent formats (for example, Cursor `.mdc` files alongside `CLAUDE.md`). This typically happens when authors use custom configurations or symlinked setups.
+
+### How AlignTrue handles this
+
+When you install a mixed format pack:
+
+1. All rules are converted to AlignTrue source format (`.aligntrue/rules/*.md`)
+2. You select which agent(s) to export to during setup
+3. AlignTrue generates the appropriate format for each agent
+
+### What to do after install
+
+1. Review the imported rules in `.aligntrue/rules/`
+2. Run `aligntrue exporters` to configure your target agents
+3. Run `aligntrue sync` to generate agent-specific files
+
+This approach keeps a single source of truth instead of multiple format-specific files.
