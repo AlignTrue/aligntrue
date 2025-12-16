@@ -97,6 +97,7 @@ describe("add command", () => {
   describe("subcommand parsing", () => {
     it("should parse 'add link' subcommand", async () => {
       const { add } = await import("../../src/commands/add.js");
+      const { sync } = await import("../../src/commands/sync/index.js");
 
       await add(["link", "https://github.com/test/rules"]);
 
@@ -113,10 +114,13 @@ describe("add command", () => {
         url: "https://github.com/test/rules",
         personal: true,
       });
+
+      expect(sync).toHaveBeenCalledWith(["--quiet"]);
     });
 
     it("should parse 'add link --personal' flag", async () => {
       const { add } = await import("../../src/commands/add.js");
+      const { sync } = await import("../../src/commands/sync/index.js");
 
       await add(["link", "https://github.com/test/rules", "--personal"]);
 
@@ -134,6 +138,17 @@ describe("add command", () => {
         personal: true,
         gitignore: true,
       });
+
+      expect(sync).toHaveBeenCalledWith(["--quiet"]);
+    });
+
+    it("should skip auto-sync when --no-sync is provided for add link", async () => {
+      const { add } = await import("../../src/commands/add.js");
+      const { sync } = await import("../../src/commands/sync/index.js");
+
+      await add(["link", "https://github.com/test/rules", "--no-sync"]);
+
+      expect(sync).not.toHaveBeenCalled();
     });
 
     it("should parse 'add remote' subcommand", async () => {

@@ -432,7 +432,7 @@ sources:
     ref: main # Or a specific tag/commit for stability
 ```
 
-Run `aligntrue sync` to pull updates.
+The first sync runs automatically after `aligntrue add link` (use `--no-sync` to skip); future updates arrive on each `aligntrue sync`.
 
 ### Option 2: One-time import (copy)
 

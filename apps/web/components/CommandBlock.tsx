@@ -50,11 +50,11 @@ export function CommandBlock({
     >
       <div className="flex-1 min-w-0 w-full">
         {description && (
-          <div className={cn("px-4 pt-3 text-sm font-medium text-primary")}>
+          <div className={cn("px-4 pt-3.5 text-sm font-medium text-primary")}>
             {description}
           </div>
         )}
-        <div className={cn("mt-2 rounded-b-xl overflow-hidden")}>
+        <div className={cn("mt-2.5 rounded-b-xl overflow-hidden")}>
           <div
             className={cn(
               variant === "terminal"
@@ -81,7 +81,7 @@ export function CommandBlock({
           </div>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-2 p-4 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 p-4 w-full sm:w-auto">
         {!hideCopy && (
           <Button
             onClick={handleCopy}

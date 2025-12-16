@@ -34,7 +34,7 @@ aligntrue add https://github.com/org/rules
 
 ### Connected sources (live updates)
 
-Use `aligntrue add link` to add a connected source. Rules will be fetched on each `aligntrue sync`:
+Use `aligntrue add link` to add a connected source. It auto-syncs once after adding (pass `--no-sync` to skip) and fetches updates on each subsequent `aligntrue sync`:
 
 ```bash
 # Add as connected source (updates on sync)

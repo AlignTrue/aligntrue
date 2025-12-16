@@ -92,10 +92,9 @@ Pull rules from any git repository to share across projects or teams.
 
 ```bash
 aligntrue add link https://github.com/yourorg/rules
-aligntrue sync
 ```
 
-The `add link` subcommand automatically adds the source to your `.aligntrue/config.yaml` and fetches updates on each sync. First sync will prompt for privacy consent.
+The `add link` subcommand automatically adds the source to your `.aligntrue/config.yaml`, runs an immediate sync (pass `--no-sync` to skip), and fetches updates on each subsequent sync. First sync will prompt for privacy consent.
 
 **Alternative:** Manually edit `.aligntrue/config.yaml` if you prefer:
 

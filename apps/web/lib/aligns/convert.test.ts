@@ -113,6 +113,20 @@ Body
     expect(parsed.data.alwaysApply).toBe(false);
   });
 
+  it("uses align-md defaults for the default agent", () => {
+    const result = convertContent(baseContent, "default");
+    const parsed = parseFrontmatter(result.text);
+
+    expect(result.filename).toBe("align.md");
+    expect(result.extension).toBe("md");
+    expect(parsed.data).toEqual({
+      title: "Test Title",
+      description: "Test Description",
+      globs: ["**/*.ts"],
+    });
+    expect(parsed.content.trim()).toContain("Body text.");
+  });
+
   it("uses cursor override metadata when provided", () => {
     const contentWithCursor = `---
 title: Overrides
@@ -135,13 +149,13 @@ Body
 
   it("maps supported agents to expected filenames", () => {
     const expectations: Record<AgentId, string> = {
+      default: "align.md",
       original: "rules.md",
       aligntrue: "rules.md",
       all: "AGENTS.md",
       cursor: "rules.mdc",
       claude: "CLAUDE.md",
       windsurf: "WINDSURF.md",
-      copilot: "AGENTS.md",
       gemini: "GEMINI.md",
       zed: "ZED.md",
       warp: "WARP.md",

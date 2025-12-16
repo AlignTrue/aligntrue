@@ -220,8 +220,8 @@ export function AlignDetailPreview({
   const installTabs = useMemo((): ActionTabConfig[] => {
     const installTarget = align.url || shareUrl || align.id;
     const linkTarget = catalogPack ? align.id : installTarget;
-    const addCommandExisting = `aligntrue add ${catalogPack ? align.id : installTarget}`;
-    const linkCommandExisting = `aligntrue add link ${linkTarget}\naligntrue sync`;
+    const addCommandExisting = `aligntrue add ${catalogPack ? align.id : installTarget}${exporterFlagForNew}`;
+    const linkCommandExisting = `aligntrue add link ${linkTarget}${exporterFlagForNew}`;
     const installCommand = `npm install -g aligntrue\naligntrue init ${
       catalogPack ? align.id : installTarget
     }${exporterFlagForNew}`;
@@ -426,7 +426,7 @@ export function AlignDetailPreview({
                 )}
               </div>
 
-              <div className="flex flex-col items-start sm:items-end gap-1.5 text-sm text-muted-foreground">
+              <div className="flex flex-col items-start sm:items-end gap-2 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <div className="flex items-center gap-2">
                     {isArchived || catalogPack || !display.externalUrl ? (
@@ -560,12 +560,12 @@ export function AlignDetailPreview({
               </div>
             )}
 
-            <hr className="border-t border-border my-4" />
+            <hr className="border-t border-border my-6" />
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 {installTab === "new" && (
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">
+                    <label className="text-sm font-medium text-muted-foreground">
                       Agent export format:
                     </label>
                     <Select
@@ -621,8 +621,8 @@ export function AlignDetailPreview({
               </div>
 
               {canExport && installTabs.length > 0 ? (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground m-0">
+                <div className="space-y-4">
+                  <h3 className="text-base font-semibold text-foreground m-0">
                     {installTab === "new" ? "Install via CLI" : "Add via CLI"}
                   </h3>
                   {(() => {
@@ -632,7 +632,7 @@ export function AlignDetailPreview({
                     if (!currentTab) return null;
 
                     return (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {currentTab.commands.map((group) => (
                           <CommandBlock
                             key={group.description}

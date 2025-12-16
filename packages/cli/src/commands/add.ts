@@ -315,6 +315,7 @@ export async function add(args: string[]): Promise<void> {
       configPath,
       privateSource,
       personal: personalFlag,
+      noSync,
       spinner,
     });
   } else if (subcommand === "remote") {
@@ -445,6 +446,7 @@ async function addLink(options: {
   configPath: string;
   privateSource: boolean;
   personal: boolean;
+  noSync: boolean;
   spinner: ReturnType<typeof createManagedSpinner>;
 }): Promise<void> {
   const {
@@ -455,6 +457,7 @@ async function addLink(options: {
     configPath,
     privateSource,
     personal,
+    noSync,
     spinner,
   } = options;
 
@@ -560,7 +563,32 @@ async function addLink(options: {
 
   spinner.stop("Align link added");
 
-  const outroMessage = `Added link: ${baseUrl}\nRun 'aligntrue sync' to pull updates.`;
+  let syncPerformed = false;
+  if (!noSync) {
+    try {
+      if (isTTY()) {
+        clack.log.step("Syncing rules to agents...");
+      }
+      const { sync } = await import("./sync/index.js");
+      await sync(["--quiet"]);
+      syncPerformed = true;
+      if (isTTY()) {
+        clack.log.success("Synced to agents");
+      }
+    } catch {
+      if (isTTY()) {
+        clack.log.warn("Auto-sync failed. Run 'aligntrue sync' manually.");
+      } else {
+        console.log(
+          "\nWarning: Auto-sync failed. Run 'aligntrue sync' manually.",
+        );
+      }
+    }
+  }
+
+  const outroMessage = syncPerformed
+    ? `Added link: ${baseUrl}\nSynced to agents.`
+    : `Added link: ${baseUrl}${noSync ? "" : "\nRun 'aligntrue sync' to pull updates."}`;
   if (isTTY()) {
     clack.outro(outroMessage);
   } else {

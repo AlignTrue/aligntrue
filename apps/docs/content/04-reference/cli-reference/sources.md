@@ -117,13 +117,15 @@ aligntrue add link <git-url> [options]
 | `--personal` |       | Write to personal config (team mode) | `false`                  |
 | `--shared`   |       | Write to team config (team mode)     | `false`                  |
 | `--yes`      | `-y`  | Non-interactive mode                 | `false`                  |
+| `--no-sync`  |       | Skip auto-sync after adding link     | `false`                  |
 | `--config`   | `-c`  | Custom config file path              | `.aligntrue/config.yaml` |
 
 **What it does:**
 
 1. Adds the git source to config (`config.yaml` or `config.team.yaml`).
-2. Fetches rules on each `aligntrue sync` using cache + updates.
-3. Prompts for consent on first network access.
+2. Runs `aligntrue sync` automatically (unless `--no-sync`) to fetch and export rules.
+3. Fetches updates on each subsequent `aligntrue sync` using cache + updates.
+4. Prompts for consent on first network access.
 
 **Examples:**
 

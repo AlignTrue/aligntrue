@@ -126,6 +126,13 @@ export function convertContent(
   const { data, body } = parseFrontmatter(rawContent);
 
   switch (targetAgent) {
+    case "default": {
+      return {
+        text: rawContent,
+        filename: "align.md",
+        extension: "md",
+      };
+    }
     case "original": {
       return {
         text: rawContent,
