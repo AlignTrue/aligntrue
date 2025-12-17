@@ -84,6 +84,68 @@ describe("Bundle Merging", () => {
     expect(result.warnings.length).toBeGreaterThan(0);
   });
 
+  it("should keep the earliest source when multiple conflicts occur", () => {
+    const align1: Align = {
+      id: "align1",
+      version: "1.0.0",
+      spec_version: "1",
+      sections: [
+        {
+          heading: "Shared Rule",
+          level: 2,
+          content: "Content from align1",
+          fingerprint: "fp:shared-rule",
+        },
+      ],
+    };
+
+    const align2: Align = {
+      id: "align2",
+      version: "1.0.0",
+      spec_version: "1",
+      sections: [
+        {
+          heading: "Shared Rule",
+          level: 2,
+          content: "Content from align2",
+          fingerprint: "fp:shared-rule",
+        },
+      ],
+    };
+
+    const align3: Align = {
+      id: "align3",
+      version: "1.0.0",
+      spec_version: "1",
+      sections: [
+        {
+          heading: "Shared Rule",
+          level: 2,
+          content: "Content from align3",
+          fingerprint: "fp:shared-rule",
+        },
+      ],
+    };
+
+    const result = mergeAligns([align1, align2, align3]);
+
+    // Only the first source's section should be kept
+    expect(result.align.sections).toHaveLength(1);
+    expect(result.align.sections[0].content).toBe("Content from align1");
+
+    // Each additional conflicting source should register a conflict
+    expect(result.conflicts).toHaveLength(2);
+    expect(result.conflicts[0].resolution).toBe("align1");
+    expect(result.conflicts[1].resolution).toBe("align1");
+    expect(result.conflicts.map((c) => c.fingerprint)).toEqual([
+      "fp:shared-rule",
+      "fp:shared-rule",
+    ]);
+
+    // Warnings are emitted for each conflict when warnConflicts is default (true)
+    expect(result.warnings.length).toBeGreaterThanOrEqual(2);
+  });
+
   it("should merge plugs from multiple aligns", () => {
     const align1: Align = {
       id: "align1",
