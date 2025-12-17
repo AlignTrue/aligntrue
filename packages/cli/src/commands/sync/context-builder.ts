@@ -862,11 +862,28 @@ async function checkAgentsWithCache(
           ...config.detection,
           ignored_agents: updatedIgnored,
         };
+        // Keep runtime ignored set in sync for this run
+        for (const agent of agentsToAdd) {
+          ignoredSet.add(agent);
+        }
         clack.log.info(
           `Added ${agentsToAdd.map((a) => `'${a}'`).join(", ")} to ignored agents`,
         );
       }
       // "skip" does nothing - will ask again next time
+
+      // Recompute detection to avoid stale notFound/missing after changes
+      const refreshed = detectAgentsWithValidation(
+        cwd,
+        getExporterNames(config.exporters),
+      );
+      refreshed.missing = refreshed.missing.filter((a) => !ignoredSet.has(a));
+      refreshed.detected = refreshed.detected.filter((a) => !ignoredSet.has(a));
+      refreshed.notFound = refreshed.notFound.filter((a) => !ignoredSet.has(a));
+      detection.missing = refreshed.missing;
+      detection.detected = refreshed.detected;
+      detection.notFound = refreshed.notFound;
+      detection.configured = refreshed.configured;
     }
 
     const isFirstDetection = !cache;
