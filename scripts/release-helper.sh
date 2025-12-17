@@ -16,6 +16,9 @@ case "${BUMP_TYPE}" in
     ;;
 esac
 
+echo "==> Running comprehensive CLI tests"
+pnpm --filter @aligntrue/cli test:comprehensive
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
