@@ -719,8 +719,11 @@ async function checkAgentsWithCache(
   }
   const { loadDetectionCache, saveDetectionCache } =
     await import("@aligntrue/core");
-  const { detectAgentsWithValidation, shouldWarnAboutDetection } =
-    await import("../../utils/detect-agents.js");
+  const {
+    detectAgentsWithValidation,
+    shouldWarnAboutDetection,
+    detectFilesWithContent,
+  } = await import("../../utils/detect-agents.js");
 
   const detection = detectAgentsWithValidation(
     cwd,
@@ -747,24 +750,61 @@ async function checkAgentsWithCache(
     const agentsToAdd = detection.missing;
 
     if (agentsToAdd.length > 0) {
-      clack.log.warn(
-        `Unconfigured agent files detected: ${agentsToAdd.join(", ")}`,
-      );
+      // Build descriptive message showing actual files found
+      for (const agent of agentsToAdd) {
+        const displayName = getAgentDisplayName(agent);
+        const files = detectFilesWithContent(cwd, agent);
 
-      let shouldAdd = false;
+        // Build file list (limit to 5 files to avoid overwhelming output)
+        const fileLines = files.slice(0, 5).map((f) => {
+          const sectionInfo =
+            f.sectionCount > 0 ? ` (${f.sectionCount} sections)` : "";
+          return `  ${f.relativePath}${sectionInfo}`;
+        });
+        const moreFiles =
+          files.length > 5 ? `\n  ... and ${files.length - 5} more` : "";
+
+        clack.log.warn(
+          `Found ${displayName} export files, but '${agent}' is not in your exporters:\n${fileLines.join("\n")}${moreFiles}`,
+        );
+      }
+
+      type DetectionChoice = "add" | "ignore" | "skip";
+      let choice: DetectionChoice = "add";
 
       if (options.yes || options.nonInteractive) {
         // Auto-accept in non-interactive mode
-        shouldAdd = true;
+        choice = "add";
       } else {
-        const response = await clack.confirm({
-          message: "Add detected agents to exporters?",
-          initialValue: true,
+        const agentList = agentsToAdd.map((a) => `'${a}'`).join(", ");
+        const response = await clack.select({
+          message: "What would you like to do?",
+          options: [
+            {
+              value: "add" as const,
+              label: `Add ${agentList} to exporters`,
+              hint: "sync will update these files",
+            },
+            {
+              value: "ignore" as const,
+              label: "Ignore permanently",
+              hint: "won't ask again for these agents",
+            },
+            {
+              value: "skip" as const,
+              label: "Skip for now",
+            },
+          ],
         });
-        shouldAdd = !clack.isCancel(response) && response;
+
+        if (clack.isCancel(response)) {
+          choice = "skip";
+        } else {
+          choice = response;
+        }
       }
 
-      if (shouldAdd) {
+      if (choice === "add") {
         // Always use array format for simplicity
         const updatedExporters = [
           ...getExporterNames(config.exporters),
@@ -773,7 +813,24 @@ async function checkAgentsWithCache(
         // Patch config - only update exporters, preserve everything else
         await patchConfig({ exporters: updatedExporters }, configPath, cwd);
         clack.log.success("Updated exporters in config");
+      } else if (choice === "ignore") {
+        // Add to ignored_agents in config
+        const currentIgnored = config.detection?.ignored_agents || [];
+        const updatedIgnored = [
+          ...new Set([...currentIgnored, ...agentsToAdd]),
+        ];
+        await patchConfig(
+          {
+            detection: { ...config.detection, ignored_agents: updatedIgnored },
+          },
+          configPath,
+          cwd,
+        );
+        clack.log.info(
+          `Added ${agentsToAdd.map((a) => `'${a}'`).join(", ")} to ignored agents`,
+        );
       }
+      // "skip" does nothing - will ask again next time
     }
 
     const isFirstDetection = !cache;

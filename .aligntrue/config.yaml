@@ -6,4 +6,4 @@ sources:
     url: https://github.com/AlignTrue/examples
     personal: true
 exporters:
-  - agents
+  - cursor
