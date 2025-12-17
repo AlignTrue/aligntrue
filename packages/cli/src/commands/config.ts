@@ -174,7 +174,7 @@ async function showConfig(configPath: string): Promise<void> {
 
   try {
     const { loadMergedConfig } = await import("@aligntrue/core");
-    const projectRoot = normalizePath(resolve(dirname(configPath), ".."));
+    const projectRoot = resolve(dirname(configPath), "..");
     const { config: cfg } = await loadMergedConfig(projectRoot);
 
     // Display mode prominently
