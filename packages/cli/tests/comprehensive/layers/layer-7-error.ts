@@ -13,6 +13,8 @@ interface ErrorTest {
   name: string;
   command: string;
   expectedExitCode: number;
+  /** Whether the test requires a clean workspace with no prior state */
+  needsCleanWorkspace?: boolean;
   validation: (
     output: string,
     exitCode: number,
@@ -57,6 +59,7 @@ const tests: ErrorTest[] = [
     name: "Validation error has clear message",
     command: "aligntrue check",
     expectedExitCode: 2,
+    needsCleanWorkspace: true,
     validation: (output) => ({
       passed: output.includes("Config") || output.includes("not found"),
       error: "Should explain validation failure",
@@ -75,6 +78,7 @@ const tests: ErrorTest[] = [
     name: "Error messages are clear and actionable",
     command: "aligntrue sync",
     expectedExitCode: 2,
+    needsCleanWorkspace: true,
     validation: (output) => ({
       passed:
         output.includes("Configuration file not found") ||
@@ -97,10 +101,16 @@ function runTest(
   console.log(`  Executing: ${test.command}`);
   let output = "";
   let exitCode = 0;
+  let testWorkspace = workspace;
+
+  // Some tests require a clean workspace (no config/rules). Create a temp dir for them.
+  if (test.needsCleanWorkspace) {
+    testWorkspace = mkdtempSync(join(tmpdir(), "aligntrue-layer7-clean-"));
+  }
 
   try {
     output = execSync(test.command, {
-      cwd: workspace,
+      cwd: testWorkspace,
       encoding: "utf-8",
       stdio: "pipe",
     });
@@ -110,6 +120,10 @@ function runTest(
     const stdout = typeof execErr.stdout === "string" ? execErr.stdout : "";
     const stderr = typeof execErr.stderr === "string" ? execErr.stderr : "";
     output = stdout + stderr;
+  } finally {
+    if (test.needsCleanWorkspace && testWorkspace !== workspace) {
+      rmSync(testWorkspace, { recursive: true, force: true });
+    }
   }
 
   console.log(`  Exit code: ${exitCode}`);
