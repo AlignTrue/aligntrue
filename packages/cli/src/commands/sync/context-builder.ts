@@ -796,7 +796,7 @@ async function checkAgentsWithCache(
       }
 
       type DetectionChoice = "add" | "ignore" | "skip";
-      let choice: DetectionChoice = "add";
+      let choice: DetectionChoice;
 
       if (options.yes || options.nonInteractive) {
         // Auto-accept in non-interactive mode
