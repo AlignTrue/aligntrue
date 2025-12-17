@@ -350,22 +350,48 @@ export async function buildSyncContext(
         { seen: new Set<string>(), list: [] as typeof bundleResult.sources },
       ).list;
 
-      const orderedSources = [...uniqueSources].reverse();
-      clack.log.info(
-        "Sources merged (highest priority first, last source wins on conflicts):",
-      );
-      orderedSources.forEach((src, idx) => {
-        const priority =
-          idx === 0 ? "wins" : idx === orderedSources.length - 1 ? "base" : "";
-        const priorityLabel = priority ? ` [${priority}]` : "";
+      clack.log.info("Sources merged (earlier sources win on conflict):");
+      uniqueSources.forEach((src, idx) => {
+        const priorityLabel = idx === 0 ? " [wins on conflict]" : "";
+        const shaLabel = src.commitSha ? ` (${src.commitSha.slice(0, 7)})` : "";
         clack.log.info(
-          `  ${idx + 1}. ${src.sourcePath}${src.commitSha ? ` (${src.commitSha.slice(0, 7)})` : ""}${priorityLabel}`,
+          `  ${idx + 1}. ${src.sourcePath}${shaLabel}${priorityLabel}`,
         );
       });
 
-      if (bundleResult.conflicts && bundleResult.conflicts.length > 0) {
+      const conflicts = bundleResult.conflicts || [];
+      if (conflicts.length > 0) {
+        // Summarize winners to give actionable context
+        const winnerCounts = conflicts.reduce<Record<string, number>>(
+          (acc, conflict) => {
+            const winner = conflict.resolution;
+            acc[winner] = (acc[winner] || 0) + 1;
+            return acc;
+          },
+          {},
+        );
+
+        const winnerSummary = Object.entries(winnerCounts)
+          .map(([src, count]) => `${src} (${count})`)
+          .join(", ");
+
+        const details =
+          conflicts.length <= 5
+            ? "\n" +
+              conflicts
+                .map((conflict) => {
+                  const dropped = conflict.sources
+                    .filter((s) => s !== conflict.resolution)
+                    .join(", ");
+                  return `  - kept from ${conflict.resolution}${
+                    dropped ? `; dropped ${dropped}` : ""
+                  }`;
+                })
+                .join("\n")
+            : "";
+
         clack.log.warn(
-          `${bundleResult.conflicts.length} merge conflict${bundleResult.conflicts.length !== 1 ? "s" : ""} resolved (last source wins)`,
+          `${conflicts.length} rule conflict${conflicts.length !== 1 ? "s" : ""} resolved (earlier sources took priority)\n  winners: ${winnerSummary}${details}`,
         );
       }
     }
@@ -711,6 +737,7 @@ async function checkAgentsWithCache(
     shouldWarnAboutDetection,
     detectFilesWithContent,
     getAgentDisplayName,
+    AGENT_PATTERNS,
   } = await import("../../utils/detect-agents.js");
 
   const detection = detectAgentsWithValidation(
@@ -742,19 +769,30 @@ async function checkAgentsWithCache(
       for (const agent of agentsToAdd) {
         const displayName = getAgentDisplayName(agent);
         const files = detectFilesWithContent(cwd, agent);
+        const patterns = AGENT_PATTERNS?.[agent] || [];
 
-        // Build file list (limit to 5 files to avoid overwhelming output)
-        const fileLines = files.slice(0, 5).map((f) => {
-          const sectionInfo =
-            f.sectionCount > 0 ? ` (${f.sectionCount} sections)` : "";
-          return `  ${f.relativePath}${sectionInfo}`;
-        });
-        const moreFiles =
-          files.length > 5 ? `\n  ... and ${files.length - 5} more` : "";
+        // Handle empty directories (pattern exists but no files)
+        if (files.length === 0) {
+          const patternLabel =
+            patterns.length > 0 ? patterns.join(", ") : displayName;
+          clack.log.warn(
+            `Found ${displayName} export path (${patternLabel}), but no export files found and '${agent}' is not in your exporters.\n` +
+              "  Add it to exporters to let sync manage it (first sync will create files), or remove the empty directory to silence this warning.",
+          );
+        } else {
+          // Build file list (limit to 5 files to avoid overwhelming output)
+          const fileLines = files.slice(0, 5).map((f) => {
+            const sectionInfo =
+              f.sectionCount > 0 ? ` (${f.sectionCount} sections)` : "";
+            return `  ${f.relativePath}${sectionInfo}`;
+          });
+          const moreFiles =
+            files.length > 5 ? `\n  ... and ${files.length - 5} more` : "";
 
-        clack.log.warn(
-          `Found ${displayName} export files, but '${agent}' is not in your exporters:\n${fileLines.join("\n")}${moreFiles}`,
-        );
+          clack.log.warn(
+            `Found ${displayName} export files, but '${agent}' is not in your exporters:\n${fileLines.join("\n")}${moreFiles}`,
+          );
+        }
       }
 
       type DetectionChoice = "add" | "ignore" | "skip";
@@ -838,8 +876,10 @@ async function checkAgentsWithCache(
       !isFirstDetection
     ) {
       clack.log.info(
-        `Agent not installed locally: ${detection.notFound.join(", ")}\n` +
-          "  (Rules were still exported; install the agent locally to enable previews)",
+        `'${detection.notFound.join(
+          ", ",
+        )}' is in your exporters but no export files exist yet\n` +
+          "  (first sync will create them)",
       );
     }
 

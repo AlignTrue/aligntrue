@@ -2,7 +2,7 @@
  * Bundle merging - combine multiple AlignAligns into a single align
  *
  * Merge strategy:
- * - Sections with same fingerprint: last source wins (with warning)
+ * - Sections with same fingerprint: first source wins (with warning)
  * - Metadata: merge with last-wins precedence
  * - Plugs: merge fills, validate no slot conflicts
  * - Scopes: union of all scopes
