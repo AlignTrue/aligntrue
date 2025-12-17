@@ -853,13 +853,16 @@ async function checkAgentsWithCache(
         ];
         await patchConfig(
           {
-            detection: { ...config.detection, ignored_agents: updatedIgnored },
+            detection: {
+              ...(config.detection || {}),
+              ignored_agents: updatedIgnored,
+            },
           },
           configPath,
           cwd,
         );
         config.detection = {
-          ...config.detection,
+          ...(config.detection || {}),
           ignored_agents: updatedIgnored,
         };
         // Keep runtime ignored set in sync for this run
