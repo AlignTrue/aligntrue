@@ -709,7 +709,7 @@ async function _enableExporters(
   const currentExporters = getExporterNames(config.exporters);
   const updatedExporters = [...currentExporters, ...toAdd];
   // Patch config - only update exporters, preserve everything else
-  await patchConfig({ exporters: updatedExporters }, configPath);
+  await patchConfig({ exporters: updatedExporters }, configPath, cwd);
 
   if (!options.quiet) {
     clack.log.success(
