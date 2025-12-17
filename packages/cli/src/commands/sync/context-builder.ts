@@ -33,19 +33,6 @@ import { discoverExporterManifests } from "../../utils/exporter-validation.js";
 
 import { resolveAndMergeSources } from "../../utils/source-resolver.js";
 
-function getAgentDisplayName(agent: string): string {
-  const displayNames: Record<string, string> = {
-    cursor: "Cursor",
-    agents: "AGENTS.md",
-    claude: "Claude",
-    copilot: "Copilot",
-    windsurf: "Windsurf",
-    aider: "Aider",
-    "gemini-cli": "Gemini CLI",
-  };
-  return displayNames[agent] || agent;
-}
-
 async function _prepareEditSourceSwitch(
   _oldSource: string | string[] | undefined,
   _newSource: string,
@@ -649,6 +636,8 @@ async function _enableExporters(
   options: SyncOptions,
 ): Promise<void> {
   const { backupOverwrittenFile } = await import("@aligntrue/core");
+  const { AGENT_PATTERNS, getAgentDisplayName } =
+    await import("../../utils/detect-agents.js");
 
   // Filter unique and not already present
   const existingExporters = getExporterNames(config.exporters);
@@ -660,9 +649,7 @@ async function _enableExporters(
     // Logic to backup existing file content if exists
     // (Copied/adapted from detectAndEnableAgents)
     // Find path for agent
-    const patterns = await import("../../utils/detect-agents.js").then(
-      (m) => m.AGENT_PATTERNS[agent] || [],
-    );
+    const patterns = AGENT_PATTERNS[agent] || [];
     const agentFile = patterns.find((p) => existsSync(join(cwd, p)));
 
     if (agentFile) {
@@ -723,6 +710,7 @@ async function checkAgentsWithCache(
     detectAgentsWithValidation,
     shouldWarnAboutDetection,
     detectFilesWithContent,
+    getAgentDisplayName,
   } = await import("../../utils/detect-agents.js");
 
   const detection = detectAgentsWithValidation(
@@ -812,6 +800,12 @@ async function checkAgentsWithCache(
         ];
         // Patch config - only update exporters, preserve everything else
         await patchConfig({ exporters: updatedExporters }, configPath, cwd);
+        // Keep in-memory config in sync so cache uses the latest exporters
+        config.exporters = updatedExporters;
+        detection.configured = updatedExporters;
+        detection.missing = detection.missing.filter(
+          (agent) => !agentsToAdd.includes(agent),
+        );
         clack.log.success("Updated exporters in config");
       } else if (choice === "ignore") {
         // Add to ignored_agents in config
@@ -826,6 +820,10 @@ async function checkAgentsWithCache(
           configPath,
           cwd,
         );
+        config.detection = {
+          ...config.detection,
+          ignored_agents: updatedIgnored,
+        };
         clack.log.info(
           `Added ${agentsToAdd.map((a) => `'${a}'`).join(", ")} to ignored agents`,
         );
