@@ -72,6 +72,7 @@ export interface OperationResult {
 export interface SyncResult extends Partial<OperationResult> {
   success: boolean;
   exportResults?: Map<string, ExportResult>;
+  overwrittenFiles?: string[];
   conflicts?: Array<{
     heading: string;
     files: Array<{ path: string; mtime: Date }>;
@@ -89,6 +90,7 @@ export class SyncEngine {
   private fileWriter: AtomicFileWriter;
   private exporters: Map<string, ExporterPlugin> = new Map();
   private unresolvedPlugsCount: number = 0; // Track unresolved required plugs count (Plugs system)
+  private overwrittenFiles: string[] = [];
 
   constructor() {
     this.fileWriter = new AtomicFileWriter();
@@ -104,6 +106,7 @@ export class SyncEngine {
       ) => {
         // Simplified: always overwrite in non-interactive mode, prompt in interactive
         if (!interactive || force) {
+          this.overwrittenFiles.push(_filePath);
           return "overwrite";
         }
         // In interactive mode without force, default to safe (don't overwrite)
@@ -198,6 +201,9 @@ export class SyncEngine {
     irPath: string,
     options: SyncOptions = {},
   ): Promise<SyncResult> {
+    // Reset per-run tracking state
+    this.overwrittenFiles = [];
+
     const warnings: string[] = [];
     const written: string[] = [];
     let exportResults: Map<string, ExportResult>;
@@ -407,6 +413,10 @@ export class SyncEngine {
         exportResults,
         auditTrail,
       };
+
+      if (this.overwrittenFiles.length > 0) {
+        result.overwrittenFiles = [...this.overwrittenFiles];
+      }
 
       if (warnings.length > 0) {
         result.warnings = warnings;

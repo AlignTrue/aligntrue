@@ -140,6 +140,24 @@ export async function handleSyncResult(
     }
   }
 
+  // Warn when manual edits were overwritten (non-interactive/force paths)
+  if (result.overwrittenFiles && result.overwrittenFiles.length > 0) {
+    const previewCount = 3;
+    const preview = result.overwrittenFiles
+      .slice(0, previewCount)
+      .map((p) => relative(cwd, p))
+      .join(", ");
+    const extra =
+      result.overwrittenFiles.length > previewCount
+        ? ` (+${result.overwrittenFiles.length - previewCount} more)`
+        : "";
+    const warning = [
+      `Manual edits detected and overwritten: ${preview}${extra}`,
+      "  Restore from backup: aligntrue backup restore --latest",
+    ].join("\n");
+    result.warnings = [...(result.warnings ?? []), warning];
+  }
+
   // Group all warnings at the end
   if (result.warnings && result.warnings.length > 0) {
     displayWarnings(

@@ -172,8 +172,8 @@ async function showConfig(configPath: string): Promise<void> {
   clack.intro("AlignTrue Configuration");
 
   try {
-    const { loadConfig } = await import("@aligntrue/core");
-    const cfg = await loadConfig(configPath);
+    const { loadMergedConfig } = await import("@aligntrue/core");
+    const { config: cfg } = await loadMergedConfig(process.cwd());
 
     // Display mode prominently
     const modeColors: Record<string, string> = {

@@ -42,6 +42,7 @@ export interface SyncResult {
   written?: string[];
   warnings?: string[];
   lockfilePath?: string;
+  overwrittenFiles?: string[];
   conflicts?: Array<{
     heading: string;
     files: Array<{ path: string; mtime: Date }>;

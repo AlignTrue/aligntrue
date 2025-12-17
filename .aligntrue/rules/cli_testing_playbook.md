@@ -187,9 +187,10 @@ Catalog packs (testing note):
 5. Remove a source:
 
    ```bash
-   $CLI remove <source-name> --yes
+   $CLI remove link <url> --yes
    ```
 
+   - Remove only works for linked sources (remove link <url>)
    - Is it removed from config?
 
 **Report findings:**
@@ -376,7 +377,7 @@ Catalog packs (testing note):
 3. Set value:
 
    ```bash
-   $CLI config set mode solo --yes
+   $CLI config set mode solo
    ```
 
    - Persists to file?

@@ -899,6 +899,9 @@ cd /tmp/test-mcp-propagation
 aligntrue init --mode solo --yes --exporters cursor-mcp,vscode-mcp,root-mcp
 
 # Add MCP server configuration to config
+#
+# Note: Configure MCP servers by editing YAML directly. The `config set`
+# command does not support nested array paths (e.g., mcp.servers[0].command).
 cat >> .aligntrue/config.yaml <<'EOF'
 mcp:
   servers:
@@ -1620,18 +1623,24 @@ aligntrue sync
 **For testing source/remote conflict:**
 
 ```bash
-# Configure same URL as source AND remote
+# Configure same URL as source AND remote (requires network)
+# Use a real git URL; local filesystem paths are not valid git sources.
 cat > .aligntrue/config.yaml <<'EOF'
 sources:
   - type: git
-    url: /tmp/shared-repo.git
+    url: https://github.com/AlignTrue/examples.git
 remotes:
-  personal: /tmp/shared-repo.git
+  personal: https://github.com/AlignTrue/examples.git
 EOF
 
 aligntrue sync
 # Warning: URL configured as both source and remote. Skipping remote push.
 ```
+
+Notes:
+
+- Conflict detection only triggers for valid git URLs. Local filesystem paths (e.g., /tmp/\*.git) are rejected for sources.
+- If you need offline/local testing, use a reachable git URL in a local git server or mock; otherwise skip this scenario when offline.
 
 **Note:** Remote push can run automatically during `aligntrue sync` when `auto: true` is configured. You can also run `aligntrue remotes status` and `aligntrue remotes push` directly. To add a remote, use `aligntrue add remote <url>`.
 
