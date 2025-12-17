@@ -3,6 +3,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
+import { dirname, resolve } from "path";
 import * as clack from "@clack/prompts";
 import { spawn } from "child_process";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
@@ -173,7 +174,8 @@ async function showConfig(configPath: string): Promise<void> {
 
   try {
     const { loadMergedConfig } = await import("@aligntrue/core");
-    const { config: cfg } = await loadMergedConfig(process.cwd());
+    const projectRoot = normalizePath(resolve(dirname(configPath), ".."));
+    const { config: cfg } = await loadMergedConfig(projectRoot);
 
     // Display mode prominently
     const modeColors: Record<string, string> = {
