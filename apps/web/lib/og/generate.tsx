@@ -1,7 +1,3 @@
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-
 import { ImageResponse } from "@vercel/og";
 import sharp from "sharp";
 
@@ -9,6 +5,8 @@ import { AlignTrueLogoOG } from "@/app/api/og/AlignTrueLogoOG";
 import { generateBarSegments, idToSeed } from "@/lib/aligns/hash-bar-utils";
 import { toAlignSummary } from "@/lib/aligns/transforms";
 import type { AlignRecord } from "@/lib/aligns/types";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
 const COLORS = {
   bg: "hsl(222 24% 6%)",
@@ -34,12 +32,21 @@ const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue ";
 const SOURCE_LABEL = "GitHub";
 
-// The font path is static and not influenced by user input; lint rule is a false positive here.
-const __ogDirname = dirname(fileURLToPath(import.meta.url));
+let fontCache: ArrayBuffer | null = null;
 
-const fontPromise = readFile(
-  join(__ogDirname, "../../public/fonts/NotoSans-Regular.ttf"),
-);
+async function loadFont(): Promise<ArrayBuffer> {
+  const res = await fetch(`${BASE_URL}/fonts/NotoSans-Regular.ttf`);
+  if (!res.ok) {
+    throw new Error(`Font fetch failed: ${res.status} ${res.statusText}`);
+  }
+  return res.arrayBuffer();
+}
+
+async function getFont(): Promise<ArrayBuffer> {
+  if (fontCache) return fontCache;
+  fontCache = await loadFont();
+  return fontCache;
+}
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
@@ -72,7 +79,7 @@ export async function buildOgImageResponse(options: {
   const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
   const installCommand = buildInstallCommand(id);
-  const fontData = await fontPromise;
+  const fontData = await getFont();
 
   return new ImageResponse(
     <div
@@ -113,7 +120,7 @@ export async function buildOgImageResponse(options: {
               border: `1px solid rgba(20,184,122,0.35)`,
               background: "rgba(20,184,122,0.12)",
               color: COLORS.primary,
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: "22px",
               letterSpacing: "0.02em",
               textTransform: "uppercase",
@@ -139,7 +146,7 @@ export async function buildOgImageResponse(options: {
             style={{
               fontSize: "60px",
               lineHeight: 1.05,
-              fontWeight: 800,
+              fontWeight: 600,
               letterSpacing: "-0.02em",
               maxWidth: "1000px",
             }}

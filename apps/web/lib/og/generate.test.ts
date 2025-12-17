@@ -1,13 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { AlignRecord } from "@/lib/aligns/types";
 
-const readFileMock = vi.fn().mockResolvedValue(Buffer.from("font"));
 const jpegOptionsMock = vi.fn();
 const toBufferMock = vi.fn().mockResolvedValue(Buffer.from("jpeg-output"));
-
-vi.mock("node:fs/promises", () => ({
-  readFile: readFileMock,
-}));
+const fetchMock = vi.fn();
 
 vi.mock("@/app/api/og/AlignTrueLogoOG", () => ({
   AlignTrueLogoOG: () => null,
@@ -59,7 +55,12 @@ describe("generateOgImage", () => {
   beforeEach(() => {
     jpegOptionsMock.mockClear();
     toBufferMock.mockClear();
-    readFileMock.mockClear();
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue({
+      ok: true,
+      arrayBuffer: async () => Buffer.from("font"),
+    });
+    vi.stubGlobal("fetch", fetchMock);
     process.env.BLOB_READ_WRITE_TOKEN = "token";
     process.env.UPSTASH_REDIS_REST_URL = "https://redis";
     process.env.UPSTASH_REDIS_REST_TOKEN = "secret";
@@ -67,6 +68,7 @@ describe("generateOgImage", () => {
 
   afterEach(() => {
     vi.resetModules();
+    vi.unstubAllGlobals();
     delete process.env.BLOB_READ_WRITE_TOKEN;
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
