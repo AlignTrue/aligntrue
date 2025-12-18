@@ -73,8 +73,9 @@ export async function buildOgImageResponse(options: {
 }) {
   const { align, id, headers } = options;
   const summary = toAlignSummary(align);
-  const title = truncate(align.title || "Untitled Align", 60);
-  const description = buildDescription(title, align.description);
+  const rawTitle = align.title || "Untitled Align";
+  const title = truncate(rawTitle, 60);
+  const description = buildDescription(rawTitle, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
   const installCommand = buildInstallCommand(id);
   const fontData = await getFont();
