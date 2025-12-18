@@ -70,7 +70,7 @@ async function main() {
         continue;
       }
     }
-    await ensureOgImage(record);
+    await ensureOgImage(record, { force: forceRegenerate });
     generated += 1;
   }
 

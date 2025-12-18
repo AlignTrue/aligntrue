@@ -7,7 +7,10 @@ function hasBlobEnv(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
-export async function ensureOgImage(align: AlignRecord) {
+export async function ensureOgImage(
+  align: AlignRecord,
+  options?: { force?: boolean },
+) {
   // #region agent log
   fetch("http://127.0.0.1:7242/ingest/049136b8-eab0-4d42-9a7f-d42000639197", {
     method: "POST",
@@ -15,7 +18,7 @@ export async function ensureOgImage(align: AlignRecord) {
     body: JSON.stringify({
       location: "service.ts:ensureOgImage",
       message: "ensureOgImage called",
-      data: { alignId: align.id, title: align.title },
+      data: { alignId: align.id, title: align.title, force: options?.force },
       timestamp: Date.now(),
       sessionId: "debug-session",
       hypothesisId: "H1-H5",
@@ -25,15 +28,18 @@ export async function ensureOgImage(align: AlignRecord) {
   if (!hasBlobEnv() || !hasKvEnv()) return null;
 
   const currentContentHash = align.contentHash ?? null;
-  const existing = await getOgMetadata(align.id);
 
-  if (existing) {
-    const matchesContentHash =
-      currentContentHash &&
-      existing.alignContentHash &&
-      existing.alignContentHash === currentContentHash;
-    if (matchesContentHash) {
-      return existing;
+  if (!options?.force) {
+    const existing = await getOgMetadata(align.id);
+
+    if (existing) {
+      const matchesContentHash =
+        currentContentHash &&
+        existing.alignContentHash &&
+        existing.alignContentHash === currentContentHash;
+      if (matchesContentHash) {
+        return existing;
+      }
     }
   }
 
