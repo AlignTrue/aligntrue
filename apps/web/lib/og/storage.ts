@@ -52,6 +52,7 @@ async function uploadToBlob(
     contentType: "image/jpeg",
     cacheControlMaxAge: 31536000,
     addRandomSuffix: false,
+    // Content-hash key is deterministic; allow overwrite so force regeneration succeeds.
     allowOverwrite: true,
   });
 }

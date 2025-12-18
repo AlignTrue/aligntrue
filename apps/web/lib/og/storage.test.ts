@@ -61,6 +61,7 @@ describe("OG storage", () => {
         contentType: "image/jpeg",
         cacheControlMaxAge: 31536000,
         addRandomSuffix: false,
+        allowOverwrite: true,
       }),
     );
 
