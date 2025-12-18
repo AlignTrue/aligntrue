@@ -5,6 +5,7 @@ const getMock = vi.fn();
 const getOgMetadataMock = vi.fn();
 const putOgImageMock = vi.fn();
 const generateOgImageMock = vi.fn();
+const fetchMock = vi.fn();
 
 vi.mock("@/lib/aligns/storeFactory", () => ({
   getAlignStore: () => ({ get: getMock }),
@@ -59,6 +60,14 @@ describe("GET /api/og/[id]", () => {
     getOgMetadataMock.mockReset();
     putOgImageMock.mockReset();
     generateOgImageMock.mockReset();
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+
+    // Default: cached blob exists
+    fetchMock.mockResolvedValue({
+      ok: true,
+      headers: new Headers(),
+    } as unknown as Response);
     getOgMetadataMock.mockResolvedValue(null);
     generateOgImageMock.mockResolvedValue(Buffer.from("jpeg"));
     putOgImageMock.mockResolvedValue({
@@ -74,6 +83,7 @@ describe("GET /api/og/[id]", () => {
 
   afterEach(() => {
     vi.resetModules();
+    vi.unstubAllGlobals();
     delete process.env.BLOB_READ_WRITE_TOKEN;
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -104,6 +114,9 @@ describe("GET /api/og/[id]", () => {
     expect(res.status).toBe(302);
     expect(res.headers.get("location")).toBe("https://blob/og123");
     expect(generateOgImageMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith("https://blob/og123", {
+      method: "HEAD",
+    });
   });
 
   it("generates and stores JPEG for valid align when no metadata", async () => {
