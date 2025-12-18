@@ -52,6 +52,7 @@ async function uploadToBlob(
     contentType: "image/jpeg",
     cacheControlMaxAge: 31536000,
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 }
 
