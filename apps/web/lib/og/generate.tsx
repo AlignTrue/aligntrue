@@ -1,4 +1,4 @@
-import { ImageResponse } from "@vercel/og";
+import { ImageResponse } from "next/og";
 import sharp from "sharp";
 
 import { AlignTrueLogoOG } from "@/app/api/og/AlignTrueLogoOG";

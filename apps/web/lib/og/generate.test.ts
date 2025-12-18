@@ -12,7 +12,7 @@ vi.mock("@/app/api/og/AlignTrueLogoOG", () => ({
   AlignTrueLogoOG: () => null,
 }));
 
-vi.mock("@vercel/og", () => ({
+vi.mock("next/og", () => ({
   ImageResponse: class extends Response {
     constructor(_body: unknown, init?: ResponseInit) {
       const pngHeader = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
