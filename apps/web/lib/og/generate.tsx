@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { ImageResponse } from "@vercel/og";
 import sharp from "sharp";
 
@@ -31,41 +29,23 @@ export const OG_HEIGHT = 630;
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue ";
 const SOURCE_LABEL = "GitHub";
-const FONT_URL = new URL(
-  "../../public/fonts/NotoSans-Regular.ttf",
-  import.meta.url,
-);
-const FONT_PATH =
-  FONT_URL.protocol === "file:" ? fileURLToPath(FONT_URL) : null;
+
+// Google Fonts CDN - Inter Regular (400 weight)
+// Using Google's CDN eliminates local file loading issues in serverless environments
+const INTER_FONT_URL =
+  "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf";
 
 let fontCache: ArrayBuffer | null = null;
 
 async function getFont(): Promise<ArrayBuffer> {
   if (fontCache) return fontCache;
 
-  try {
-    if (FONT_PATH) {
-      // Safe: static font file path resolved at build time.
-      const data = await readFile(FONT_PATH); // eslint-disable-line security/detect-non-literal-fs-filename
-      const arrayBuffer = data.buffer.slice(
-        data.byteOffset,
-        data.byteOffset + data.byteLength,
-      );
-      fontCache = arrayBuffer;
-      return arrayBuffer;
-    }
-
-    const res = await fetch(FONT_URL);
-    if (!res.ok) {
-      throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
-    }
-    const data = await res.arrayBuffer();
-    fontCache = data;
-    return data;
-  } catch (error) {
-    console.error("[og] failed to load font", error);
-    throw error;
+  const res = await fetch(INTER_FONT_URL);
+  if (!res.ok) {
+    throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
   }
+  fontCache = await res.arrayBuffer();
+  return fontCache;
 }
 
 function truncate(text: string, max: number): string {
@@ -291,7 +271,7 @@ export async function buildOgImageResponse(options: {
       height: OG_HEIGHT,
       fonts: [
         {
-          name: "Noto Sans",
+          name: "Inter",
           data: fontData,
           weight: 400,
           style: "normal",

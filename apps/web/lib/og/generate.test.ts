@@ -4,7 +4,9 @@ import type { AlignRecord } from "@/lib/aligns/types";
 const jpegOptionsMock = vi.fn();
 const toBufferMock = vi.fn().mockResolvedValue(Buffer.from("jpeg-output"));
 const fetchMock = vi.fn();
-const readFileMock = vi.fn();
+
+const INTER_FONT_URL =
+  "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf";
 
 vi.mock("@/app/api/og/AlignTrueLogoOG", () => ({
   AlignTrueLogoOG: () => null,
@@ -34,10 +36,6 @@ vi.mock("sharp", () => ({
   }),
 }));
 
-vi.mock("node:fs/promises", () => ({
-  readFile: readFileMock,
-}));
-
 function makeRecord(overrides: Partial<AlignRecord> = {}): AlignRecord {
   return {
     id: "align-1",
@@ -61,8 +59,11 @@ describe("generateOgImage", () => {
     jpegOptionsMock.mockClear();
     toBufferMock.mockClear();
     fetchMock.mockReset();
-    readFileMock.mockReset();
-    readFileMock.mockResolvedValue(Buffer.from("font"));
+    // Default mock: successful font fetch
+    fetchMock.mockResolvedValue({
+      ok: true,
+      arrayBuffer: async () => Buffer.from("font-data"),
+    });
     vi.stubGlobal("fetch", fetchMock);
     process.env.BLOB_READ_WRITE_TOKEN = "token";
     process.env.UPSTASH_REDIS_REST_URL = "https://redis";
@@ -92,15 +93,17 @@ describe("generateOgImage", () => {
       mozjpeg: true,
     });
     expect(toBufferMock).toHaveBeenCalledTimes(1);
-    expect(readFileMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(INTER_FONT_URL);
   });
 
   it("retries font fetch on failure and caches after success", async () => {
-    // First call rejects, second call resolves via readFile
-    readFileMock
+    // First call rejects, second call resolves
+    fetchMock
       .mockRejectedValueOnce(new Error("network down"))
-      .mockResolvedValueOnce(Buffer.from("font-ok"));
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: async () => Buffer.from("font-ok"),
+      });
 
     const { generateOgImage } = await import("./generate");
 
@@ -115,7 +118,19 @@ describe("generateOgImage", () => {
     });
 
     expect(buffer).toEqual(Buffer.from("jpeg-output"));
-    expect(readFileMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("caches font after first successful fetch", async () => {
+    const { generateOgImage } = await import("./generate");
+
+    // First call
+    await generateOgImage({ align: makeRecord(), id: "align-1" });
+    // Second call should use cached font
+    await generateOgImage({ align: makeRecord(), id: "align-2" });
+
+    // Font should only be fetched once
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(INTER_FONT_URL);
   });
 });
