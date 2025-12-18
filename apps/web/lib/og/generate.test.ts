@@ -4,6 +4,7 @@ import type { AlignRecord } from "@/lib/aligns/types";
 const jpegOptionsMock = vi.fn();
 const toBufferMock = vi.fn().mockResolvedValue(Buffer.from("jpeg-output"));
 const fetchMock = vi.fn();
+const readFileMock = vi.fn();
 
 vi.mock("@/app/api/og/AlignTrueLogoOG", () => ({
   AlignTrueLogoOG: () => null,
@@ -33,6 +34,10 @@ vi.mock("sharp", () => ({
   }),
 }));
 
+vi.mock("node:fs/promises", () => ({
+  readFile: readFileMock,
+}));
+
 function makeRecord(overrides: Partial<AlignRecord> = {}): AlignRecord {
   return {
     id: "align-1",
@@ -56,10 +61,8 @@ describe("generateOgImage", () => {
     jpegOptionsMock.mockClear();
     toBufferMock.mockClear();
     fetchMock.mockReset();
-    fetchMock.mockResolvedValue({
-      ok: true,
-      arrayBuffer: async () => Buffer.from("font"),
-    });
+    readFileMock.mockReset();
+    readFileMock.mockResolvedValue(Buffer.from("font"));
     vi.stubGlobal("fetch", fetchMock);
     process.env.BLOB_READ_WRITE_TOKEN = "token";
     process.env.UPSTASH_REDIS_REST_URL = "https://redis";
@@ -89,22 +92,15 @@ describe("generateOgImage", () => {
       mozjpeg: true,
     });
     expect(toBufferMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const fetchArg = fetchMock.mock.calls[0][0];
-    expect(fetchArg instanceof URL).toBe(true);
-    expect((fetchArg as URL).pathname).toContain(
-      "/public/fonts/NotoSans-Regular.ttf",
-    );
+    expect(readFileMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("retries font fetch on failure and caches after success", async () => {
-    // First call rejects, second call resolves
-    fetchMock
+    // First call rejects, second call resolves via readFile
+    readFileMock
       .mockRejectedValueOnce(new Error("network down"))
-      .mockResolvedValueOnce({
-        ok: true,
-        arrayBuffer: async () => Buffer.from("font-ok"),
-      });
+      .mockResolvedValueOnce(Buffer.from("font-ok"));
 
     const { generateOgImage } = await import("./generate");
 
@@ -119,6 +115,7 @@ describe("generateOgImage", () => {
     });
 
     expect(buffer).toEqual(Buffer.from("jpeg-output"));
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(readFileMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

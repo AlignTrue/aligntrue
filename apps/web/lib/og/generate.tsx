@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { ImageResponse } from "@vercel/og";
 import sharp from "sharp";
 
@@ -29,6 +31,12 @@ export const OG_HEIGHT = 630;
 const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue ";
 const SOURCE_LABEL = "GitHub";
+const FONT_URL = new URL(
+  "../../public/fonts/NotoSans-Regular.ttf",
+  import.meta.url,
+);
+const FONT_PATH =
+  FONT_URL.protocol === "file:" ? fileURLToPath(FONT_URL) : null;
 
 let fontCache: ArrayBuffer | null = null;
 
@@ -36,9 +44,18 @@ async function getFont(): Promise<ArrayBuffer> {
   if (fontCache) return fontCache;
 
   try {
-    const res = await fetch(
-      new URL("../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
-    );
+    if (FONT_PATH) {
+      // Safe: static font file path resolved at build time.
+      const data = await readFile(FONT_PATH); // eslint-disable-line security/detect-non-literal-fs-filename
+      const arrayBuffer = data.buffer.slice(
+        data.byteOffset,
+        data.byteOffset + data.byteLength,
+      );
+      fontCache = arrayBuffer;
+      return arrayBuffer;
+    }
+
+    const res = await fetch(FONT_URL);
     if (!res.ok) {
       throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
     }
