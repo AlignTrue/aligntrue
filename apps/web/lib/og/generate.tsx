@@ -182,26 +182,20 @@ export async function buildOgImageResponse(options: {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
+                gap: "8px",
                 fontSize: "24px",
                 color: COLORS.muted,
                 fontWeight: 600,
               }}
             >
-              {summary.displayAuthor ? (
-                <>
-                  <span>by</span>
-                  <span style={{ color: COLORS.foreground, marginLeft: "8px" }}>
-                    {summary.displayAuthor}
-                  </span>
-                  <span style={{ marginLeft: "8px" }}>via</span>
-                </>
-              ) : (
-                <span>via</span>
+              {summary.displayAuthor && <div>by</div>}
+              {summary.displayAuthor && (
+                <div style={{ color: COLORS.foreground }}>
+                  {summary.displayAuthor}
+                </div>
               )}
-              <span style={{ color: COLORS.foreground, marginLeft: "8px" }}>
-                {SOURCE_LABEL}
-              </span>
+              <div>via</div>
+              <div style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</div>
             </div>
           </div>
 
