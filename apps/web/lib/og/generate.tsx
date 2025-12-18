@@ -32,12 +32,17 @@ const SOURCE_LABEL = "GitHub";
 
 const fontPromise = fetch(
   new URL("../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
-).then((res) => {
-  if (!res.ok) {
-    throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
-  }
-  return res.arrayBuffer();
-});
+)
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
+    }
+    return res.arrayBuffer();
+  })
+  .catch((error) => {
+    console.error("[og] failed to load font", error);
+    throw error;
+  });
 
 async function getFont(): Promise<ArrayBuffer> {
   return fontPromise;
