@@ -6,6 +6,9 @@
  *   pnpm dlx dotenv-cli -e .env.local -- pnpm generate:og-images
  *   rm .env.local
  *
+ * Use --force to regenerate all images (useful after template changes):
+ *   pnpm dlx dotenv-cli -e .env.local -- pnpm generate:og-images --force
+ *
  * pnpm subprocesses do not inherit shell-sourced vars; dotenv-cli loads them.
  * Delete .env.local afterward because it contains secrets.
  */
@@ -17,6 +20,7 @@ import { getOgMetadata } from "@/lib/og/storage";
 
 const ALIGN_KEY_PREFIX = "v1:align:";
 const CREATED_ZSET = "v1:align:by-created";
+const forceRegenerate = process.argv.includes("--force");
 
 function requireEnv() {
   if (!hasKvEnv()) {
@@ -44,6 +48,10 @@ async function main() {
   requireEnv();
   const redis = Redis.fromEnv();
 
+  if (forceRegenerate) {
+    console.log("--force flag detected: regenerating ALL images");
+  }
+
   const records = await fetchAllAligns(redis);
   console.log(`Found ${records.length} align(s) to check`);
 
@@ -51,14 +59,16 @@ async function main() {
   let skipped = 0;
 
   for (const record of records) {
-    const meta = await getOgMetadata(record.id);
-    if (
-      meta &&
-      record.contentHash &&
-      meta.alignContentHash === record.contentHash
-    ) {
-      skipped += 1;
-      continue;
+    if (!forceRegenerate) {
+      const meta = await getOgMetadata(record.id);
+      if (
+        meta &&
+        record.contentHash &&
+        meta.alignContentHash === record.contentHash
+      ) {
+        skipped += 1;
+        continue;
+      }
     }
     await ensureOgImage(record);
     generated += 1;

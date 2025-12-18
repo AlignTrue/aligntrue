@@ -147,3 +147,5 @@ apps/web/.cursor/rules/web_stack_website_catalog.mdc
 .cursor/rules/potential_future_features.mdc
 .cursor/rules/vision_strategy_roadmap.mdc
 # END AlignTrue Gitignored Rule Exports
+
+.env*.local
