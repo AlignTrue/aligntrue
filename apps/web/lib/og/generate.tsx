@@ -191,15 +191,17 @@ export async function buildOgImageResponse(options: {
               {summary.displayAuthor ? (
                 <>
                   <span>by</span>
-                  <span style={{ color: COLORS.foreground }}>
+                  <span style={{ color: COLORS.foreground, marginLeft: "8px" }}>
                     {summary.displayAuthor}
                   </span>
-                  <span>via</span>
+                  <span style={{ marginLeft: "8px" }}>via</span>
                 </>
               ) : (
                 <span>via</span>
               )}
-              <span style={{ color: COLORS.foreground }}>{SOURCE_LABEL}</span>
+              <span style={{ color: COLORS.foreground, marginLeft: "8px" }}>
+                {SOURCE_LABEL}
+              </span>
             </div>
           </div>
 
