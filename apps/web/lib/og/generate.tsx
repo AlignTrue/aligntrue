@@ -79,6 +79,20 @@ export async function buildOgImageResponse(options: {
   const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
   const installCommand = buildInstallCommand(id);
+  // #region agent log
+  fetch("http://127.0.0.1:7242/ingest/049136b8-eab0-4d42-9a7f-d42000639197", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      location: "generate.tsx:buildOgImageResponse",
+      message: "NEW_TEMPLATE_V2_WITH_DIVS",
+      data: { id, displayAuthor: summary.displayAuthor, title },
+      timestamp: Date.now(),
+      sessionId: "debug-session",
+      hypothesisId: "H3",
+    }),
+  }).catch(() => {});
+  // #endregion
   const fontData = await getFont();
 
   return new ImageResponse(
