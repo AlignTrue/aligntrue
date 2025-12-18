@@ -30,22 +30,25 @@ const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue ";
 const SOURCE_LABEL = "GitHub";
 
-const fontPromise = fetch(
-  new URL("../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
-)
-  .then((res) => {
+let fontCache: ArrayBuffer | null = null;
+
+async function getFont(): Promise<ArrayBuffer> {
+  if (fontCache) return fontCache;
+
+  try {
+    const res = await fetch(
+      new URL("../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
+    );
     if (!res.ok) {
       throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
     }
-    return res.arrayBuffer();
-  })
-  .catch((error) => {
+    const data = await res.arrayBuffer();
+    fontCache = data;
+    return data;
+  } catch (error) {
     console.error("[og] failed to load font", error);
     throw error;
-  });
-
-async function getFont(): Promise<ArrayBuffer> {
-  return fontPromise;
+  }
 }
 
 function truncate(text: string, max: number): string {

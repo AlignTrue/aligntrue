@@ -119,6 +119,22 @@ describe("GET /api/og/[id]", () => {
     });
   });
 
+  it("regenerates when blob HEAD check fails", async () => {
+    const record = makeRecord();
+    getOgMetadataMock.mockResolvedValueOnce({ url: "https://blob/og-missing" });
+    getMock.mockResolvedValueOnce(record);
+    fetchMock.mockRejectedValueOnce(new Error("network error"));
+    const { GET } = await import("./route");
+
+    const res = await GET(new Request("http://localhost/api/og/align-123"), {
+      params: Promise.resolve({ id: "align-123" }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(generateOgImageMock).toHaveBeenCalledTimes(1);
+    expect(putOgImageMock).toHaveBeenCalledTimes(1);
+  });
+
   it("generates and stores JPEG for valid align when no metadata", async () => {
     const record = makeRecord();
     getOgMetadataMock.mockResolvedValueOnce(null);

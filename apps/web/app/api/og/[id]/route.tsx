@@ -30,8 +30,7 @@ export async function GET(
         }
         console.warn(`[og] cached blob missing for ${id}, regenerating`);
       } catch (error) {
-        console.warn("[og] blob HEAD check failed; redirecting anyway", error);
-        return Response.redirect(existingMeta.url, 302);
+        console.warn("[og] blob HEAD check failed, regenerating", error);
       }
     }
 

@@ -96,4 +96,29 @@ describe("generateOgImage", () => {
       "/public/fonts/NotoSans-Regular.ttf",
     );
   });
+
+  it("retries font fetch on failure and caches after success", async () => {
+    // First call rejects, second call resolves
+    fetchMock
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: async () => Buffer.from("font-ok"),
+      });
+
+    const { generateOgImage } = await import("./generate");
+
+    await expect(
+      generateOgImage({ align: makeRecord(), id: "align-1" }),
+    ).rejects.toThrow("network down");
+
+    // Second call should retry and succeed
+    const buffer = await generateOgImage({
+      align: makeRecord(),
+      id: "align-1",
+    });
+
+    expect(buffer).toEqual(Buffer.from("jpeg-output"));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
