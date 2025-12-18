@@ -23,7 +23,16 @@ export async function GET(
     const canUseBlob = hasKvEnv() && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
     const existingMeta = canUseBlob ? await getOgMetadata(id) : null;
     if (canUseBlob && existingMeta?.url) {
-      return Response.redirect(existingMeta.url, 302);
+      try {
+        const check = await fetch(existingMeta.url, { method: "HEAD" });
+        if (check.ok) {
+          return Response.redirect(existingMeta.url, 302);
+        }
+        console.warn(`[og] cached blob missing for ${id}, regenerating`);
+      } catch (error) {
+        console.warn("[og] blob HEAD check failed; redirecting anyway", error);
+        return Response.redirect(existingMeta.url, 302);
+      }
     }
 
     const align = await store.get(id);

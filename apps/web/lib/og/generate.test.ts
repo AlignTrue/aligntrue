@@ -89,5 +89,11 @@ describe("generateOgImage", () => {
       mozjpeg: true,
     });
     expect(toBufferMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const fetchArg = fetchMock.mock.calls[0][0];
+    expect(fetchArg instanceof URL).toBe(true);
+    expect((fetchArg as URL).pathname).toContain(
+      "/public/fonts/NotoSans-Regular.ttf",
+    );
   });
 });

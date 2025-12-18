@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 const getMock = vi.fn();
-const readFileMock = vi.fn().mockResolvedValue(Buffer.alloc(1024));
 const getOgMetadataMock = vi.fn();
 const putOgImageMock = vi.fn();
 const generateOgImageMock = vi.fn();
@@ -10,10 +9,6 @@ const generateOgImageMock = vi.fn();
 vi.mock("@/lib/aligns/storeFactory", () => ({
   getAlignStore: () => ({ get: getMock }),
   hasKvEnv: () => true,
-}));
-
-vi.mock("node:fs/promises", () => ({
-  readFile: readFileMock,
 }));
 
 vi.mock("@/lib/og/storage", () => ({
@@ -61,7 +56,6 @@ function makeRecord(overrides: Partial<AlignRecord> = {}): AlignRecord {
 describe("GET /api/og/[id]", () => {
   beforeEach(() => {
     getMock.mockReset();
-    readFileMock.mockClear();
     getOgMetadataMock.mockReset();
     putOgImageMock.mockReset();
     generateOgImageMock.mockReset();

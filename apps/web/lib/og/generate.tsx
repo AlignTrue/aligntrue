@@ -6,8 +6,6 @@ import { generateBarSegments, idToSeed } from "@/lib/aligns/hash-bar-utils";
 import { toAlignSummary } from "@/lib/aligns/transforms";
 import type { AlignRecord } from "@/lib/aligns/types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
-
 const COLORS = {
   bg: "hsl(222 24% 6%)",
   card: "hsl(222 24% 8%)",
@@ -32,20 +30,17 @@ const FALLBACK_DESCRIPTION = "Try these rules to guide your AI";
 const COMMAND_PREFIX = "npx aligntrue ";
 const SOURCE_LABEL = "GitHub";
 
-let fontCache: ArrayBuffer | null = null;
-
-async function loadFont(): Promise<ArrayBuffer> {
-  const res = await fetch(`${BASE_URL}/fonts/NotoSans-Regular.ttf`);
+const fontPromise = fetch(
+  new URL("../../public/fonts/NotoSans-Regular.ttf", import.meta.url),
+).then((res) => {
   if (!res.ok) {
-    throw new Error(`Font fetch failed: ${res.status} ${res.statusText}`);
+    throw new Error(`Font load failed: ${res.status} ${res.statusText}`);
   }
   return res.arrayBuffer();
-}
+});
 
 async function getFont(): Promise<ArrayBuffer> {
-  if (fontCache) return fontCache;
-  fontCache = await loadFont();
-  return fontCache;
+  return fontPromise;
 }
 
 function truncate(text: string, max: number): string {
