@@ -7,9 +7,7 @@ import { toAlignSummary } from "@/lib/aligns/transforms";
 import type { AlignRecord } from "@/lib/aligns/types";
 
 const COLORS = {
-  bg: "hsl(222 24% 6%)",
   card: "hsl(222 24% 8%)",
-  border: "hsl(220 16% 20%)",
   foreground: "hsl(210 30% 96%)",
   muted: "hsl(215 15% 70%)",
   primary: "hsl(160 84% 45%)",
@@ -75,7 +73,7 @@ export async function buildOgImageResponse(options: {
 }) {
   const { align, id, headers } = options;
   const summary = toAlignSummary(align);
-  const title = align.title || "Untitled Align";
+  const title = truncate(align.title || "Untitled Align", 60);
   const description = buildDescription(title, align.description);
   const kindLabel = KINDS[align.kind] ?? "Align";
   const installCommand = buildInstallCommand(id);

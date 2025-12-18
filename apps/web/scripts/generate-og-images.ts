@@ -57,8 +57,13 @@ async function main() {
 
   let generated = 0;
   let skipped = 0;
+  let index = 0;
 
   for (const record of records) {
+    index += 1;
+    console.log(
+      `[og] processing ${index}/${records.length}: ${record.id} (${record.title ?? "untitled"})`,
+    );
     if (!forceRegenerate) {
       const meta = await getOgMetadata(record.id);
       if (
@@ -70,7 +75,8 @@ async function main() {
         continue;
       }
     }
-    await ensureOgImage(record, { force: forceRegenerate });
+    // Script already decided regeneration is needed; skip redundant metadata read in ensureOgImage.
+    await ensureOgImage(record, { force: true });
     generated += 1;
   }
 
