@@ -11,20 +11,6 @@ export async function ensureOgImage(
   align: AlignRecord,
   options?: { force?: boolean },
 ) {
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/049136b8-eab0-4d42-9a7f-d42000639197", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "service.ts:ensureOgImage",
-      message: "ensureOgImage called",
-      data: { alignId: align.id, title: align.title, force: options?.force },
-      timestamp: Date.now(),
-      sessionId: "debug-session",
-      hypothesisId: "H1-H5",
-    }),
-  }).catch(() => {});
-  // #endregion
   if (!hasBlobEnv() || !hasKvEnv()) return null;
 
   const currentContentHash = align.contentHash ?? null;
@@ -43,20 +29,6 @@ export async function ensureOgImage(
     }
   }
 
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/049136b8-eab0-4d42-9a7f-d42000639197", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "service.ts:beforeGenerate",
-      message: "about to call generateOgImage",
-      data: { alignId: align.id },
-      timestamp: Date.now(),
-      sessionId: "debug-session",
-      hypothesisId: "H2",
-    }),
-  }).catch(() => {});
-  // #endregion
   const jpegBuffer = await generateOgImage({ align, id: align.id });
   return putOgImage({
     buffer: jpegBuffer,

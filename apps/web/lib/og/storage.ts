@@ -64,20 +64,6 @@ export async function putOgImage(options: {
 }): Promise<OgImageResult> {
   const { buffer, alignId, alignContentHash } = options;
   const { contentHash, objectKey } = computeContentHash(buffer);
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/049136b8-eab0-4d42-9a7f-d42000639197", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      location: "storage.ts:putOgImage",
-      message: "uploading blob",
-      data: { alignId, objectKey, bufferSize: buffer.length, contentHash },
-      timestamp: Date.now(),
-      sessionId: "debug-session",
-      hypothesisId: "H4",
-    }),
-  }).catch(() => {});
-  // #endregion
   const upload = await uploadToBlob(buffer, objectKey);
 
   const metadata: OgMetadata = {
