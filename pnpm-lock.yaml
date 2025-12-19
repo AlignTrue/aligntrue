@@ -415,6 +415,8 @@ importers:
         specifier: ^4.0.9
         version: 4.0.10
 
+  packages/sync: {}
+
   packages/testkit:
     dependencies:
       '@aligntrue/schema':

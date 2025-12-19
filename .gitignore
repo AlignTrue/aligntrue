@@ -97,7 +97,6 @@ apps/docs/public/_pagefind
 .aligntrue/rules/error_lessons_learned.md
 .aligntrue/rules/guardrails.md
 .aligntrue/rules/potential_future_features.md
-.cursor/rules/guardrails.mdc
 # END AlignTrue Private Rules
 
 
@@ -113,7 +112,6 @@ apps/docs/public/_pagefind
 .cursor/rules/debugging.mdc
 .cursor/rules/documentation.mdc
 .cursor/rules/global.mdc
-.cursor/rules/guardrails.mdc
 .cursor/rules/ops_core_discipline.mdc
 .cursor/rules/platform_structure.mdc
 .cursor/rules/pull_request_standards.mdc
