@@ -301,7 +301,7 @@ export async function executeSyncWorkflow(
         const shouldUpdateGitignore =
           (result.written && result.written.length > 0) ||
           (gitMode === "ignore" &&
-            (!hasManagedSection || filesForIgnore.length > 0));
+            (!hasManagedSection || filteredFilesForIgnore.length > 0));
 
         if (shouldUpdateGitignore) {
           await gitIntegration.updateGitignore(
