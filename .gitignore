@@ -104,8 +104,32 @@ apps/docs/public/_pagefind
 
 
 
+
+
 # START AlignTrue Generated Files
+.aligntrue/.backups/
+.cursor/rules/*.mdc
+.cursor/rules/ci_troubleshooting.mdc
+.cursor/rules/debugging.mdc
+.cursor/rules/documentation.mdc
+.cursor/rules/global.mdc
+.cursor/rules/guardrails.mdc
+.cursor/rules/ops_core_discipline.mdc
+.cursor/rules/platform_structure.mdc
+.cursor/rules/pull_request_standards.mdc
+.cursor/rules/rule_writing.mdc
+.cursor/rules/security_linting_policy.mdc
+.cursor/rules/sync_implementation_specs.mdc
+.cursor/rules/sync_testing.mdc
+.cursor/rules/test_log_template.mdc
+.cursor/rules/testing.mdc
+.cursor/rules/typescript.mdc
+apps/docs/.cursor/rules/web_stack_nextra_docs.mdc
+apps/web/.cursor/rules/web_stack_website_catalog.mdc
 # END AlignTrue Generated Files
 
 # START AlignTrue Gitignored Rule Exports
+.cursor/rules/guardrails.mdc
+.cursor/rules/potential_future_features.mdc
+.cursor/rules/sync_error_lessons_learned.mdc
 # END AlignTrue Gitignored Rule Exports

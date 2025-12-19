@@ -23,7 +23,7 @@ Use these to invoke AI-driven test execution. Each prompt triggers actual comman
 ### Layer 1: Smoke Tests
 
 ```
-Execute Layer 1 (Smoke Tests) from .aligntrue/rules/cli_testing_playbook_COMP.md.
+Execute Layer 1 (Smoke Tests) from .aligntrue/rules/sync_cli_testing_playbook_COMP.md.
 
 EXECUTION PROTOCOL:
 1. Set up hermetic test environment in /tmp/aligntrue-test-{timestamp}

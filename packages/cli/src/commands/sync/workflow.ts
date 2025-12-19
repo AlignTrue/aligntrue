@@ -271,10 +271,6 @@ export async function executeSyncWorkflow(
         const agentFilePatterns = getAgentFilePatterns(context);
         // Always include exporter output patterns to ensure .gitignore covers
         // generated files even if a particular run produced no writes (e.g. no diff)
-        const filesForIgnore = [
-          ...(agentFilePatterns ?? []),
-          ...(result.written ?? []),
-        ];
         const gitignoreRuleExports = computeGitignoreRuleExports(
           context.bundleResult.align?.sections || [],
           getExporterNames(config.exporters),
@@ -283,9 +279,31 @@ export async function executeSyncWorkflow(
           gitignoreRuleExports.flatMap((item) => item.exportPaths),
         );
 
-        const filteredFilesForIgnore = filesForIgnore.filter(
-          (filePath) => !gitignoreExportPaths.has(filePath),
-        );
+        const writtenForIgnore = (result.written ?? []).filter((filePath) => {
+          const normalized = filePath.replace(/\\/g, "/");
+          if (gitignoreExportPaths.has(normalized)) return false;
+          // Some exporters may return absolute or differently prefixed paths; allow suffix match
+          for (const exportPath of gitignoreExportPaths) {
+            if (normalized.endsWith(exportPath)) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        const filesForIgnore = [
+          ...(agentFilePatterns ?? []),
+          ...writtenForIgnore,
+        ].filter((filePath) => {
+          const normalized = filePath.replace(/\\/g, "/");
+          if (gitignoreExportPaths.has(normalized)) return false;
+          for (const exportPath of gitignoreExportPaths) {
+            if (normalized.endsWith(exportPath)) {
+              return false;
+            }
+          }
+          return true;
+        });
 
         let hasManagedSection = false;
         try {
@@ -301,12 +319,12 @@ export async function executeSyncWorkflow(
         const shouldUpdateGitignore =
           (result.written && result.written.length > 0) ||
           (gitMode === "ignore" &&
-            (!hasManagedSection || filteredFilesForIgnore.length > 0));
+            (!hasManagedSection || filesForIgnore.length > 0));
 
         if (shouldUpdateGitignore) {
           await gitIntegration.updateGitignore(
             cwd,
-            filteredFilesForIgnore,
+            filesForIgnore,
             autoGitignore,
             gitMode,
           );
