@@ -63,7 +63,7 @@ const UPPERCASE_ACRONYMS = new Set([
  *
  * @example
  * formatTitleFromFilename("ci_troubleshooting.md") // "CI Troubleshooting"
- * formatTitleFromFilename("cli_testing_playbook.md") // "CLI Testing Playbook"
+ * formatTitleFromFilename("sync_cli_testing_playbook.md") // "Sync CLI Testing Playbook"
  * formatTitleFromFilename("typescript.md") // "Typescript"
  */
 export function formatTitleFromFilename(filename: string): string {

@@ -36,8 +36,8 @@ describe("formatTitleFromFilename", () => {
     expect(formatTitleFromFilename("ci_troubleshooting.md")).toBe(
       "CI Troubleshooting",
     );
-    expect(formatTitleFromFilename("cli_testing_playbook.md")).toBe(
-      "CLI Testing Playbook",
+    expect(formatTitleFromFilename("sync_cli_testing_playbook.md")).toBe(
+      "Sync CLI Testing Playbook",
     );
     expect(formatTitleFromFilename("api_reference.md")).toBe("API Reference");
     expect(formatTitleFromFilename("pr_standards.md")).toBe("PR Standards");

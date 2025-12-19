@@ -37,7 +37,7 @@ pnpm test:local
 **Script:** `pnpm test:comprehensive`  
 **Location:** `tests/comprehensive/run-all-layers.ts`
 
-Runs all 8 test layers from the CLI testing playbook. See `.cursor/rules/cli_testing_playbook.mdc` for details.
+Runs all 8 test layers from the CLI testing playbook. See `.aligntrue/rules/sync_cli_testing_playbook.mdc` for details.
 
 ## Commands (25 total)
 

@@ -35,7 +35,7 @@ const noAssetImportsInUI = {
         if (isAssetImport) {
           context.report({
             node,
-            message: `❌ Asset import forbidden in @aligntrue/ui (zero-build package). Embed SVGs inline as JSX or use data URIs. See implementation_specs.mdc Section 14.`,
+            message: `❌ Asset import forbidden in @aligntrue/ui (zero-build package). Embed SVGs inline as JSX or use data URIs. See sync_implementation_specs.mdc Section 14.`,
             fix(fixer) {
               return null; // Manual fix required
             },

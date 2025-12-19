@@ -2,8 +2,7 @@ mode: solo
 sources:
   - type: local
     path: .aligntrue/rules
-  - type: git
-    url: https://github.com/AlignTrue/examples
-    personal: true
 exporters:
   - cursor
+remotes:
+  personal: https://github.com/gmays/aligntrue-private-rules

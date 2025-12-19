@@ -134,4 +134,4 @@ These thresholds are tested in `packages/cli/tests/integration/performance.test.
 - Performance tests: `packages/cli/tests/integration/performance.test.ts`
 - Git source tests: `packages/cli/tests/integration/git-sources.test.ts`
 - Testing guide: `packages/cli/tests/TESTING.md`
-- CLI testing playbook: `.cursor/rules/cli_testing_playbook.mdc`
+- CLI testing playbook: `.aligntrue/rules/sync_cli_testing_playbook.mdc`

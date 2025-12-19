@@ -104,48 +104,31 @@ apps/docs/public/_pagefind
 # END AlignTrue Private Rules
 
 
+
+
+.env*.local
+
 # START AlignTrue Generated Files
 .aligntrue/.backups/
 .cursor/rules/*.mdc
-Sites/aligntrue/.cursor/rules/README.mdc
-Sites/aligntrue/.cursor/rules/accessibility.mdc
-Sites/aligntrue/.cursor/rules/backend-api.mdc
-Sites/aligntrue/.cursor/rules/ci_troubleshooting.mdc
-Sites/aligntrue/.cursor/rules/code-review.mdc
-Sites/aligntrue/.cursor/rules/database.mdc
-Sites/aligntrue/.cursor/rules/debugging.mdc
-Sites/aligntrue/.cursor/rules/devops-ci.mdc
-Sites/aligntrue/.cursor/rules/docs.mdc
-Sites/aligntrue/.cursor/rules/documentation.mdc
-Sites/aligntrue/.cursor/rules/frontend-react.mdc
-Sites/aligntrue/.cursor/rules/global.mdc
-Sites/aligntrue/.cursor/rules/guardrails.mdc
-Sites/aligntrue/.cursor/rules/implementation_specs.mdc
-Sites/aligntrue/.cursor/rules/nextjs_app_router.mdc
-Sites/aligntrue/.cursor/rules/performance.mdc
-Sites/aligntrue/.cursor/rules/personal-rules.mdc
-Sites/aligntrue/.cursor/rules/pull_request_standards.mdc
-Sites/aligntrue/.cursor/rules/rule-authoring.mdc
-Sites/aligntrue/.cursor/rules/rule_writing.mdc
-Sites/aligntrue/.cursor/rules/security-auth.mdc
-Sites/aligntrue/.cursor/rules/security.mdc
-Sites/aligntrue/.cursor/rules/security_linting_policy.mdc
-Sites/aligntrue/.cursor/rules/tdd.mdc
-Sites/aligntrue/.cursor/rules/test_log_template.mdc
-Sites/aligntrue/.cursor/rules/testing-integration.mdc
-Sites/aligntrue/.cursor/rules/testing.mdc
-Sites/aligntrue/.cursor/rules/typescript.mdc
-Sites/aligntrue/.cursor/rules/vercel_deployments.mdc
-Sites/aligntrue/.cursor/rules/web_quality.mdc
+.cursor/rules/ci_troubleshooting.mdc
+.cursor/rules/debugging.mdc
+.cursor/rules/documentation.mdc
+.cursor/rules/global.mdc
+.cursor/rules/guardrails.mdc
+.cursor/rules/pull_request_standards.mdc
+.cursor/rules/rule_writing.mdc
+.cursor/rules/security_linting_policy.mdc
+.cursor/rules/sync_implementation_specs.mdc
+.cursor/rules/test_log_template.mdc
+.cursor/rules/testing.mdc
+.cursor/rules/typescript.mdc
 apps/docs/.cursor/rules/web_stack_nextra_docs.mdc
 apps/web/.cursor/rules/web_stack_website_catalog.mdc
 # END AlignTrue Generated Files
 
 # START AlignTrue Gitignored Rule Exports
-.cursor/rules/error_lessons_learned.mdc
 .cursor/rules/guardrails.mdc
 .cursor/rules/potential_future_features.mdc
-.cursor/rules/vision_strategy_roadmap.mdc
+.cursor/rules/sync_error_lessons_learned.mdc
 # END AlignTrue Gitignored Rule Exports
-
-.env*.local
