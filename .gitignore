@@ -94,9 +94,9 @@ apps/docs/public/_pagefind
 
 # START AlignTrue Private Rules
 # Source: git@github.com:gmays/aligntrue-private-rules (gitignore: true)
-.aligntrue/rules/error_lessons_learned.md
 .aligntrue/rules/guardrails.md
 .aligntrue/rules/potential_future_features.md
+.aligntrue/rules/sync_error_lessons_learned.md
 # END AlignTrue Private Rules
 
 
