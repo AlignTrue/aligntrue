@@ -294,16 +294,7 @@ export async function executeSyncWorkflow(
         const filesForIgnore = [
           ...(agentFilePatterns ?? []),
           ...writtenForIgnore,
-        ].filter((filePath) => {
-          const normalized = filePath.replace(/\\/g, "/");
-          if (gitignoreExportPaths.has(normalized)) return false;
-          for (const exportPath of gitignoreExportPaths) {
-            if (normalized.endsWith(exportPath)) {
-              return false;
-            }
-          }
-          return true;
-        });
+        ];
 
         let hasManagedSection = false;
         try {
