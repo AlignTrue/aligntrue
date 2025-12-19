@@ -1,0 +1,11 @@
+{
+  "name": "@aligntrue/ops-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo ops-core:skip",
+    "test": "echo ops-core:skip",
+    "typecheck": "echo ops-core:skip"
+  }
+}

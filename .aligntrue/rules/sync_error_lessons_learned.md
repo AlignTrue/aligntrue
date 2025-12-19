@@ -1,5 +1,12 @@
 ---
 description: Lessons learned from resolving errors and issues
+globs:
+  - packages/cli/**
+  - packages/core/**
+  - packages/schema/**
+  - packages/exporters/**
+  - packages/sources/**
+  - packages/file-utils/**
 enabled: false
 gitignore: true
 scope: personal

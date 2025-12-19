@@ -1,5 +1,12 @@
 ---
 description: Focused AI-driven CLI testing playbook with 7 exploration areas covering all 24 commands
+globs:
+  - packages/cli/**
+  - packages/core/**
+  - packages/schema/**
+  - packages/exporters/**
+  - packages/sources/**
+  - packages/file-utils/**
 enabled: false
 ---
 

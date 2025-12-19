@@ -1,5 +1,12 @@
 ---
 description: Deterministic implementation specifications for AlignTrue
+globs:
+  - packages/cli/**
+  - packages/core/**
+  - packages/schema/**
+  - packages/exporters/**
+  - packages/sources/**
+  - packages/file-utils/**
 content_hash: dc41679516aef0e7c281dfaea2354106ab935595b531e621e406a948d4cd8983
 ---
 

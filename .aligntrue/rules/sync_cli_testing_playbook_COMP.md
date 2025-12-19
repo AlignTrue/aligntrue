@@ -1,5 +1,12 @@
 ---
 description: Systematic CLI testing playbook for AI agents
+globs:
+  - packages/cli/**
+  - packages/core/**
+  - packages/schema/**
+  - packages/exporters/**
+  - packages/sources/**
+  - packages/file-utils/**
 enabled: false
 ---
 

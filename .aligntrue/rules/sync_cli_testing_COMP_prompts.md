@@ -1,5 +1,12 @@
 ---
 description: Test prompts for the COMP plan
+globs:
+  - packages/cli/**
+  - packages/core/**
+  - packages/schema/**
+  - packages/exporters/**
+  - packages/sources/**
+  - packages/file-utils/**
 enabled: false
 ---
 

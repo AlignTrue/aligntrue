@@ -100,6 +100,8 @@ apps/docs/public/_pagefind
 .cursor/rules/guardrails.mdc
 # END AlignTrue Private Rules
 
+
+
 # START AlignTrue Generated Files
 .aligntrue/.backups/
 .cursor/rules/*.mdc
@@ -108,10 +110,13 @@ apps/docs/public/_pagefind
 .cursor/rules/documentation.mdc
 .cursor/rules/global.mdc
 .cursor/rules/guardrails.mdc
+.cursor/rules/ops_core_discipline.mdc
+.cursor/rules/platform_structure.mdc
 .cursor/rules/pull_request_standards.mdc
 .cursor/rules/rule_writing.mdc
 .cursor/rules/security_linting_policy.mdc
 .cursor/rules/sync_implementation_specs.mdc
+.cursor/rules/sync_testing.mdc
 .cursor/rules/test_log_template.mdc
 .cursor/rules/testing.mdc
 .cursor/rules/typescript.mdc
