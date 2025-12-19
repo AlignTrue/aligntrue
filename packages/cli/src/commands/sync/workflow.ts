@@ -275,6 +275,17 @@ export async function executeSyncWorkflow(
           ...(agentFilePatterns ?? []),
           ...(result.written ?? []),
         ];
+        const gitignoreRuleExports = computeGitignoreRuleExports(
+          context.bundleResult.align?.sections || [],
+          getExporterNames(config.exporters),
+        );
+        const gitignoreExportPaths = new Set(
+          gitignoreRuleExports.flatMap((item) => item.exportPaths),
+        );
+
+        const filteredFilesForIgnore = filesForIgnore.filter(
+          (filePath) => !gitignoreExportPaths.has(filePath),
+        );
 
         let hasManagedSection = false;
         try {
@@ -295,16 +306,12 @@ export async function executeSyncWorkflow(
         if (shouldUpdateGitignore) {
           await gitIntegration.updateGitignore(
             cwd,
-            filesForIgnore,
+            filteredFilesForIgnore,
             autoGitignore,
             gitMode,
           );
 
           // Also add per-rule gitignore exports
-          const gitignoreRuleExports = computeGitignoreRuleExports(
-            context.bundleResult.align?.sections || [],
-            getExporterNames(config.exporters),
-          );
           if (gitignoreRuleExports.length > 0) {
             await gitIntegration.addGitignoreRuleExportsToGitignore(
               cwd,
