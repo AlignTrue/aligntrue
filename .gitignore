@@ -97,16 +97,8 @@ apps/docs/public/_pagefind
 .aligntrue/rules/error_lessons_learned.md
 .aligntrue/rules/guardrails.md
 .aligntrue/rules/potential_future_features.md
-.aligntrue/rules/vision_strategy_roadmap.md
 .cursor/rules/guardrails.mdc
-.cursor/rules/potential_future_features.mdc
-.cursor/rules/vision_strategy_roadmap.mdc
 # END AlignTrue Private Rules
-
-
-
-
-.env*.local
 
 # START AlignTrue Generated Files
 .aligntrue/.backups/
