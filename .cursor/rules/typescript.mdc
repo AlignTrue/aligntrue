@@ -422,12 +422,3 @@ pnpm exec prettier -w .
 ```
 
 For large refactors, run `pnpm exec knip` to find and remove unused exports, dependencies, and files.
-
----
-
-## Related rules
-
-- `testing.mdc`
-- `security_linting_policy.mdc`
-- `implementation_specs.mdc`
-- `pull_request_standards.mdc`

@@ -1,14 +1,6 @@
 ---
-description: Sync CLI testing practices and safety constraints
-globs:
-  - packages/cli/**
-  - packages/core/**
-  - packages/schema/**
-  - packages/exporters/**
-  - packages/sources/**
-  - packages/file-utils/**
+alwaysApply: false
 ---
-
 # Sync testing guide
 
 Use for CLI and sync-engine work. Pairs with `testing.md` for general guidance.

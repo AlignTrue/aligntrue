@@ -1,14 +1,6 @@
 ---
-description: Deterministic implementation specifications for AlignTrue
-globs:
-  - packages/cli/**
-  - packages/core/**
-  - packages/schema/**
-  - packages/exporters/**
-  - packages/sources/**
-  - packages/file-utils/**
+alwaysApply: false
 ---
-
 # Implementation specifications
 
 **When to apply:** When implementing or updating features that must be deterministic, reproducible, or compliance grade (IR, lockfiles, bundles, exports, hashing, canonicalization).

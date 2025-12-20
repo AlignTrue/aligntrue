@@ -18,23 +18,6 @@ General testing guidance lives here. Sync CLI–specific practices (temp dirs, s
 
 ## Data flow and what to test
 
-### Authoritative flow
-
-```
-Source: .aligntrue/rules/*.md (user-editable, canonical)
-  → IR: in-memory representation (internal, never written to disk)
-  → Agent exports: .cursor/*.mdc, AGENTS.md, etc (read-only, generated)
-```
-
-### Rules
-
-- Test through public surfaces and exports
-- Do not assert internal IR layout unless it is a documented contract
-- Agent files are read-only exports; `.aligntrue/rules/*.md` is the source of truth
-- Sync overwriting agent files is expected behavior
-
----
-
 ## 5 question test filter
 
 Apply in order:
@@ -340,11 +323,3 @@ CI should enforce:
 - `tsc --noEmit` clean
 - Tests green
 - No lingering `test.skip` or `test.todo` for shipped features
-
----
-
-## Related rules
-
-- `debugging.md` for systematic debugging
-- `implementation_specs.md` for determinism rules and IR data flow
-- `security_linting_policy.md` for security linting policy
