@@ -6,6 +6,8 @@ import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const packagesDir = join(root, "packages");
+// Packages excluded from version sync (placeholders/incubation)
+const EXCLUDED_PACKAGES = new Set(["sync"]);
 
 function fail(message) {
   console.error(`\n❌ ${message}`);
@@ -32,6 +34,7 @@ function ensureMatchingVersions() {
   console.log("\n▶ Checking package versions");
   const packageJsonPaths = readdirSync(packagesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
+    .filter((entry) => !EXCLUDED_PACKAGES.has(entry.name))
     .map((entry) => join(packagesDir, entry.name, "package.json"));
 
   const versions = new Map();

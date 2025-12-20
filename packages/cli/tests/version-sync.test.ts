@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const root = join(__dirname, "..", "..", "..");
 const packagesDir = join(root, "packages");
+// Packages excluded from version sync (placeholders/incubation)
+const EXCLUDED_PACKAGES = new Set(["sync"]);
 const sections = [
   "dependencies",
   "devDependencies",
@@ -21,6 +23,7 @@ function readPackageJson(path: string) {
 
 const packageJsonPaths = readdirSync(packagesDir, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
+  .filter((entry) => !EXCLUDED_PACKAGES.has(entry.name))
   .map((entry) => join(packagesDir, entry.name, "package.json"));
 
 describe("workspace version sync", () => {
