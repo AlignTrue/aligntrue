@@ -4,8 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "echo ops-core:skip",
-    "test": "echo ops-core:skip",
-    "typecheck": "echo ops-core:skip"
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
   }
 }
