@@ -1,3 +1,7 @@
+import type {
+  ProjectionDefinition,
+  ProjectionFreshness,
+} from "./definition.js";
 import type { WorkLedgerEvent } from "../work-ledger/events.js";
 import {
   cloneState,
@@ -46,14 +50,55 @@ export function buildWorkItemsProjection(
   return { items };
 }
 
+export interface WorkItemsProjectionState extends ProjectionFreshness {
+  ledger: WorkLedgerState;
+}
+
+export const WorkItemsProjectionDef: ProjectionDefinition<WorkItemsProjectionState> =
+  {
+    name: "work_items",
+    version: "1.0.0",
+    init(): WorkItemsProjectionState {
+      return {
+        ledger: initialState(),
+        last_event_id: null,
+        last_ingested_at: null,
+      };
+    },
+    apply(
+      state: WorkItemsProjectionState,
+      event: WorkLedgerEvent,
+    ): WorkItemsProjectionState {
+      const ledger = cloneState(state.ledger);
+      reduceEvent(ledger, event);
+      return {
+        ledger,
+        last_event_id: event.event_id,
+        last_ingested_at: event.ingested_at,
+      };
+    },
+    getFreshness(state: WorkItemsProjectionState): ProjectionFreshness {
+      return {
+        last_event_id: state.last_event_id,
+        last_ingested_at: state.last_ingested_at,
+      };
+    },
+  };
+
+export function buildWorkItemsProjectionFromState(
+  state: WorkItemsProjectionState,
+): WorkItemsProjection {
+  return buildWorkItemsProjection(state.ledger);
+}
+
 export async function replayWorkItems(
   events: AsyncIterable<WorkLedgerEvent>,
 ): Promise<WorkItemsProjection> {
-  const state = initialState();
+  let state: WorkItemsProjectionState = WorkItemsProjectionDef.init();
   for await (const event of events) {
-    reduceEvent(state, event);
+    state = WorkItemsProjectionDef.apply(state, event);
   }
-  return buildWorkItemsProjection(state);
+  return buildWorkItemsProjectionFromState(state);
 }
 
 export function projectAfterEvent(

@@ -1,34 +1,146 @@
 import { hashCanonical } from "../identity/hash.js";
 import type { EventStore } from "../storage/interfaces.js";
-import type { WorkLedgerEvent } from "../work-ledger/events.js";
+import type {
+  ProjectionDefinition,
+  ProjectionFreshness,
+} from "./definition.js";
 import {
-  initialState,
-  reduceEvent,
-  type WorkLedgerState,
-} from "../work-ledger/state-machine.js";
-import { buildReadyQueueProjection } from "./ready-queue.js";
-import { buildWorkItemsProjection } from "./work-items.js";
+  projectionKey,
+  ProjectionRegistry,
+  defaultRegistry,
+} from "./registry.js";
+import {
+  WorkItemsProjectionDef,
+  buildWorkItemsProjectionFromState,
+  type WorkItemsProjectionState,
+} from "./work-items.js";
+import {
+  ReadyQueueProjectionDef,
+  buildReadyQueueProjectionFromState,
+  type ReadyQueueProjectionState,
+} from "./ready-queue.js";
+
+export interface ProjectionOutput<T> {
+  name: string;
+  version: string;
+  data: T;
+  freshness: ProjectionFreshness;
+  hash: string;
+}
+
+export async function rebuildOne<TState>(
+  def: ProjectionDefinition<TState>,
+  eventStore: EventStore,
+): Promise<ProjectionOutput<TState>> {
+  let state = def.init();
+  for await (const event of eventStore.stream()) {
+    state = def.apply(state, event);
+  }
+
+  const freshness = def.getFreshness(state);
+  const hash = hashCanonical({
+    name: def.name,
+    version: def.version,
+    data: state,
+    freshness,
+  });
+
+  return {
+    name: def.name,
+    version: def.version,
+    data: state,
+    freshness,
+    hash,
+  };
+}
+
+export async function rebuildAll(
+  registry: ProjectionRegistry,
+  eventStore: EventStore,
+): Promise<Map<string, ProjectionOutput<unknown>>> {
+  const defs = registry.getAll();
+  const states = new Map<string, unknown>();
+
+  for (const def of defs) {
+    const key = projectionKey(def.name, def.version);
+    states.set(key, def.init());
+  }
+
+  for await (const event of eventStore.stream()) {
+    for (const def of defs) {
+      const key = projectionKey(def.name, def.version);
+      const current = states.get(key) as unknown;
+      const nextState = def.apply(current as never, event);
+      states.set(key, nextState);
+    }
+  }
+
+  const outputs = new Map<string, ProjectionOutput<unknown>>();
+  for (const def of defs) {
+    const key = projectionKey(def.name, def.version);
+    const state = states.get(key) as unknown as object;
+    const freshness = def.getFreshness(state as never);
+    const hash = hashCanonical({
+      name: def.name,
+      version: def.version,
+      data: state,
+      freshness,
+    });
+    outputs.set(key, {
+      name: def.name,
+      version: def.version,
+      data: state,
+      freshness,
+      hash,
+    });
+  }
+
+  return outputs;
+}
+
+defaultRegistry
+  .register(WorkItemsProjectionDef)
+  .register(ReadyQueueProjectionDef);
 
 export interface WorkLedgerProjections {
-  workItems: ReturnType<typeof buildWorkItemsProjection>;
-  readyQueue: ReturnType<typeof buildReadyQueueProjection>;
+  workItems: ReturnType<typeof buildWorkItemsProjectionFromState>;
+  readyQueue: ReturnType<typeof buildReadyQueueProjectionFromState>;
   hash: string;
+  freshness: {
+    workItems: ProjectionFreshness;
+    readyQueue: ProjectionFreshness;
+  };
 }
 
 export async function rebuildWorkLedger(
   eventStore: EventStore,
 ): Promise<WorkLedgerProjections> {
-  const state = await replayState(eventStore);
-  const workItems = buildWorkItemsProjection(state);
-  const readyQueue = buildReadyQueueProjection(state);
-  const hash = hashCanonical({ workItems, readyQueue });
-  return { workItems, readyQueue, hash };
-}
+  const outputs = await rebuildAll(defaultRegistry, eventStore);
+  const workItemsState = outputs.get(
+    projectionKey(WorkItemsProjectionDef.name, WorkItemsProjectionDef.version),
+  )?.data as WorkItemsProjectionState | undefined;
+  const readyQueueState = outputs.get(
+    projectionKey(
+      ReadyQueueProjectionDef.name,
+      ReadyQueueProjectionDef.version,
+    ),
+  )?.data as ReadyQueueProjectionState | undefined;
 
-async function replayState(eventStore: EventStore): Promise<WorkLedgerState> {
-  const state = initialState();
-  for await (const event of eventStore.stream()) {
-    reduceEvent(state, event as WorkLedgerEvent);
+  if (!workItemsState || !readyQueueState) {
+    throw new Error("Work ledger projections missing from registry output");
   }
-  return state;
+
+  const workItems = buildWorkItemsProjectionFromState(workItemsState);
+  const readyQueue = buildReadyQueueProjectionFromState(readyQueueState);
+  const hash = hashCanonical({ workItems, readyQueue });
+
+  return {
+    workItems,
+    readyQueue,
+    hash,
+    freshness: {
+      workItems: WorkItemsProjectionDef.getFreshness(workItemsState),
+      readyQueue: ReadyQueueProjectionDef.getFreshness(readyQueueState),
+    },
+  };
 }
