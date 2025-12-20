@@ -13,3 +13,5 @@ export * as Storage from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
 export * as Projections from "./projections/index.js";
+export * as Artifacts from "./artifacts/index.js";
+export * as Feedback from "./feedback/index.js";

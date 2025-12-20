@@ -1,0 +1,100 @@
+import type { EventEnvelope } from "../envelopes/event.js";
+import type { ActorRef } from "../envelopes/actor.js";
+import { generateEventId } from "../identity/id.js";
+
+export const FEEDBACK_SCHEMA_VERSION = 1;
+
+export const FEEDBACK_TYPES = {
+  Accepted: "accepted",
+  Rejected: "rejected",
+  Edited: "edited",
+  Overridden: "overridden",
+  Snoozed: "snoozed",
+} as const;
+
+export type FeedbackType = (typeof FEEDBACK_TYPES)[keyof typeof FEEDBACK_TYPES];
+
+export interface FeedbackEventPayload {
+  readonly artifact_id: string;
+  readonly feedback_type: FeedbackType;
+  readonly comment?: string;
+  readonly tags?: string[];
+  readonly edits?: unknown;
+}
+
+export type FeedbackEvent = EventEnvelope<FeedbackType, FeedbackEventPayload>;
+
+export interface FeedbackEventInput {
+  readonly artifact_id: string;
+  readonly feedback_type: FeedbackType;
+  readonly comment?: string;
+  readonly tags?: string[];
+  readonly edits?: unknown;
+  readonly correlation_id: string;
+  readonly actor: ActorRef;
+  readonly occurred_at: string;
+  readonly ingested_at?: string;
+  readonly capability_scope?: string[];
+  readonly causation_id?: string;
+  readonly source_ref?: string;
+}
+
+export function buildFeedbackEvent(input: FeedbackEventInput): FeedbackEvent {
+  const payload: FeedbackEventPayload = {
+    artifact_id: input.artifact_id,
+    feedback_type: input.feedback_type,
+    comment: input.comment,
+    tags: input.tags ? dedupeAndSort(input.tags) : undefined,
+    edits: input.edits,
+  };
+
+  const base = {
+    payload,
+    correlation_id: input.correlation_id,
+    actor: input.actor,
+    capability_scope: input.capability_scope ?? [],
+    occurred_at: input.occurred_at,
+    ingested_at: input.ingested_at ?? input.occurred_at,
+    schema_version: FEEDBACK_SCHEMA_VERSION,
+    event_type: input.feedback_type,
+    causation_id: input.causation_id,
+    source_ref: input.source_ref,
+  };
+
+  const event_id = generateEventId({
+    payload,
+    correlation_id: input.correlation_id,
+    occurred_at: input.occurred_at,
+    actor: input.actor,
+  });
+
+  return {
+    ...base,
+    event_id,
+  };
+}
+
+export function isFeedbackEvent(event: EventEnvelope): event is FeedbackEvent {
+  return (
+    typeof event.event_type === "string" &&
+    Object.values(FEEDBACK_TYPES).includes(event.event_type as FeedbackType)
+  );
+}
+
+export async function feedbackByArtifactId(
+  events: AsyncIterable<EventEnvelope>,
+  artifactId: string,
+): Promise<FeedbackEvent[]> {
+  const matches: FeedbackEvent[] = [];
+  for await (const event of events) {
+    if (!isFeedbackEvent(event)) continue;
+    if (event.payload.artifact_id === artifactId) {
+      matches.push(event);
+    }
+  }
+  return matches;
+}
+
+function dedupeAndSort(values: readonly string[]): string[] {
+  return Array.from(new Set(values)).sort();
+}

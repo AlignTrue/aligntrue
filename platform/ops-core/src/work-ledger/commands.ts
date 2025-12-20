@@ -72,7 +72,14 @@ export class WorkLedger {
       command.command_id,
     );
     if (existing) {
-      return existing;
+      if (
+        command.command_type === "work.complete" &&
+        existing.status === "accepted"
+      ) {
+        // Recompute to surface "already_processed" once completion has been applied.
+      } else {
+        return existing;
+      }
     }
 
     await this.commandLog.record(command);

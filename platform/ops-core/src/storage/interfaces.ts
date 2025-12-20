@@ -18,3 +18,12 @@ export interface CommandLog {
   recordOutcome(outcome: CommandOutcome): Promise<void>;
   getByIdempotencyKey(commandId: string): Promise<CommandOutcome | null>;
 }
+
+export interface ArtifactStore<TQuery, TDerived> {
+  putQueryArtifact(artifact: TQuery): Promise<void>;
+  putDerivedArtifact(artifact: TDerived): Promise<void>;
+  getQueryById(id: string): Promise<TQuery | null>;
+  getDerivedById(id: string): Promise<TDerived | null>;
+  listQueryArtifacts(): Promise<TQuery[]>;
+  listDerivedArtifacts(): Promise<TDerived[]>;
+}

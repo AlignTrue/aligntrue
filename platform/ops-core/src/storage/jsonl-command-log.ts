@@ -27,8 +27,8 @@ export class JsonlCommandLog implements CommandLog {
     try {
       const data = await readFile(this.outcomesPath, "utf8");
       const lines = data.split("\n").filter(Boolean);
-      for (const line of lines) {
-        const parsed = JSON.parse(line) as CommandOutcome;
+      for (let i = lines.length - 1; i >= 0; i -= 1) {
+        const parsed = JSON.parse(lines[i]) as CommandOutcome;
         if (parsed.command_id === commandId) {
           return parsed;
         }

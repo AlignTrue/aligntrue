@@ -1,3 +1,6 @@
 {
-  "work-ledger": "Work ledger"
+  "work-ledger": "Work ledger",
+  "query-artifacts": "Query artifacts",
+  "derived-artifacts": "Derived artifacts",
+  "feedback": "Feedback receipts"
 }
