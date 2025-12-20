@@ -105,6 +105,8 @@ apps/docs/public/_pagefind
 
 
 
+
+
 # START AlignTrue Generated Files
 .aligntrue/.backups/
 .cursor/rules/*.mdc
@@ -112,7 +114,10 @@ apps/docs/public/_pagefind
 .cursor/rules/debugging.mdc
 .cursor/rules/documentation.mdc
 .cursor/rules/global.mdc
+.cursor/rules/guardrails.mdc
 .cursor/rules/ops_core_discipline.mdc
+.cursor/rules/ops_core_invariants.mdc
+.cursor/rules/ops_phase0_dod.mdc
 .cursor/rules/platform_structure.mdc
 .cursor/rules/pull_request_standards.mdc
 .cursor/rules/rule_writing.mdc
