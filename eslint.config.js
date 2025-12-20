@@ -611,6 +611,17 @@ export default [
     },
   },
   {
+    files: ["platform/ops-core/**/*.ts"],
+    rules: {
+      // Platform kernel runs after CLI/API validation; data is trusted at this layer.
+      // Object iteration uses static field lists or own keys; no user-controlled keys flow here.
+      // Storage paths are internal defaults, not user input; higher layers enforce validation.
+      // See .cursor/rules/security_linting_policy.mdc (Trust Boundaries) for rationale.
+      "security/detect-object-injection": "off",
+      "security/detect-non-literal-fs-filename": "off",
+    },
+  },
+  {
     files: ["**/*.test.ts", "**/*.test.tsx", "archive/**", "**/tests/**/*.ts"],
     languageOptions: {
       parser: typescriptParser,

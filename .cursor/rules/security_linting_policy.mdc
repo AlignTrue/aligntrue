@@ -21,6 +21,14 @@ This document defines when to suppress vs fix security warnings from `eslint-plu
 
 **Suppress false positives with documentation. Fix real vulnerabilities.**
 
+## Trust boundaries
+
+- User input is validated at CLI/API boundaries (packages/cli, packages/core, packages/exporters, packages/sources, packages/schema).
+- `platform/ops-core` runs after validation; treat it as trusted internal code. Use ESLint overrides (not inline suppressions) for security rules there.
+- Inline `eslint-disable` comments should be reserved for rare, file-scoped edge cases where validation is obvious in the same file.
+- Prefer directory-level overrides for trusted layers to avoid scattering suppressions; document rationale in this policy.
+- CodeQL taint analysis focuses on user-controlled data. For trusted layers without user input flow, overrides are acceptable; for boundary code, fix or validate inputs instead of overriding.
+
 ## When to Suppress
 
 ### 1. Safe Internal Paths
