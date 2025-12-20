@@ -393,6 +393,7 @@ export default [
       "archive/**",
       ".archive/**",
       "eslint.config.js", // Config file doesn't use rules it defines
+      "platform/ops-core/**/*.d.ts", // TS project config excludes these declaration files
     ],
   },
   {

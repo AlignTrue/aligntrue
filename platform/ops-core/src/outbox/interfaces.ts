@@ -4,8 +4,8 @@ export interface OutboxEntry {
   readonly entry_id: string;
   readonly event_id: string;
   readonly created_at: string;
-  readonly dispatched_at?: string;
-  readonly dispatch_error?: string;
+  dispatched_at?: string;
+  dispatch_error?: string;
 }
 
 export interface Dispatcher {

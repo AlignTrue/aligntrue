@@ -25,7 +25,9 @@ function normalize(value: JSONValue): JSONValue {
   const sortedKeys = Object.keys(value).sort();
   const result: { [key: string]: JSONValue } = {};
   for (const key of sortedKeys) {
-    result[key] = normalize(value[key]);
+    const child = (value as Record<string, JSONValue | undefined>)[key];
+    if (child === undefined) continue;
+    result[key] = normalize(child);
   }
   return result;
 }

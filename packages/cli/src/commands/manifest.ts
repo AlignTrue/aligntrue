@@ -29,6 +29,7 @@ import {
   rules,
   remotes,
   uninstall,
+  work,
 } from "./index.js";
 
 /**
@@ -95,6 +96,12 @@ export const COMMANDS: CommandMeta[] = [
     summary: "Run health checks and verification tests",
     category: "diagnostics",
     handler: doctor,
+  },
+  {
+    name: "work",
+    summary: "Manage work ledger (create/show/ready/block/complete/dep)",
+    category: "diagnostics",
+    handler: work,
   },
   {
     name: "onboard",
