@@ -6,3 +6,5 @@ exporters:
   - cursor
 remotes:
   personal: https://github.com/gmays/aligntrue-private-rules
+git:
+  mode: ignore
