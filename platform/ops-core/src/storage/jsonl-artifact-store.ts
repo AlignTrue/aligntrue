@@ -56,9 +56,9 @@ export class JsonlArtifactStore implements ArtifactStore<
     return this.readAll<DerivedArtifact>(this.derivedPath);
   }
 
-  private async readById<T extends Record<string, unknown>>(
+  private async readById<T>(
     path: string,
-    idField: string,
+    idField: keyof T & string,
     id: string,
   ): Promise<T | null> {
     try {

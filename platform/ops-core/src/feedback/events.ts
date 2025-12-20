@@ -43,9 +43,9 @@ export function buildFeedbackEvent(input: FeedbackEventInput): FeedbackEvent {
   const payload: FeedbackEventPayload = {
     artifact_id: input.artifact_id,
     feedback_type: input.feedback_type,
-    comment: input.comment,
-    tags: input.tags ? dedupeAndSort(input.tags) : undefined,
-    edits: input.edits,
+    ...(input.comment !== undefined && { comment: input.comment }),
+    ...(input.tags !== undefined && { tags: dedupeAndSort(input.tags) }),
+    ...(input.edits !== undefined && { edits: input.edits }),
   };
 
   const base = {
@@ -57,8 +57,10 @@ export function buildFeedbackEvent(input: FeedbackEventInput): FeedbackEvent {
     ingested_at: input.ingested_at ?? input.occurred_at,
     schema_version: FEEDBACK_SCHEMA_VERSION,
     event_type: input.feedback_type,
-    causation_id: input.causation_id,
-    source_ref: input.source_ref,
+    ...(input.causation_id !== undefined && {
+      causation_id: input.causation_id,
+    }),
+    ...(input.source_ref !== undefined && { source_ref: input.source_ref }),
   };
 
   const event_id = generateEventId({

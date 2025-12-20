@@ -75,9 +75,9 @@ export function buildDerivedArtifact(
     policy_version: input.policy_version,
     output_type: input.output_type,
     output_data: input.output_data,
-    assumptions,
-    confidence: input.confidence,
-    explanation: input.explanation,
+    ...(assumptions !== undefined && { assumptions }),
+    ...(input.confidence !== undefined && { confidence: input.confidence }),
+    ...(input.explanation !== undefined && { explanation: input.explanation }),
     created_at: input.created_at,
     created_by: input.created_by,
     correlation_id: input.correlation_id,
@@ -89,6 +89,9 @@ export function buildDerivedArtifact(
     ...content,
     artifact_id: content_hash,
     content_hash,
+    ...(assumptions !== undefined && { assumptions }),
+    ...(input.confidence !== undefined && { confidence: input.confidence }),
+    ...(input.explanation !== undefined && { explanation: input.explanation }),
   };
 }
 

@@ -47,9 +47,11 @@ export function buildQueryArtifact(input: QueryArtifactInput): QueryArtifact {
     artifact_type: "query" as const,
     referenced_entities,
     referenced_fields,
-    filters: input.filters ?? {},
-    projection_version: input.projection_version ?? null,
-    snapshot_id: input.snapshot_id ?? null,
+    ...(input.filters !== undefined && { filters: input.filters }),
+    ...(input.projection_version !== undefined && {
+      projection_version: input.projection_version,
+    }),
+    ...(input.snapshot_id !== undefined && { snapshot_id: input.snapshot_id }),
     created_at: input.created_at,
     created_by: input.created_by,
     correlation_id: input.correlation_id,
@@ -61,9 +63,11 @@ export function buildQueryArtifact(input: QueryArtifactInput): QueryArtifact {
     ...content,
     artifact_id: content_hash,
     content_hash,
-    filters: input.filters,
-    projection_version: input.projection_version,
-    snapshot_id: input.snapshot_id,
+    ...(input.filters !== undefined && { filters: input.filters }),
+    ...(input.projection_version !== undefined && {
+      projection_version: input.projection_version,
+    }),
+    ...(input.snapshot_id !== undefined && { snapshot_id: input.snapshot_id }),
   };
 }
 
