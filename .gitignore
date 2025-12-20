@@ -50,12 +50,6 @@ next-env.d.ts
 # AI agents
 .cursor/plans/
 
-
-# aligntrue local data (user-specific, never commit)
-.aligntrue/.cache/
-.aligntrue/privacy-consent.json
-.aligntrue/.drift-log.json
-
 # temp items (AI-generated artifacts, prefixed with temp-)
 temp-*
 logs/
@@ -92,12 +86,8 @@ packages/**/test-*/
 apps/docs/public/_pagefind
 
 
-# START AlignTrue Private Rules
-# Source: git@github.com:gmays/aligntrue-private-rules (gitignore: true)
-.aligntrue/rules/guardrails.md
-.aligntrue/rules/potential_future_features.md
-.aligntrue/rules/sync_error_lessons_learned.md
-# END AlignTrue Private Rules
+
+
 
 
 
@@ -116,7 +106,6 @@ apps/docs/public/_pagefind
 .cursor/rules/debugging.mdc
 .cursor/rules/documentation.mdc
 .cursor/rules/global.mdc
-.cursor/rules/guardrails.mdc
 .cursor/rules/ops_core_discipline.mdc
 .cursor/rules/ops_core_invariants.mdc
 .cursor/rules/ops_phase0_dod.mdc
@@ -124,6 +113,10 @@ apps/docs/public/_pagefind
 .cursor/rules/pull_request_standards.mdc
 .cursor/rules/rule_writing.mdc
 .cursor/rules/security_linting_policy.mdc
+.cursor/rules/sync_cli_testing_COMP_prompts.mdc
+.cursor/rules/sync_cli_testing_playbook.mdc
+.cursor/rules/sync_cli_testing_playbook_COMP.mdc
+.cursor/rules/sync_error_lessons_learned.mdc
 .cursor/rules/sync_implementation_specs.mdc
 .cursor/rules/sync_testing.mdc
 .cursor/rules/test_log_template.mdc
@@ -136,5 +129,4 @@ apps/web/.cursor/rules/web_stack_website_catalog.mdc
 # START AlignTrue Gitignored Rule Exports
 .cursor/rules/guardrails.mdc
 .cursor/rules/potential_future_features.mdc
-.cursor/rules/sync_error_lessons_learned.mdc
 # END AlignTrue Gitignored Rule Exports
