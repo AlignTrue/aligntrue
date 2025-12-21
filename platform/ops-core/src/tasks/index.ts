@@ -19,7 +19,7 @@ export * from "./commands.js";
 export * from "./state-machine.js";
 export * from "./types.js";
 
-export const DEFAULT_TASKS_EVENTS_PATH = "./data/ops-core-events.jsonl";
+export const DEFAULT_TASKS_EVENTS_PATH = "./data/ops-core-tasks.jsonl";
 
 export function createJsonlTaskLedger(opts?: {
   eventsPath?: string;

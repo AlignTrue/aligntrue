@@ -19,7 +19,7 @@ export * from "./commands.js";
 export * from "./state-machine.js";
 export * from "./markdown.js";
 
-export const DEFAULT_NOTES_EVENTS_PATH = "./data/ops-core-events.jsonl";
+export const DEFAULT_NOTES_EVENTS_PATH = "./data/ops-core-notes.jsonl";
 
 export function createJsonlNoteLedger(opts?: {
   eventsPath?: string;
