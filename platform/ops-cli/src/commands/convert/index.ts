@@ -50,12 +50,6 @@ async function convertEmailToTask(args: string[]): Promise<void> {
   const commandLog = new Storage.JsonlCommandLog();
   const service = new Convert.ConversionService(eventStore, commandLog);
 
-  if (labelArchive) {
-    exitWithError(1, "Gmail label/archive via CLI is not supported", {
-      hint: "Use the web UI for Gmail mutations",
-    });
-  }
-
   const result = await service.convertEmailToTask({
     message_id: messageId,
     actor: cliActor(),
@@ -66,7 +60,11 @@ async function convertEmailToTask(args: string[]): Promise<void> {
     `Converted email ${messageId} -> task ${result.created_id} (${result.outcome.status})`,
   );
 
-  if (labelArchive) {
+  if (labelArchive && !OPS_GMAIL_MUTATIONS_ENABLED) {
+    console.warn(
+      "OPS_GMAIL_MUTATIONS_ENABLED is not set; skipping Gmail label/archive mutation",
+    );
+  } else if (labelArchive) {
     const labelId = process.env["GMAIL_MUTATION_LABEL_ID"];
     const executor = new GmailMutations.GmailMutationExecutor(eventStore, {
       flagEnabled: OPS_GMAIL_MUTATIONS_ENABLED,

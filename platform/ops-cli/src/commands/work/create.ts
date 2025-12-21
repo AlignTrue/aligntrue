@@ -40,7 +40,6 @@ export async function createWork(args: string[]): Promise<void> {
     exitWithError(2, "Title is required", {
       hint: "Usage: aligntrue work create <title> [--id <id>] [--desc <text>]",
     });
-    return;
   }
 
   const safeTitle: string = title;

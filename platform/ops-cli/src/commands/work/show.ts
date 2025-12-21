@@ -10,7 +10,6 @@ export async function showWork(args: string[]): Promise<void> {
     const item = items.get(workId);
     if (!item) {
       exitWithError(1, `Work item not found: ${workId}`);
-      return;
     }
     printItem(item);
     return;
