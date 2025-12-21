@@ -176,8 +176,10 @@ export async function overrideAdd(args: string[]): Promise<void> {
           hint: "Expected format: --set key=value",
         });
       }
-      setValues.push(next);
-      i++;
+      {
+        setValues.push(next);
+        i++;
+      }
     } else if (arg === "--remove") {
       const next = args[i + 1];
       if (!next) {
@@ -185,8 +187,10 @@ export async function overrideAdd(args: string[]): Promise<void> {
           hint: "Expected format: --remove key",
         });
       }
-      removeValues.push(next);
-      i++;
+      {
+        removeValues.push(next);
+        i++;
+      }
     }
   }
 
