@@ -15,7 +15,7 @@ type TimelineItem = Projections.TimelineProjection["items"][number];
 
 export async function timeline(args: string[]): Promise<void> {
   const sub = args[0] ?? "list";
-  const rest = sub === "list" ? args.slice(1) : args.slice(1);
+  const rest = args.slice(1);
 
   if (sub === "--help" || sub === "-h" || sub === "help") {
     console.log(HELP_TEXT.trim());
