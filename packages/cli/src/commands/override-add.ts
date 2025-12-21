@@ -172,7 +172,7 @@ export async function overrideAdd(args: string[]): Promise<void> {
     if (arg === "--set") {
       const next = args[i + 1];
       if (!next) {
-        exitWithError(1, "--set requires a value", {
+        exitWithError(2, "--set requires a value", {
           hint: "Expected format: --set key=value",
         });
       }
@@ -183,7 +183,7 @@ export async function overrideAdd(args: string[]): Promise<void> {
     } else if (arg === "--remove") {
       const next = args[i + 1];
       if (!next) {
-        exitWithError(1, "--remove requires a value", {
+        exitWithError(2, "--remove requires a value", {
           hint: "Expected format: --remove key",
         });
       }

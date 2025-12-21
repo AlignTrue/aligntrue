@@ -22,17 +22,17 @@ export async function plan(args: string[]): Promise<void> {
     case "daily":
       return handleDaily(args.slice(1));
     default:
-      return exitWithError(1, "Usage: aligntrue plan daily <task_id...>");
+      return exitWithError(2, "Usage: aligntrue plan daily <task_id...>");
   }
 }
 
 async function handleDaily(taskIds: string[]): Promise<void> {
   ensureEnabled();
   if (!taskIds.length) {
-    return exitWithError(1, "Provide 1-3 task ids for daily plan");
+    return exitWithError(2, "Provide 1-3 task ids for daily plan");
   }
   if (taskIds.length > 3) {
-    return exitWithError(1, "Daily plan supports up to 3 task ids");
+    return exitWithError(2, "Daily plan supports up to 3 task ids");
   }
 
   const { hash } = await readTasksProjection();
