@@ -2,11 +2,12 @@ import { exitWithError } from "../../utils/command-utilities.js";
 import { readProjections } from "./shared.js";
 
 export async function showWork(args: string[]): Promise<void> {
-  const workId = args[0];
+  const workId = args.at(0);
   const projection = await readProjections();
+  const items = new Map(Object.entries(projection.workItems.items));
 
   if (workId) {
-    const item = projection.workItems.items[workId];
+    const item = items.get(workId);
     if (!item) {
       exitWithError(1, `Work item not found: ${workId}`);
       return;
@@ -15,13 +16,13 @@ export async function showWork(args: string[]): Promise<void> {
     return;
   }
 
-  const ids = Object.keys(projection.workItems.items).sort();
+  const ids = [...items.keys()].sort();
   if (ids.length === 0) {
     console.log("No work items found.");
     return;
   }
   for (const id of ids) {
-    const item = projection.workItems.items[id];
+    const item = items.get(id);
     if (!item) continue;
     printItem(item);
   }

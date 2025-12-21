@@ -9,10 +9,10 @@ export async function createTask(args: string[]): Promise<void> {
   const positional: string[] = [];
 
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     if (arg === "--id") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--id requires a value", {
           hint: "Usage: aligntrue task create <title> [--id <id>] [--bucket today|week|later|waiting]",
@@ -23,7 +23,7 @@ export async function createTask(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--bucket") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--bucket requires a value", {
           hint: "Usage: aligntrue task create <title> [--id <id>] [--bucket today|week|later|waiting]",

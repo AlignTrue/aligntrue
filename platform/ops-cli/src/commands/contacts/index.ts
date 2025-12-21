@@ -102,7 +102,9 @@ async function showContact(args: string[]): Promise<void> {
   const view = Projections.buildContactsProjectionFromState(
     projection.data as Projections.ContactsProjectionState,
   );
-  const contact = view.contacts.find((c) => c.contact_id === id);
+  const contact = view.contacts.find(
+    (c: Projections.Contact) => c.contact_id === id,
+  );
 
   if (!contact) {
     exitWithError(1, `Contact not found: ${id}`);
@@ -125,15 +127,16 @@ function parseListArgs(args: string[]): { limit?: number } {
   let limit: number | undefined;
 
   for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     switch (arg) {
       case "--limit":
-        if (!args[i + 1]) {
-          exitWithError(2, "--limit requires a value");
-        }
         {
-          const parsed = Number(args[i + 1]);
+          const next = args.at(i + 1);
+          if (!next) {
+            exitWithError(2, "--limit requires a value");
+          }
+          const parsed = Number(next);
           if (Number.isNaN(parsed) || parsed < 1) {
             exitWithError(2, "limit must be a positive integer");
           }

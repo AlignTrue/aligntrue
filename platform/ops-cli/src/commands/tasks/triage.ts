@@ -3,7 +3,7 @@ import { buildCommand, createLedger, ensureTasksEnabled } from "./shared.js";
 
 export async function triageTask(args: string[]): Promise<void> {
   ensureTasksEnabled();
-  const taskId = args[0];
+  const taskId = args.at(0);
   if (!taskId) {
     exitWithError(2, "Task ID is required", {
       hint: "Usage: aligntrue task triage <id> [--bucket ...] [--impact ...] [--effort ...] [--due ISO] [--title ...]",
@@ -17,10 +17,10 @@ export async function triageTask(args: string[]): Promise<void> {
   let title: string | undefined;
 
   for (let i = 1; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     if (arg === "--bucket") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--bucket requires a value", {
           hint: "Usage: aligntrue task triage <id> --bucket today|week|later|waiting",
@@ -31,7 +31,7 @@ export async function triageTask(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--impact") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--impact requires a value", {
           hint: "Usage: aligntrue task triage <id> --impact <value>",
@@ -42,7 +42,7 @@ export async function triageTask(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--effort") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--effort requires a value", {
           hint: "Usage: aligntrue task triage <id> --effort <value>",
@@ -53,7 +53,7 @@ export async function triageTask(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--due") {
-      const val = args[i + 1];
+      const val = args.at(i + 1);
       if (!val) {
         exitWithError(2, "--due requires a value", {
           hint: "Usage: aligntrue task triage <id> --due <ISO timestamp|null>",
@@ -64,7 +64,7 @@ export async function triageTask(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--title") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--title requires a value", {
           hint: "Usage: aligntrue task triage <id> --title <text>",

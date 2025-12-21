@@ -17,10 +17,14 @@ import { JsonlCommandLog } from "../storage/index.js";
 import * as Tasks from "../tasks/index.js";
 import * as Notes from "../notes/index.js";
 import * as Feedback from "../feedback/index.js";
-import type { SuggestionCommandEnvelope } from "./commands.js";
+import type {
+  ApproveSuggestionPayload,
+  SuggestionCommandEnvelope,
+} from "./commands.js";
 import {
   isSuggestionArtifact,
   suggestionOutputType,
+  type SuggestionContent,
   type SuggestionStatus,
 } from "./types.js";
 
@@ -58,6 +62,7 @@ export class SuggestionExecutor {
     command: SuggestionCommandEnvelope<"suggestion.approve">,
   ): Promise<CommandOutcome> {
     ensureSuggestionsEnabled();
+    const payload = command.payload as ApproveSuggestionPayload;
 
     const existing = await this.commandLog.getByIdempotencyKey(
       command.command_id,
@@ -76,9 +81,9 @@ export class SuggestionExecutor {
       return this.finish(command, [], "already_processed", status);
     }
 
-    if (artifact.content_hash !== command.payload.expected_hash) {
+    if (artifact.content_hash !== payload.expected_hash) {
       throw new PreconditionFailed(
-        command.payload.expected_hash,
+        payload.expected_hash,
         artifact.content_hash,
       );
     }
@@ -199,10 +204,10 @@ export class SuggestionExecutor {
     artifact: import("../artifacts/index.js").DerivedArtifact,
     actor: ActorRef,
   ): Promise<void> {
-    const content = artifact.output_data;
     if (!isSuggestionArtifact(artifact)) {
       throw new ValidationError("Unsupported suggestion artifact output");
     }
+    const content = artifact.output_data as SuggestionContent;
     switch (artifact.output_type) {
       case suggestionOutputType("task_triage"):
         return this.runTaskTriage(content.diff, actor);

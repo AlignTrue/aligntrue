@@ -3,7 +3,7 @@ import { exitWithError } from "../../utils/command-utilities.js";
 import { buildCommandEnvelope, createRuntime } from "./shared.js";
 
 export async function attemptStep(args: string[]): Promise<void> {
-  const run_id = args[0];
+  const run_id = args.at(0);
   if (!run_id) {
     exitWithError(2, "Usage: aligntrue run step <run_id> --kind <kind>");
     return;
@@ -40,10 +40,10 @@ function parseArgs(args: string[]): {
   let kind: string | undefined;
   let step_id: string | undefined;
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     if (arg === "--kind") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--kind requires a value", {
           hint: "Usage: aligntrue run step <run_id> --kind <kind> [--id <step_id>]",
@@ -52,7 +52,7 @@ function parseArgs(args: string[]): {
       kind = next;
       i++;
     } else if (arg === "--id") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--id requires a value", {
           hint: "Usage: aligntrue run step <run_id> --kind <kind> [--id <step_id>]",

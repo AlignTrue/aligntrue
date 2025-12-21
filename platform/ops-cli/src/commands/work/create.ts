@@ -8,10 +8,10 @@ export async function createWork(args: string[]): Promise<void> {
   const positional: string[] = [];
 
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (arg === undefined) continue;
     if (arg === "--id") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--id requires a value", {
           hint: "Usage: aligntrue work create <title> [--id <id>] [--desc <text>]",
@@ -22,7 +22,7 @@ export async function createWork(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--desc" || arg === "--description") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--desc requires a value", {
           hint: "Usage: aligntrue work create <title> [--id <id>] [--desc <text>]",

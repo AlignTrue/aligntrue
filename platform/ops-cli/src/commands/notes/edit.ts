@@ -1,6 +1,5 @@
-import { writeFile, readFile } from "node:fs/promises";
-import { mkdtemp } from "node:fs/promises";
-import { join } from "node:path";
+import { writeFile, readFile, mkdtemp } from "node:fs/promises";
+import { join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { exitWithError } from "../../utils/command-utilities.js";
@@ -10,10 +9,11 @@ import {
   ensureNotesEnabled,
   readNotesProjection,
 } from "./shared.js";
+import { Projections } from "@aligntrue/ops-core";
 
 export async function editNote(args: string[]): Promise<void> {
   ensureNotesEnabled();
-  const noteId = args[0];
+  const noteId = args.at(0);
   if (!noteId) {
     exitWithError(2, "Note ID is required", {
       hint: "Usage: aligntrue note edit <id>",
@@ -21,13 +21,18 @@ export async function editNote(args: string[]): Promise<void> {
   }
 
   const projection = await readNotesProjection();
-  const note = projection.notes.find((n) => n.id === noteId);
+  const note = projection.notes.find(
+    (n: Projections.NoteLatest) => n.id === noteId,
+  );
   if (!note) {
     exitWithError(1, `Note ${noteId} not found`);
   }
 
   const dir = await mkdtemp(join(tmpdir(), "aligntrue-note-"));
-  const file = join(dir, `${noteId}.md`);
+  const file = resolve(dir, `${noteId}.md`);
+  ensurePathWithinDir(file, dir);
+  // Path confined to mkdtemp-generated directory.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   await writeFile(file, note.body_md, "utf8");
 
   const editor = process.env["EDITOR"] || "vi";
@@ -36,6 +41,8 @@ export async function editNote(args: string[]): Promise<void> {
     exitWithError(result.status ?? 1, "Editor exited with error");
   }
 
+  // Path confined to mkdtemp-generated directory.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const nextBody = await readFile(file, "utf8");
   if (nextBody === note.body_md) {
     console.log("No changes made.");
@@ -53,4 +60,15 @@ export async function editNote(args: string[]): Promise<void> {
   console.log(
     `Updated ${noteId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
   );
+}
+
+function ensurePathWithinDir(targetPath: string, baseDir: string): void {
+  const resolvedBase = resolve(baseDir);
+  const baseWithSep = resolvedBase.endsWith(sep)
+    ? resolvedBase
+    : `${resolvedBase}${sep}`;
+  const resolvedTarget = resolve(targetPath);
+  if (!resolvedTarget.startsWith(baseWithSep)) {
+    exitWithError(2, "Resolved path escaped expected directory");
+  }
 }

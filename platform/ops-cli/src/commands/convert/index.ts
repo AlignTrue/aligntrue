@@ -123,12 +123,12 @@ function parseArgs(args: string[]): {
   let messageId: string | undefined;
   let labelArchive = false;
   for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (arg === "--label-archive") {
       labelArchive = true;
       continue;
     }
-    if (!messageId) {
+    if (!messageId && arg) {
       messageId = arg;
     }
   }

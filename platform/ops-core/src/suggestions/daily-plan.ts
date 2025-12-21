@@ -41,8 +41,6 @@ export async function buildAndStoreDailyPlan(
     referenced_entities: ["task"],
     referenced_fields: ["id"],
     filters: { plan_date: input.date },
-    projection_version: undefined,
-    snapshot_id: undefined,
     created_at,
     created_by: input.actor,
     correlation_id: input.correlation_id,

@@ -1,0 +1,9 @@
+export * as tasks from "./commands/tasks/index.js";
+export * as notes from "./commands/notes/index.js";
+export * as run from "./commands/run/index.js";
+export * as convert from "./commands/convert/index.js";
+export * as inbox from "./commands/inbox/index.js";
+export * as plan from "./commands/plan/index.js";
+export * as work from "./commands/work/index.js";
+export * as timeline from "./commands/timeline/index.js";
+export * as contacts from "./commands/contacts/index.js";

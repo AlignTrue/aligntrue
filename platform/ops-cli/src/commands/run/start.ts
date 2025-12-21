@@ -31,10 +31,10 @@ function parseArgs(args: string[]): {
   let kind: string | undefined;
   let run_id: string | undefined;
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     if (arg === "--kind") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--kind requires a value", {
           hint: "Usage: aligntrue run start --kind <kind> [--id <run_id>]",
@@ -43,7 +43,7 @@ function parseArgs(args: string[]): {
       kind = next;
       i++;
     } else if (arg === "--id") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--id requires a value", {
           hint: "Usage: aligntrue run start --kind <kind> [--id <run_id>]",

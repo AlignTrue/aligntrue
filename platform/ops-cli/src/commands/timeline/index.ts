@@ -143,23 +143,23 @@ function parseListArgs(args: string[]): {
   let type: string | undefined;
 
   for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     switch (arg) {
       case "--since":
-        if (args[i + 1]) {
-          since = args[i + 1];
+        if (args.at(i + 1)) {
+          since = args.at(i + 1);
           i += 1;
         } else {
           exitWithError(2, "--since requires a value");
         }
         break;
       case "--limit":
-        if (!args[i + 1]) {
+        if (!args.at(i + 1)) {
           exitWithError(2, "--limit requires a value");
         }
         {
-          const parsed = Number(args[i + 1]);
+          const parsed = Number(args.at(i + 1));
           if (Number.isNaN(parsed) || parsed < 1) {
             exitWithError(2, "limit must be a positive integer");
           }
@@ -168,8 +168,8 @@ function parseListArgs(args: string[]): {
         }
         break;
       case "--type":
-        if (args[i + 1]) {
-          type = args[i + 1];
+        if (args.at(i + 1)) {
+          type = args.at(i + 1);
           i += 1;
         } else {
           exitWithError(2, "--type requires a value");

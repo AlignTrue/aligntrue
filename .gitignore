@@ -21,6 +21,7 @@ out/
 # production
 build
 dist
+platform/ops-cli/dist/
 
 # misc
 .DS_Store
@@ -77,6 +78,10 @@ packages/**/.test-*/
 packages/**/test-*/
 **/tests/tmp/
 **/.backups/
+# ops-core build artifacts emitted to src (ignore generated JS + d.ts)
+platform/ops-core/src/**/*.d.ts
+platform/ops-core/src/**/*.d.ts.map
+platform/ops-core/src/**/*.js
 
 # Turborepo cache (generated during build)
 .turbo/

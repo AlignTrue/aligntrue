@@ -29,16 +29,9 @@ import {
   rules,
   remotes,
   uninstall,
-  work,
-  timeline,
-  contacts,
-  convert,
-  task,
-  note,
-  run,
-  inbox,
-  plan,
 } from "./index.js";
+import { OPS_CORE_ENABLED } from "@aligntrue/ops-core";
+import * as ops from "@aligntrue/ops-cli";
 
 /**
  * Command category for grouping in help output
@@ -71,7 +64,7 @@ export interface CommandMeta {
  *
  * Order within each category determines display order in help.
  */
-export const COMMANDS: CommandMeta[] = [
+const SYNC_COMMANDS: CommandMeta[] = [
   // Getting Started
   {
     name: "init",
@@ -104,60 +97,6 @@ export const COMMANDS: CommandMeta[] = [
     summary: "Run health checks and verification tests",
     category: "diagnostics",
     handler: doctor,
-  },
-  {
-    name: "work",
-    summary: "Manage work ledger (create/show/ready/block/complete/dep)",
-    category: "diagnostics",
-    handler: work,
-  },
-  {
-    name: "inbox",
-    summary: "Manage suggestion inbox (generate/list/approve/reject/snooze)",
-    category: "diagnostics",
-    handler: inbox,
-  },
-  {
-    name: "plan",
-    summary: "Create plans (daily)",
-    category: "diagnostics",
-    handler: plan,
-  },
-  {
-    name: "timeline",
-    summary: "List timeline items (calendar ingest v0, read-only)",
-    category: "diagnostics",
-    handler: timeline,
-  },
-  {
-    name: "contacts",
-    summary: "List contacts derived from calendar events (read-only)",
-    category: "diagnostics",
-    handler: contacts,
-  },
-  {
-    name: "convert",
-    summary: "Convert email to task or note (optionally label+archive)",
-    category: "diagnostics",
-    handler: convert,
-  },
-  {
-    name: "task",
-    summary: "Manage tasks (create/list/triage/complete/reopen)",
-    category: "diagnostics",
-    handler: task,
-  },
-  {
-    name: "note",
-    summary: "Manage notes (create/edit/show/list)",
-    category: "diagnostics",
-    handler: note,
-  },
-  {
-    name: "run",
-    summary: "Manage execution runs (start/show/step)",
-    category: "diagnostics",
-    handler: run,
   },
   {
     name: "onboard",
@@ -279,6 +218,68 @@ export const COMMANDS: CommandMeta[] = [
     handler: uninstall,
   },
 ];
+
+const OPS_COMMANDS: CommandMeta[] = OPS_CORE_ENABLED
+  ? [
+      {
+        name: "work",
+        summary: "Manage work ledger (create/show/ready/block/complete/dep)",
+        category: "diagnostics",
+        handler: ops.work.work,
+      },
+      {
+        name: "inbox",
+        summary:
+          "Manage suggestion inbox (generate/list/approve/reject/snooze)",
+        category: "diagnostics",
+        handler: ops.inbox.inbox,
+      },
+      {
+        name: "plan",
+        summary: "Create plans (daily)",
+        category: "diagnostics",
+        handler: ops.plan.plan,
+      },
+      {
+        name: "timeline",
+        summary: "List timeline items (calendar ingest v0, read-only)",
+        category: "diagnostics",
+        handler: ops.timeline.timeline,
+      },
+      {
+        name: "contacts",
+        summary: "List contacts derived from calendar events (read-only)",
+        category: "diagnostics",
+        handler: ops.contacts.contacts,
+      },
+      {
+        name: "convert",
+        summary: "Convert email to task or note (optionally label+archive)",
+        category: "diagnostics",
+        handler: ops.convert.convert,
+      },
+      {
+        name: "task",
+        summary: "Manage tasks (create/list/triage/complete/reopen)",
+        category: "diagnostics",
+        handler: ops.tasks.task,
+      },
+      {
+        name: "note",
+        summary: "Manage notes (create/edit/show/list)",
+        category: "diagnostics",
+        handler: ops.notes.note,
+      },
+      {
+        name: "run",
+        summary: "Manage execution runs (start/show/step)",
+        category: "diagnostics",
+        handler: ops.run.run,
+      },
+    ]
+  : [];
+
+export const COMMANDS: CommandMeta[] = [...SYNC_COMMANDS, ...OPS_COMMANDS];
 
 /**
  * Category display metadata

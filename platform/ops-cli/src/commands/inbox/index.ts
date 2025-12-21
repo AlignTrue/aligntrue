@@ -73,7 +73,9 @@ async function handleList(args: string[]): Promise<void> {
   const status = statusArg ? (statusArg.split("=")[1] as string) : undefined;
   const inbox = await Suggestions.rebuildInboxProjection({});
   const items = status
-    ? inbox.projection.suggestions.filter((s) => s.status === status)
+    ? inbox.projection.suggestions.filter(
+        (s: Projections.InboxItem) => s.status === status,
+      )
     : inbox.projection.suggestions;
 
   if (!items.length) {

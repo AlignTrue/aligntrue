@@ -1,5 +1,6 @@
 import { exitWithError } from "../../utils/command-utilities.js";
 import { ensureNotesEnabled, readNotesProjection } from "./shared.js";
+import { Projections } from "@aligntrue/ops-core";
 
 export async function showNote(args: string[]): Promise<void> {
   ensureNotesEnabled();
@@ -11,7 +12,9 @@ export async function showNote(args: string[]): Promise<void> {
   }
 
   const projection = await readNotesProjection();
-  const note = projection.notes.find((n) => n.id === noteId);
+  const note = projection.notes.find(
+    (n: Projections.NoteLatest) => n.id === noteId,
+  );
   if (!note) {
     exitWithError(1, `Note ${noteId} not found`);
   }

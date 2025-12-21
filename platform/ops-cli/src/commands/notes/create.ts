@@ -9,10 +9,10 @@ export async function createNote(args: string[]): Promise<void> {
   const positional: string[] = [];
 
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args.at(i);
     if (!arg) continue;
     if (arg === "--id") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--id requires a value", {
           hint: 'Usage: aligntrue note create <title> [--id <id>] [--body "text"]',
@@ -23,7 +23,7 @@ export async function createNote(args: string[]): Promise<void> {
       continue;
     }
     if (arg === "--body") {
-      const next = args[i + 1];
+      const next = args.at(i + 1);
       if (!next) {
         exitWithError(2, "--body requires a value", {
           hint: 'Usage: aligntrue note create <title> [--id <id>] [--body "text"]',
