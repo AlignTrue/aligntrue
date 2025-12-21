@@ -25,3 +25,4 @@ export { rules } from "./rules.js";
 export { remotes } from "./remotes.js";
 export { uninstallCommand as uninstall } from "./uninstall.js";
 export { work } from "./work/index.js";
+export { timeline } from "./timeline/index.js";

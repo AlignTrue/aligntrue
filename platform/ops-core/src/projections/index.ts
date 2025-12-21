@@ -14,6 +14,16 @@ export {
   type ProjectionOutput,
 } from "./rebuild.js";
 export {
+  TimelineProjectionDef,
+  buildTimelineProjectionFromState,
+  replayTimeline,
+  hashTimelineProjection,
+} from "./timeline.js";
+export type {
+  TimelineProjectionState,
+  TimelineProjection,
+} from "./timeline.js";
+export {
   buildWorkItemsProjection,
   buildWorkItemsProjectionFromState,
   WorkItemsProjectionDef,

@@ -4,3 +4,10 @@
  * Set via OPS_CORE_ENABLED env var (default: off).
  */
 export const OPS_CORE_ENABLED = process.env["OPS_CORE_ENABLED"] === "1";
+
+/**
+ * Phase 1 Milestone 1: Google Calendar connector (READ-only) kill switch.
+ * Default OFF. Enables calendar ingestion + timeline projection when set.
+ */
+export const OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED =
+  process.env["OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED"] === "1";

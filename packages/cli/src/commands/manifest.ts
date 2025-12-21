@@ -30,6 +30,7 @@ import {
   remotes,
   uninstall,
   work,
+  timeline,
 } from "./index.js";
 
 /**
@@ -102,6 +103,12 @@ export const COMMANDS: CommandMeta[] = [
     summary: "Manage work ledger (create/show/ready/block/complete/dep)",
     category: "diagnostics",
     handler: work,
+  },
+  {
+    name: "timeline",
+    summary: "List timeline items (calendar ingest v0, read-only)",
+    category: "diagnostics",
+    handler: timeline,
   },
   {
     name: "onboard",
