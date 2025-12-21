@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 const APP_BASE =
   (process.env["APP_BASE_URL"] ?? process.env["VERCEL_URL"])
-    ? `https://${process.env["VERCEL_URL"]}`
+    ? `https://${process.env["APP_BASE_URL"] ?? process.env["VERCEL_URL"]}`
     : "http://localhost:3000";
 const LABEL_ID = process.env["GMAIL_MUTATION_LABEL_ID"];
 

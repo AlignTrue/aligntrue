@@ -97,7 +97,7 @@ export class ConversionService {
       title: input.title ?? email.payload.subject ?? "(no subject)",
       bucket: "today",
       status: "open",
-      ...(email.payload.thread_id ? { source_ref } : { source_ref }),
+      source_ref,
       conversion,
     };
 

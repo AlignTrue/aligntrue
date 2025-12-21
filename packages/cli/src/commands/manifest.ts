@@ -33,6 +33,9 @@ import {
   timeline,
   contacts,
   convert,
+  task,
+  note,
+  run,
 } from "./index.js";
 
 /**
@@ -123,6 +126,24 @@ export const COMMANDS: CommandMeta[] = [
     summary: "Convert email to task or note (optionally label+archive)",
     category: "diagnostics",
     handler: convert,
+  },
+  {
+    name: "task",
+    summary: "Manage tasks (create/list/triage/complete/reopen)",
+    category: "diagnostics",
+    handler: task,
+  },
+  {
+    name: "note",
+    summary: "Manage notes (create/edit/show/list)",
+    category: "diagnostics",
+    handler: note,
+  },
+  {
+    name: "run",
+    summary: "Manage execution runs (start/show/step)",
+    category: "diagnostics",
+    handler: run,
   },
   {
     name: "onboard",
