@@ -13,6 +13,6 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "vitest": "catalog:"
+    "vitest": "^4.0.15"
   }
 }
