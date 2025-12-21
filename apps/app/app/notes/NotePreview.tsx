@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useEffect, useMemo, useRef, useTransition } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -23,7 +23,12 @@ export function NotePreview({ noteId, body }: Props) {
     return indexes;
   }, [body]);
 
-  let checkboxCursor = 0;
+  const checkboxCursor = useRef(0);
+
+  useEffect(() => {
+    // Reset cursor whenever the rendered checkbox lines change
+    checkboxCursor.current = 0;
+  }, [checkboxLines]);
 
   const toggle = (lineIndex: number) => {
     if (lineIndex < 0) return;
@@ -43,7 +48,8 @@ export function NotePreview({ noteId, body }: Props) {
         components={{
           input: ({ node: _node, ...props }) => {
             if (props.type === "checkbox") {
-              const lineIndex = checkboxLines[checkboxCursor++] ?? -1;
+              const lineIndex = checkboxLines[checkboxCursor.current] ?? -1;
+              checkboxCursor.current += 1;
               return (
                 <input
                   {...props}

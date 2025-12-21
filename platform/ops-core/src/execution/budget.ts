@@ -45,12 +45,18 @@ export class BudgetTracker {
     receipt: UsageReceiptContent & { receipt_id: string; content_hash: string };
   } {
     this.rotateDayWindowIfNeeded(opts.now());
+    const existingRun = this.runUsage.get(input.run_id);
     const run =
-      this.runUsage.get(input.run_id) ??
+      existingRun ??
       ({
         calls: 0,
         tokens: 0,
       } as RunUsage);
+    // Persist the run record even when the call is rejected so counters are not reset
+    // across repeated attempts.
+    if (!existingRun) {
+      this.runUsage.set(input.run_id, run);
+    }
 
     const tokens = (input.tokens_in ?? 0) + (input.tokens_out ?? 0);
     const nowMs = opts.now();
