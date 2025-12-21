@@ -14,8 +14,12 @@ const budgetTracker = new BudgetTracker();
 let budgetMutex: Promise<unknown> = Promise.resolve();
 
 async function withBudgetLock<T>(fn: () => Promise<T> | T): Promise<T> {
-  const run = budgetMutex.then(fn);
-  budgetMutex = run.catch(() => {});
+  const run = budgetMutex.then(() => fn());
+  // Ensure the mutex chain always resolves, but do not swallow caller errors.
+  budgetMutex = run.then(
+    () => undefined,
+    () => undefined,
+  );
   return run;
 }
 
