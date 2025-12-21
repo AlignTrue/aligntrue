@@ -28,6 +28,7 @@ const LABEL_ID = process.env["GMAIL_MUTATION_LABEL_ID"];
 async function convertToTaskAction(formData: FormData) {
   "use server";
   const message_id = String(formData.get("message_id") ?? "");
+  const thread_id = String(formData.get("thread_id") ?? "");
   if (!message_id) return;
   await fetch(`${APP_BASE}/api/convert/email-to-task`, {
     method: "POST",
@@ -37,17 +38,21 @@ async function convertToTaskAction(formData: FormData) {
 
   const doMutation = formData.get("mutation") === "on";
   if (doMutation) {
-    const payload: Record<string, unknown> = {
-      message_id,
-      thread_id: String(formData.get("thread_id") ?? ""),
-      operations: LABEL_ID ? ["APPLY_LABEL", "ARCHIVE"] : ["ARCHIVE"],
-    };
-    if (LABEL_ID) payload.label_id = LABEL_ID;
-    await fetch(`${APP_BASE}/api/gmail/mutation`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    if (!thread_id) {
+      console.warn("Skipping Gmail mutation: thread_id is missing");
+    } else {
+      const payload: Record<string, unknown> = {
+        message_id,
+        thread_id,
+        operations: LABEL_ID ? ["APPLY_LABEL", "ARCHIVE"] : ["ARCHIVE"],
+      };
+      if (LABEL_ID) payload.label_id = LABEL_ID;
+      await fetch(`${APP_BASE}/api/gmail/mutation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
   }
   revalidatePath("/emails");
 }

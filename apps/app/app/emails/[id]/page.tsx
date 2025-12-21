@@ -35,9 +35,13 @@ async function convert(
     body: JSON.stringify({ message_id }),
   });
   if (mutate) {
+    if (!thread_id) {
+      console.warn("Skipping Gmail mutation: thread_id is missing");
+      return;
+    }
     const payload: Record<string, unknown> = {
       message_id,
-      thread_id: thread_id ?? "",
+      thread_id,
       operations: LABEL_ID ? ["APPLY_LABEL", "ARCHIVE"] : ["ARCHIVE"],
     };
     if (LABEL_ID) payload.label_id = LABEL_ID;
