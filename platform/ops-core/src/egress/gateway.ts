@@ -10,6 +10,14 @@ import {
 } from "./types.js";
 
 const budgetTracker = new BudgetTracker();
+// Serialize budget updates to avoid races when multiple requests arrive at once.
+let budgetMutex: Promise<unknown> = Promise.resolve();
+
+async function withBudgetLock<T>(fn: () => Promise<T> | T): Promise<T> {
+  const run = budgetMutex.then(fn);
+  budgetMutex = run.catch(() => {});
+  return run;
+}
 
 export async function evaluateEgress(
   request: EgressGatewayRequest,
@@ -39,30 +47,34 @@ export async function evaluateEgress(
     };
   }
 
-  const check = budgetTracker.checkAndRecord(
-    {
-      run_id: modelCtx.run_id ?? "unknown",
-      ...(modelCtx.step_id !== undefined ? { step_id: modelCtx.step_id } : {}),
-      ...(modelCtx.model_id !== undefined
-        ? { model_id: modelCtx.model_id }
-        : {}),
-      ...(modelCtx.tokens_in !== undefined
-        ? { tokens_in: modelCtx.tokens_in }
-        : {}),
-      ...(modelCtx.tokens_out !== undefined
-        ? { tokens_out: modelCtx.tokens_out }
-        : {}),
-    },
-    {
-      actor:
-        modelCtx.actor ??
-        ({
-          actor_id: "system",
-          actor_type: "service",
-        } as const),
-      correlation_id: modelCtx.correlation_id ?? "egress",
-      now: () => Date.now(),
-    },
+  const check = await withBudgetLock(() =>
+    budgetTracker.checkAndRecord(
+      {
+        run_id: modelCtx.run_id ?? "unknown",
+        ...(modelCtx.step_id !== undefined
+          ? { step_id: modelCtx.step_id }
+          : {}),
+        ...(modelCtx.model_id !== undefined
+          ? { model_id: modelCtx.model_id }
+          : {}),
+        ...(modelCtx.tokens_in !== undefined
+          ? { tokens_in: modelCtx.tokens_in }
+          : {}),
+        ...(modelCtx.tokens_out !== undefined
+          ? { tokens_out: modelCtx.tokens_out }
+          : {}),
+      },
+      {
+        actor:
+          modelCtx.actor ??
+          ({
+            actor_id: "system",
+            actor_type: "service",
+          } as const),
+        correlation_id: modelCtx.correlation_id ?? "egress",
+        now: () => Date.now(),
+      },
+    ),
   );
 
   if (!check.allowed) {
