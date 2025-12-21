@@ -39,6 +39,11 @@ function discoverCommands(): string[] {
 
 const ALL_COMMANDS = discoverCommands();
 
+const COMMAND_ENVS: Record<string, NodeJS.ProcessEnv> = {
+  // Work commands are gated behind OPS_CORE_ENABLED; enable for help coverage.
+  work: { OPS_CORE_ENABLED: "1" },
+};
+
 describe("Command Coverage", () => {
   describe("Help text", () => {
     it("shows help for main command", () => {
@@ -51,10 +56,13 @@ describe("Command Coverage", () => {
 
     ALL_COMMANDS.forEach((command) => {
       it(`shows help for ${command} command`, () => {
+        const env = { ...process.env, ...COMMAND_ENVS[command] };
+
         try {
           const output = execSync(`node ${CLI_PATH} ${command} --help`, {
             encoding: "utf-8",
             stdio: "pipe",
+            env,
           });
           // Help text should contain usage information (case insensitive)
           expect(output.toLowerCase()).toMatch(/usage/);
