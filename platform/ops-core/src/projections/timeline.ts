@@ -9,6 +9,8 @@ import {
   type CalendarEventEnvelope,
   type CalendarItemIngestedPayload,
 } from "../connectors/google-calendar/events.js";
+import { OPS_CONTACTS_ENABLED } from "../config.js";
+import { extractContactIdsFromEvent } from "./contacts.js";
 
 export type TimelineItemType = "calendar_event";
 
@@ -109,13 +111,16 @@ export function hashTimelineProjection(projection: TimelineProjection): string {
 
 function toTimelineItem(event: CalendarEventEnvelope): TimelineItem {
   const payload = event.payload;
+  const contactRefs = OPS_CONTACTS_ENABLED
+    ? extractContactIdsFromEvent(event)
+    : [];
   return {
     id: payload.source_ref,
     type: "calendar_event",
     title: payload.title,
     occurred_at: payload.start_time,
     source_ref: payload.source_ref,
-    entity_refs: [],
+    entity_refs: contactRefs,
     provider: payload.provider,
     calendar_id: payload.calendar_id,
     event_id: payload.event_id,

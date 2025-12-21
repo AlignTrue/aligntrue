@@ -11,3 +11,9 @@ export const OPS_CORE_ENABLED = process.env["OPS_CORE_ENABLED"] === "1";
  */
 export const OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED =
   process.env["OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED"] === "1";
+
+/**
+ * Phase 1 Milestone 2: Contact projection kill switch.
+ * Default OFF. Enables contact derivation from calendar ingest events.
+ */
+export const OPS_CONTACTS_ENABLED = process.env["OPS_CONTACTS_ENABLED"] === "1";

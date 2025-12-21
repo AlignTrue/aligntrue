@@ -1,5 +1,6 @@
 export interface CalendarAttendee {
-  email: string;
+  email?: string;
+  display_name?: string;
   response_status?: string;
 }
 

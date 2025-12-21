@@ -24,6 +24,19 @@ export type {
   TimelineProjection,
 } from "./timeline.js";
 export {
+  ContactsProjectionDef,
+  buildContactsProjectionFromState,
+  hashContactIdFromEmail,
+  hashContactIdSourceScoped,
+  normalizeEmail as normalizeContactEmail,
+  extractContactIdsFromEvent,
+} from "./contacts.js";
+export type {
+  ContactsProjectionState,
+  ContactProjection,
+  Contact,
+} from "./contacts.js";
+export {
   buildWorkItemsProjection,
   buildWorkItemsProjectionFromState,
   WorkItemsProjectionDef,
