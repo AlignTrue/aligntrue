@@ -61,16 +61,29 @@ async function convertEmailToTask(args: string[]): Promise<void> {
   );
 
   if (labelArchive) {
+    const labelId = process.env["GMAIL_MUTATION_LABEL_ID"];
     const executor = new GmailMutations.GmailMutationExecutor(eventStore, {
       flagEnabled: OPS_GMAIL_MUTATIONS_ENABLED,
     });
     const mutationId = Identity.randomId();
-    const mutation = await executor.execute({
+    const operations: GmailMutations.GmailMutationOp[] = labelId
+      ? ["APPLY_LABEL", "ARCHIVE"]
+      : ["ARCHIVE"];
+    const mutationRequest: GmailMutations.GmailMutationRequest = {
       mutation_id: mutationId,
       provider: "google_gmail",
       message_id: messageId,
       thread_id: messageId, // thread_id not known; reuse message_id
-      operations: ["APPLY_LABEL", "ARCHIVE"],
+      operations,
+      ...(labelId ? { label_id: labelId } : {}),
+    };
+    if (labelArchive && !labelId) {
+      console.warn(
+        "GMAIL_MUTATION_LABEL_ID not set; performing ARCHIVE without APPLY_LABEL",
+      );
+    }
+    const mutation = await executor.execute({
+      ...mutationRequest,
     });
     console.log(
       `Gmail mutation (${mutationId}): ${mutation.disabled ? "mutations disabled" : "executed"} ${
