@@ -2,7 +2,7 @@ import {
   OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
   Projections,
   Storage,
-} from "../../../../../platform/ops-core/dist/index.js";
+} from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP_TEXT = `
@@ -10,6 +10,8 @@ Usage: aligntrue timeline list [--since YYYY-MM-DD] [--limit N] [--type calendar
 
 List timeline items (currently calendar events). Output is stable and receipt-oriented.
 `;
+
+type TimelineItem = Projections.TimelineProjection["items"][number];
 
 export async function timeline(args: string[]): Promise<void> {
   const sub = args[0] ?? "list";
@@ -54,11 +56,11 @@ export async function timeline(args: string[]): Promise<void> {
   }
 
   if (type) {
-    items = items.filter((item) => item.type === type);
+    items = items.filter((item: TimelineItem) => item.type === type);
   }
 
   if (since) {
-    items = items.filter((item) => item.occurred_at >= since);
+    items = items.filter((item: TimelineItem) => item.occurred_at >= since);
   }
 
   if (limit !== undefined) {
@@ -85,7 +87,9 @@ export async function timeline(args: string[]): Promise<void> {
     }
     if (item.attendees?.length) {
       console.log(
-        `  attendees: ${item.attendees.map((a) => a.email).join(", ")}`,
+        `  attendees: ${item.attendees
+          .map((a: NonNullable<TimelineItem["attendees"]>[number]) => a.email)
+          .join(", ")}`,
       );
     }
   }

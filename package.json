@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "build:packages": "turbo run build --filter='./packages/*'",
+    "build:packages": "turbo run build --filter='./packages/*' --filter='./platform/*'",
     "dev": "node scripts/dev-all.mjs",
     "dev:web": "pnpm --filter @aligntrue/web dev",
     "dev:docs": "pnpm --filter @aligntrue/docs dev",

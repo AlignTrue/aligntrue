@@ -1,4 +1,4 @@
-import { Identity } from "../../../../../platform/ops-core/dist/index.js";
+import { Identity } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { buildCommand, createLedger } from "./shared.js";
 

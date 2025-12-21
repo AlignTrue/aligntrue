@@ -263,6 +263,9 @@ importers:
       '@aligntrue/file-utils':
         specifier: workspace:*
         version: link:../file-utils
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../platform/ops-core
       '@aligntrue/plugin-contracts':
         specifier: workspace:*
         version: link:../plugin-contracts

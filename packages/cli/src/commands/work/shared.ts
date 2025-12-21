@@ -4,7 +4,7 @@ import {
   Storage,
   WorkLedger,
   Projections,
-} from "../../../../../platform/ops-core/dist/index.js";
+} from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 
 export const CLI_ACTOR: WorkLedger.WorkCommandEnvelope["actor"] = {
