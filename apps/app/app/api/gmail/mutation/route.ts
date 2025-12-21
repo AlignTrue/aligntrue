@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Identity } from "@aligntrue/ops-core";
+import { GmailMutations, Identity } from "@aligntrue/ops-core";
 import { getGmailMutationExecutor } from "@/lib/ops-services";
 
 export async function POST(request: Request) {
@@ -20,7 +20,29 @@ export async function POST(request: Request) {
     typeof body.mutation_id === "string"
       ? body.mutation_id
       : Identity.randomId();
-  const operations = body.operations as GmailMutations.GmailMutationOp[];
+
+  const operationsAreValid =
+    Array.isArray(body.operations) &&
+    body.operations.every(
+      (op: unknown): op is GmailMutations.GmailMutationOp =>
+        op === "APPLY_LABEL" || op === "ARCHIVE",
+    );
+  if (!operationsAreValid) {
+    return NextResponse.json(
+      { error: "operations must be APPLY_LABEL or ARCHIVE" },
+      { status: 400 },
+    );
+  }
+  const operations = body.operations;
+
+  if (body.label_id !== undefined && typeof body.label_id !== "string") {
+    return NextResponse.json(
+      { error: "label_id must be a string when provided" },
+      { status: 400 },
+    );
+  }
+  const label_id =
+    typeof body.label_id === "string" ? body.label_id : undefined;
 
   const executor = getGmailMutationExecutor();
 
@@ -31,7 +53,7 @@ export async function POST(request: Request) {
       message_id: body.message_id,
       thread_id: body.thread_id,
       operations,
-      ...(body.label_id ? { label_id: body.label_id } : {}),
+      ...(label_id ? { label_id } : {}),
     });
 
     return NextResponse.json({
