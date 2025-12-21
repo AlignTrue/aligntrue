@@ -57,3 +57,10 @@ export const OPS_MODEL_MAX_TOKENS_PER_DAY = Number.parseInt(
 export const OPS_MODEL_MIN_INTERVAL_MS = Number.parseInt(
   process.env["OPS_MODEL_MIN_INTERVAL_MS"] ?? "100",
 );
+
+/**
+ * Phase 1 Milestone 5: Tasks and Notes kill switches.
+ * Default OFF. Enables task/note commands, projections, and UI surfaces when set.
+ */
+export const OPS_TASKS_ENABLED = process.env["OPS_TASKS_ENABLED"] === "1";
+export const OPS_NOTES_ENABLED = process.env["OPS_NOTES_ENABLED"] === "1";

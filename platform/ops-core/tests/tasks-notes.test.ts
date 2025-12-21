@@ -1,0 +1,211 @@
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { Identity, Projections, Tasks, Notes, Storage } from "../src/index.js";
+
+const ACTOR = { actor_id: "user-1", actor_type: "human" } as const;
+const NOW = "2024-01-01T00:00:00Z";
+
+function buildCommand<T extends string, P>(
+  command_type: T,
+  payload: P,
+  opts?: { id?: string; target_ref?: string; dedupe_scope?: string },
+) {
+  const command_id =
+    opts?.id ?? Identity.deterministicId(JSON.stringify(payload));
+  return {
+    command_id,
+    command_type,
+    payload,
+    target_ref: opts?.target_ref ?? "local",
+    dedupe_scope: opts?.dedupe_scope ?? "tenant:local",
+    correlation_id: "corr-1",
+    actor: ACTOR,
+    requested_at: NOW,
+  };
+}
+
+describe("tasks + notes", () => {
+  let dir: string;
+  let eventsPath: string;
+  let commandsPath: string;
+  let outcomesPath: string;
+  let eventStore: Storage.JsonlEventStore;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "ops-core-tasks-notes-"));
+    eventsPath = join(dir, "events.jsonl");
+    commandsPath = join(dir, "commands.jsonl");
+    outcomesPath = join(dir, "outcomes.jsonl");
+    eventStore = new Storage.JsonlEventStore(eventsPath);
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("Task create is idempotent by command_id", async () => {
+    const ledger = Tasks.createJsonlTaskLedger({
+      eventsPath,
+      commandsPath,
+      outcomesPath,
+      now: () => NOW,
+    });
+
+    const payload = {
+      task_id: "task-1",
+      title: "Test task",
+      bucket: "today" as const,
+      status: "open" as const,
+    };
+
+    const cmd = buildCommand("task.create", payload, {
+      id: "cmd-1",
+      target_ref: payload.task_id,
+      dedupe_scope: `task:${payload.task_id}`,
+    });
+
+    const first = await ledger.execute(cmd);
+    const second = await ledger.execute(cmd);
+
+    expect(first.status).toBe("accepted");
+    expect(second.status).toBe("accepted");
+
+    let createEvents = 0;
+    for await (const event of eventStore.stream()) {
+      if (event.event_type === Tasks.TASK_EVENT_TYPES.TaskCreated) {
+        createEvents += 1;
+      }
+    }
+    expect(createEvents).toBe(1);
+  });
+
+  it("Task projection rebuild is deterministic", async () => {
+    const ledger = Tasks.createJsonlTaskLedger({
+      eventsPath,
+      commandsPath,
+      outcomesPath,
+      now: () => NOW,
+    });
+
+    const createCmd = buildCommand("task.create", {
+      task_id: "task-2",
+      title: "Plan",
+      bucket: "today" as const,
+      status: "open" as const,
+    });
+    await ledger.execute(createCmd);
+
+    const triageCmd = buildCommand("task.triage", {
+      task_id: "task-2",
+      bucket: "week" as const,
+      impact: "M" as const,
+    });
+    await ledger.execute(triageCmd);
+
+    const first = await Projections.rebuildOne(
+      Projections.TasksProjectionDef,
+      eventStore,
+    );
+    const firstView = Projections.buildTasksProjectionFromState(
+      first.data as Projections.TasksProjectionState,
+    );
+    const firstHash = Projections.hashTasksProjection(firstView);
+
+    const second = await Projections.rebuildOne(
+      Projections.TasksProjectionDef,
+      eventStore,
+    );
+    const secondView = Projections.buildTasksProjectionFromState(
+      second.data as Projections.TasksProjectionState,
+    );
+    const secondHash = Projections.hashTasksProjection(secondView);
+
+    expect(firstHash).toBe(secondHash);
+    expect(firstView.tasks.length).toBe(1);
+    expect(firstView.tasks[0]?.bucket).toBe("week");
+  });
+
+  it("Note checkbox patch is idempotent on retry", async () => {
+    const noteLedger = Notes.createJsonlNoteLedger({
+      eventsPath,
+      commandsPath,
+      outcomesPath,
+      now: () => NOW,
+    });
+
+    const createCmd = buildCommand("note.create", {
+      note_id: "note-1",
+      title: "Checklist",
+      body_md: "- [ ] item one",
+      content_hash: "",
+    });
+    await noteLedger.execute(createCmd);
+
+    const patchCmd = buildCommand("note.patch_checkbox", {
+      note_id: "note-1",
+      line_index: 0,
+    });
+
+    const first = await noteLedger.execute(patchCmd);
+    const second = await noteLedger.execute(patchCmd);
+
+    expect(first.status).toBe("accepted");
+    expect(second.status).toBe("accepted");
+
+    const projection = await Projections.rebuildOne(
+      Projections.NotesProjectionDef,
+      eventStore,
+    );
+    const view = Projections.buildNotesProjectionFromState(
+      projection.data as Projections.NotesProjectionState,
+    );
+    expect(view.notes[0]?.body_md.trim()).toBe("- [x] item one");
+  });
+
+  it("Note projection rebuild is deterministic", async () => {
+    const noteLedger = Notes.createJsonlNoteLedger({
+      eventsPath,
+      commandsPath,
+      outcomesPath,
+      now: () => NOW,
+    });
+
+    const createCmd = buildCommand("note.create", {
+      note_id: "note-2",
+      title: "Doc",
+      body_md: "hello",
+      content_hash: "",
+    });
+    await noteLedger.execute(createCmd);
+
+    const updateCmd = buildCommand("note.update", {
+      note_id: "note-2",
+      body_md: "hello world",
+    });
+    await noteLedger.execute(updateCmd);
+
+    const first = await Projections.rebuildOne(
+      Projections.NotesProjectionDef,
+      eventStore,
+    );
+    const firstView = Projections.buildNotesProjectionFromState(
+      first.data as Projections.NotesProjectionState,
+    );
+    const firstHash = Projections.hashNotesProjection(firstView);
+
+    const second = await Projections.rebuildOne(
+      Projections.NotesProjectionDef,
+      eventStore,
+    );
+    const secondView = Projections.buildNotesProjectionFromState(
+      second.data as Projections.NotesProjectionState,
+    );
+    const secondHash = Projections.hashNotesProjection(secondView);
+
+    expect(firstHash).toBe(secondHash);
+    expect(firstView.notes.length).toBe(1);
+    expect(firstView.notes[0]?.body_md).toBe("hello world");
+  });
+});

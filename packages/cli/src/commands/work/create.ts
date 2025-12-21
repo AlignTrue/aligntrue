@@ -11,12 +11,24 @@ export async function createWork(args: string[]): Promise<void> {
     const arg = args[i];
     if (arg === undefined) continue;
     if (arg === "--id") {
-      customId = args[i + 1];
+      const next = args[i + 1];
+      if (!next) {
+        exitWithError(2, "--id requires a value", {
+          hint: "Usage: aligntrue work create <title> [--id <id>] [--desc <text>]",
+        });
+      }
+      customId = next;
       i += 1;
       continue;
     }
     if (arg === "--desc" || arg === "--description") {
-      description = args[i + 1];
+      const next = args[i + 1];
+      if (!next) {
+        exitWithError(2, "--desc requires a value", {
+          hint: "Usage: aligntrue work create <title> [--id <id>] [--desc <text>]",
+        });
+      }
+      description = next;
       i += 1;
       continue;
     }

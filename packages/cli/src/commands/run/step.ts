@@ -41,12 +41,19 @@ function parseArgs(args: string[]): {
   let step_id: string | undefined;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+    if (!arg) continue;
     if (arg === "--kind") {
-      kind = args[i + 1];
-      i++;
+      const next = args[i + 1];
+      if (next) {
+        kind = next;
+        i++;
+      }
     } else if (arg === "--id") {
-      step_id = args[i + 1];
-      i++;
+      const next = args[i + 1];
+      if (next) {
+        step_id = next;
+        i++;
+      }
     }
   }
   return { kind, step_id };

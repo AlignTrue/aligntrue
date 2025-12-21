@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+@source "./**/*.{js,ts,jsx,tsx,mdx}";
+@source "../components/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../lib/**/*.{js,ts,jsx,tsx,mdx}";
+
+@plugin "tailwindcss-animate";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Fonts: prefer runtime Next.js font variables with safe fallbacks */
+  --font-sans: var(--font-sans, system-ui), sans-serif;
+  --font-mono: var(--font-mono, ui-monospace), monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  :root {
+    --radius: 0.65rem;
+    --background: hsl(210 20% 98%);
+    --foreground: hsl(222 47% 10%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(222 47% 10%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(222 47% 10%);
+    --primary: hsl(160 84% 39%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(210 32% 96%);
+    --secondary-foreground: hsl(222 32% 18%);
+    --muted: hsl(210 26% 95%);
+    --muted-foreground: hsl(219 12% 42%);
+    --accent: hsl(210 90% 55%);
+    --accent-foreground: hsl(0 0% 100%);
+    --destructive: hsl(0 72% 50%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --border: hsl(215 24% 88%);
+    --input: hsl(215 24% 88%);
+    --ring: hsl(160 84% 39%);
+    --chart-1: hsl(12 76% 61%);
+    --chart-2: hsl(173 58% 39%);
+    --chart-3: hsl(197 37% 24%);
+    --chart-4: hsl(43 74% 66%);
+    --chart-5: hsl(27 87% 67%);
+    --card-border: hsl(215 24% 88%);
+    --card-border-subtle: hsl(215 24% 88% / 0.6);
+  }
+  .dark {
+    --background: hsl(222 24% 6%);
+    --foreground: hsl(210 30% 96%);
+    --card: hsl(222 24% 8%);
+    --card-foreground: hsl(210 30% 96%);
+    --popover: hsl(222 24% 8%);
+    --popover-foreground: hsl(210 30% 96%);
+    --primary: hsl(160 84% 45%);
+    --primary-foreground: hsl(222 47% 12%);
+    --secondary: hsl(220 16% 17%);
+    --secondary-foreground: hsl(210 30% 96%);
+    --muted: hsl(220 16% 16%);
+    --muted-foreground: hsl(215 15% 70%);
+    --accent: hsl(210 90% 60%);
+    --accent-foreground: hsl(0 0% 100%);
+    --destructive: hsl(0 62% 45%);
+    --destructive-foreground: hsl(210 30% 96%);
+    --border: hsl(220 16% 20%);
+    --input: hsl(220 16% 20%);
+    --ring: hsl(160 84% 50%);
+    --chart-1: hsl(220 70% 50%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
+    --card-border: hsl(220 16% 24%);
+    --card-border-subtle: hsl(0 0% 100% / 0.12);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans overflow-x-hidden;
+  }
+}
+
+/* Hero atmosphere & motion */
+.hero-surface {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-background {
+  background-image:
+    radial-gradient(
+      circle at 20% 50%,
+      hsl(var(--primary) / 0.08) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 82% 30%,
+      hsl(var(--accent) / 0.08) 0%,
+      transparent 42%
+    );
+}
+
+.grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+  background-size: clamp(36px, 8vw, 64px) clamp(36px, 8vw, 64px);
+  mask-image: radial-gradient(
+    circle at 50% 35%,
+    rgba(0, 0, 0, 0.6),
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.fade-in-up {
+  animation: fade-in-up 520ms ease forwards;
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.fade-in-up[data-delay="1"] {
+  animation-delay: 60ms;
+}
+.fade-in-up[data-delay="2"] {
+  animation-delay: 120ms;
+}
+.fade-in-up[data-delay="3"] {
+  animation-delay: 180ms;
+}
+.fade-in-up[data-delay="4"] {
+  animation-delay: 240ms;
+}
+.fade-in-up[data-delay="5"] {
+  animation-delay: 300ms;
+}
+
+.cta-surface {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    hsl(160 84% 45%) 0%,
+    hsl(160 72% 36%) 100%
+  );
+}
+
+.dark .cta-surface {
+  background: linear-gradient(
+    135deg,
+    hsl(160 50% 18%) 0%,
+    hsl(160 40% 10%) 100%
+  );
+}
+
+.cta-surface::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, hsl(var(--background)));
+  pointer-events: none;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

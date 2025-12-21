@@ -3,4 +3,5 @@ packages:
   - "packages/*"
   - "apps/docs"
   - "apps/web"
+  - "apps/app"
   - "platform/*"

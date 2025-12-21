@@ -126,13 +126,20 @@ function parseListArgs(args: string[]): { limit?: number } {
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
+    if (!arg) continue;
     switch (arg) {
       case "--limit":
-        limit = Number(args[i + 1]);
-        if (Number.isNaN(limit) || limit < 1) {
-          exitWithError(2, "limit must be a positive integer");
+        if (!args[i + 1]) {
+          exitWithError(2, "--limit requires a value");
         }
-        i += 1;
+        {
+          const parsed = Number(args[i + 1]);
+          if (Number.isNaN(parsed) || parsed < 1) {
+            exitWithError(2, "limit must be a positive integer");
+          }
+          limit = parsed;
+          i += 1;
+        }
         break;
       case "--help":
       case "-h":

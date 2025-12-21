@@ -168,11 +168,24 @@ export async function overrideAdd(args: string[]): Promise<void> {
   // Parse raw args to collect multiple --set and --remove values
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === "--set" && args[i + 1]) {
-      setValues.push(args[i + 1]!);
+    if (!arg) continue;
+    if (arg === "--set") {
+      const next = args[i + 1];
+      if (!next) {
+        exitWithError(1, "--set requires a value", {
+          hint: "Expected format: --set key=value",
+        });
+      }
+      setValues.push(next);
       i++;
-    } else if (arg === "--remove" && args[i + 1]) {
-      removeValues.push(args[i + 1]!);
+    } else if (arg === "--remove") {
+      const next = args[i + 1];
+      if (!next) {
+        exitWithError(1, "--remove requires a value", {
+          hint: "Expected format: --remove key",
+        });
+      }
+      removeValues.push(next);
       i++;
     }
   }

@@ -10,6 +10,8 @@ export {
   OPS_MODEL_MAX_TOKENS_PER_RUN,
   OPS_MODEL_MAX_TOKENS_PER_DAY,
   OPS_MODEL_MIN_INTERVAL_MS,
+  OPS_TASKS_ENABLED,
+  OPS_NOTES_ENABLED,
 } from "./config.js";
 export {
   OpsError,
@@ -23,6 +25,8 @@ export * as Identity from "./identity/index.js";
 export * as Storage from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
+export * as Tasks from "./tasks/index.js";
+export * as Notes from "./notes/index.js";
 export * as Projections from "./projections/index.js";
 export * as Artifacts from "./artifacts/index.js";
 export * as Feedback from "./feedback/index.js";

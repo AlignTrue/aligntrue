@@ -57,8 +57,29 @@ export type {
   ProjectionOutput as WorkLedgerProjectionOutput,
 } from "./rebuild.js";
 export {
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  hashTasksProjection,
+} from "./tasks.js";
+export type {
+  TasksProjectionState,
+  TasksProjection,
+  TaskLatest,
+} from "./tasks.js";
+export {
+  NotesProjectionDef,
+  buildNotesProjectionFromState,
+  hashNotesProjection,
+} from "./notes.js";
+export type {
+  NotesProjectionState,
+  NotesProjection,
+  NoteLatest,
+} from "./notes.js";
+export {
   RunsProjectionDef,
   buildRunsProjectionFromState,
   rebuildRuns,
 } from "./runs.js";
+export { rebuildTasksAndNotes } from "./rebuild.js";
 export type { RunsProjectionState, RunSummary, StepSummary } from "./runs.js";

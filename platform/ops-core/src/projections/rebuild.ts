@@ -24,6 +24,16 @@ import {
   buildRunsProjectionFromState,
   type RunsProjectionState,
 } from "./runs.js";
+import {
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  type TasksProjectionState,
+} from "./tasks.js";
+import {
+  NotesProjectionDef,
+  buildNotesProjectionFromState,
+  type NotesProjectionState,
+} from "./notes.js";
 
 export interface ProjectionOutput<T> {
   name: string;
@@ -106,7 +116,9 @@ export async function rebuildAll(
 defaultRegistry
   .register(WorkItemsProjectionDef)
   .register(ReadyQueueProjectionDef)
-  .register(RunsProjectionDef);
+  .register(RunsProjectionDef)
+  .register(TasksProjectionDef)
+  .register(NotesProjectionDef);
 
 export interface WorkLedgerProjections {
   workItems: ReturnType<typeof buildWorkItemsProjectionFromState>;
@@ -122,6 +134,16 @@ export interface ExecutionProjections {
   runs: ReturnType<typeof buildRunsProjectionFromState>;
   hash: string;
   freshness: ProjectionFreshness;
+}
+
+export interface TaskNoteProjections {
+  tasks: ReturnType<typeof buildTasksProjectionFromState>;
+  notes: ReturnType<typeof buildNotesProjectionFromState>;
+  hash: string;
+  freshness: {
+    tasks: ProjectionFreshness;
+    notes: ProjectionFreshness;
+  };
 }
 
 export async function rebuildWorkLedger(
@@ -176,5 +198,35 @@ export async function rebuildRuns(
     runs,
     hash,
     freshness: RunsProjectionDef.getFreshness(runsState),
+  };
+}
+
+export async function rebuildTasksAndNotes(
+  eventStore: EventStore,
+): Promise<TaskNoteProjections> {
+  const outputs = await rebuildAll(defaultRegistry, eventStore);
+  const tasksState = outputs.get(
+    projectionKey(TasksProjectionDef.name, TasksProjectionDef.version),
+  )?.data as TasksProjectionState | undefined;
+  const notesState = outputs.get(
+    projectionKey(NotesProjectionDef.name, NotesProjectionDef.version),
+  )?.data as NotesProjectionState | undefined;
+
+  if (!tasksState || !notesState) {
+    throw new Error("Tasks/Notes projections missing from registry output");
+  }
+
+  const tasks = buildTasksProjectionFromState(tasksState);
+  const notes = buildNotesProjectionFromState(notesState);
+  const hash = hashCanonical({ tasks, notes });
+
+  return {
+    tasks,
+    notes,
+    hash,
+    freshness: {
+      tasks: TasksProjectionDef.getFreshness(tasksState),
+      notes: NotesProjectionDef.getFreshness(notesState),
+    },
   };
 }

@@ -588,6 +588,7 @@ function parseFlags(args: string[]): Record<string, unknown> {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+    if (!arg) continue;
 
     if (arg === "--yes" || arg === "-y") {
       flags["yes"] = true;
