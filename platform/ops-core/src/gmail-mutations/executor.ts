@@ -134,7 +134,12 @@ export class GmailMutationExecutor {
       await this.appendIfNew(attempted);
 
       try {
-        const result = await this.performer?.perform(operation, {
+        const performer = this.performer;
+        if (!performer) {
+          throw new Error("Gmail mutation performer is not configured");
+        }
+
+        const result = await performer.perform(operation, {
           message_id: request.message_id,
           thread_id: request.thread_id,
           ...(request.label_id ? { label_id: request.label_id } : {}),
