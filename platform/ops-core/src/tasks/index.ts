@@ -19,13 +19,17 @@ export * from "./commands.js";
 export * from "./state-machine.js";
 export * from "./types.js";
 
+export const DEFAULT_TASKS_EVENTS_PATH = "./data/ops-core-events.jsonl";
+
 export function createJsonlTaskLedger(opts?: {
   eventsPath?: string;
   commandsPath?: string;
   outcomesPath?: string;
   now?: () => string;
 }): TaskLedger {
-  const eventStore = new JsonlEventStore(opts?.eventsPath);
+  const eventStore = new JsonlEventStore(
+    opts?.eventsPath ?? DEFAULT_TASKS_EVENTS_PATH,
+  );
   const commandLog = new JsonlCommandLog(
     opts?.commandsPath,
     opts?.outcomesPath,

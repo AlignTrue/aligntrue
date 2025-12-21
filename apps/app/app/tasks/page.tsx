@@ -15,7 +15,7 @@ async function getTasksView() {
   if (!OPS_TASKS_ENABLED) return null;
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,
-    new Storage.JsonlEventStore(),
+    new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
   );
   return Projections.buildTasksProjectionFromState(
     rebuilt.data as Projections.TasksProjectionState,
@@ -51,10 +51,7 @@ async function execute(command: Tasks.TaskCommandEnvelope) {
   if (!OPS_TASKS_ENABLED) {
     throw new Error("Tasks are disabled");
   }
-  const ledger = new Tasks.TaskLedger(
-    new Storage.JsonlEventStore(),
-    new Storage.JsonlCommandLog(),
-  );
+  const ledger = Tasks.createJsonlTaskLedger();
   await ledger.execute(command);
   revalidatePath("/tasks");
 }

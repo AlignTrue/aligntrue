@@ -17,7 +17,7 @@ async function getNotesView() {
   if (!OPS_NOTES_ENABLED) return null;
   const rebuilt = await Projections.rebuildOne(
     Projections.NotesProjectionDef,
-    new Storage.JsonlEventStore(),
+    new Storage.JsonlEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
   );
   return Projections.buildNotesProjectionFromState(
     rebuilt.data as Projections.NotesProjectionState,
@@ -51,10 +51,7 @@ async function execute(command: Notes.NoteCommandEnvelope) {
   if (!OPS_NOTES_ENABLED) {
     throw new Error("Notes are disabled");
   }
-  const ledger = new Notes.NoteLedger(
-    new Storage.JsonlEventStore(),
-    new Storage.JsonlCommandLog(),
-  );
+  const ledger = Notes.createJsonlNoteLedger();
   await ledger.execute(command);
   revalidatePath("/notes");
 }

@@ -5,7 +5,7 @@ import readline from "node:readline";
 import type { EventEnvelope } from "../envelopes/index.js";
 import type { EventStore } from "./interfaces.js";
 
-const DEFAULT_EVENTS_PATH = "./data/ops-core-events.jsonl";
+export const DEFAULT_EVENTS_PATH = "./data/ops-core-events.jsonl";
 
 export class JsonlEventStore implements EventStore {
   constructor(private readonly filePath: string = DEFAULT_EVENTS_PATH) {}

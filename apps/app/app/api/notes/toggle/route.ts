@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  OPS_NOTES_ENABLED,
-  Identity,
-  Notes,
-  Storage,
-} from "@aligntrue/ops-core";
+import { OPS_NOTES_ENABLED, Identity, Notes } from "@aligntrue/ops-core";
 
 export async function POST(request: Request) {
   if (!OPS_NOTES_ENABLED) {
@@ -35,10 +30,7 @@ export async function POST(request: Request) {
     requested_at: new Date().toISOString(),
   };
 
-  const ledger = new Notes.NoteLedger(
-    new Storage.JsonlEventStore(),
-    new Storage.JsonlCommandLog(),
-  );
+  const ledger = Notes.createJsonlNoteLedger();
 
   try {
     const outcome = await ledger.execute(command);

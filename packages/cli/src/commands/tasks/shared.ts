@@ -28,9 +28,7 @@ export function ensureTasksEnabled(): void {
 }
 
 export function createLedger(): Tasks.TaskLedger {
-  const eventStore = new Storage.JsonlEventStore();
-  const commandLog = new Storage.JsonlCommandLog();
-  return new Tasks.TaskLedger(eventStore, commandLog);
+  return Tasks.createJsonlTaskLedger();
 }
 
 export function buildCommand<T extends Tasks.TaskCommandType>(
@@ -53,7 +51,7 @@ export function buildCommand<T extends Tasks.TaskCommandType>(
 export async function readTasksProjection() {
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,
-    new Storage.JsonlEventStore(),
+    new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
   );
   return Projections.buildTasksProjectionFromState(
     rebuilt.data as Projections.TasksProjectionState,

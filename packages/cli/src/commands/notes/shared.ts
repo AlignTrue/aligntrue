@@ -28,9 +28,7 @@ export function ensureNotesEnabled(): void {
 }
 
 export function createLedger(): Notes.NoteLedger {
-  const eventStore = new Storage.JsonlEventStore();
-  const commandLog = new Storage.JsonlCommandLog();
-  return new Notes.NoteLedger(eventStore, commandLog);
+  return Notes.createJsonlNoteLedger();
 }
 
 export function buildCommand<T extends Notes.NoteCommandType>(
@@ -56,7 +54,7 @@ export function buildCommand<T extends Notes.NoteCommandType>(
 export async function readNotesProjection() {
   const rebuilt = await Projections.rebuildOne(
     Projections.NotesProjectionDef,
-    new Storage.JsonlEventStore(),
+    new Storage.JsonlEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
   );
   return Projections.buildNotesProjectionFromState(
     rebuilt.data as Projections.NotesProjectionState,
