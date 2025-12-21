@@ -1,14 +1,15 @@
 import {
   OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
+  OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
   Projections,
   Storage,
 } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP_TEXT = `
-Usage: aligntrue timeline list [--since YYYY-MM-DD] [--limit N] [--type calendar_event]
+Usage: aligntrue timeline list [--since YYYY-MM-DD] [--limit N] [--type calendar_event|email]
 
-List timeline items (currently calendar events). Output is stable and receipt-oriented.
+List timeline items (calendar events, email metadata). Output is stable and receipt-oriented.
 `;
 
 type TimelineItem = Projections.TimelineProjection["items"][number];
@@ -31,9 +32,23 @@ export async function timeline(args: string[]): Promise<void> {
 
   const { since, limit, type } = parseListArgs(rest);
 
-  if (!OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED) {
+  if (
+    !OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED &&
+    !OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED
+  ) {
     console.warn(
-      "timeline: OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED=0 (connector disabled; showing any existing data)",
+      "timeline: all connectors disabled; showing any existing data",
+    );
+  } else if (
+    type === "calendar_event" &&
+    !OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED
+  ) {
+    console.warn(
+      "timeline: OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED=0 (calendar disabled; showing any existing data)",
+    );
+  } else if (type === "email_message" && !OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
+    console.warn(
+      "timeline: OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED=0 (gmail disabled; showing any existing data)",
     );
   }
 
@@ -47,13 +62,6 @@ export async function timeline(args: string[]): Promise<void> {
   );
 
   let items = view.items;
-
-  if (type && type !== "calendar_event") {
-    exitWithError(2, `Unsupported type filter: ${type}`, {
-      hint: "Only 'calendar_event' is supported in this milestone",
-    });
-    return;
-  }
 
   if (type) {
     items = items.filter((item: TimelineItem) => item.type === type);
@@ -73,28 +81,54 @@ export async function timeline(args: string[]): Promise<void> {
   }
 
   for (const item of items) {
+    if (item.type === "calendar_event") {
+      console.log(
+        `- [${item.type}] ${item.title} @ ${item.start_time} (${item.source_ref})`,
+      );
+      console.log(
+        `  freshness: last_ingested_at=${item.last_ingested_at}, raw_updated_at=${item.raw_updated_at}`,
+      );
+      if (item.location) {
+        console.log(`  location: ${item.location}`);
+      }
+      if (item.organizer) {
+        console.log(`  organizer: ${item.organizer}`);
+      }
+      if (item.attendees?.length) {
+        const attendeeLabels = item.attendees
+          .map(
+            (a: NonNullable<TimelineItem["attendees"]>[number]) =>
+              a.email ?? a.display_name,
+          )
+          .filter((v): v is string => Boolean(v && v.trim()));
+        if (attendeeLabels.length) {
+          console.log(`  attendees: ${attendeeLabels.join(", ")}`);
+        }
+      }
+      continue;
+    }
+
+    // email_message
     console.log(
-      `- [${item.type}] ${item.title} @ ${item.start_time} (${item.source_ref})`,
+      `- [${item.type}] ${item.title} @ ${item.occurred_at} (${item.source_ref})`,
     );
     console.log(
       `  freshness: last_ingested_at=${item.last_ingested_at}, raw_updated_at=${item.raw_updated_at}`,
     );
-    if (item.location) {
-      console.log(`  location: ${item.location}`);
+    if (item.from) {
+      console.log(`  from: ${item.from}`);
     }
-    if (item.organizer) {
-      console.log(`  organizer: ${item.organizer}`);
+    if (item.to?.length) {
+      console.log(`  to: ${item.to.join(", ")}`);
     }
-    if (item.attendees?.length) {
-      const attendeeLabels = item.attendees
-        .map(
-          (a: NonNullable<TimelineItem["attendees"]>[number]) =>
-            a.email ?? a.display_name,
-        )
-        .filter((v): v is string => Boolean(v && v.trim()));
-      if (attendeeLabels.length) {
-        console.log(`  attendees: ${attendeeLabels.join(", ")}`);
-      }
+    if (item.cc?.length) {
+      console.log(`  cc: ${item.cc.join(", ")}`);
+    }
+    if (item.label_ids?.length) {
+      console.log(`  labels: ${item.label_ids.join(", ")}`);
+    }
+    if (item.doc_refs?.length) {
+      console.log(`  doc_refs: ${item.doc_refs.length} attachment(s)`);
     }
   }
 }
@@ -146,7 +180,15 @@ function parseListArgs(args: string[]): {
     result.limit = limit;
   }
   if (type !== undefined) {
-    result.type = type;
+    if (type === "email") {
+      result.type = "email_message";
+    } else if (type === "calendar_event" || type === "email_message") {
+      result.type = type;
+    } else {
+      exitWithError(2, `Unsupported type filter: ${type}`, {
+        hint: "Use 'calendar_event' or 'email'",
+      });
+    }
   }
   return result;
 }

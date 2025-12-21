@@ -13,6 +13,13 @@ export const OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED =
   process.env["OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED"] === "1";
 
 /**
+ * Phase 1 Milestone 3: Gmail connector (READ-only) kill switch.
+ * Default OFF. Enables Gmail ingestion + timeline projection when set.
+ */
+export const OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED =
+  process.env["OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED"] === "1";
+
+/**
  * Phase 1 Milestone 2: Contact projection kill switch.
  * Default OFF. Enables contact derivation from calendar ingest events.
  */

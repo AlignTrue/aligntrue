@@ -23,6 +23,7 @@ export type {
   TimelineProjectionState,
   TimelineProjection,
 } from "./timeline.js";
+export type { DocRef } from "../docrefs/index.js";
 export {
   ContactsProjectionDef,
   buildContactsProjectionFromState,

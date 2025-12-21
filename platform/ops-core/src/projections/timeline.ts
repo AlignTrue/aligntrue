@@ -9,10 +9,15 @@ import {
   type CalendarEventEnvelope,
   type CalendarItemIngestedPayload,
 } from "../connectors/google-calendar/events.js";
+import {
+  EMAIL_EVENT_TYPES,
+  type EmailEventEnvelope,
+} from "../connectors/google-gmail/events.js";
 import { OPS_CONTACTS_ENABLED } from "../config.js";
 import { extractContactIdsFromEvent } from "./contacts.js";
+import type { DocRef } from "../docrefs/index.js";
 
-export type TimelineItemType = "calendar_event";
+export type TimelineItemType = "calendar_event" | "email_message";
 
 export interface TimelineItem {
   id: string; // source_ref
@@ -23,13 +28,20 @@ export interface TimelineItem {
   summary?: string;
   entity_refs: string[];
   provider: string;
-  calendar_id: string;
-  event_id: string;
-  start_time: string;
+  calendar_id?: string;
+  event_id?: string;
+  start_time?: string;
   end_time?: string;
   location?: string;
   organizer?: string;
   attendees?: CalendarItemIngestedPayload["attendees"];
+  message_id?: string;
+  thread_id?: string;
+  from?: string;
+  to?: string[];
+  cc?: string[];
+  label_ids?: string[];
+  doc_refs?: DocRef[];
   last_ingested_at: string;
   raw_updated_at: string;
 }
@@ -57,20 +69,32 @@ export const TimelineProjectionDef: ProjectionDefinition<TimelineProjectionState
       state: TimelineProjectionState,
       event: EventEnvelope,
     ): TimelineProjectionState {
-      if (event.event_type !== CALENDAR_EVENT_TYPES.CalendarItemIngested) {
-        return state;
+      switch (event.event_type) {
+        case CALENDAR_EVENT_TYPES.CalendarItemIngested: {
+          const calendarEvent = event as CalendarEventEnvelope;
+          const item = toCalendarTimelineItem(calendarEvent);
+          const next = new Map(state.timeline);
+          next.set(item.id, item);
+          return {
+            timeline: next,
+            last_event_id: event.event_id,
+            last_ingested_at: event.ingested_at,
+          };
+        }
+        case EMAIL_EVENT_TYPES.EmailMessageIngested: {
+          const emailEvent = event as EmailEventEnvelope;
+          const item = toEmailTimelineItem(emailEvent);
+          const next = new Map(state.timeline);
+          next.set(item.id, item);
+          return {
+            timeline: next,
+            last_event_id: event.event_id,
+            last_ingested_at: event.ingested_at,
+          };
+        }
+        default:
+          return state;
       }
-
-      const calendarEvent = event as CalendarEventEnvelope;
-      const item = toTimelineItem(calendarEvent);
-      const next = new Map(state.timeline);
-      next.set(item.id, item);
-
-      return {
-        timeline: next,
-        last_event_id: event.event_id,
-        last_ingested_at: event.ingested_at,
-      };
     },
     getFreshness(state: TimelineProjectionState): ProjectionFreshness {
       return {
@@ -109,7 +133,7 @@ export function hashTimelineProjection(projection: TimelineProjection): string {
   return hashCanonical(projection);
 }
 
-function toTimelineItem(event: CalendarEventEnvelope): TimelineItem {
+function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
   const payload = event.payload;
   const contactRefs = OPS_CONTACTS_ENABLED
     ? extractContactIdsFromEvent(event)
@@ -132,5 +156,29 @@ function toTimelineItem(event: CalendarEventEnvelope): TimelineItem {
     ...(payload.location ? { location: payload.location } : {}),
     ...(payload.organizer ? { organizer: payload.organizer } : {}),
     ...(payload.attendees ? { attendees: payload.attendees } : {}),
+  };
+}
+
+function toEmailTimelineItem(event: EmailEventEnvelope): TimelineItem {
+  const payload = event.payload;
+  const title = payload.subject ?? "(no subject)";
+  return {
+    id: payload.source_ref,
+    type: "email_message",
+    title,
+    occurred_at: payload.internal_date,
+    source_ref: payload.source_ref,
+    entity_refs: [],
+    provider: payload.provider,
+    message_id: payload.message_id,
+    thread_id: payload.thread_id,
+    last_ingested_at: event.ingested_at,
+    raw_updated_at: payload.internal_date,
+    ...(payload.snippet ? { summary: payload.snippet } : {}),
+    ...(payload.from ? { from: payload.from } : {}),
+    ...(payload.to?.length ? { to: payload.to } : {}),
+    ...(payload.cc?.length ? { cc: payload.cc } : {}),
+    ...(payload.label_ids?.length ? { label_ids: payload.label_ids } : {}),
+    ...(payload.doc_refs?.length ? { doc_refs: payload.doc_refs } : {}),
   };
 }
