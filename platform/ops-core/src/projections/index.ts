@@ -76,10 +76,7 @@ export type {
   NotesProjection,
   NoteLatest,
 } from "./notes.js";
-export {
-  RunsProjectionDef,
-  buildRunsProjectionFromState,
-  rebuildRuns,
-} from "./runs.js";
-export { rebuildTasksAndNotes } from "./rebuild.js";
+export { RunsProjectionDef, buildRunsProjectionFromState } from "./runs.js";
+export { rebuildRuns, rebuildTasksAndNotes } from "./rebuild.js";
+export type { ExecutionProjections, TaskNoteProjections } from "./rebuild.js";
 export type { RunsProjectionState, RunSummary, StepSummary } from "./runs.js";
