@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useTransition } from "react";
+import { useMemo, useRef, useTransition } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -25,10 +25,8 @@ export function NotePreview({ noteId, body }: Props) {
 
   const checkboxCursor = useRef(0);
 
-  useEffect(() => {
-    // Reset cursor whenever the rendered checkbox lines change
-    checkboxCursor.current = 0;
-  }, [checkboxLines]);
+  // Reset cursor at the start of each render so indices stay aligned in Strict Mode
+  checkboxCursor.current = 0;
 
   const toggle = (lineIndex: number) => {
     if (lineIndex < 0) return;

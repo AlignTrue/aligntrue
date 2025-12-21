@@ -35,16 +35,22 @@ function parseArgs(args: string[]): {
     if (!arg) continue;
     if (arg === "--kind") {
       const next = args[i + 1];
-      if (next) {
-        kind = next;
-        i++;
+      if (!next) {
+        exitWithError(2, "--kind requires a value", {
+          hint: "Usage: aligntrue run start --kind <kind> [--id <run_id>]",
+        });
       }
+      kind = next;
+      i++;
     } else if (arg === "--id") {
       const next = args[i + 1];
-      if (next) {
-        run_id = next;
-        i++;
+      if (!next) {
+        exitWithError(2, "--id requires a value", {
+          hint: "Usage: aligntrue run start --kind <kind> [--id <run_id>]",
+        });
       }
+      run_id = next;
+      i++;
     }
   }
   return { kind, run_id };
