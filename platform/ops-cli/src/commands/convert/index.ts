@@ -65,6 +65,14 @@ async function convertEmailToTask(args: string[]): Promise<void> {
       "OPS_GMAIL_MUTATIONS_ENABLED is not set; skipping Gmail label/archive mutation",
     );
   } else if (labelArchive) {
+    const threadId = process.env["GMAIL_MUTATION_THREAD_ID"];
+    if (!threadId) {
+      console.warn(
+        "GMAIL_MUTATION_THREAD_ID not set; skipping Gmail label/archive mutation because thread_id is required",
+      );
+      return;
+    }
+
     const labelId = process.env["GMAIL_MUTATION_LABEL_ID"];
     const executor = new GmailMutations.GmailMutationExecutor(eventStore, {
       flagEnabled: OPS_GMAIL_MUTATIONS_ENABLED,
@@ -77,7 +85,7 @@ async function convertEmailToTask(args: string[]): Promise<void> {
       mutation_id: mutationId,
       provider: "google_gmail",
       message_id: messageId,
-      thread_id: messageId, // thread_id not known; reuse message_id
+      thread_id: threadId,
       operations,
       ...(labelId ? { label_id: labelId } : {}),
     };
