@@ -59,6 +59,15 @@ export const OPS_MODEL_MIN_INTERVAL_MS = Number.parseInt(
 );
 
 /**
+ * Phase 1 Milestone 7: Suggestions + Daily Plans kill switches.
+ * Default OFF. Enables suggestion generation/approval and daily plan artifacts.
+ */
+export const OPS_SUGGESTIONS_ENABLED =
+  process.env["OPS_SUGGESTIONS_ENABLED"] === "1";
+export const OPS_PLANS_DAILY_ENABLED =
+  process.env["OPS_PLANS_DAILY_ENABLED"] === "1";
+
+/**
  * Phase 1 Milestone 6: Gmail label/archive mutations kill switch.
  * Default OFF. Enables Gmail mutation execution when set.
  */

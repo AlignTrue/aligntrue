@@ -90,3 +90,13 @@ export { RunsProjectionDef, buildRunsProjectionFromState } from "./runs.js";
 export { rebuildRuns, rebuildTasksAndNotes } from "./rebuild.js";
 export type { ExecutionProjections, TaskNoteProjections } from "./rebuild.js";
 export type { RunsProjectionState, RunSummary, StepSummary } from "./runs.js";
+export {
+  InboxProjectionDef,
+  buildInboxProjectionFromState,
+  hashInboxProjection,
+} from "./inbox.js";
+export type {
+  InboxProjectionState,
+  InboxProjection,
+  InboxItem,
+} from "./inbox.js";

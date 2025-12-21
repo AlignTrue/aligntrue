@@ -14,6 +14,8 @@ export {
   OPS_TASKS_ENABLED,
   OPS_NOTES_ENABLED,
   OPS_GMAIL_MUTATIONS_ENABLED,
+  OPS_SUGGESTIONS_ENABLED,
+  OPS_PLANS_DAILY_ENABLED,
 } from "./config.js";
 export {
   OpsError,
@@ -39,3 +41,4 @@ export * as Connectors from "./connectors/index.js";
 export * as GmailMutations from "./gmail-mutations/index.js";
 export * as SafetyClasses from "./safety-classes/index.js";
 export * as Execution from "./execution/index.js";
+export * as Suggestions from "./suggestions/index.js";

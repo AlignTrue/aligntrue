@@ -36,6 +36,8 @@ import {
   task,
   note,
   run,
+  inbox,
+  plan,
 } from "./index.js";
 
 /**
@@ -108,6 +110,18 @@ export const COMMANDS: CommandMeta[] = [
     summary: "Manage work ledger (create/show/ready/block/complete/dep)",
     category: "diagnostics",
     handler: work,
+  },
+  {
+    name: "inbox",
+    summary: "Manage suggestion inbox (generate/list/approve/reject/snooze)",
+    category: "diagnostics",
+    handler: inbox,
+  },
+  {
+    name: "plan",
+    summary: "Create plans (daily)",
+    category: "diagnostics",
+    handler: plan,
   },
   {
     name: "timeline",

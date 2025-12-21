@@ -2,10 +2,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   OPS_TASKS_ENABLED,
+  OPS_PLANS_DAILY_ENABLED,
   Identity,
   Storage,
   Tasks,
   Projections,
+  Suggestions,
 } from "@aligntrue/ops-core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,9 +19,13 @@ async function getTasksView() {
     Projections.TasksProjectionDef,
     new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
   );
-  return Projections.buildTasksProjectionFromState(
+  const projection = Projections.buildTasksProjectionFromState(
     rebuilt.data as Projections.TasksProjectionState,
   );
+  return {
+    projection,
+    hash: Projections.hashTasksProjection(projection),
+  };
 }
 
 type Bucket = "today" | "week" | "later" | "waiting";
@@ -96,6 +102,42 @@ async function completeTaskAction(formData: FormData) {
   );
 }
 
+async function createDailyPlanAction(formData: FormData) {
+  "use server";
+  if (!OPS_PLANS_DAILY_ENABLED) {
+    throw new Error("Daily plans are disabled");
+  }
+  const raw = String(formData.get("task_ids") ?? "");
+  const ids = raw
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  if (!ids.length) return;
+
+  const rebuilt = await Projections.rebuildOne(
+    Projections.TasksProjectionDef,
+    new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+  );
+  const projection = Projections.buildTasksProjectionFromState(
+    rebuilt.data as Projections.TasksProjectionState,
+  );
+  const hash = Projections.hashTasksProjection(projection);
+  const artifactStore = Suggestions.createArtifactStore();
+  await Suggestions.buildAndStoreDailyPlan({
+    task_ids: ids,
+    date: new Date().toISOString().slice(0, 10),
+    tasks_projection_hash: hash,
+    actor: {
+      actor_id: "web-user",
+      actor_type: "human",
+    },
+    artifactStore,
+    correlation_id: Identity.randomId(),
+  });
+  revalidatePath("/tasks");
+}
+
 export default async function TasksPage() {
   if (!OPS_TASKS_ENABLED) {
     return (
@@ -110,8 +152,8 @@ export default async function TasksPage() {
     );
   }
 
-  const projection = await getTasksView();
-  if (!projection) return null;
+  const view = await getTasksView();
+  if (!view) return null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-8">
@@ -138,8 +180,33 @@ export default async function TasksPage() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Daily MITs</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {!OPS_PLANS_DAILY_ENABLED ? (
+            <p className="text-sm text-muted-foreground">
+              Daily plans are disabled. Set OPS_PLANS_DAILY_ENABLED=1 to enable.
+            </p>
+          ) : (
+            <form className="space-y-2" action={createDailyPlanAction}>
+              <Input
+                id="task_ids"
+                name="task_ids"
+                placeholder="task-1, task-2, task-3"
+              />
+              <p className="text-xs text-muted-foreground">
+                Provide up to 3 task ids, comma separated.
+              </p>
+              <Button type="submit">Create Daily MITs</Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4">
-        {projection.tasks.map((task) => (
+        {view.projection.tasks.map((task) => (
           <Card key={task.id}>
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div>
