@@ -2,7 +2,7 @@ import {
   OPS_CONTACTS_ENABLED,
   Projections,
   Storage,
-} from "../../../../../platform/ops-core/dist/index.js";
+} from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP_TEXT = `

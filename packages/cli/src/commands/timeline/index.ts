@@ -86,11 +86,15 @@ export async function timeline(args: string[]): Promise<void> {
       console.log(`  organizer: ${item.organizer}`);
     }
     if (item.attendees?.length) {
-      console.log(
-        `  attendees: ${item.attendees
-          .map((a: NonNullable<TimelineItem["attendees"]>[number]) => a.email)
-          .join(", ")}`,
-      );
+      const attendeeLabels = item.attendees
+        .map(
+          (a: NonNullable<TimelineItem["attendees"]>[number]) =>
+            a.email ?? a.display_name,
+        )
+        .filter((v): v is string => Boolean(v && v.trim()));
+      if (attendeeLabels.length) {
+        console.log(`  attendees: ${attendeeLabels.join(", ")}`);
+      }
     }
   }
 }
