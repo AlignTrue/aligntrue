@@ -8,6 +8,8 @@ import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 
+type WorkspacePackage = { name: string; dir: string };
+
 /**
  * Extract all import statements from TypeScript files
  */
@@ -55,7 +57,7 @@ function extractImports(dir: string): Map<string, string[]> {
  * Handles both deep imports and package root imports
  */
 function resolveImport(
-  packagesDir: string,
+  packageMap: Map<string, string>,
   importPath: string,
 ): { exists: boolean; reason?: string } {
   // Parse: @aligntrue/package-name/path/to/module.js
@@ -64,16 +66,16 @@ function resolveImport(
     return { exists: false, reason: "Invalid @aligntrue import format" };
   }
 
-  const packageName = parts[1]; // e.g., "core"
+  const packageName = `@aligntrue/${parts[1]}`; // e.g., "@aligntrue/core"
   const subPath = parts.slice(2).join("/"); // e.g., "team/allow.js"
 
-  const packageDir = join(packagesDir, packageName);
+  const packageDir = packageMap.get(packageName);
 
   // Check if package exists
-  if (!existsSync(packageDir)) {
+  if (!packageDir || !existsSync(packageDir)) {
     return {
       exists: false,
-      reason: `Package @aligntrue/${packageName} does not exist`,
+      reason: `Package ${packageName} does not exist`,
     };
   }
 
@@ -126,39 +128,69 @@ function resolveImport(
   };
 }
 
+/**
+ * Discover all workspace packages under the provided roots.
+ * Includes platform packages so imports like @aligntrue/ops-core resolve.
+ */
+function discoverWorkspacePackages(roots: string[]): WorkspacePackage[] {
+  const packages: WorkspacePackage[] = [];
+
+  for (const root of roots) {
+    if (!existsSync(root)) continue;
+
+    const entries = readdirSync(root, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
+
+      const dir = join(root, entry.name);
+      const packageJson = join(dir, "package.json");
+      if (!existsSync(packageJson)) continue;
+
+      try {
+        const pkg = JSON.parse(readFileSync(packageJson, "utf-8"));
+        if (typeof pkg.name === "string") {
+          packages.push({ name: pkg.name, dir });
+        }
+      } catch {
+        // Ignore invalid package.json
+      }
+    }
+  }
+
+  return packages;
+}
+
 describe("cross-package imports", () => {
   it("should not have dangling imports across workspace packages", () => {
     // Get packages directory relative to this test file
-    // This test is in packages/testkit/tests/
-    // So: tests -> testkit -> packages (../../)
     const testDir = __dirname;
-    const packagesDir = join(testDir, "../..");
+    const workspaceRoot = join(testDir, "../../..");
+    const packageRoots = [
+      join(workspaceRoot, "packages"),
+      join(workspaceRoot, "platform"),
+    ];
+    const workspacePackages = discoverWorkspacePackages(packageRoots);
+    const packageMap = new Map(
+      workspacePackages.map((pkg) => [pkg.name, pkg.dir]),
+    );
 
-    // Verify packages directory exists
-    expect(existsSync(packagesDir)).toBe(true);
-
-    // Get all package directories
-    const packageDirs = readdirSync(packagesDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && !d.name.startsWith("."))
-      .map((d) => join(packagesDir, d.name))
-      .filter((dir) => existsSync(join(dir, "package.json")));
-
-    expect(packageDirs.length).toBeGreaterThan(0);
+    expect(workspacePackages.length).toBeGreaterThan(0);
 
     const errors: string[] = [];
 
     // Check each package
-    for (const pkgDir of packageDirs) {
+    for (const pkg of workspacePackages) {
+      const pkgDir = pkg.dir;
       const srcDir = join(pkgDir, "src");
       if (!existsSync(srcDir)) continue;
 
       const imports = extractImports(srcDir);
 
       for (const [file, importPaths] of imports.entries()) {
-        const relativeFile = file.replace(packagesDir + "/", "");
+        const relativeFile = file.replace(workspaceRoot + "/", "");
 
         for (const imp of importPaths) {
-          const result = resolveImport(packagesDir, imp);
+          const result = resolveImport(packageMap, imp);
 
           if (!result.exists) {
             errors.push(
