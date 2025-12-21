@@ -101,9 +101,7 @@ export async function evaluateEgress(
   const receipt: EgressReceipt = {
     envelope: request.envelope,
     approved: true,
-    decisionReason: modelCtx
-      ? `within_budget:max_calls_per_run=${OPS_MODEL_MAX_CALLS_PER_RUN}`
-      : "no_model_budget_applied",
+    decisionReason: `within_budget:max_calls_per_run=${OPS_MODEL_MAX_CALLS_PER_RUN}`,
     timestamp: new Date().toISOString(),
   };
 
