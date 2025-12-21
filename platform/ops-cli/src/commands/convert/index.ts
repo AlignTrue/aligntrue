@@ -11,7 +11,7 @@ import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP = `
 Usage:
-  aligntrue convert email-to-task <message_id> [--label-archive]
+  aligntrue convert email-to-task <message_id>
   aligntrue convert email-to-note <message_id>
 `;
 
@@ -49,6 +49,12 @@ async function convertEmailToTask(args: string[]): Promise<void> {
   const eventStore = new Storage.JsonlEventStore();
   const commandLog = new Storage.JsonlCommandLog();
   const service = new Convert.ConversionService(eventStore, commandLog);
+
+  if (labelArchive) {
+    exitWithError(1, "Gmail label/archive via CLI is not supported", {
+      hint: "Use the web UI for Gmail mutations",
+    });
+  }
 
   const result = await service.convertEmailToTask({
     message_id: messageId,

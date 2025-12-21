@@ -1,4 +1,6 @@
 import { JsonlCommandLog, JsonlEventStore } from "../storage/index.js";
+import { join } from "node:path";
+import { OPS_DATA_DIR } from "../config.js";
 import {
   TASK_EVENT_TYPES,
   TASKS_SCHEMA_VERSION,
@@ -19,7 +21,10 @@ export * from "./commands.js";
 export * from "./state-machine.js";
 export * from "./types.js";
 
-export const DEFAULT_TASKS_EVENTS_PATH = "./data/ops-core-tasks.jsonl";
+export const DEFAULT_TASKS_EVENTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-tasks.jsonl",
+);
 
 export function createJsonlTaskLedger(opts?: {
   eventsPath?: string;

@@ -1,4 +1,4 @@
-import { OPS_SUGGESTIONS_ENABLED } from "../config.js";
+import { OPS_SUGGESTIONS_ENABLED, OPS_DATA_DIR } from "../config.js";
 import { hashCanonical } from "../identity/hash.js";
 import type { EventEnvelope } from "../envelopes/event.js";
 import {
@@ -6,6 +6,7 @@ import {
   buildInboxProjectionFromState,
 } from "../projections/inbox.js";
 import { JsonlArtifactStore, JsonlEventStore } from "../storage/index.js";
+import { join } from "node:path";
 
 export * from "./types.js";
 export * from "./events.js";
@@ -14,13 +15,22 @@ export * from "./commands.js";
 export * from "./executor.js";
 export * from "./daily-plan.js";
 
-export const DEFAULT_SUGGESTIONS_EVENTS_PATH =
-  "./data/ops-core-suggestions.jsonl";
-export const DEFAULT_FEEDBACK_EVENTS_PATH = "./data/ops-core-feedback.jsonl";
-export const DEFAULT_QUERY_ARTIFACTS_PATH =
-  "./data/ops-core-query-artifacts.jsonl";
-export const DEFAULT_DERIVED_ARTIFACTS_PATH =
-  "./data/ops-core-derived-artifacts.jsonl";
+export const DEFAULT_SUGGESTIONS_EVENTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-suggestions.jsonl",
+);
+export const DEFAULT_FEEDBACK_EVENTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-feedback.jsonl",
+);
+export const DEFAULT_QUERY_ARTIFACTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-query-artifacts.jsonl",
+);
+export const DEFAULT_DERIVED_ARTIFACTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-derived-artifacts.jsonl",
+);
 export const DEFAULT_INBOX_PROJECTION_PATH = DEFAULT_SUGGESTIONS_EVENTS_PATH;
 
 export function createSuggestionEventStore(

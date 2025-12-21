@@ -80,3 +80,10 @@ export const OPS_GMAIL_MUTATIONS_ENABLED =
  */
 export const OPS_TASKS_ENABLED = process.env["OPS_TASKS_ENABLED"] === "1";
 export const OPS_NOTES_ENABLED = process.env["OPS_NOTES_ENABLED"] === "1";
+
+/**
+ * Base directory for ops-core JSONL storage.
+ * Defaults to ./data (relative to process CWD) but should be set explicitly
+ * in serverless or multi-process environments (e.g., OPS_DATA_DIR=/tmp/aligntrue).
+ */
+export const OPS_DATA_DIR = process.env["OPS_DATA_DIR"] ?? "./data";

@@ -1,11 +1,12 @@
 import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import readline from "node:readline";
+import { OPS_DATA_DIR } from "../config.js";
 import type { EventEnvelope } from "../envelopes/index.js";
 import type { EventStore } from "./interfaces.js";
 
-export const DEFAULT_EVENTS_PATH = "./data/ops-core-events.jsonl";
+export const DEFAULT_EVENTS_PATH = join(OPS_DATA_DIR, "ops-core-events.jsonl");
 
 export class JsonlEventStore implements EventStore {
   constructor(private readonly filePath: string = DEFAULT_EVENTS_PATH) {}

@@ -10,6 +10,9 @@ import {
 } from "./types.js";
 
 const budgetTracker = new BudgetTracker();
+// Note: Budget tracking is process-local and approximate in serverless.
+// The mutex below only serializes updates within a single process. For strict,
+// cross-process enforcement we'd need an external store (future enhancement).
 // Serialize budget updates to avoid races when multiple requests arrive at once.
 let budgetMutex: Promise<unknown> = Promise.resolve();
 

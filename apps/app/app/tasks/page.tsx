@@ -4,7 +4,6 @@ import {
   OPS_TASKS_ENABLED,
   OPS_PLANS_DAILY_ENABLED,
   Identity,
-  Storage,
   Tasks,
   Projections,
   Suggestions,
@@ -12,12 +11,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getEventStore } from "@/lib/ops-services";
 
 async function getTasksView() {
   if (!OPS_TASKS_ENABLED) return null;
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,
-    new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+    getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
   );
   const projection = Projections.buildTasksProjectionFromState(
     rebuilt.data as Projections.TasksProjectionState,
@@ -117,7 +117,7 @@ async function createDailyPlanAction(formData: FormData) {
 
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,
-    new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+    getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
   );
   const projection = Projections.buildTasksProjectionFromState(
     rebuilt.data as Projections.TasksProjectionState,

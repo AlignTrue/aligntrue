@@ -4,13 +4,13 @@ import {
   OPS_TASKS_ENABLED,
   OPS_NOTES_ENABLED,
   Suggestions,
-  Storage,
   Projections,
   Tasks,
   Notes,
 } from "@aligntrue/ops-core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getEventStore } from "@/lib/ops-services";
 
 const ACTOR = {
   actor_id: "web-user",
@@ -32,7 +32,7 @@ async function generateAction() {
   if (OPS_TASKS_ENABLED) {
     const tasksRebuilt = await Projections.rebuildOne(
       Projections.TasksProjectionDef,
-      new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+      getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
     );
     const tasksProjection = Projections.buildTasksProjectionFromState(
       tasksRebuilt.data as Projections.TasksProjectionState,
@@ -52,7 +52,7 @@ async function generateAction() {
   if (OPS_NOTES_ENABLED) {
     const notesRebuilt = await Projections.rebuildOne(
       Projections.NotesProjectionDef,
-      new Storage.JsonlEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
+      getEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
     );
     const notesProjection = Projections.buildNotesProjectionFromState(
       notesRebuilt.data as Projections.NotesProjectionState,

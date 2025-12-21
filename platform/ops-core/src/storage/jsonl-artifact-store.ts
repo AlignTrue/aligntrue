@@ -1,12 +1,16 @@
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { OPS_DATA_DIR } from "../config.js";
 import type { DerivedArtifact, QueryArtifact } from "../artifacts/index.js";
 import { ValidationError } from "../errors.js";
 import type { ArtifactStore } from "./interfaces.js";
 
-const DEFAULT_QUERY_PATH = "./data/ops-core-query-artifacts.jsonl";
-const DEFAULT_DERIVED_PATH = "./data/ops-core-derived-artifacts.jsonl";
+const DEFAULT_QUERY_PATH = join(OPS_DATA_DIR, "ops-core-query-artifacts.jsonl");
+const DEFAULT_DERIVED_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-derived-artifacts.jsonl",
+);
 
 export class JsonlArtifactStore implements ArtifactStore<
   QueryArtifact,

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import {
   OPS_NOTES_ENABLED,
   Identity,
-  Storage,
   Notes,
   Projections,
 } from "@aligntrue/ops-core";
@@ -12,12 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NotePreview } from "./NotePreview";
+import { getEventStore } from "@/lib/ops-services";
 
 async function getNotesView() {
   if (!OPS_NOTES_ENABLED) return null;
   const rebuilt = await Projections.rebuildOne(
     Projections.NotesProjectionDef,
-    new Storage.JsonlEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
+    getEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
   );
   return Projections.buildNotesProjectionFromState(
     rebuilt.data as Projections.NotesProjectionState,

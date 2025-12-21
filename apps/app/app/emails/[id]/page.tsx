@@ -2,10 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import {
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
   Projections,
-  Storage,
 } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getEventStore } from "@/lib/ops-services";
 
 const APP_BASE =
   (process.env["APP_BASE_URL"] ?? process.env["VERCEL_URL"])
@@ -16,7 +16,7 @@ const LABEL_ID = process.env["GMAIL_MUTATION_LABEL_ID"];
 async function getEmail(sourceRef: string) {
   const rebuilt = await Projections.rebuildOne(
     Projections.TimelineProjectionDef,
-    new Storage.JsonlEventStore(),
+    getEventStore(),
   );
   const view = Projections.buildTimelineProjectionFromState(
     rebuilt.data as Projections.TimelineProjectionState,

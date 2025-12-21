@@ -1,4 +1,6 @@
 import { JsonlCommandLog, JsonlEventStore } from "../storage/index.js";
+import { join } from "node:path";
+import { OPS_DATA_DIR } from "../config.js";
 import {
   NOTE_EVENT_TYPES,
   NOTES_SCHEMA_VERSION,
@@ -19,7 +21,10 @@ export * from "./commands.js";
 export * from "./state-machine.js";
 export * from "./markdown.js";
 
-export const DEFAULT_NOTES_EVENTS_PATH = "./data/ops-core-notes.jsonl";
+export const DEFAULT_NOTES_EVENTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-notes.jsonl",
+);
 
 export function createJsonlNoteLedger(opts?: {
   eventsPath?: string;

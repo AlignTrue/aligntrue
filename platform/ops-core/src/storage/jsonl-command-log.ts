@@ -1,11 +1,15 @@
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { OPS_DATA_DIR } from "../config.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type { CommandLog } from "./interfaces.js";
 
-const DEFAULT_COMMANDS_PATH = "./data/ops-core-commands.jsonl";
-const DEFAULT_OUTCOMES_PATH = "./data/ops-core-command-outcomes.jsonl";
+const DEFAULT_COMMANDS_PATH = join(OPS_DATA_DIR, "ops-core-commands.jsonl");
+const DEFAULT_OUTCOMES_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-command-outcomes.jsonl",
+);
 
 export class JsonlCommandLog implements CommandLog {
   constructor(

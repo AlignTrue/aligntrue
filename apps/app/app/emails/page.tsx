@@ -2,15 +2,15 @@ import { revalidatePath } from "next/cache";
 import {
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
   Projections,
-  Storage,
 } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getEventStore } from "@/lib/ops-services";
 
 async function getEmailTimeline() {
   const rebuilt = await Projections.rebuildOne(
     Projections.TimelineProjectionDef,
-    new Storage.JsonlEventStore(),
+    getEventStore(),
   );
   const view = Projections.buildTimelineProjectionFromState(
     rebuilt.data as Projections.TimelineProjectionState,

@@ -1,4 +1,6 @@
 import { JsonlCommandLog, JsonlEventStore } from "../storage/index.js";
+import { join } from "node:path";
+import { OPS_DATA_DIR } from "../config.js";
 import {
   WORK_EVENT_TYPES,
   WORK_LEDGER_SCHEMA_VERSION,
@@ -15,7 +17,10 @@ export * from "./state-machine.js";
 export * from "./events.js";
 export * from "./commands.js";
 
-export const DEFAULT_WORK_LEDGER_PATH = "./data/ops-core-work-ledger.jsonl";
+export const DEFAULT_WORK_LEDGER_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-work-ledger.jsonl",
+);
 
 export function createJsonlWorkLedger(opts?: {
   eventsPath?: string;
