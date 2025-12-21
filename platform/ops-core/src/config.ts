@@ -59,6 +59,13 @@ export const OPS_MODEL_MIN_INTERVAL_MS = Number.parseInt(
 );
 
 /**
+ * Phase 1 Milestone 6: Gmail label/archive mutations kill switch.
+ * Default OFF. Enables Gmail mutation execution when set.
+ */
+export const OPS_GMAIL_MUTATIONS_ENABLED =
+  process.env["OPS_GMAIL_MUTATIONS_ENABLED"] === "1";
+
+/**
  * Phase 1 Milestone 5: Tasks and Notes kill switches.
  * Default OFF. Enables task/note commands, projections, and UI surfaces when set.
  */

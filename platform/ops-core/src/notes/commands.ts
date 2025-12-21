@@ -286,3 +286,8 @@ export class NoteLedger {
 }
 
 export type { NoteState, NotesLedgerState };
+export type {
+  NoteCreatedPayload,
+  NoteUpdatedPayload,
+  NotePatchedPayload,
+} from "./events.js";

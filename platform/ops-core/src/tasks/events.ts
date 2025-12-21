@@ -1,4 +1,5 @@
 import type { EventEnvelope } from "../envelopes/index.js";
+import type { ConversionMeta } from "../types/conversion.js";
 import type {
   TaskBucket,
   TaskEffort,
@@ -27,6 +28,7 @@ export interface TaskCreatedPayload {
   effort?: TaskEffort;
   due_at?: string;
   source_ref?: string;
+  conversion?: ConversionMeta;
 }
 
 export interface TaskTriagedPayload {

@@ -1,4 +1,5 @@
 import type { EventEnvelope } from "../envelopes/index.js";
+import type { ConversionMeta } from "../types/conversion.js";
 
 export const NOTES_SCHEMA_VERSION = 1;
 
@@ -17,6 +18,7 @@ export interface NoteCreatedPayload {
   body_md: string;
   content_hash: string;
   source_ref?: string;
+  conversion?: ConversionMeta;
 }
 
 export interface NoteUpdatedPayload {

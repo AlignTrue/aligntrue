@@ -13,6 +13,7 @@ export {
   OPS_MODEL_MIN_INTERVAL_MS,
   OPS_TASKS_ENABLED,
   OPS_NOTES_ENABLED,
+  OPS_GMAIL_MUTATIONS_ENABLED,
 } from "./config.js";
 export {
   OpsError,
@@ -28,11 +29,13 @@ export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
 export * as Tasks from "./tasks/index.js";
 export * as Notes from "./notes/index.js";
+export * as Convert from "./convert/index.js";
 export * as Projections from "./projections/index.js";
 export * as Artifacts from "./artifacts/index.js";
 export * as Feedback from "./feedback/index.js";
 export * as Authz from "./authz/index.js";
 export * as Egress from "./egress/index.js";
 export * as Connectors from "./connectors/index.js";
+export * as GmailMutations from "./gmail-mutations/index.js";
 export * as SafetyClasses from "./safety-classes/index.js";
 export * as Execution from "./execution/index.js";

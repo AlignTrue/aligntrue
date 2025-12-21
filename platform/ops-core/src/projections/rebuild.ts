@@ -34,6 +34,7 @@ import {
   buildNotesProjectionFromState,
   type NotesProjectionState,
 } from "./notes.js";
+import { ConversionsProjectionDef } from "./conversions.js";
 
 export interface ProjectionOutput<T> {
   name: string;
@@ -118,7 +119,8 @@ defaultRegistry
   .register(ReadyQueueProjectionDef)
   .register(RunsProjectionDef)
   .register(TasksProjectionDef)
-  .register(NotesProjectionDef);
+  .register(NotesProjectionDef)
+  .register(ConversionsProjectionDef);
 
 export interface WorkLedgerProjections {
   workItems: ReturnType<typeof buildWorkItemsProjectionFromState>;

@@ -32,6 +32,7 @@ import {
   work,
   timeline,
   contacts,
+  convert,
 } from "./index.js";
 
 /**
@@ -116,6 +117,12 @@ export const COMMANDS: CommandMeta[] = [
     summary: "List contacts derived from calendar events (read-only)",
     category: "diagnostics",
     handler: contacts,
+  },
+  {
+    name: "convert",
+    summary: "Convert email to task or note (optionally label+archive)",
+    category: "diagnostics",
+    handler: convert,
   },
   {
     name: "onboard",

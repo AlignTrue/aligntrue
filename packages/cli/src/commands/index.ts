@@ -29,4 +29,5 @@ export { task } from "./tasks/index.js";
 export { note } from "./notes/index.js";
 export { timeline } from "./timeline/index.js";
 export { contacts } from "./contacts/index.js";
+export { convert } from "./convert/index.js";
 export { run } from "./run/index.js";

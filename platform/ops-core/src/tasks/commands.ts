@@ -300,3 +300,9 @@ function isValidEffort(effort: TaskEffort): boolean {
 }
 
 export type { TaskState, TasksLedgerState };
+export type {
+  TaskCreatedPayload,
+  TaskTriagedPayload,
+  TaskCompletedPayload,
+  TaskReopenedPayload,
+} from "./events.js";

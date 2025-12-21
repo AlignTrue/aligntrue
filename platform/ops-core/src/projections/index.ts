@@ -76,6 +76,16 @@ export type {
   NotesProjection,
   NoteLatest,
 } from "./notes.js";
+export {
+  ConversionsProjectionDef,
+  buildConversionsProjectionFromState,
+  hashConversionsProjection,
+} from "./conversions.js";
+export type {
+  ConversionsProjectionState,
+  ConversionsProjection,
+  ConversionRecord,
+} from "./conversions.js";
 export { RunsProjectionDef, buildRunsProjectionFromState } from "./runs.js";
 export { rebuildRuns, rebuildTasksAndNotes } from "./rebuild.js";
 export type { ExecutionProjections, TaskNoteProjections } from "./rebuild.js";
