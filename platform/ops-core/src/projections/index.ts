@@ -56,3 +56,9 @@ export type {
   WorkLedgerProjections,
   ProjectionOutput as WorkLedgerProjectionOutput,
 } from "./rebuild.js";
+export {
+  RunsProjectionDef,
+  buildRunsProjectionFromState,
+  rebuildRuns,
+} from "./runs.js";
+export type { RunsProjectionState, RunSummary, StepSummary } from "./runs.js";

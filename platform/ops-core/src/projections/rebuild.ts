@@ -19,6 +19,11 @@ import {
   buildReadyQueueProjectionFromState,
   type ReadyQueueProjectionState,
 } from "./ready-queue.js";
+import {
+  RunsProjectionDef,
+  buildRunsProjectionFromState,
+  type RunsProjectionState,
+} from "./runs.js";
 
 export interface ProjectionOutput<T> {
   name: string;
@@ -100,7 +105,8 @@ export async function rebuildAll(
 
 defaultRegistry
   .register(WorkItemsProjectionDef)
-  .register(ReadyQueueProjectionDef);
+  .register(ReadyQueueProjectionDef)
+  .register(RunsProjectionDef);
 
 export interface WorkLedgerProjections {
   workItems: ReturnType<typeof buildWorkItemsProjectionFromState>;
@@ -110,6 +116,12 @@ export interface WorkLedgerProjections {
     workItems: ProjectionFreshness;
     readyQueue: ProjectionFreshness;
   };
+}
+
+export interface ExecutionProjections {
+  runs: ReturnType<typeof buildRunsProjectionFromState>;
+  hash: string;
+  freshness: ProjectionFreshness;
 }
 
 export async function rebuildWorkLedger(
@@ -142,5 +154,27 @@ export async function rebuildWorkLedger(
       workItems: WorkItemsProjectionDef.getFreshness(workItemsState),
       readyQueue: ReadyQueueProjectionDef.getFreshness(readyQueueState),
     },
+  };
+}
+
+export async function rebuildRuns(
+  eventStore: EventStore,
+): Promise<ExecutionProjections> {
+  const outputs = await rebuildAll(defaultRegistry, eventStore);
+  const runsState = outputs.get(
+    projectionKey(RunsProjectionDef.name, RunsProjectionDef.version),
+  )?.data as RunsProjectionState | undefined;
+
+  if (!runsState) {
+    throw new Error("Runs projection missing from registry output");
+  }
+
+  const runs = buildRunsProjectionFromState(runsState);
+  const hash = hashCanonical({ runs });
+
+  return {
+    runs,
+    hash,
+    freshness: RunsProjectionDef.getFreshness(runsState),
   };
 }

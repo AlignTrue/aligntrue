@@ -27,3 +27,4 @@ export { uninstallCommand as uninstall } from "./uninstall.js";
 export { work } from "./work/index.js";
 export { timeline } from "./timeline/index.js";
 export { contacts } from "./contacts/index.js";
+export { run } from "./run/index.js";
