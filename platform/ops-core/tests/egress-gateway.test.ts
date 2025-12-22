@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("egress gateway budget concurrency", () => {
   const prevEgressEnabled = process.env["OPS_MODEL_EGRESS_ENABLED"];

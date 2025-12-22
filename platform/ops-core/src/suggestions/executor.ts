@@ -67,7 +67,22 @@ export class SuggestionExecutor {
     const existing = await this.commandLog.getByIdempotencyKey(
       command.command_id,
     );
-    if (existing) return existing;
+    if (existing) {
+      const artifact = await this.deps.artifactStore.getDerivedById(
+        command.payload.suggestion_id,
+      );
+      if (
+        artifact &&
+        isSuggestionArtifact(artifact) &&
+        artifact.content_hash !== payload.expected_hash
+      ) {
+        throw new PreconditionFailed(
+          payload.expected_hash,
+          artifact.content_hash,
+        );
+      }
+      return existing;
+    }
 
     const artifact = await this.deps.artifactStore.getDerivedById(
       command.payload.suggestion_id,
@@ -78,7 +93,14 @@ export class SuggestionExecutor {
 
     const status = await this.getStatus(command.payload.suggestion_id);
     if (status !== "new") {
-      return this.finish(command, [], "already_processed", status);
+      if (artifact.content_hash !== payload.expected_hash) {
+        throw new PreconditionFailed(
+          payload.expected_hash,
+          artifact.content_hash,
+        );
+      }
+      // Already processed: no new events, mark as already_processed.
+      return await this.finish(command, [], "already_processed", status);
     }
 
     if (artifact.content_hash !== payload.expected_hash) {
@@ -102,7 +124,7 @@ export class SuggestionExecutor {
     await this.deps.feedbackEventStore.append(feedbackEvent);
     producedEvents.push(feedbackEvent.event_id);
 
-    return this.finish(command, producedEvents, "accepted");
+    return await this.finish(command, producedEvents, "accepted");
   }
 
   async reject(
@@ -124,7 +146,7 @@ export class SuggestionExecutor {
 
     const status = await this.getStatus(command.payload.suggestion_id);
     if (status !== "new") {
-      return this.finish(command, [], "already_processed", status);
+      return await this.finish(command, [], "already_processed", status);
     }
 
     const feedbackEvent = Feedback.buildFeedbackEvent({
@@ -137,7 +159,7 @@ export class SuggestionExecutor {
     });
     await this.deps.feedbackEventStore.append(feedbackEvent);
 
-    return this.finish(command, [feedbackEvent.event_id], "accepted");
+    return await this.finish(command, [feedbackEvent.event_id], "accepted");
   }
 
   async snooze(
@@ -159,7 +181,7 @@ export class SuggestionExecutor {
 
     const status = await this.getStatus(command.payload.suggestion_id);
     if (status !== "new") {
-      return this.finish(command, [], "already_processed", status);
+      return await this.finish(command, [], "already_processed", status);
     }
 
     const feedbackEvent = Feedback.buildFeedbackEvent({
@@ -172,7 +194,7 @@ export class SuggestionExecutor {
     });
     await this.deps.feedbackEventStore.append(feedbackEvent);
 
-    return this.finish(command, [feedbackEvent.event_id], "accepted");
+    return await this.finish(command, [feedbackEvent.event_id], "accepted");
   }
 
   private async getStatus(suggestionId: string): Promise<SuggestionStatus> {
@@ -244,7 +266,19 @@ export class SuggestionExecutor {
       actor,
       requested_at: this.now(),
     };
-    await ledger.execute(cmd);
+    try {
+      await ledger.execute(cmd);
+    } catch (error) {
+      if (
+        error instanceof PreconditionFailed &&
+        error.context?.["expected"] === "exists" &&
+        error.context?.["actual"] === "missing"
+      ) {
+        // Gracefully skip when the target task no longer exists.
+        return;
+      }
+      throw error;
+    }
   }
 
   private async runNoteHygiene(diff: unknown, actor: ActorRef): Promise<void> {
@@ -275,12 +309,12 @@ export class SuggestionExecutor {
     await ledger.execute(cmd);
   }
 
-  private finish(
+  private async finish(
     command: CommandEnvelope,
     produced: string[],
     status: CommandOutcome["status"],
     reason?: string | SuggestionStatus,
-  ): CommandOutcome {
+  ): Promise<CommandOutcome> {
     const outcome: CommandOutcome = {
       command_id: command.command_id,
       status,
@@ -288,9 +322,7 @@ export class SuggestionExecutor {
       completed_at: this.now(),
       ...(reason ? { reason: String(reason) } : {}),
     };
-    this.commandLog.recordOutcome(outcome).catch(() => {
-      // non-blocking
-    });
+    await this.commandLog.recordOutcome(outcome);
     return outcome;
   }
 }

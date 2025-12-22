@@ -72,11 +72,13 @@ export async function rebuildInboxProjection(opts?: {
   const feedbackEvents = createFeedbackEventStore(opts?.feedbackEventsPath);
 
   let state = InboxProjectionDef.init();
-  const combined = await mergeEventsByIngested([
-    suggestionEvents.stream(),
-    feedbackEvents.stream(),
-  ]);
-  for (const event of combined) {
+  const suggestionStream = await collectEvents(suggestionEvents.stream());
+  const feedbackStream = await collectEvents(feedbackEvents.stream());
+
+  for (const event of suggestionStream) {
+    state = InboxProjectionDef.apply(state, event);
+  }
+  for (const event of feedbackStream) {
     state = InboxProjectionDef.apply(state, event);
   }
   const freshness = InboxProjectionDef.getFreshness(state);
@@ -97,10 +99,20 @@ async function mergeEventsByIngested(
       all.push(event);
     }
   }
-  return all.sort((a, b) => {
-    if (a.ingested_at === b.ingested_at) {
-      return a.event_id.localeCompare(b.event_id);
+  return sortEvents(all);
+}
+
+async function collectEvents(
+  stream: AsyncIterable<EventEnvelope>,
+): Promise<EventEnvelope[]> {
+  return sortEvents(await mergeEventsByIngested([stream]));
+}
+
+function sortEvents(events: EventEnvelope[]): EventEnvelope[] {
+  return events.sort((a, b) => {
+    if (a.ingested_at !== b.ingested_at) {
+      return a.ingested_at > b.ingested_at ? 1 : -1;
     }
-    return a.ingested_at > b.ingested_at ? 1 : -1;
+    return a.event_id.localeCompare(b.event_id);
   });
 }

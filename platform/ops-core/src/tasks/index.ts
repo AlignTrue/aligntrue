@@ -32,13 +32,17 @@ export function createJsonlTaskLedger(opts?: {
   outcomesPath?: string;
   now?: () => string;
 }): TaskLedger {
-  const eventStore = new JsonlEventStore(
-    opts?.eventsPath ?? DEFAULT_TASKS_EVENTS_PATH,
-  );
-  const commandLog = new JsonlCommandLog(
-    opts?.commandsPath,
-    opts?.outcomesPath,
-  );
+  const eventsPath =
+    opts?.eventsPath ??
+    process.env["OPS_TASKS_EVENTS_PATH"] ??
+    DEFAULT_TASKS_EVENTS_PATH;
+  const commandsPath =
+    opts?.commandsPath ?? process.env["OPS_TASKS_COMMANDS_PATH"];
+  const outcomesPath =
+    opts?.outcomesPath ?? process.env["OPS_TASKS_OUTCOMES_PATH"];
+
+  const eventStore = new JsonlEventStore(eventsPath);
+  const commandLog = new JsonlCommandLog(commandsPath, outcomesPath);
   const ledgerOpts = opts?.now ? { now: opts.now } : undefined;
   return new TaskLedger(eventStore, commandLog, ledgerOpts);
 }

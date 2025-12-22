@@ -4,7 +4,7 @@ import {
   OPS_GMAIL_MUTATIONS_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
-import * as GmailApi from "./gmail-api.js";
+import * as GmailApi from "./gmail-api";
 
 export function getEventStore(path?: string): Storage.JsonlEventStore {
   return new Storage.JsonlEventStore(path);

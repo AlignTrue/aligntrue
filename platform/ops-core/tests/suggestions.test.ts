@@ -22,10 +22,16 @@ describe("suggestions", () => {
     feedbackEventsPath = join(dir, "feedback-events.jsonl");
     queryPath = join(dir, "query.jsonl");
     derivedPath = join(dir, "derived.jsonl");
+    process.env["OPS_TASKS_EVENTS_PATH"] = tasksEventsPath;
+    process.env["OPS_TASKS_COMMANDS_PATH"] = join(dir, "tasks-commands.jsonl");
+    process.env["OPS_TASKS_OUTCOMES_PATH"] = join(dir, "tasks-outcomes.jsonl");
   });
 
   afterEach(async () => {
     await rm(dir, { recursive: true, force: true });
+    delete process.env["OPS_TASKS_EVENTS_PATH"];
+    delete process.env["OPS_TASKS_COMMANDS_PATH"];
+    delete process.env["OPS_TASKS_OUTCOMES_PATH"];
   });
 
   it("generates deterministic task triage suggestions", async () => {
@@ -87,6 +93,10 @@ describe("suggestions", () => {
     const executor = new Suggestions.SuggestionExecutor({
       artifactStore,
       feedbackEventStore: feedbackStore,
+      commandLog: new Storage.JsonlCommandLog(
+        join(dir, "suggestion-commands.jsonl"),
+        join(dir, "suggestion-outcomes.jsonl"),
+      ),
     });
     const artifact = generated.artifacts[0];
 

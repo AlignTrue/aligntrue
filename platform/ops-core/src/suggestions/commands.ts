@@ -35,7 +35,7 @@ export function buildSuggestionCommand<T extends SuggestionCommandType>(
   actor: ActorRef,
 ): SuggestionCommandEnvelope<T> {
   const target = `suggestion:${"suggestion_id" in payload ? payload.suggestion_id : "unknown"}`;
-  const command_id = Identity.generateCommandId({ command_type, target });
+  const command_id = Identity.randomId();
   return {
     command_id,
     command_type,
