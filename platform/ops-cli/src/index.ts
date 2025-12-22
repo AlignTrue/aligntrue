@@ -7,3 +7,4 @@ export * as plan from "./commands/plan/index.js";
 export * as work from "./commands/work/index.js";
 export * as timeline from "./commands/timeline/index.js";
 export * as contacts from "./commands/contacts/index.js";
+export * as sync from "./commands/sync/index.js";

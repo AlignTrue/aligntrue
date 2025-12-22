@@ -1,17 +1,9 @@
-import type { MemoryProvider, MemoryReference, QueryContext } from "./types.js";
-
-/**
- * Default MemoryProvider that always returns empty results.
- * Used when memory is disabled via OPS_MEMORY_PROVIDER_ENABLED.
- */
-export class NoOpMemoryProvider implements MemoryProvider {
-  async query(_context: QueryContext): Promise<MemoryReference[]> {
-    return [];
-  }
-
-  enabled(): boolean {
-    return false;
-  }
-}
-
-export type { MemoryProvider, MemoryReference, QueryContext } from "./types.js";
+export { NoOpMemoryProvider } from "./noop-provider.js";
+export { Mem0Adapter } from "./mem0-adapter.js";
+export type {
+  MemoryProvider,
+  MemoryReference,
+  QueryContext,
+  IndexableItem,
+  IndexResult,
+} from "./types.js";
