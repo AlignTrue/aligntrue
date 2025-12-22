@@ -64,11 +64,11 @@
     "@clack/prompts": "^0.11.0",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
-    "@next/eslint-plugin-next": "^16.0.10",
+    "@next/eslint-plugin-next": "^16.1.0",
     "@types/node": "^25",
     "@typescript-eslint/eslint-plugin": "^8.50.0",
     "@typescript-eslint/parser": "^8.50.0",
-    "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.39.2",
     "eslint-plugin-security": "^3.0.1",
     "eslint-plugin-unused-imports": "^4.3.0",
@@ -78,9 +78,9 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "tsx": "^4.20.6",
-    "turbo": "^2.6.3",
+    "turbo": "^2.7.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.16"
   },
   "packageManager": "pnpm@10.26.1",
   "engines": {
