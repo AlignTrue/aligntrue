@@ -67,7 +67,7 @@ function buildCalendarContent(
     record.description,
     record.location,
     record.organizer,
-    record.attendees?.map((a) => a.display_name ?? a.email).join(" "),
+    record.attendees?.map((a) => a.display_name ?? a.email)?.join(" "),
   ];
   return parts.filter(Boolean).join(" ");
 }
