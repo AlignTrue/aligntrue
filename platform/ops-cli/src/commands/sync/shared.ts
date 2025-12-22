@@ -1,6 +1,7 @@
 import { Connectors } from "@aligntrue/ops-core";
 
 const { GoogleCommon } = Connectors;
+type TokenSet = Connectors.GoogleCommon.TokenSet;
 
 export interface SyncTokenOptions {
   allowRefresh?: boolean;
@@ -8,7 +9,7 @@ export interface SyncTokenOptions {
 
 export async function loadTokenSet(
   opts: SyncTokenOptions = {},
-): Promise<GoogleCommon.TokenSet> {
+): Promise<TokenSet> {
   const tokens = GoogleCommon.getTokenFromEnv();
   if (
     opts.allowRefresh !== false &&

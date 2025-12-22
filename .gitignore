@@ -35,6 +35,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+env*
 
 .npmrc
 .yarnrc.yml
@@ -90,48 +91,9 @@ platform/ops-core/src/**/*.js
 # Pagefind search index (generated during build)
 apps/docs/public/_pagefind
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# START AlignTrue Generated Files
-.aligntrue/.backups/
+# Cursor rules
 .cursor/rules/*.mdc
-.cursor/rules/ci_troubleshooting.mdc
-.cursor/rules/debugging.mdc
-.cursor/rules/documentation.mdc
-.cursor/rules/global.mdc
-.cursor/rules/ops_core_discipline.mdc
-.cursor/rules/ops_core_invariants.mdc
-.cursor/rules/ops_phase0_dod.mdc
-.cursor/rules/platform_structure.mdc
-.cursor/rules/pull_request_standards.mdc
-.cursor/rules/rule_writing.mdc
-.cursor/rules/security_linting_policy.mdc
-.cursor/rules/sync_cli_testing_COMP_prompts.mdc
-.cursor/rules/sync_cli_testing_playbook.mdc
-.cursor/rules/sync_cli_testing_playbook_COMP.mdc
-.cursor/rules/sync_error_lessons_learned.mdc
-.cursor/rules/sync_implementation_specs.mdc
-.cursor/rules/sync_testing.mdc
-.cursor/rules/test_log_template.mdc
-.cursor/rules/testing.mdc
-.cursor/rules/typescript.mdc
-apps/docs/.cursor/rules/web_stack_nextra_docs.mdc
-apps/web/.cursor/rules/web_stack_website_catalog.mdc
-# END AlignTrue Generated Files
+apps/*/.cursor/rules/*.mdc
 
-# START AlignTrue Gitignored Rule Exports
-.cursor/rules/guardrails.mdc
-.cursor/rules/potential_future_features.mdc
-# END AlignTrue Gitignored Rule Exports
+# Misc. docs
+GOOGLE-TOKEN-SETUP.md

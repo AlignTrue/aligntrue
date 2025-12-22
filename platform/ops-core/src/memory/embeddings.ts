@@ -21,7 +21,6 @@ export class EmbeddingService {
     if (!texts.length) return [];
     const pipe = await this.getPipeline();
     const output = await pipe(texts, { pooling: "mean", normalize: true });
-    const data = Array.isArray(texts) ? output.tolist() : [output.tolist()];
-    return data as number[][];
+    return output.tolist() as number[][];
   }
 }
