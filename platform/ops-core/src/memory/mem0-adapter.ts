@@ -30,9 +30,13 @@ export class Mem0Adapter implements MemoryProvider {
     if (!items.length) return { indexed: 0, skipped: 0 };
 
     const vectors = await this.embeddings.embed(items.map((i) => i.content));
+    let skippedForMissingEmbeddings = 0;
     const vectorItems = items.flatMap((item, idx) => {
       const vector = vectors[idx];
-      if (!vector || !vector.length) return [];
+      if (!Array.isArray(vector) || vector.length === 0) {
+        skippedForMissingEmbeddings += 1;
+        return [];
+      }
 
       return [
         {
@@ -47,7 +51,11 @@ export class Mem0Adapter implements MemoryProvider {
       ];
     });
 
-    return this.store.upsertMany(vectorItems);
+    const storeResult = this.store.upsertMany(vectorItems);
+    return {
+      indexed: storeResult.indexed,
+      skipped: storeResult.skipped + skippedForMissingEmbeddings,
+    };
   }
 
   async query(context: QueryContext): Promise<MemoryReference[]> {

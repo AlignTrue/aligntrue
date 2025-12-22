@@ -35,7 +35,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-env*
 
 .npmrc
 .yarnrc.yml
@@ -50,7 +49,7 @@ env*
 next-env.d.ts
 
 # AI agents
-.cursor/plans/
+.cursor/
 
 # temp items (AI-generated artifacts, prefixed with temp-)
 temp-*
@@ -90,10 +89,6 @@ platform/ops-core/src/**/*.js
 
 # Pagefind search index (generated during build)
 apps/docs/public/_pagefind
-
-# Cursor rules
-.cursor/rules/*.mdc
-apps/*/.cursor/rules/*.mdc
 
 # Misc. docs
 GOOGLE-TOKEN-SETUP.md
