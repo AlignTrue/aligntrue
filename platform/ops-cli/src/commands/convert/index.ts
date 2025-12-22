@@ -89,7 +89,7 @@ async function convertEmailToTask(args: string[]): Promise<void> {
       operations,
       ...(labelId ? { label_id: labelId } : {}),
     };
-    if (labelArchive && !labelId) {
+    if (!labelId) {
       console.warn(
         "GMAIL_MUTATION_LABEL_ID not set; performing ARCHIVE without APPLY_LABEL",
       );
