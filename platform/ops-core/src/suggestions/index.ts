@@ -14,6 +14,7 @@ export * from "./generators.js";
 export * from "./commands.js";
 export * from "./executor.js";
 export * from "./daily-plan.js";
+export * from "./weekly-plan.js";
 
 export const DEFAULT_SUGGESTIONS_EVENTS_PATH = join(
   OPS_DATA_DIR,

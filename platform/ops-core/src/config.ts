@@ -82,6 +82,25 @@ export const OPS_TASKS_ENABLED = process.env["OPS_TASKS_ENABLED"] === "1";
 export const OPS_NOTES_ENABLED = process.env["OPS_NOTES_ENABLED"] === "1";
 
 /**
+ * Phase 1 Milestone 8: Memory provider + Weekly Plan kill switches.
+ * Default OFF. Enables memory provider usage and weekly plan generation.
+ */
+export const OPS_MEMORY_PROVIDER_ENABLED =
+  process.env["OPS_MEMORY_PROVIDER_ENABLED"] === "1";
+export const OPS_PLANS_WEEKLY_ENABLED =
+  process.env["OPS_PLANS_WEEKLY_ENABLED"] === "1";
+
+/**
+ * Weekly plan budget knobs (conservative defaults).
+ */
+export const OPS_WEEKLY_PLAN_MAX_PER_WEEK = Number.parseInt(
+  process.env["OPS_WEEKLY_PLAN_MAX_PER_WEEK"] ?? "3",
+);
+export const OPS_WEEKLY_PLAN_MIN_HOURS = Number.parseInt(
+  process.env["OPS_WEEKLY_PLAN_MIN_HOURS"] ?? "24",
+);
+
+/**
  * Base directory for ops-core JSONL storage.
  * Defaults to ./data (relative to process CWD) but should be set explicitly
  * in serverless or multi-process environments (e.g., OPS_DATA_DIR=/tmp/aligntrue).

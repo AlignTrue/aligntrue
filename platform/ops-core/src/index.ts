@@ -16,6 +16,10 @@ export {
   OPS_GMAIL_MUTATIONS_ENABLED,
   OPS_SUGGESTIONS_ENABLED,
   OPS_PLANS_DAILY_ENABLED,
+  OPS_PLANS_WEEKLY_ENABLED,
+  OPS_MEMORY_PROVIDER_ENABLED,
+  OPS_WEEKLY_PLAN_MAX_PER_WEEK,
+  OPS_WEEKLY_PLAN_MIN_HOURS,
 } from "./config.js";
 export {
   OpsError,
@@ -35,6 +39,7 @@ export * as Convert from "./convert/index.js";
 export * as Projections from "./projections/index.js";
 export * as Artifacts from "./artifacts/index.js";
 export * as Feedback from "./feedback/index.js";
+export * as Memory from "./memory/index.js";
 export * as Authz from "./authz/index.js";
 export * as Egress from "./egress/index.js";
 export * as Connectors from "./connectors/index.js";
