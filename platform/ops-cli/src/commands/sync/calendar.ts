@@ -5,13 +5,10 @@ import {
   OPS_MEMORY_PROVIDER_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
-import { loadTokenSet, logKV, logSection } from "./shared.js";
+import { loadTokenSet, logKV, logSection, parseDaysArg } from "./shared.js";
 
 export async function syncCalendar(args: string[]): Promise<void> {
-  const daysArg = args.find((a) => a.startsWith("--days="));
-  const days = daysArg
-    ? Number.parseInt(daysArg.split("=")[1] ?? "30", 10)
-    : 30;
+  const days = parseDaysArg(args, 30);
 
   logSection(`Syncing calendar (last ${days} days)...`);
 

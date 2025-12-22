@@ -5,11 +5,10 @@ import {
   OPS_MEMORY_PROVIDER_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
-import { loadTokenSet, logKV, logSection } from "./shared.js";
+import { loadTokenSet, logKV, logSection, parseDaysArg } from "./shared.js";
 
 export async function syncGmail(args: string[]): Promise<void> {
-  const daysArg = args.find((a) => a.startsWith("--days="));
-  const days = daysArg ? Number.parseInt(daysArg.split("=")[1] ?? "7", 10) : 7;
+  const days = parseDaysArg(args, 7);
   const started = Date.now();
 
   logSection(`Syncing Gmail (last ${days} days)...`);
