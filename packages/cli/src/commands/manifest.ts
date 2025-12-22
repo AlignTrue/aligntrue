@@ -276,6 +276,12 @@ const OPS_COMMANDS: CommandMeta[] = OPS_CORE_ENABLED
         category: "diagnostics",
         handler: ops.run.run,
       },
+      {
+        name: "data",
+        summary: "Sync data from Calendar/Gmail (calendar, gmail, all)",
+        category: "diagnostics",
+        handler: ops.sync.sync,
+      },
     ]
   : [];
 
