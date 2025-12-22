@@ -78,7 +78,7 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "tsx": "^4.20.6",
-    "turbo": "^2.6.3",
+    "turbo": "^2.7.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },

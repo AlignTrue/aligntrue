@@ -5,7 +5,13 @@ import {
   Storage,
 } from "@aligntrue/ops-core";
 import { Mem0Adapter } from "../../memory/index.js";
-import { loadTokenSet, logKV, logSection, parseDaysArg } from "./shared.js";
+import {
+  loadTokenSet,
+  logKV,
+  logSection,
+  parseDaysArg,
+  withTokenRefresh,
+} from "./shared.js";
 
 export async function syncCalendar(args: string[]): Promise<void> {
   const days = parseDaysArg(args, 30);
@@ -17,11 +23,15 @@ export async function syncCalendar(args: string[]): Promise<void> {
   const timeMax = now.toISOString();
   const timeMin = daysAgoIso(days);
 
-  const rawEvents = await Connectors.GoogleCalendar.fetchAllCalendarEvents({
-    accessToken: tokens.accessToken,
-    timeMin,
-    timeMax,
-  });
+  const rawEvents = await withTokenRefresh(
+    (accessToken) =>
+      Connectors.GoogleCalendar.fetchAllCalendarEvents({
+        accessToken,
+        timeMin,
+        timeMax,
+      }),
+    tokens,
+  );
 
   const records = Connectors.GoogleCalendar.transformCalendarEvents(rawEvents);
 

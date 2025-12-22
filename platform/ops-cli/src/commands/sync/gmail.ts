@@ -5,7 +5,13 @@ import {
   Storage,
 } from "@aligntrue/ops-core";
 import { Mem0Adapter } from "../../memory/index.js";
-import { loadTokenSet, logKV, logSection, parseDaysArg } from "./shared.js";
+import {
+  loadTokenSet,
+  logKV,
+  logSection,
+  parseDaysArg,
+  withTokenRefresh,
+} from "./shared.js";
 
 export async function syncGmail(args: string[]): Promise<void> {
   const days = parseDaysArg(args, 7);
@@ -16,11 +22,15 @@ export async function syncGmail(args: string[]): Promise<void> {
   const tokens = await loadTokenSet({ allowRefresh: true });
   const query = `newer_than:${days}d`;
 
-  const rawMessages = await Connectors.GoogleGmail.fetchAllGmailMessages({
-    accessToken: tokens.accessToken,
-    query,
-    maxResults: 100,
-  });
+  const rawMessages = await withTokenRefresh(
+    (accessToken) =>
+      Connectors.GoogleGmail.fetchAllGmailMessages({
+        accessToken,
+        query,
+        maxResults: 100,
+      }),
+    tokens,
+  );
 
   const records = Connectors.GoogleGmail.transformGmailMessages(rawMessages);
 
