@@ -2,14 +2,14 @@ import {
   OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
   Projections,
-  TimelineProjection,
-  TimelineItem,
 } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getEventStore } from "@/lib/ops-services";
 
-async function getTimeline(): Promise<TimelineProjection> {
+type TimelineItem = Projections.TimelineProjection["items"][number];
+
+async function getTimeline(): Promise<Projections.TimelineProjection> {
   const rebuilt = await Projections.rebuildOne(
     Projections.TimelineProjectionDef,
     getEventStore(),

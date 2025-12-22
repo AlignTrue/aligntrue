@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 const links = [
   { href: "/inbox", label: "Inbox" },
@@ -7,7 +8,7 @@ const links = [
   { href: "/timeline", label: "Timeline" },
   { href: "/contacts", label: "Contacts" },
   { href: "/plans", label: "Plans" },
-];
+] satisfies { href: Route; label: string }[];
 
 export function Nav() {
   return (

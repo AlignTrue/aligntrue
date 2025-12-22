@@ -56,9 +56,14 @@ function cosineSimilarity(a: number[], b: number[]): number {
   let normA = 0;
   let normB = 0;
   for (let i = 0; i < a.length; i++) {
-    dot += a[i]! * b[i]!;
-    normA += a[i]! * a[i]!;
-    normB += b[i]! * b[i]!;
+    const valA = a.at(i);
+    const valB = b.at(i);
+    if (valA === undefined || valB === undefined) {
+      return Number.NEGATIVE_INFINITY;
+    }
+    dot += valA * valB;
+    normA += valA * valA;
+    normB += valB * valB;
   }
   if (normA === 0 || normB === 0) return Number.NEGATIVE_INFINITY;
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));

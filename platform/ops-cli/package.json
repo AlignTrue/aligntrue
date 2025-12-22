@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@aligntrue/core": "workspace:*",
-    "@aligntrue/ops-core": "workspace:*"
+    "@aligntrue/ops-core": "workspace:*",
+    "@huggingface/transformers": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0"

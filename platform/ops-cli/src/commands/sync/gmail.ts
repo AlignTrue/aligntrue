@@ -1,10 +1,10 @@
 import {
   Connectors,
   Identity,
-  Memory,
   OPS_MEMORY_PROVIDER_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
+import { Mem0Adapter } from "../../memory/index.js";
 import { loadTokenSet, logKV, logSection, parseDaysArg } from "./shared.js";
 
 export async function syncGmail(args: string[]): Promise<void> {
@@ -36,7 +36,7 @@ export async function syncGmail(args: string[]): Promise<void> {
   logKV("Skipped", result.skipped);
 
   if (OPS_MEMORY_PROVIDER_ENABLED && result.written > 0) {
-    const provider = new Memory.Mem0Adapter();
+    const provider = new Mem0Adapter();
     const toIndex = records.map((r) => ({
       entity_type: "timeline_item" as const,
       entity_id: r.message_id,

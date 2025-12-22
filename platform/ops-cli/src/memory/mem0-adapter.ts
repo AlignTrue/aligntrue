@@ -4,7 +4,7 @@ import type {
   MemoryProvider,
   MemoryReference,
   QueryContext,
-} from "./types.js";
+} from "@aligntrue/ops-core";
 import { EmbeddingService } from "./embeddings.js";
 import { VectorStore } from "./vector-store.js";
 
@@ -32,7 +32,7 @@ export class Mem0Adapter implements MemoryProvider {
     const vectors = await this.embeddings.embed(items.map((i) => i.content));
     let skippedForMissingEmbeddings = 0;
     const vectorItems = items.flatMap((item, idx) => {
-      const vector = vectors[idx];
+      const vector = vectors.at(idx);
       if (!Array.isArray(vector) || vector.length === 0) {
         skippedForMissingEmbeddings += 1;
         return [];

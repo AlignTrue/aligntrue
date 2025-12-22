@@ -1,7 +1,5 @@
 import { revalidatePath } from "next/cache";
 import {
-  Memory,
-  OPS_MEMORY_PROVIDER_ENABLED,
   OPS_PLANS_WEEKLY_ENABLED,
   OPS_TASKS_ENABLED,
   Projections,
@@ -46,9 +44,19 @@ async function generateWeeklyPlanAction(formData: FormData) {
     rebuilt.data as Projections.TasksProjectionState,
   );
   const hash = Projections.hashTasksProjection(projection);
-  const memoryProvider = OPS_MEMORY_PROVIDER_ENABLED
-    ? new Memory.Mem0Adapter()
-    : new Memory.NoOpMemoryProvider();
+  const memoryProvider = {
+    async index(
+      items: { entity_type: string; entity_id: string; content: string }[],
+    ) {
+      return { indexed: 0, skipped: items.length };
+    },
+    async query(_context: unknown) {
+      return [];
+    },
+    enabled() {
+      return false;
+    },
+  };
 
   await Suggestions.buildWeeklyPlan({
     actor: ACTOR,

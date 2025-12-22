@@ -40,6 +40,13 @@ export * as Projections from "./projections/index.js";
 export * as Artifacts from "./artifacts/index.js";
 export * as Feedback from "./feedback/index.js";
 export * as Memory from "./memory/index.js";
+export type {
+  MemoryProvider,
+  MemoryReference,
+  QueryContext,
+  IndexableItem,
+  IndexResult,
+} from "./memory/types.js";
 export * as Authz from "./authz/index.js";
 export * as Egress from "./egress/index.js";
 export * as Connectors from "./connectors/index.js";
