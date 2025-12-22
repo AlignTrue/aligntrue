@@ -37,6 +37,22 @@ describe("mem0 adapter", () => {
     expect(embedMock).toHaveBeenCalled();
   });
 
+  it("counts skipped items when embeddings are missing", async () => {
+    vi.spyOn(EmbeddingService.prototype, "embed").mockResolvedValue([
+      [],
+      [1, 0],
+    ]);
+
+    const adapter = new Mem0Adapter();
+    const result = await adapter.index([
+      { entity_type: "task", entity_id: "t1", content: "task one" },
+      { entity_type: "task", entity_id: "t2", content: "task two" },
+    ]);
+
+    expect(result.indexed).toBe(1);
+    expect(result.skipped).toBe(1);
+  });
+
   it("handles empty input gracefully", async () => {
     const adapter = new Mem0Adapter();
     const indexResult = await adapter.index([]);
