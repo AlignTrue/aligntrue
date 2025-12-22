@@ -35,9 +35,13 @@ export async function syncGmail(args: string[]): Promise<void> {
   logKV("Written", result.written);
   logKV("Skipped", result.skipped);
 
-  if (OPS_MEMORY_PROVIDER_ENABLED && result.written > 0) {
+  if (
+    OPS_MEMORY_PROVIDER_ENABLED &&
+    result.written > 0 &&
+    result.written_records.length > 0
+  ) {
     const provider = new Mem0Adapter();
-    const toIndex = records.map((r) => ({
+    const toIndex = result.written_records.map((r) => ({
       entity_type: "timeline_item" as const,
       entity_id: r.message_id,
       content: buildEmailContent(r),

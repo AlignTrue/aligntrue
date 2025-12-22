@@ -10,6 +10,7 @@ export interface IngestCalendarResult {
   written: number;
   skipped: number;
   disabled: boolean;
+  written_records: CalendarEventRecord[];
 }
 
 export interface IngestCalendarOptions {
@@ -47,11 +48,17 @@ export async function ingestCalendarEvents(
     options.flagEnabled ?? OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED;
 
   if (!flagEnabled) {
-    return { written: 0, skipped: events.length, disabled: true };
+    return {
+      written: 0,
+      skipped: events.length,
+      disabled: true,
+      written_records: [],
+    };
   }
 
   let written = 0;
   let skipped = 0;
+  const written_records: CalendarEventRecord[] = [];
 
   for (const record of events) {
     validateRecord(record);
@@ -71,9 +78,10 @@ export async function ingestCalendarEvents(
 
     await eventStore.append(event);
     written += 1;
+    written_records.push(record);
   }
 
-  return { written, skipped, disabled: false };
+  return { written, skipped, disabled: false, written_records };
 }
 
 function validateRecord(record: CalendarEventRecord): void {

@@ -84,8 +84,18 @@ describe("timeline projection (calendar ingest v0)", () => {
       correlation_id: "corr-3",
     });
 
-    expect(result1).toEqual({ written: 1, skipped: 0, disabled: false });
-    expect(result2).toEqual({ written: 0, skipped: 1, disabled: false });
+    expect(result1).toEqual({
+      written: 1,
+      skipped: 0,
+      disabled: false,
+      written_records: [baseEvent],
+    });
+    expect(result2).toEqual({
+      written: 0,
+      skipped: 1,
+      disabled: false,
+      written_records: [],
+    });
 
     const projection = await Projections.rebuildOne(
       Projections.TimelineProjectionDef,
@@ -108,6 +118,7 @@ describe("timeline projection (calendar ingest v0)", () => {
 
     expect(result.disabled).toBe(true);
     expect(result.written).toBe(0);
+    expect(result.written_records).toEqual([]);
 
     const projection = await Projections.rebuildOne(
       Projections.TimelineProjectionDef,

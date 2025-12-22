@@ -11,6 +11,7 @@ export interface IngestEmailResult {
   written: number;
   skipped: number;
   disabled: boolean;
+  written_records: EmailMessageRecord[];
 }
 
 export interface IngestEmailOptions {
@@ -48,11 +49,17 @@ export async function ingestEmailMessages(
   const flagEnabled = options.flagEnabled ?? OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED;
 
   if (!flagEnabled) {
-    return { written: 0, skipped: emails.length, disabled: true };
+    return {
+      written: 0,
+      skipped: emails.length,
+      disabled: true,
+      written_records: [],
+    };
   }
 
   let written = 0;
   let skipped = 0;
+  const written_records: EmailMessageRecord[] = [];
 
   for (const record of emails) {
     validateRecord(record);
@@ -81,9 +88,10 @@ export async function ingestEmailMessages(
 
     await eventStore.append(event);
     written += 1;
+    written_records.push(record);
   }
 
-  return { written, skipped, disabled: false };
+  return { written, skipped, disabled: false, written_records };
 }
 
 function validateRecord(record: EmailMessageRecord): void {
