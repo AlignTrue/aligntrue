@@ -185,8 +185,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.3
       lucide-react:
-        specifier: ^0.562.0
-        version: 0.562.0(react@19.2.3)
+        specifier: ^0.561.0
+        version: 0.561.0(react@19.2.3)
       mermaid:
         specifier: 11.12.2
         version: 11.12.2
