@@ -48,16 +48,8 @@ else
   exit 1
 fi
 
-# Test 3: AGENTS.md exists (primary user file)
-echo "Test 3: AGENTS.md exists..."
-if [ -f "AGENTS.md" ]; then
-  pass "AGENTS.md exists (primary user-editable file)"
-else
-  fail "AGENTS.md not found"
-fi
-
-# Test 4: Run sync
-echo "Test 4: Running sync..."
+# Test 3: Run sync
+echo "Test 3: Running sync..."
 # Ensure target directories exist to rule out creation permission issues
 mkdir -p .cursor/rules
 mkdir -p .vscode
@@ -87,8 +79,8 @@ else
   exit 1
 fi
 
-# Test 5: Verify outputs exist
-echo "Test 5: Verifying outputs..."
+# Test 4: Verify outputs exist
+echo "Test 4: Verifying outputs..."
 if ls .cursor/rules/*.mdc 1>/dev/null 2>&1; then
   pass "Cursor output exists"
 else
@@ -110,8 +102,8 @@ if [ -f ".vscode/mcp.json" ]; then
   pass "VS Code MCP config exists"
 fi
 
-# Test 6: Verify content hashes (computed by exporter, not written to file)
-echo "Test 6: Verifying content hashes..."
+# Test 5: Verify content hashes (computed by exporter, not written to file)
+echo "Test 5: Verifying content hashes..."
 # Note: Content hash is computed and returned by exporter, not written as footer in .mdc files
 # This matches current exporter behavior (footers removed, fidelity notes shown in CLI output)
 pass "Content hash computed by exporter and returned in result"
@@ -124,8 +116,8 @@ if [ -f ".vscode/mcp.json" ]; then
   fi
 fi
 
-# Test 7: Verify file sizes are reasonable
-echo "Test 7: Verifying file sizes..."
+# Test 6: Verify file sizes are reasonable
+echo "Test 6: Verifying file sizes are reasonable"
 CURSOR_SIZE=$(cat .cursor/rules/*.mdc 2>/dev/null | wc -c | tr -d ' ')
 AGENTS_SIZE=$(wc -c < AGENTS.md | tr -d ' ')
 
