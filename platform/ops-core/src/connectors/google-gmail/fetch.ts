@@ -25,6 +25,11 @@ export interface FetchGmailResult {
   nextPageToken?: string | undefined;
 }
 
+export interface GmailMessageBody {
+  id: string;
+  body?: string;
+}
+
 const GMAIL_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 
 export async function fetchGmailPage(
@@ -95,6 +100,29 @@ export async function fetchAllGmailMessages(
   return messages;
 }
 
+/**
+ * Fetch bodies for a set of Gmail message IDs (plain text if available).
+ */
+export async function fetchMessageBodies(
+  messageIds: string[],
+  accessToken: string,
+): Promise<Map<string, string>> {
+  const bodies = new Map<string, string>();
+  if (messageIds.length === 0) return bodies;
+
+  const results = await Promise.all(
+    messageIds.map((id) => fetchMessageWithBody(id, accessToken)),
+  );
+
+  for (const result of results) {
+    if (result.body !== undefined) {
+      bodies.set(result.id, result.body);
+    }
+  }
+
+  return bodies;
+}
+
 async function fetchMessageDetail(
   id: string,
   accessToken: string,
@@ -139,6 +167,58 @@ async function fetchMessageDetail(
     ...(json.snippet !== undefined && { snippet: json.snippet }),
     ...extractHeaders(json.payload?.headers ?? []),
   };
+}
+
+async function fetchMessageWithBody(
+  id: string,
+  accessToken: string,
+): Promise<GmailMessageBody> {
+  const url = `${GMAIL_BASE}/messages/${id}?format=full`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (res.status === 401) {
+    throw new TokenExpiredError(url);
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => "unknown");
+    throw new GoogleApiError(res.status, url, text);
+  }
+
+  const json = (await res.json()) as {
+    id: string;
+    payload?: unknown;
+  };
+
+  const body = extractPlainTextBody(json.payload);
+  return body !== undefined ? { id: json.id, body } : { id: json.id };
+}
+
+function extractPlainTextBody(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object") return undefined;
+  const p = payload as {
+    mimeType?: string;
+    body?: { data?: string };
+    parts?: unknown[];
+  };
+
+  if (p.mimeType === "text/plain" && p.body?.data) {
+    try {
+      return Buffer.from(p.body.data, "base64").toString("utf-8");
+    } catch {
+      return undefined;
+    }
+  }
+
+  if (Array.isArray(p.parts)) {
+    for (const part of p.parts) {
+      const text = extractPlainTextBody(part);
+      if (text !== undefined) return text;
+    }
+  }
+
+  return undefined;
 }
 
 function extractHeaders(headers: Array<{ name?: string; value?: string }>): {

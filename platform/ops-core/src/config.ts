@@ -114,6 +114,15 @@ export const OPS_AI_MODEL = process.env["OPS_AI_MODEL"] ?? "local-model";
 export const OPS_AI_API_KEY = process.env["OPS_AI_API_KEY"] ?? "lm-studio";
 
 /**
+ * Provider selection (defaults preserve existing behavior).
+ */
+export const OPS_AI_PROVIDER = process.env["OPS_AI_PROVIDER"] ?? "openai";
+export const OPS_CALENDAR_PROVIDER =
+  process.env["OPS_CALENDAR_PROVIDER"] ?? "google_calendar";
+export const OPS_EMAIL_PROVIDER =
+  process.env["OPS_EMAIL_PROVIDER"] ?? "google_gmail";
+
+/**
  * Base directory for ops-core JSONL storage.
  * Defaults to ./data (relative to process CWD) but should be set explicitly
  * in serverless or multi-process environments (e.g., OPS_DATA_DIR=/tmp/aligntrue).

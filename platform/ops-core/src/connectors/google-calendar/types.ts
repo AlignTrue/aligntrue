@@ -5,7 +5,7 @@ export interface CalendarAttendee {
 }
 
 export interface CalendarEventRecord {
-  provider: "google_calendar";
+  provider: string;
   calendar_id: string;
   event_id: string;
   updated: string;

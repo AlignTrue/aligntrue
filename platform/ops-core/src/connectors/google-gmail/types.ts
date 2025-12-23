@@ -6,7 +6,7 @@ export interface EmailAttachmentMeta {
 }
 
 export interface EmailMessageRecord {
-  provider: "google_gmail";
+  provider: string;
   message_id: string;
   thread_id: string;
   internal_date: string; // source occurred_at

@@ -1,12 +1,25 @@
 import { generateText, Output } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import type { z } from "zod";
-import { OPS_AI_BASE_URL, OPS_AI_API_KEY, OPS_AI_MODEL } from "../config.js";
+import {
+  OPS_AI_BASE_URL,
+  OPS_AI_API_KEY,
+  OPS_AI_MODEL,
+  OPS_AI_PROVIDER,
+} from "../config.js";
+import {
+  createAIProvider,
+  type AIProviderConfig,
+  type AIProviderType,
+} from "./factory.js";
 
-const provider = createOpenAI({
-  baseURL: OPS_AI_BASE_URL,
+const providerConfig: AIProviderConfig = {
+  provider: OPS_AI_PROVIDER as AIProviderType,
   apiKey: OPS_AI_API_KEY,
-});
+  baseUrl: OPS_AI_BASE_URL,
+  defaultModel: OPS_AI_MODEL,
+};
+
+const provider = createAIProvider(providerConfig);
 
 export interface StructuredOutputResult<T> {
   data: T;
