@@ -20,6 +20,11 @@ export {
   OPS_MEMORY_PROVIDER_ENABLED,
   OPS_WEEKLY_PLAN_MAX_PER_WEEK,
   OPS_WEEKLY_PLAN_MIN_HOURS,
+  OPS_EMAIL_STATUS_ENABLED,
+  OPS_EMAIL_AUTO_COMMIT_ENABLED,
+  OPS_AI_BASE_URL,
+  OPS_AI_MODEL,
+  OPS_AI_API_KEY,
 } from "./config.js";
 export {
   OpsError,
@@ -54,3 +59,5 @@ export * as GmailMutations from "./gmail-mutations/index.js";
 export * as SafetyClasses from "./safety-classes/index.js";
 export * as Execution from "./execution/index.js";
 export * as Suggestions from "./suggestions/index.js";
+export * as Emails from "./emails/index.js";
+export * as AI from "./ai/index.js";

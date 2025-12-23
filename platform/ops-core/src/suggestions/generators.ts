@@ -9,6 +9,7 @@ import {
   type SuggestionGeneratedEvent,
 } from "./events.js";
 import { suggestionOutputType, type SuggestionContent } from "./types.js";
+import { generateEmailSuggestions as generateEmailSuggestionsInternal } from "./email-generator.js";
 
 export interface SuggestionGeneratorResult {
   artifacts: Artifacts.DerivedArtifact[];
@@ -40,6 +41,13 @@ export interface NoteHygieneGeneratorInput extends GeneratorCommonInput {
 export interface EmailConversionGeneratorInput extends GeneratorCommonInput {
   // Placeholder for future email ingestion-derived suggestions.
   readonly emails?: unknown;
+}
+
+export interface EmailTriageGeneratorInput extends GeneratorCommonInput {
+  readonly threads: Projections.ThreadsProjection;
+  readonly knownSenders: Projections.KnownSendersProjection;
+  readonly gmailFetcher: import("../suggestions/email-generator.js").GmailBodyFetcher;
+  readonly modelVersion: string;
 }
 
 export async function generateTaskTriageSuggestions(
@@ -206,6 +214,15 @@ export async function generateEmailConversionSuggestions(
 ): Promise<SuggestionGeneratorResult> {
   // Placeholder: no email-derived suggestions until email ingest pipeline supplies context.
   return emptyResult();
+}
+
+export async function generateEmailTriageSuggestions(
+  input: EmailTriageGeneratorInput,
+): Promise<SuggestionGeneratorResult> {
+  if (!OPS_SUGGESTIONS_ENABLED) {
+    return emptyResult();
+  }
+  return generateEmailSuggestionsInternal(input);
 }
 
 export function combineResults(

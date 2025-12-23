@@ -101,6 +101,19 @@ export const OPS_WEEKLY_PLAN_MIN_HOURS = Number.parseInt(
 );
 
 /**
+ * Email workflow + AI config
+ */
+export const OPS_EMAIL_STATUS_ENABLED =
+  process.env["OPS_EMAIL_STATUS_ENABLED"] === "1";
+export const OPS_EMAIL_AUTO_COMMIT_ENABLED =
+  process.env["OPS_EMAIL_AUTO_COMMIT_ENABLED"] === "1";
+
+export const OPS_AI_BASE_URL =
+  process.env["OPS_AI_BASE_URL"] ?? "http://localhost:1234/v1";
+export const OPS_AI_MODEL = process.env["OPS_AI_MODEL"] ?? "local-model";
+export const OPS_AI_API_KEY = process.env["OPS_AI_API_KEY"] ?? "lm-studio";
+
+/**
  * Base directory for ops-core JSONL storage.
  * Defaults to ./data (relative to process CWD) but should be set explicitly
  * in serverless or multi-process environments (e.g., OPS_DATA_DIR=/tmp/aligntrue).

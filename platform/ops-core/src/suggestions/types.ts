@@ -1,10 +1,12 @@
 import type { DerivedArtifact } from "../artifacts/index.js";
 import type { TaskBucket } from "../tasks/types.js";
+import type { EmailStatus, SliceKind } from "../emails/types.js";
 
 export type SuggestionType =
   | "task_triage"
   | "note_hygiene"
-  | "email_conversion";
+  | "email_conversion"
+  | "email_triage";
 
 export type SuggestionStatus = "new" | "approved" | "rejected" | "snoozed";
 
@@ -35,10 +37,22 @@ export interface EmailConversionDiff {
   readonly suggested_title: string;
 }
 
+export interface EmailTriageDiff {
+  readonly type: "email_triage";
+  readonly source_ref: string;
+  readonly thread_id: string;
+  readonly from_status: EmailStatus;
+  readonly to_status: EmailStatus;
+  readonly assessment_id: string;
+  readonly slice_kind: SliceKind;
+  readonly reason: string;
+}
+
 export type SuggestionDiff =
   | TaskTriageDiff
   | NoteHygieneDiff
-  | EmailConversionDiff;
+  | EmailConversionDiff
+  | EmailTriageDiff;
 
 export interface SuggestionContent {
   readonly suggestion_type: SuggestionType;
@@ -46,6 +60,16 @@ export interface SuggestionContent {
   readonly diff: SuggestionDiff;
   readonly rationale: string;
   readonly confidence?: number;
+  readonly meta?: unknown;
+}
+
+export interface EmailTriageSuggestionMeta {
+  confidence: number;
+  slice_kind: SliceKind;
+  assessment_id: string;
+  supersedes_suggestion_id?: string;
+  superseded_by_suggestion_id?: string;
+  superseded_at?: string;
 }
 
 export function suggestionOutputType(

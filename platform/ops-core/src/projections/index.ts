@@ -95,6 +95,28 @@ export {
   buildInboxProjectionFromState,
   hashInboxProjection,
 } from "./inbox.js";
+export {
+  ThreadsProjectionDef,
+  buildThreadsProjectionFromState,
+  hashThreadsProjection,
+} from "./threads.js";
+export type {
+  ThreadsProjection,
+  ThreadProjection,
+  ThreadMessage,
+} from "./threads.js";
+export {
+  KnownSendersProjectionDef,
+  buildKnownSendersProjection,
+  KNOWN_SENDERS_VERSION,
+} from "./known-senders.js";
+export type { KnownSendersProjection } from "./known-senders.js";
+export {
+  computeFreeWindows,
+  hashFreeWindowsProjection,
+  type FreeWindow,
+  type FreeWindowsProjection,
+} from "./free-windows.js";
 export type {
   InboxProjectionState,
   InboxProjection,
