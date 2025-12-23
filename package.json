@@ -95,10 +95,8 @@
       "read-yaml-file": ">=2.0.0",
       "mdast-util-to-hast": ">=13.2.1"
     },
-    "onlyBuiltDependencies": [
+    "allowBuilds": [
       "esbuild",
-      "onnxruntime-node",
-      "protobufjs",
       "sharp"
     ]
   }
