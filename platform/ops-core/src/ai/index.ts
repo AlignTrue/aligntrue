@@ -12,8 +12,26 @@ import {
   type AIProviderType,
 } from "./factory.js";
 
+const ALLOWED_PROVIDERS: readonly AIProviderType[] = [
+  "openai",
+  "anthropic",
+  "google",
+  "custom",
+] as const;
+
+function resolveProvider(raw: string | undefined): AIProviderType {
+  if (!raw) return "openai";
+  if (ALLOWED_PROVIDERS.includes(raw as AIProviderType)) {
+    return raw as AIProviderType;
+  }
+  const allowed = ALLOWED_PROVIDERS.join(", ");
+  throw new Error(
+    `OPS_AI_PROVIDER must be one of [${allowed}], received "${raw}"`,
+  );
+}
+
 const providerConfig: AIProviderConfig = {
-  provider: OPS_AI_PROVIDER as AIProviderType,
+  provider: resolveProvider(OPS_AI_PROVIDER),
   apiKey: OPS_AI_API_KEY,
   baseUrl: OPS_AI_BASE_URL,
   defaultModel: OPS_AI_MODEL,
