@@ -164,7 +164,15 @@ export async function generateEmailSuggestions(
       const existingEnriched = await input.artifactStore.getDerivedById(
         assessmentDedupeId(enrichedDedupeKey),
       );
-      if (!existingEnriched || !DEDUPE_RULES.skipAssessmentIfExists) {
+      if (existingEnriched && DEDUPE_RULES.skipAssessmentIfExists) {
+        const enrichedAssessment =
+          existingEnriched.output_data as EmailAssessmentContent;
+        if (enrichedAssessment.confidence > assessment.confidence) {
+          assessment = enrichedAssessment;
+          assessmentArtifact = existingEnriched;
+          activeSlice = enrichedSlice;
+        }
+      } else {
         const enrichedResult =
           await generateStructuredOutput<AIClassificationOutput>({
             prompt: buildEmailPromptWithBody(enrichedSlice),
