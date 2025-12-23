@@ -95,9 +95,11 @@
       "read-yaml-file": ">=2.0.0",
       "mdast-util-to-hast": ">=13.2.1"
     },
-    "allowBuilds": [
-      "esbuild",
-      "sharp"
-    ]
+    "allowBuilds": {
+      "esbuild": true,
+      "onnxruntime-node": true,
+      "protobufjs": true,
+      "sharp": true
+    }
   }
 }
