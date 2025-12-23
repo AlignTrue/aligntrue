@@ -96,3 +96,6 @@ apps/docs/content/ops-platform/dogfooding.md
 
 # Events
 packages/cli/data/ops-core-events.jsonl
+
+# Data
+apps/app/data/*

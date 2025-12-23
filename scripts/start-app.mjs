@@ -191,7 +191,9 @@ async function main() {
 
   if (await checkServerResponding()) {
     success(`Server already running at ${SERVER_URL}`);
-    log(`\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`);
+    log(
+      `\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`,
+    );
     process.exit(0);
   }
 
@@ -203,8 +205,12 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
   if (failed.length > 0) {
-    error(`Failed to kill process${failed.length > 1 ? "es" : ""}: ${failed.join(", ")}`);
-    log(`\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${failed.join(" ")}\n`);
+    error(
+      `Failed to kill process${failed.length > 1 ? "es" : ""}: ${failed.join(", ")}`,
+    );
+    log(
+      `\n${colors.yellow}Manual fix required:${colors.reset}\n  kill -9 ${failed.join(" ")}\n`,
+    );
     process.exit(2);
   }
 
@@ -226,7 +232,9 @@ async function main() {
 
   if (await waitForServer()) {
     success(`Server ready at ${SERVER_URL}`);
-    log(`\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`);
+    log(
+      `\n${colors.green}→ Open ${SERVER_URL} in your browser${colors.reset}\n`,
+    );
     log(`${colors.blue}Press Ctrl+C to stop the server${colors.reset}\n`);
   } else {
     error(`Server failed to respond after ${MAX_WAIT_MS / 1000}s`);
@@ -255,4 +263,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(2);
 });
-
