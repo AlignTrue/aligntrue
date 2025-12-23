@@ -222,7 +222,8 @@ export async function generateEmailSuggestions(
 
     const action = CLASSIFICATION_ACTIONS[assessment.classification];
     let to_status = action.suggestedStatus;
-    let resolution: EmailResolution | undefined;
+    // Seed resolution from suggestedResolution so processed transitions remain valid even when auto-commit is blocked.
+    let resolution: EmailResolution | undefined = action.suggestedResolution;
     let trigger: "system" | "auto_commit" = "system";
     let reason = assessment.rationale;
 
