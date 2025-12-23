@@ -4,7 +4,6 @@ import type {
   CalendarProvider,
   EmailProvider,
 } from "../src/providers/index.js";
-import { vi, describe, it, expect, beforeEach } from "vitest";
 
 describe("provider registry", () => {
   beforeEach(() => {
