@@ -47,20 +47,27 @@ export async function POST(
   const rawKey = request.headers.get("x-idempotency-key");
   const idempotencyKey = rawKey || crypto.randomUUID().slice(0, 8);
 
-  const result = await Connectors.GoogleGmail.sendPlainTextReply({
-    accessToken: ACCESS_TOKEN,
-    from: FROM_ADDRESS,
-    to: body.to,
-    subject: body.subject,
-    body: body.message,
-    inReplyTo: body.inReplyTo,
-    references: body.references,
-    idempotencyKey,
-  });
+  try {
+    const result = await Connectors.GoogleGmail.sendPlainTextReply({
+      accessToken: ACCESS_TOKEN,
+      from: FROM_ADDRESS,
+      to: body.to,
+      subject: body.subject,
+      body: body.message,
+      inReplyTo: body.inReplyTo,
+      references: body.references,
+      idempotencyKey,
+    });
 
-  return NextResponse.json({
-    conversation_id: id,
-    message_id: result.id,
-    thread_id: result.threadId,
-  });
+    return NextResponse.json({
+      conversation_id: id,
+      message_id: result.id,
+      thread_id: result.threadId,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: (err as Error).message ?? "Send failed" },
+      { status: 500 },
+    );
+  }
 }

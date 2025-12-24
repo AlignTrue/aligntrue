@@ -13,14 +13,21 @@ export async function POST(
 ) {
   const { id } = await params;
   const service = getConversionService();
-  const result = await service.convertEmailToTask({
-    source_ref: id,
-    actor: ACTOR,
-  });
+  try {
+    const result = await service.convertEmailToTask({
+      source_ref: id,
+      actor: ACTOR,
+    });
 
-  return NextResponse.json({
-    task_id: result.created_id,
-    source_ref: result.source_ref,
-    outcome: result.outcome,
-  });
+    return NextResponse.json({
+      task_id: result.created_id,
+      source_ref: result.source_ref,
+      outcome: result.outcome,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: (err as Error).message ?? "Task conversion failed" },
+      { status: 500 },
+    );
+  }
 }

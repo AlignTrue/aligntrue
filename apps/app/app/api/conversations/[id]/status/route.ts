@@ -56,7 +56,16 @@ export async function PATCH(
   }
 
   const store = getEventStore();
-  await store.append(event);
+  try {
+    await store.append(event);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: (err as Error).message ?? "Failed to persist status change",
+      },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ event_id: event.event_id });
 }

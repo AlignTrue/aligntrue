@@ -10,6 +10,7 @@ interface Props {
     start_time?: string;
     end_time?: string;
     attendees?: number;
+    event_id?: string;
   }[];
 }
 
@@ -35,7 +36,7 @@ export function TimeAvailability({
             <p>No upcoming events</p>
           ) : (
             nextEvents.map((ev) => (
-              <div key={`${ev.title}-${ev.start_time ?? ""}`}>
+              <div key={ev.event_id ?? `${ev.title}-${ev.start_time ?? ""}`}>
                 <span className="font-medium">{ev.start_time ?? "TBD"}</span>{" "}
                 {ev.title}{" "}
                 {ev.attendees !== undefined ? `(${ev.attendees})` : null}

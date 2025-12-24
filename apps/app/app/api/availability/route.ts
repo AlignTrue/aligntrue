@@ -30,6 +30,7 @@ export async function GET() {
       start_time: item.start_time,
       end_time: item.end_time,
       attendees: item.attendees?.length ?? 0,
+      event_id: item.event_id ?? item.source_ref,
     }));
 
   const freeWindows = Projections.computeFreeWindows(
