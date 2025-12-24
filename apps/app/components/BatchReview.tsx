@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Projections } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,11 @@ export function BatchReview({ conversations }: Props) {
   const [selected, setSelected] = useState(
     () => new Set(archivable.map((c) => c.conversation_id)),
   );
+
+  // Keep selection in sync when the archivable list changes (e.g., after refresh)
+  useEffect(() => {
+    setSelected(new Set(archivable.map((c) => c.conversation_id)));
+  }, [archivable]);
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,9 +52,9 @@ export function BatchReview({ conversations }: Props) {
     setMessage(null);
     try {
       const ids = Array.from(selected);
-      await Promise.all(
-        ids.map((id) =>
-          fetch(`/api/conversations/${id}/status`, {
+      const results = await Promise.all(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/conversations/${id}/status`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -58,10 +63,23 @@ export function BatchReview({ conversations }: Props) {
               trigger: "human",
               resolution: "archived",
             }),
-          }),
-        ),
+          });
+          return { id, ok: res.ok, status: res.status };
+        }),
       );
-      setMessage(`Archived ${ids.length} conversations`);
+
+      const failed = results.filter((r) => !r.ok);
+      if (failed.length === 0) {
+        setMessage(`Archived ${ids.length} conversations`);
+      } else if (failed.length === ids.length) {
+        setMessage(
+          `Archive failed for ${failed.length} conversation(s); check server logs.`,
+        );
+      } else {
+        setMessage(
+          `Archived ${ids.length - failed.length}, failed ${failed.length}; check server logs.`,
+        );
+      }
     } catch (err) {
       setMessage((err as Error).message);
     } finally {
