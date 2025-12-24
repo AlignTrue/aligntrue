@@ -1,12 +1,13 @@
 import type { EventEnvelope } from "../envelopes/event.js";
 import type { ActorRef } from "../envelopes/actor.js";
 import { generateEventId } from "../identity/id.js";
-import type { SuggestionType } from "./types.js";
+import type { SuggestionAction, SuggestionType } from "./types.js";
 
 export const SUGGESTION_EVENTS_SCHEMA_VERSION = 1;
 
 export const SUGGESTION_EVENT_TYPES = {
   SuggestionGenerated: "suggestion.generated",
+  SuggestionFeedbackReceived: "suggestion.feedback.received",
 } as const;
 
 export interface SuggestionGeneratedPayload {
@@ -62,6 +63,113 @@ export function buildSuggestionGeneratedEvent(
       causation_id: input.causation_id,
     }),
     ...(input.source_ref !== undefined && { source_ref: input.source_ref }),
+  };
+}
+
+export interface SuggestionFeedbackPayload {
+  readonly suggestion_id: string;
+  readonly conversation_id: string;
+  readonly channel: string;
+  readonly suggested_action: SuggestionAction;
+  readonly actual_action: SuggestionAction;
+  readonly time_to_action_ms?: number;
+  readonly was_expanded?: boolean;
+  readonly context?: {
+    sender_email?: string;
+    sender_domain?: string;
+    is_first_contact?: boolean;
+    thread_length?: number;
+    has_attachments?: boolean;
+    subject_keywords?: string[];
+  };
+}
+
+export type SuggestionFeedbackEvent = EventEnvelope<
+  (typeof SUGGESTION_EVENT_TYPES)["SuggestionFeedbackReceived"],
+  SuggestionFeedbackPayload
+>;
+
+export interface SuggestionFeedbackInput {
+  readonly suggestion_id: string;
+  readonly conversation_id: string;
+  readonly channel: string;
+  readonly suggested_action: SuggestionAction;
+  readonly actual_action: SuggestionAction;
+  readonly correlation_id: string;
+  readonly actor: ActorRef;
+  readonly occurred_at: string;
+  readonly time_to_action_ms?: number;
+  readonly was_expanded?: boolean;
+  readonly context?: SuggestionFeedbackPayload["context"];
+  readonly ingested_at?: string;
+  readonly capability_scope?: string[];
+  readonly causation_id?: string;
+  readonly source_ref?: string;
+}
+
+export function buildSuggestionFeedbackEvent(
+  input: SuggestionFeedbackInput,
+): SuggestionFeedbackEvent {
+  const normalizedContext = normalizeContext(input.context);
+
+  const payload: SuggestionFeedbackPayload = {
+    suggestion_id: input.suggestion_id,
+    conversation_id: input.conversation_id,
+    channel: input.channel,
+    suggested_action: input.suggested_action,
+    actual_action: input.actual_action,
+    ...(input.time_to_action_ms !== undefined && {
+      time_to_action_ms: input.time_to_action_ms,
+    }),
+    ...(input.was_expanded !== undefined && {
+      was_expanded: input.was_expanded,
+    }),
+    ...(normalizedContext !== undefined && { context: normalizedContext }),
+  };
+
+  const event_id = generateEventId({
+    suggestion_id: payload.suggestion_id,
+    suggested_action: payload.suggested_action,
+    actual_action: payload.actual_action,
+    occurred_at: input.occurred_at,
+  });
+
+  return {
+    event_id,
+    event_type: SUGGESTION_EVENT_TYPES.SuggestionFeedbackReceived,
+    payload,
+    occurred_at: input.occurred_at,
+    ingested_at: input.ingested_at ?? input.occurred_at,
+    correlation_id: input.correlation_id,
+    actor: input.actor,
+    capability_scope: input.capability_scope ?? [],
+    schema_version: SUGGESTION_EVENTS_SCHEMA_VERSION,
+    ...(input.causation_id !== undefined && {
+      causation_id: input.causation_id,
+    }),
+    ...(input.source_ref !== undefined && { source_ref: input.source_ref }),
+  };
+}
+
+function normalizeContext(
+  ctx: SuggestionFeedbackPayload["context"],
+): SuggestionFeedbackPayload["context"] {
+  if (!ctx) return undefined;
+  return {
+    ...(ctx.sender_email ? { sender_email: ctx.sender_email } : {}),
+    ...(ctx.sender_domain ? { sender_domain: ctx.sender_domain } : {}),
+    ...(ctx.is_first_contact !== undefined && {
+      is_first_contact: ctx.is_first_contact,
+    }),
+    ...(ctx.thread_length !== undefined && {
+      thread_length: ctx.thread_length,
+    }),
+    ...(ctx.has_attachments !== undefined && {
+      has_attachments: ctx.has_attachments,
+    }),
+    ...(ctx.subject_keywords?.length
+      ? { subject_keywords: Array.from(new Set(ctx.subject_keywords)).sort() }
+      : {}),
   };
 }
 

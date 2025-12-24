@@ -9,6 +9,7 @@ export type SuggestionType =
   | "email_triage";
 
 export type SuggestionStatus = "new" | "approved" | "rejected" | "snoozed";
+export type SuggestionAction = "archive" | "reply" | "flag" | "task" | "defer";
 
 export type SuggestionOutputType = `suggestion:${SuggestionType}`;
 

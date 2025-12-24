@@ -112,6 +112,18 @@ export {
 } from "./known-senders.js";
 export type { KnownSendersProjection } from "./known-senders.js";
 export {
+  ConversationsProjectionDef,
+  buildConversationsProjectionFromState,
+  hashConversationsProjection,
+} from "./conversations.js";
+export type {
+  ConversationsProjection,
+  ConversationsProjectionState,
+  ConversationSummary,
+  ConversationStatus,
+  ConversationChannel,
+} from "./conversations.js";
+export {
   computeFreeWindows,
   hashFreeWindowsProjection,
   type FreeWindow,

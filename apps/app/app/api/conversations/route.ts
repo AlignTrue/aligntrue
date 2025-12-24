@@ -1,0 +1,14 @@
+import { NextResponse } from "next/server";
+import { Projections } from "@aligntrue/ops-core";
+import { getEventStore } from "@/lib/ops-services";
+
+export async function GET() {
+  const rebuilt = await Projections.rebuildOne(
+    Projections.ConversationsProjectionDef,
+    getEventStore(),
+  );
+  const projection = Projections.buildConversationsProjectionFromState(
+    rebuilt.data as Projections.ConversationsProjectionState,
+  );
+  return NextResponse.json({ conversations: projection.conversations });
+}

@@ -73,6 +73,12 @@ export const OPS_PLANS_DAILY_ENABLED =
  */
 export const OPS_GMAIL_MUTATIONS_ENABLED =
   process.env["OPS_GMAIL_MUTATIONS_ENABLED"] === "1";
+/**
+ * Gmail send/draft kill switch.
+ * Default OFF. Enables Gmail send when set.
+ */
+export const OPS_GMAIL_SEND_ENABLED =
+  process.env["OPS_GMAIL_SEND_ENABLED"] === "1";
 
 /**
  * Phase 1 Milestone 5: Tasks and Notes kill switches.
