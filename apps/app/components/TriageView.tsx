@@ -80,7 +80,10 @@ export function TriageView({ conversations }: Props) {
             }),
           },
         );
-        if (!res.ok) throw new Error("Send failed");
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ?? "Send failed");
+        }
         setReplyText("");
       } else if (action === "archive") {
         const res = await fetch(
@@ -96,7 +99,10 @@ export function TriageView({ conversations }: Props) {
             }),
           },
         );
-        if (!res.ok) throw new Error("Archive failed");
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ?? "Archive failed");
+        }
       } else if (action === "flag") {
         const res = await fetch(
           `/api/conversations/${current.conversation_id}/status`,
@@ -110,7 +116,10 @@ export function TriageView({ conversations }: Props) {
             }),
           },
         );
-        if (!res.ok) throw new Error("Flag failed");
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ?? "Flag failed");
+        }
       } else if (action === "task") {
         const res = await fetch(
           `/api/conversations/${current.conversation_id}/task`,
@@ -118,7 +127,10 @@ export function TriageView({ conversations }: Props) {
             method: "POST",
           },
         );
-        if (!res.ok) throw new Error("Task creation failed");
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ?? "Task creation failed");
+        }
       }
       setMessage("Recorded");
       setIndex((i) => Math.min(conversations.length - 1, i + 1));
