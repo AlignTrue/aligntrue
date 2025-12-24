@@ -28,7 +28,7 @@ export function CaptureModal({ isOpen, onClose, onSubmit }: Props) {
     }
   }, [isOpen]);
 
-  // Handle escape key
+  // Handle escape key and Cmd+Enter shortcut
   useEffect(() => {
     if (!isOpen) return;
 
@@ -36,11 +36,16 @@ export function CaptureModal({ isOpen, onClose, onSubmit }: Props) {
       if (e.key === "Escape") {
         onClose();
       }
+      // Cmd+Enter (mac) or Ctrl+Enter (win/linux) to submit
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSubmit();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, handleSubmit]);
 
   const handleSubmit = useCallback(async () => {
     if (!title.trim()) return;

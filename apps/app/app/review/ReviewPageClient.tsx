@@ -93,16 +93,12 @@ export function ReviewPageClient({
 
   // Group items into sections
   const sections = useMemo(() => {
-    const exceptions: ReviewItem[] = [];
     const needsReview: ReviewItem[] = [];
     const drafts: ReviewItem[] = [];
     const processed: ReviewItem[] = [];
 
     for (const item of reviewItems) {
       switch (item.type) {
-        case "exception":
-          exceptions.push(item);
-          break;
         case "needs_review":
           needsReview.push(item);
           break;
@@ -116,7 +112,6 @@ export function ReviewPageClient({
     }
 
     return [
-      { id: "exception" as const, title: "Exceptions", items: exceptions },
       {
         id: "needs_review" as const,
         title: "Needs Review",

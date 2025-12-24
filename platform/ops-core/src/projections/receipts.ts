@@ -244,7 +244,12 @@ export function buildReceiptsProjectionFromState(
         receiptList.push(receipt);
       }
     }
-    receiptList.sort((a, b) => (a.occurred_at > b.occurred_at ? -1 : 1));
+    receiptList.sort((a, b) => {
+      if (a.occurred_at === b.occurred_at) {
+        return a.receipt_id.localeCompare(b.receipt_id);
+      }
+      return a.occurred_at > b.occurred_at ? -1 : 1;
+    });
     by_source_ref.set(source_ref, receiptList);
   }
 
