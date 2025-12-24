@@ -43,8 +43,8 @@ export async function POST(
     );
   }
 
-  const idempotencyKey =
-    request.headers.get("x-idempotency-key") ?? crypto.randomUUID().slice(0, 8);
+  const rawKey = request.headers.get("x-idempotency-key");
+  const idempotencyKey = rawKey || crypto.randomUUID().slice(0, 8);
 
   const result = await Connectors.GoogleGmail.sendPlainTextReply({
     accessToken: ACCESS_TOKEN,
