@@ -40,6 +40,22 @@ export function TriageView({ conversations }: Props) {
   const participant =
     current.participants.find(Boolean) ?? "recipient@example.com";
 
+  function mapToEmailStatus(
+    status: Projections.ConversationStatus,
+  ): "inbox" | "ai_todo" | "needs_human" | "processed" {
+    switch (status) {
+      case "flagged":
+        return "needs_human";
+      case "active":
+        return "ai_todo";
+      case "processed":
+        return "processed";
+      case "inbox":
+      default:
+        return "inbox";
+    }
+  }
+
   async function doAction(
     action: "reply" | "archive" | "flag" | "task",
   ): Promise<void> {
@@ -68,7 +84,7 @@ export function TriageView({ conversations }: Props) {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              from_status: current.status,
+              from_status: mapToEmailStatus(current.status),
               to_status: "processed",
               trigger: "human",
               resolution: "archived",
@@ -83,8 +99,8 @@ export function TriageView({ conversations }: Props) {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              from_status: current.status,
-              to_status: "flagged",
+              from_status: mapToEmailStatus(current.status),
+              to_status: "needs_human",
               trigger: "human",
             }),
           },

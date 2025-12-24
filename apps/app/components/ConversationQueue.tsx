@@ -78,9 +78,23 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
     }
   }
 
-  async function changeStatus(
-    to_status: "processed" | "flagged" | "active" | "inbox",
-  ) {
+  function mapToEmailStatus(
+    status: Projections.ConversationStatus,
+  ): "inbox" | "ai_todo" | "needs_human" | "processed" {
+    switch (status) {
+      case "flagged":
+        return "needs_human";
+      case "active":
+        return "ai_todo";
+      case "processed":
+        return "processed";
+      case "inbox":
+      default:
+        return "inbox";
+    }
+  }
+
+  async function changeStatus(to_status: Projections.ConversationStatus) {
     setMessage(null);
     setSubmitting(true);
     try {
@@ -90,10 +104,13 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            from_status: conversation.status,
-            to_status,
+            from_status: mapToEmailStatus(conversation.status),
+            to_status: mapToEmailStatus(to_status),
             trigger: "human",
-            resolution: to_status === "processed" ? "archived" : undefined,
+            resolution:
+              mapToEmailStatus(to_status) === "processed"
+                ? "archived"
+                : undefined,
           }),
         },
       );
