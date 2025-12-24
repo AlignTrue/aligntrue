@@ -39,12 +39,11 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const primary =
-    conversation.status === "inbox"
-      ? "archive"
-      : conversation.status === "flagged"
-        ? "reply"
-        : "archive";
+  const primaryToStatus: Projections.ConversationStatus =
+    conversation.status === "flagged" || conversation.status === "inbox"
+      ? "processed"
+      : "flagged";
+  const primaryLabel = primaryToStatus === "processed" ? "Archive" : "Flag";
 
   const participant =
     conversation.participants.find(Boolean) ?? "recipient@example.com";
@@ -163,12 +162,10 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
           <Button
             size="sm"
             variant="secondary"
-            onClick={() =>
-              changeStatus(primary === "archive" ? "processed" : "flagged")
-            }
+            onClick={() => changeStatus(primaryToStatus)}
             disabled={submitting}
           >
-            {primary === "archive" ? "Archive" : "Flag"}
+            {primaryLabel}
           </Button>
           <Button
             size="sm"
