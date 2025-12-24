@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   OPS_GMAIL_SEND_ENABLED,
   Connectors,
@@ -12,9 +12,10 @@ const ACCESS_TOKEN =
   process.env["GMAIL_MUTATION_ACCESS_TOKEN"];
 
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   if (!OPS_GMAIL_SEND_ENABLED || !OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
     return NextResponse.json(
       { error: "Gmail send is disabled" },
@@ -58,7 +59,7 @@ export async function POST(
   });
 
   return NextResponse.json({
-    conversation_id: params.id,
+    conversation_id: id,
     message_id: result.id,
     thread_id: result.threadId,
   });

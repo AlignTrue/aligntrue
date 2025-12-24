@@ -57,6 +57,7 @@ async function loadAvailability() {
       start_time: item.start_time ?? todayIso,
       end_time: item.end_time ?? item.start_time ?? todayIso,
       title: item.title,
+      updated: item.raw_updated_at ?? item.start_time ?? todayIso,
       provider: item.provider,
       source_ref: item.source_ref,
       raw_updated_at: item.raw_updated_at,

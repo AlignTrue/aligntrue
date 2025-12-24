@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getConversionService } from "@/lib/ops-services";
 
 const ACTOR = {
@@ -8,12 +8,13 @@ const ACTOR = {
 } as const;
 
 export async function POST(
-  _request: Request,
-  { params }: { params: { id: string } },
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const service = getConversionService();
   const result = await service.convertEmailToTask({
-    source_ref: params.id,
+    source_ref: id,
     actor: ACTOR,
   });
 

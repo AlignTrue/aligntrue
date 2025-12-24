@@ -61,6 +61,11 @@ export function TriageView({ conversations }: Props) {
   ): Promise<void> {
     setSubmitting(true);
     setMessage(null);
+    if (!current) {
+      setSubmitting(false);
+      setMessage("Nothing to triage");
+      return;
+    }
     try {
       if (action === "reply") {
         const res = await fetch(

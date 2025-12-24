@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Emails, OPS_EMAIL_STATUS_ENABLED } from "@aligntrue/ops-core";
 import { getEventStore } from "@/lib/ops-services";
 
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   if (!OPS_EMAIL_STATUS_ENABLED) {
     return NextResponse.json(
       { error: "Email status transitions are disabled" },
@@ -34,7 +35,7 @@ export async function PATCH(
   try {
     event = Emails.buildEmailStatusChangedEvent(
       {
-        source_ref: params.id,
+        source_ref: id,
         from_status: payload.from_status,
         to_status: payload.to_status,
         trigger: payload.trigger,
