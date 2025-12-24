@@ -178,8 +178,10 @@ export function useCaptureModal() {
         return;
       }
 
-      // ⌘K or just 'c'
-      if ((e.metaKey && e.key === "k") || e.key === "c") {
+      // ⌘K (mac) or Ctrl+K (win/linux) or Ctrl/Cmd + C
+      const isModK = e.key === "k" && (e.metaKey || e.ctrlKey);
+      const isModC = e.key === "c" && (e.metaKey || e.ctrlKey);
+      if (isModK || isModC) {
         e.preventDefault();
         setIsOpen(true);
       }
