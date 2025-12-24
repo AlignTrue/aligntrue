@@ -148,7 +148,7 @@ function buildStatusChangeReceipt(
 ): Receipt {
   const isExternalTrigger = payload.trigger === "human";
   const safetyClass = isExternalTrigger
-    ? SafetyClass.WriteInternal
+    ? SafetyClass.WriteExternalSideEffect
     : SafetyClass.WriteInternal;
 
   const receipt: Receipt = {

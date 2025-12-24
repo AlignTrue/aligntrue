@@ -49,6 +49,9 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const days = typeof body.days === "number" ? body.days : 7;
 
+    // Reset prior error state; this run will overwrite if any errors occur.
+    lastError = null;
+
     const results: SyncStatus["results"] = {};
     const eventStore = new Storage.JsonlEventStore();
 
@@ -161,9 +164,6 @@ export async function POST(request: Request) {
     }
 
     lastSyncAt = new Date().toISOString();
-    if (!lastError) {
-      lastError = null;
-    }
 
     const status: SyncStatus = {
       state: "idle",

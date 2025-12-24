@@ -25,6 +25,7 @@ export function GlobalCapture() {
           if (!res.ok) {
             // Fallback: redirect to tasks page with title
             router.push(`/tasks?title=${encodeURIComponent(data.title)}`);
+            return;
           }
         } else {
           // Create note via API
@@ -40,6 +41,7 @@ export function GlobalCapture() {
           if (!res.ok) {
             // Fallback: redirect to notes page
             router.push(`/notes?title=${encodeURIComponent(data.title)}`);
+            return;
           }
         }
 
