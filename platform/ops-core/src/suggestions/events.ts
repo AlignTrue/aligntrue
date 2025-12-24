@@ -155,7 +155,7 @@ function normalizeContext(
   ctx: SuggestionFeedbackPayload["context"],
 ): SuggestionFeedbackPayload["context"] {
   if (!ctx) return undefined;
-  return {
+  const normalized = {
     ...(ctx.sender_email ? { sender_email: ctx.sender_email } : {}),
     ...(ctx.sender_domain ? { sender_domain: ctx.sender_domain } : {}),
     ...(ctx.is_first_contact !== undefined && {
@@ -171,6 +171,7 @@ function normalizeContext(
       ? { subject_keywords: Array.from(new Set(ctx.subject_keywords)).sort() }
       : {}),
   };
+  return Object.keys(normalized).length ? normalized : undefined;
 }
 
 function dedupeAndSort(values: readonly string[]): string[] {
