@@ -134,3 +134,15 @@ export type {
   InboxProjection,
   InboxItem,
 } from "./inbox.js";
+export {
+  ReceiptsProjectionDef,
+  buildReceiptsProjectionFromState,
+  getReceiptsForSourceRef,
+  hashReceiptsProjection,
+} from "./receipts.js";
+export type {
+  ReceiptsProjection,
+  ReceiptsProjectionState,
+  Receipt,
+  ReceiptKind,
+} from "./receipts.js";

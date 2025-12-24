@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Nav } from "@/components/nav";
+import { GlobalCapture } from "@/components/GlobalCapture";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Nav />
           {children}
+          <GlobalCapture />
           <SpeedInsights />
         </ThemeProvider>
       </body>

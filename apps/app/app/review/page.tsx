@@ -4,11 +4,8 @@ import {
   Projections,
 } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ConversationQueue } from "@/components/ConversationQueue";
-import { TriageView } from "@/components/TriageView";
-import { BatchReview } from "@/components/BatchReview";
-import { TimeAvailability } from "@/components/TimeAvailability";
 import { getEventStore } from "@/lib/ops-services";
+import { ReviewPageClient } from "./ReviewPageClient";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +18,16 @@ async function loadConversations() {
     rebuilt.data as Projections.ConversationsProjectionState,
   );
   return projection.conversations;
+}
+
+async function loadReceipts() {
+  const rebuilt = await Projections.rebuildOne(
+    Projections.ReceiptsProjectionDef,
+    getEventStore(),
+  );
+  return Projections.buildReceiptsProjectionFromState(
+    rebuilt.data as Projections.ReceiptsProjectionState,
+  );
 }
 
 async function loadAvailability() {
@@ -82,12 +89,7 @@ function toMs(value?: string | null): number | null {
   return Number.isNaN(ms) ? null : ms;
 }
 
-export default async function DashboardPage() {
-  const [conversations, availability] = await Promise.all([
-    loadConversations(),
-    loadAvailability(),
-  ]);
-
+export default async function ReviewPage() {
   if (!OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
     return (
       <div className="mx-auto max-w-5xl space-y-4 py-8">
@@ -96,50 +98,26 @@ export default async function DashboardPage() {
             <CardTitle>Gmail connector is disabled</CardTitle>
           </CardHeader>
           <CardContent>
-            Set OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED=1 to enable the dashboard.
+            Set OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED=1 to enable the Review
+            console.
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  const [conversations, receiptsProjection, availability] = await Promise.all([
+    loadConversations(),
+    loadReceipts(),
+    loadAvailability(),
+  ]);
+
   return (
-    <div className="mx-auto max-w-5xl space-y-6 py-8">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-4">
-          <section className="space-y-2">
-            <h2 className="text-lg font-medium">Queue</h2>
-            <ConversationQueue conversations={conversations} />
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-lg font-medium">Triage</h2>
-            <TriageView conversations={conversations.slice(0, 5)} />
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-lg font-medium">Batch Review</h2>
-            <BatchReview conversations={conversations.slice(0, 10)} />
-          </section>
-        </div>
-        <div className="space-y-4">
-          <section className="space-y-2">
-            <h2 className="text-lg font-medium">Time</h2>
-            <TimeAvailability
-              totalFreeMinutes={availability.total_free_minutes}
-              windows={availability.windows}
-              nextEvents={availability.next_events}
-            />
-          </section>
-          {!OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED ? (
-            <p className="text-xs text-muted-foreground">
-              Calendar connector disabled; availability may be empty.
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </div>
+    <ReviewPageClient
+      conversations={conversations}
+      receiptsProjection={receiptsProjection}
+      availability={availability}
+      calendarEnabled={OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED}
+    />
   );
 }
