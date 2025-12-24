@@ -62,30 +62,42 @@ export function TriageView({ conversations }: Props) {
         if (!res.ok) throw new Error("Send failed");
         setReplyText("");
       } else if (action === "archive") {
-        await fetch(`/api/conversations/${current.conversation_id}/status`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from_status: current.status,
-            to_status: "processed",
-            trigger: "human",
-            resolution: "archived",
-          }),
-        });
+        const res = await fetch(
+          `/api/conversations/${current.conversation_id}/status`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from_status: current.status,
+              to_status: "processed",
+              trigger: "human",
+              resolution: "archived",
+            }),
+          },
+        );
+        if (!res.ok) throw new Error("Archive failed");
       } else if (action === "flag") {
-        await fetch(`/api/conversations/${current.conversation_id}/status`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from_status: current.status,
-            to_status: "flagged",
-            trigger: "human",
-          }),
-        });
+        const res = await fetch(
+          `/api/conversations/${current.conversation_id}/status`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from_status: current.status,
+              to_status: "flagged",
+              trigger: "human",
+            }),
+          },
+        );
+        if (!res.ok) throw new Error("Flag failed");
       } else if (action === "task") {
-        await fetch(`/api/conversations/${current.conversation_id}/task`, {
-          method: "POST",
-        });
+        const res = await fetch(
+          `/api/conversations/${current.conversation_id}/task`,
+          {
+            method: "POST",
+          },
+        );
+        if (!res.ok) throw new Error("Task creation failed");
       }
       setMessage("Recorded");
       setIndex((i) => Math.min(conversations.length - 1, i + 1));
