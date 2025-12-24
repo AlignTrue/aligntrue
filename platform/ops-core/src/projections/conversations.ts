@@ -26,6 +26,7 @@ export interface ConversationSummary {
   conversation_id: string;
   channel: ConversationChannel;
   subject?: string;
+  last_sender?: string | undefined;
   participants: string[];
   last_message_at: string;
   last_message_snippet?: string;
@@ -73,6 +74,7 @@ export const ConversationsProjectionDef: ProjectionDefinition<ConversationsProje
           const summary: ConversationSummary = existing
             ? {
                 ...existing,
+                last_sender: payload.from ?? existing.last_sender,
                 participants: mergeParticipants(
                   existing.participants,
                   participants,
@@ -87,6 +89,7 @@ export const ConversationsProjectionDef: ProjectionDefinition<ConversationsProje
                 conversation_id: key,
                 channel: "email",
                 subject: payload.subject ?? "(no subject)",
+                last_sender: payload.from,
                 participants,
                 last_message_at: payload.internal_date,
                 ...(payload.snippet !== undefined && {

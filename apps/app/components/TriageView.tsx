@@ -38,7 +38,9 @@ export function TriageView({ conversations }: Props) {
   }
 
   const participant =
-    current.participants.find(Boolean) ?? "recipient@example.com";
+    current.last_sender ??
+    current.participants.find(Boolean) ??
+    "recipient@example.com";
 
   function mapToEmailStatus(
     status: Projections.ConversationStatus,

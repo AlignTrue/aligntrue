@@ -46,7 +46,9 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
   const primaryLabel = primaryToStatus === "processed" ? "Archive" : "Flag";
 
   const participant =
-    conversation.participants.find(Boolean) ?? "recipient@example.com";
+    conversation.last_sender ??
+    conversation.participants.find(Boolean) ??
+    "recipient@example.com";
 
   async function doReply() {
     setSubmitting(true);
