@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,6 +38,10 @@ export function ReviewList({
   const [focusIndex, setFocusIndex] = useState<number>(-1);
 
   const allItems = sections.flatMap((s) => s.items);
+  const itemIndexById = useMemo(
+    () => new Map(allItems.map((item, index) => [item.id, index])),
+    [allItems],
+  );
   const getItemByIndex = useCallback(
     (index: number) => (index >= 0 ? allItems.at(index) : undefined),
     [allItems],
@@ -132,9 +136,6 @@ export function ReviewList({
     return null;
   };
 
-  // Calculate global index for keyboard navigation
-  let globalIndex = -1;
-
   return (
     <div className="space-y-3">
       {sections.map((section) => {
@@ -200,8 +201,7 @@ export function ReviewList({
                     )}
 
                     {section.items.map((item) => {
-                      globalIndex++;
-                      const itemGlobalIndex = globalIndex;
+                      const itemGlobalIndex = itemIndexById.get(item.id) ?? -1;
                       const isSelected = selectedItem?.id === item.id;
                       const isChecked = selectedIds.has(item.id);
                       const isFocused = focusIndex === itemGlobalIndex;
