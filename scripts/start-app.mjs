@@ -48,7 +48,8 @@ async function checkServerResponding() {
     const timeout = setTimeout(() => controller.abort(), 3000);
     const response = await fetch(SERVER_URL, { signal: controller.signal });
     clearTimeout(timeout);
-    return response.ok;
+    // Treat any non-5xx response as "server is up" so routes without handlers (404) still pass.
+    return response.status < 500;
   } catch {
     return false;
   }
