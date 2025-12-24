@@ -17,14 +17,25 @@ export function BatchReview({ conversations }: Props) {
     () => conversations.filter((c) => c.status === "inbox"),
     [conversations],
   );
+  const archivableIds = useMemo(
+    () => new Set(archivable.map((c) => c.conversation_id)),
+    [archivable],
+  );
   const [selected, setSelected] = useState(
     () => new Set(archivable.map((c) => c.conversation_id)),
   );
 
   // Keep selection in sync when the archivable list changes (e.g., after refresh)
   useEffect(() => {
-    setSelected(new Set(archivable.map((c) => c.conversation_id)));
-  }, [archivable]);
+    setSelected((prev) => {
+      // Drop items no longer archivable but keep manual deselections intact.
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (archivableIds.has(id)) next.add(id);
+      }
+      return next;
+    });
+  }, [archivableIds]);
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
