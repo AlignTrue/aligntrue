@@ -11,15 +11,19 @@ export async function GET() {
     rebuilt.data as Projections.TimelineProjectionState,
   );
 
-  const now = new Date();
-  const todayIso = now.toISOString().slice(0, 10);
+  const nowMs = Date.now();
+  const todayIso = new Date().toISOString().slice(0, 10);
   const calendarItems = timeline.items.filter(
     (item) => item.type === "calendar_event",
   );
 
   const nextEvents = calendarItems
-    .filter((item) => (item.start_time ?? "") > now.toISOString())
-    .sort((a, b) => (a.start_time ?? "").localeCompare(b.start_time ?? ""))
+    .map((item) => ({
+      ...item,
+      start_ms: toMs(item.start_time),
+    }))
+    .filter((item) => item.start_ms !== null && item.start_ms >= nowMs)
+    .sort((a, b) => (a.start_ms ?? 0) - (b.start_ms ?? 0))
     .slice(0, 3)
     .map((item) => ({
       title: item.title,
@@ -48,4 +52,12 @@ export async function GET() {
     windows: freeWindows.windows,
     next_events: nextEvents,
   });
+}
+
+function toMs(value?: string | null): number | null {
+  if (!value) return null;
+  // If date-only (YYYY-MM-DD), treat as start of day UTC
+  const normalized = value.length === 10 ? `${value}T00:00:00Z` : value;
+  const ms = Date.parse(normalized);
+  return Number.isNaN(ms) ? null : ms;
 }
