@@ -36,7 +36,7 @@ let lastError: string | null = null;
 
 export async function GET() {
   const status: SyncStatus = {
-    state: "idle",
+    state: lastError ? "error" : "idle",
     lastSyncAt,
     lastError,
     pendingItems: 0,
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
     lastSyncAt = new Date().toISOString();
 
     const status: SyncStatus = {
-      state: "idle",
+      state: lastError ? "error" : "idle",
       lastSyncAt,
       lastError,
       pendingItems: 0,
