@@ -28,6 +28,21 @@ export function CaptureModal({ isOpen, onClose, onSubmit }: Props) {
     }
   }, [isOpen]);
 
+  const handleSubmit = useCallback(async () => {
+    if (!title.trim()) return;
+
+    setSubmitting(true);
+    try {
+      await onSubmit(type, {
+        title: title.trim(),
+        body: body.trim() || undefined,
+      });
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
+  }, [type, title, body, onSubmit, onClose]);
+
   // Handle escape key and Cmd+Enter shortcut
   useEffect(() => {
     if (!isOpen) return;
@@ -46,21 +61,6 @@ export function CaptureModal({ isOpen, onClose, onSubmit }: Props) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose, handleSubmit]);
-
-  const handleSubmit = useCallback(async () => {
-    if (!title.trim()) return;
-
-    setSubmitting(true);
-    try {
-      await onSubmit(type, {
-        title: title.trim(),
-        body: body.trim() || undefined,
-      });
-      onClose();
-    } finally {
-      setSubmitting(false);
-    }
-  }, [type, title, body, onSubmit, onClose]);
 
   if (!isOpen) return null;
 
