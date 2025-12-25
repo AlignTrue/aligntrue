@@ -92,6 +92,15 @@ export function ReviewPageClient({
     });
   }, [conversations, receiptsProjection]);
 
+  // Quick lookup by item id for batch operations
+  const reviewItemById = useMemo(() => {
+    const map = new Map<string, ReviewItem>();
+    for (const item of reviewItems) {
+      map.set(item.id, item);
+    }
+    return map;
+  }, [reviewItems]);
+
   // Group items into sections
   const sections = useMemo(() => {
     const needsReview: ReviewItem[] = [];
@@ -294,11 +303,17 @@ export function ReviewPageClient({
     try {
       const results = await Promise.all(
         ids.map(async (id) => {
+          const item = reviewItemById.get(id);
+          const conversationStatus = item?.conversation?.status;
+          if (!conversationStatus || !item?.conversation) {
+            return { id, ok: false };
+          }
+
           const res = await fetch(`/api/conversations/${id}/status`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              from_status: "inbox",
+              from_status: mapToEmailStatus(conversationStatus),
               to_status: "processed",
               trigger: "human",
               resolution: "archived",
@@ -321,7 +336,7 @@ export function ReviewPageClient({
         `Error: ${err instanceof Error ? err.message : "Batch action failed"}`,
       );
     }
-  }, [selectedIds]);
+  }, [reviewItemById, selectedIds]);
 
   return (
     <div className="mx-auto max-w-6xl py-6">
