@@ -92,7 +92,9 @@ export async function POST(request: Request) {
             skipped: 0,
             disabled: true,
           };
-          lastError = `Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`;
+          lastError = lastError
+            ? `${lastError}; Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`
+            : `Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`;
         }
       } else {
         results.gmail = {
@@ -151,7 +153,9 @@ export async function POST(request: Request) {
             skipped: 0,
             disabled: true,
           };
-          lastError = `Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`;
+          lastError = lastError
+            ? `${lastError}; Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`
+            : `Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`;
         }
       } else {
         results.calendar = {
