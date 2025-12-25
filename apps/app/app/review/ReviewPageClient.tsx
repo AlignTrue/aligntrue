@@ -60,12 +60,9 @@ export function ReviewPageClient({
   // Transform conversations into review items
   const reviewItems = useMemo((): ReviewItem[] => {
     return conversations.map((conv): ReviewItem => {
-      const conversationRef = Projections.entityRef(
-        "email_thread",
-        conv.conversation_id,
-      );
+      const conversationRef = entityRef("email_thread", conv.conversation_id);
       const threadRef = conv.thread_id
-        ? Projections.entityRef("email_thread", conv.thread_id)
+        ? entityRef("email_thread", conv.thread_id)
         : undefined;
       const receipts =
         receiptsByEntityRef.get(conversationRef) ??
@@ -470,4 +467,11 @@ function mapToEmailStatus(
     default:
       return "inbox";
   }
+}
+
+function entityRef(type: Projections.EntityType, id: string): string {
+  if (!id || id.includes(":")) {
+    throw new Error(`Invalid entity id: ${id}`);
+  }
+  return `${type}:${id}`;
 }
