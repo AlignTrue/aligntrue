@@ -29,6 +29,11 @@ export function SyncStatus({
   );
   const [syncing, setSyncing] = useState(false);
 
+  // Emit status changes to parent
+  useEffect(() => {
+    onStatusChange?.(status);
+  }, [onStatusChange, status]);
+
   // Fetch current status on mount to reflect server state
   useEffect(() => {
     let cancelled = false;
@@ -39,7 +44,6 @@ export function SyncStatus({
         const data = (await res.json()) as SyncStatusType;
         if (!cancelled) {
           setStatus(data);
-          onStatusChange?.(data);
         }
       } catch {
         // ignore
@@ -49,7 +53,7 @@ export function SyncStatus({
     return () => {
       cancelled = true;
     };
-  }, [onStatusChange]);
+  }, []);
 
   const handleSync = useCallback(async () => {
     setSyncing(true);
@@ -69,22 +73,18 @@ export function SyncStatus({
 
       const data = (await res.json()) as SyncStatusType;
       setStatus(data);
-      onStatusChange?.(data);
       onSyncComplete?.(data);
     } catch (err) {
-      setStatus((prev) => {
-        const next: SyncStatusType = {
-          ...prev,
-          state: "error",
-          lastError: err instanceof Error ? err.message : "Sync failed",
-        };
-        onStatusChange?.(next);
-        return next;
-      });
+      const errMessage = err instanceof Error ? err.message : "Sync failed";
+      setStatus((prev) => ({
+        ...prev,
+        state: "error",
+        lastError: errMessage,
+      }));
     } finally {
       setSyncing(false);
     }
-  }, [onStatusChange, onSyncComplete]);
+  }, [onSyncComplete]);
 
   // Allow parent to trigger sync (e.g., for retry from empty state)
   useEffect(() => {
