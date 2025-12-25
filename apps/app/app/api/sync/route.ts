@@ -52,117 +52,110 @@ export async function POST(request: Request) {
     // Reset prior error state; this run will overwrite if any errors occur.
     lastError = null;
 
+    const { loadTokenSet, withTokenRefresh } = Connectors.GoogleCommon;
+    let tokenSet: Connectors.GoogleCommon.TokenSet | null = null;
+    const getTokens = async () => {
+      tokenSet ??= await loadTokenSet();
+      return tokenSet;
+    };
+
     const results: SyncStatus["results"] = {};
     const eventStore = new Storage.JsonlEventStore();
 
     // Sync Gmail if enabled
     if (OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
-      const accessToken = process.env["GOOGLE_ACCESS_TOKEN"];
-      if (accessToken) {
-        try {
-          const query = `newer_than:${days}d`;
-          const rawMessages =
-            await Connectors.GoogleGmail.fetchAllGmailMessages({
+      try {
+        const tokens = await getTokens();
+        const query = `newer_than:${days}d`;
+        const rawMessages = await withTokenRefresh(
+          (accessToken) =>
+            Connectors.GoogleGmail.fetchAllGmailMessages({
               accessToken,
               query,
               maxResults: 100,
-            });
+            }),
+          tokens,
+        );
 
-          const records =
-            Connectors.GoogleGmail.transformGmailMessages(rawMessages);
+        const records =
+          Connectors.GoogleGmail.transformGmailMessages(rawMessages);
 
-          const ingestResult = await Connectors.GoogleGmail.ingestEmailMessages(
-            {
-              eventStore,
-              emails: records,
-              correlation_id: Identity.randomId(),
-            },
-          );
+        const ingestResult = await Connectors.GoogleGmail.ingestEmailMessages({
+          eventStore,
+          emails: records,
+          correlation_id: Identity.randomId(),
+        });
 
-          results.gmail = {
-            fetched: records.length,
-            written: ingestResult.written,
-            skipped: ingestResult.skipped,
-            disabled: ingestResult.disabled,
-          };
-        } catch (err) {
-          results.gmail = {
-            fetched: 0,
-            written: 0,
-            skipped: 0,
-            disabled: true,
-          };
-          lastError = lastError
-            ? `${lastError}; Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`
-            : `Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`;
-        }
-      } else {
+        results.gmail = {
+          fetched: records.length,
+          written: ingestResult.written,
+          skipped: ingestResult.skipped,
+          disabled: ingestResult.disabled,
+        };
+      } catch (err) {
         results.gmail = {
           fetched: 0,
           written: 0,
           skipped: 0,
           disabled: true,
         };
+        lastError = lastError
+          ? `${lastError}; Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`
+          : `Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`;
       }
     }
 
     // Sync Calendar if enabled
     if (OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED) {
-      const accessToken = process.env["GOOGLE_ACCESS_TOKEN"];
-      if (accessToken) {
-        try {
-          const now = new Date();
-          const timeMin = new Date(
-            now.getTime() - days * 24 * 60 * 60 * 1000,
-          ).toISOString();
-          const timeMax = new Date(
-            now.getTime() + 30 * 24 * 60 * 60 * 1000,
-          ).toISOString();
+      try {
+        const tokens = await getTokens();
+        const now = new Date();
+        const timeMin = new Date(
+          now.getTime() - days * 24 * 60 * 60 * 1000,
+        ).toISOString();
+        const timeMax = new Date(
+          now.getTime() + 30 * 24 * 60 * 60 * 1000,
+        ).toISOString();
 
-          const calendarId = "primary";
-          const rawEvents =
-            await Connectors.GoogleCalendar.fetchAllCalendarEvents({
+        const calendarId = "primary";
+        const rawEvents = await withTokenRefresh(
+          (accessToken) =>
+            Connectors.GoogleCalendar.fetchAllCalendarEvents({
               accessToken,
               calendarId,
               timeMin,
               timeMax,
               maxResults: 250,
-            });
+            }),
+          tokens,
+        );
 
-          const records =
-            Connectors.GoogleCalendar.transformCalendarEvents(rawEvents);
+        const records =
+          Connectors.GoogleCalendar.transformCalendarEvents(rawEvents);
 
-          const ingestResult =
-            await Connectors.GoogleCalendar.ingestCalendarEvents({
-              eventStore,
-              events: records,
-              correlation_id: Identity.randomId(),
-            });
+        const ingestResult =
+          await Connectors.GoogleCalendar.ingestCalendarEvents({
+            eventStore,
+            events: records,
+            correlation_id: Identity.randomId(),
+          });
 
-          results.calendar = {
-            fetched: records.length,
-            written: ingestResult.written,
-            skipped: ingestResult.skipped,
-            disabled: ingestResult.disabled,
-          };
-        } catch (err) {
-          results.calendar = {
-            fetched: 0,
-            written: 0,
-            skipped: 0,
-            disabled: true,
-          };
-          lastError = lastError
-            ? `${lastError}; Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`
-            : `Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`;
-        }
-      } else {
+        results.calendar = {
+          fetched: records.length,
+          written: ingestResult.written,
+          skipped: ingestResult.skipped,
+          disabled: ingestResult.disabled,
+        };
+      } catch (err) {
         results.calendar = {
           fetched: 0,
           written: 0,
           skipped: 0,
           disabled: true,
         };
+        lastError = lastError
+          ? `${lastError}; Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`
+          : `Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`;
       }
     }
 
