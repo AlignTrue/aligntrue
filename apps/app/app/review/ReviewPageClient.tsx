@@ -443,7 +443,7 @@ export function ReviewPageClient({
               ? `email_thread:${showReceiptsFor.conversation.thread_id}`
               : showReceiptsFor.conversation?.conversation_id
                 ? `email_thread:${showReceiptsFor.conversation.conversation_id}`
-                : showReceiptsFor.id
+                : `email_thread:${showReceiptsFor.id}`
           }
           receipts={showReceiptsFor.receipts ?? []}
           onClose={handleCloseReceipts}

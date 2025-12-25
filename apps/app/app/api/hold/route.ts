@@ -39,6 +39,8 @@ export async function POST(request: Request) {
     } else if (action === "toggle") {
       externalHold = !externalHold;
       enabledAt = externalHold ? new Date().toISOString() : undefined;
+    } else {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
     const state: HoldState = {
