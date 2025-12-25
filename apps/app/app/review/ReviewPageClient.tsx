@@ -101,7 +101,7 @@ export function ReviewPageClient({
             : undefined,
       };
     });
-  }, [conversations, receiptsProjection]);
+  }, [conversations, receiptsByEntityRef]);
 
   // Quick lookup by item id for batch operations
   const reviewItemById = useMemo(() => {
