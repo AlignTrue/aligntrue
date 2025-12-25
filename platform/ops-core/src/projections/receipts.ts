@@ -73,7 +73,7 @@ export interface Receipt {
 
 export interface ReceiptsProjection {
   receipts: Receipt[];
-  by_source_ref: Map<string, Receipt[]>;
+  by_source_ref: Record<string, Receipt[]>;
 }
 
 export interface ReceiptsProjectionState extends ProjectionFreshness {
@@ -235,7 +235,7 @@ export function buildReceiptsProjectionFromState(
     return a.occurred_at > b.occurred_at ? -1 : 1;
   });
 
-  const by_source_ref = new Map<string, Receipt[]>();
+  const by_source_ref: Record<string, Receipt[]> = {};
   for (const [source_ref, receipt_ids] of state.by_source_ref) {
     const receiptList: Receipt[] = [];
     for (const id of receipt_ids) {
@@ -250,7 +250,7 @@ export function buildReceiptsProjectionFromState(
       }
       return a.occurred_at > b.occurred_at ? -1 : 1;
     });
-    by_source_ref.set(source_ref, receiptList);
+    by_source_ref[source_ref] = receiptList;
   }
 
   return { receipts, by_source_ref };
@@ -260,7 +260,7 @@ export function getReceiptsForSourceRef(
   projection: ReceiptsProjection,
   source_ref: string,
 ): Receipt[] {
-  return projection.by_source_ref.get(source_ref) ?? [];
+  return projection.by_source_ref[source_ref] ?? [];
 }
 
 export function hashReceiptsProjection(projection: ReceiptsProjection): string {

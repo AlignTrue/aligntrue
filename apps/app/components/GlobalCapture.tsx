@@ -24,7 +24,7 @@ export function GlobalCapture() {
 
           if (!res.ok) {
             // Fallback: redirect to tasks page with title
-            router.push(`/tasks?title=${encodeURIComponent(data.title)}`);
+            await router.push(`/tasks?title=${encodeURIComponent(data.title)}`);
             return;
           }
         } else {
@@ -40,19 +40,19 @@ export function GlobalCapture() {
 
           if (!res.ok) {
             // Fallback: redirect to notes page
-            router.push(`/notes?title=${encodeURIComponent(data.title)}`);
+            await router.push(`/notes?title=${encodeURIComponent(data.title)}`);
             return;
           }
         }
 
         // Refresh the current page to show the new item
-        router.refresh();
+        await router.refresh();
       } catch {
         // On error, redirect to appropriate page
         if (type === "task") {
-          router.push(`/tasks?title=${encodeURIComponent(data.title)}`);
+          await router.push(`/tasks?title=${encodeURIComponent(data.title)}`);
         } else {
-          router.push(`/notes?title=${encodeURIComponent(data.title)}`);
+          await router.push(`/notes?title=${encodeURIComponent(data.title)}`);
         }
       }
     },

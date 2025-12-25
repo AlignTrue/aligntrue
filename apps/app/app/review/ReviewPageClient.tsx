@@ -50,9 +50,10 @@ export function ReviewPageClient({
   // Transform conversations into review items
   const reviewItems = useMemo((): ReviewItem[] => {
     return conversations.map((conv): ReviewItem => {
-      const receipts = receiptsProjection.by_source_ref.get(
-        conv.thread_id ?? conv.conversation_id,
-      );
+      const receipts =
+        receiptsProjection.by_source_ref[
+          conv.thread_id ?? conv.conversation_id
+        ];
 
       // Determine item type based on status and other factors
       let type: ReviewItemType = "needs_review";

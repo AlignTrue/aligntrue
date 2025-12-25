@@ -11,12 +11,13 @@ export interface HoldState {
 // In-memory hold state (would be persisted in production)
 // Default: external hold is ON for safety
 let externalHold = process.env["OPS_EXTERNAL_HOLD_DEFAULT"] !== "0";
-let enabledAt: string | undefined = externalHold
-  ? new Date().toISOString()
-  : undefined;
+let enabledAt: string | undefined = undefined;
 const heldActions: { id: string; timestamp: string; action: unknown }[] = [];
 
 export async function GET() {
+  if (externalHold && !enabledAt) {
+    enabledAt = new Date().toISOString();
+  }
   const state: HoldState = {
     externalHold,
     heldActionsCount: heldActions.length,
