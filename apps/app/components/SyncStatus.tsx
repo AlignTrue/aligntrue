@@ -1,23 +1,55 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { SyncStatus as SyncStatusType } from "@/app/api/sync/route";
 
 interface Props {
   initialStatus?: SyncStatusType;
+  onStatusChange?: (status: SyncStatusType) => void;
+  onSyncComplete?: (status: SyncStatusType) => void;
+  registerSync?: (fn: () => Promise<void>) => void;
 }
 
-export function SyncStatus({ initialStatus }: Props) {
+const EMPTY_STATUS: SyncStatusType = {
+  state: "idle",
+  lastSyncAt: null,
+  lastError: null,
+  pendingItems: 0,
+};
+
+export function SyncStatus({
+  initialStatus,
+  onStatusChange,
+  onSyncComplete,
+  registerSync,
+}: Props) {
   const [status, setStatus] = useState<SyncStatusType>(
-    initialStatus ?? {
-      state: "idle",
-      lastSyncAt: null,
-      lastError: null,
-      pendingItems: 0,
-    },
+    initialStatus ?? EMPTY_STATUS,
   );
   const [syncing, setSyncing] = useState(false);
+
+  // Fetch current status on mount to reflect server state
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchStatus() {
+      try {
+        const res = await fetch("/api/sync", { method: "GET" });
+        if (!res.ok) return;
+        const data = (await res.json()) as SyncStatusType;
+        if (!cancelled) {
+          setStatus(data);
+          onStatusChange?.(data);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    fetchStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [onStatusChange]);
 
   const handleSync = useCallback(async () => {
     setSyncing(true);
@@ -31,21 +63,33 @@ export function SyncStatus({ initialStatus }: Props) {
       });
 
       if (!res.ok) {
-        throw new Error("Sync failed");
+        const errText = await res.text().catch(() => "");
+        throw new Error(errText || "Sync failed");
       }
 
       const data = (await res.json()) as SyncStatusType;
       setStatus(data);
+      onStatusChange?.(data);
+      onSyncComplete?.(data);
     } catch (err) {
-      setStatus((s) => ({
-        ...s,
+      const next: SyncStatusType = {
+        ...status,
         state: "error",
         lastError: err instanceof Error ? err.message : "Sync failed",
-      }));
+      };
+      setStatus(next);
+      onStatusChange?.(next);
     } finally {
       setSyncing(false);
     }
-  }, []);
+  }, [onStatusChange, onSyncComplete, status]);
+
+  // Allow parent to trigger sync (e.g., for retry from empty state)
+  useEffect(() => {
+    if (registerSync) {
+      registerSync(handleSync);
+    }
+  }, [handleSync, registerSync]);
 
   const formatLastSync = (timestamp: string | null) => {
     if (!timestamp) return "Never";
@@ -61,8 +105,27 @@ export function SyncStatus({ initialStatus }: Props) {
     return date.toLocaleDateString();
   };
 
+  const renderStatusLabel = () => {
+    const base =
+      status.state === "idle"
+        ? "Idle"
+        : status.state === "syncing"
+          ? "Syncing..."
+          : status.state === "processing"
+            ? "Processing"
+            : "Error";
+    if (status.lastError && status.state === "error") {
+      return `${base}: ${status.lastError}`;
+    }
+    return base;
+  };
+
+  const isError = status.state === "error";
+
   return (
-    <div className="flex items-center gap-3">
+    <div
+      className={`flex items-center gap-3 rounded-md px-2 py-1 ${isError ? "border border-destructive/50 bg-destructive/10" : ""}`}
+    >
       <Button
         size="sm"
         variant="outline"
@@ -87,37 +150,26 @@ export function SyncStatus({ initialStatus }: Props) {
             />
           </svg>
         )}
-        Sync Now
+        {isError ? "Retry Sync" : "Sync Now"}
       </Button>
 
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span>Last: {formatLastSync(status.lastSyncAt)}</span>
         <span className="flex items-center gap-1">
-          Status:{" "}
+          Status:
           <span
             className={
-              status.state === "error"
+              isError
                 ? "text-destructive"
                 : status.state === "syncing"
                   ? "text-yellow-600"
                   : "text-green-600"
             }
           >
-            {status.state === "idle"
-              ? "Idle"
-              : status.state === "syncing"
-                ? "Syncing..."
-                : status.state === "error"
-                  ? "Error"
-                  : status.state}
+            {renderStatusLabel()}
           </span>
         </span>
         {status.pendingItems > 0 && <span>Backlog: {status.pendingItems}</span>}
-        {status.lastError && (
-          <span className="text-destructive" title={status.lastError}>
-            Error
-          </span>
-        )}
       </div>
     </div>
   );

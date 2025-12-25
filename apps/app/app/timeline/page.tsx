@@ -6,6 +6,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getEventStore } from "@/lib/ops-services";
+import { formatTimestamp } from "@/lib/format";
 
 type TimelineItem = Projections.TimelineProjection["items"][number];
 
@@ -59,7 +60,8 @@ export default async function TimelinePage() {
               <div>
                 <CardTitle className="text-base">{item.title}</CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  {item.occurred_at} · {item.id}
+                  {formatTimestamp(item.occurred_at) || item.occurred_at} ·{" "}
+                  {item.id}
                 </p>
               </div>
               <Badge

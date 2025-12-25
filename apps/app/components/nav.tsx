@@ -123,8 +123,7 @@ export function Nav() {
                 Keyboard
               </div>
               <div className="px-3 py-1.5 text-xs text-muted-foreground">
-                <kbd className="rounded bg-muted px-1">⌘K</kbd> or{" "}
-                <kbd className="rounded bg-muted px-1">c</kbd> to capture
+                <kbd className="rounded bg-muted px-1">⌘K</kbd> to capture
               </div>
             </div>
           )}

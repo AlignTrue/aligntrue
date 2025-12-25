@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import type { Projections } from "@aligntrue/ops-core";
+import type { SyncStatus as SyncStatusType } from "@/app/api/sync/route";
 import { SyncStatus } from "@/components/SyncStatus";
 import { ExternalHold } from "@/components/ExternalHold";
 import { ReviewList } from "@/components/ReviewList";
@@ -40,12 +42,15 @@ export function ReviewPageClient({
   availability,
   calendarEnabled,
 }: Props) {
+  const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<ReviewItem | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showReceiptsFor, setShowReceiptsFor] = useState<ReviewItem | null>(
     null,
   );
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatusType | null>(null);
+  const syncHandlerRef = useRef<(() => Promise<void>) | null>(null);
 
   const receiptsByEntityRef = useMemo(
     () =>
@@ -192,6 +197,18 @@ export function ReviewPageClient({
     },
     [sections],
   );
+
+  const handleSyncRegister = useCallback((fn: () => Promise<void>) => {
+    syncHandlerRef.current = fn;
+  }, []);
+
+  const handleRetrySync = useCallback(() => {
+    syncHandlerRef.current?.();
+  }, []);
+
+  const handleStatusChange = useCallback((status: SyncStatusType) => {
+    setSyncStatus(status);
+  }, []);
 
   const handleAction = useCallback(
     async (
@@ -362,7 +379,11 @@ export function ReviewPageClient({
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <SyncStatus />
+          <SyncStatus
+            onStatusChange={handleStatusChange}
+            onSyncComplete={() => router.refresh()}
+            registerSync={handleSyncRegister}
+          />
           <ExternalHold />
         </div>
       </div>
@@ -404,6 +425,8 @@ export function ReviewPageClient({
             selectedIds={selectedIds}
             onToggleSelect={handleToggleSelect}
             onSelectAll={handleSelectAll}
+            syncStatus={syncStatus}
+            onRetrySync={handleRetrySync}
           />
         </div>
 

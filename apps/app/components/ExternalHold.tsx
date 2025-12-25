@@ -60,6 +60,7 @@ export function ExternalHold({ initialState }: Props) {
         variant={holdState.externalHold ? "default" : "outline"}
         onClick={handleToggle}
         disabled={loading}
+        title="Pause or resume any outgoing actions"
         className={`gap-2 ${holdState.externalHold ? "bg-amber-600 hover:bg-amber-700 text-white" : ""}`}
       >
         {holdState.externalHold ? (
@@ -91,14 +92,14 @@ export function ExternalHold({ initialState }: Props) {
             />
           </svg>
         )}
-        HOLD External
+        {holdState.externalHold ? "Resume Outgoing" : "Pause Outgoing"}
       </Button>
 
       {holdState.externalHold && (
         <Badge variant="secondary" className="bg-amber-100 text-amber-800">
           {holdState.heldActionsCount > 0
             ? `${holdState.heldActionsCount} held`
-            : "Active"}
+            : "Paused"}
         </Badge>
       )}
     </div>

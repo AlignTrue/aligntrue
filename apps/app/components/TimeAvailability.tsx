@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatTimestamp, formatTimeRange } from "@/lib/format";
 
 interface Props {
   totalFreeMinutes: number;
@@ -37,7 +38,9 @@ export function TimeAvailability({
           ) : (
             nextEvents.map((ev) => (
               <div key={ev.event_id ?? `${ev.title}-${ev.start_time ?? ""}`}>
-                <span className="font-medium">{ev.start_time ?? "TBD"}</span>{" "}
+                <span className="font-medium">
+                  {formatTimestamp(ev.start_time) || "TBD"}
+                </span>{" "}
                 {ev.title}{" "}
                 {ev.attendees !== undefined ? `(${ev.attendees})` : null}
               </div>
@@ -51,7 +54,8 @@ export function TimeAvailability({
           ) : (
             windows.map((w) => (
               <div key={`${w.start}-${w.end}`}>
-                {w.start} → {w.end} ({w.duration_minutes}m)
+                {formatTimeRange(w.start, w.end) || `${w.start} → ${w.end}`} (
+                {w.duration_minutes}m)
               </div>
             ))
           )}

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Projections } from "@aligntrue/ops-core";
+import { formatTimestamp } from "@/lib/format";
 
 type Receipt = Projections.Receipt;
 
@@ -17,11 +18,21 @@ export function ReceiptsDrawer({ sourceRef, receipts, onClose }: Props) {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(
     receipts[0] ?? null,
   );
+  const drawerRef = useRef<HTMLDivElement>(null);
 
-  const formatTimestamp = (ts: string) => {
-    const date = new Date(ts);
-    return date.toLocaleString();
-  };
+  // Close when clicking outside the drawer
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        drawerRef.current &&
+        !drawerRef.current.contains(e.target as Node | null)
+      ) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
 
   const getSafetyClassBadge = (safetyClass: string) => {
     switch (safetyClass) {
@@ -41,7 +52,10 @@ export function ReceiptsDrawer({ sourceRef, receipts, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-96 border-l bg-card shadow-lg">
+    <div
+      ref={drawerRef}
+      className="fixed inset-y-0 right-0 z-50 w-96 border-l bg-card shadow-lg"
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
@@ -248,16 +262,6 @@ export function ReceiptsDrawer({ sourceRef, receipts, onClose }: Props) {
                     </div>
                   </section>
                 )}
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-4">
-                  <Button size="sm" variant="outline">
-                    Undo
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    View in History
-                  </Button>
-                </div>
               </div>
             </div>
           )}

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ReviewItem, ReviewItemType } from "./DetailPanel";
+import type { SyncStatus as SyncStatusType } from "@/app/api/sync/route";
 
 interface Section {
   id: ReviewItemType;
@@ -20,6 +21,8 @@ interface Props {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onSelectAll: (sectionId: ReviewItemType) => void;
+  syncStatus?: SyncStatusType | null;
+  onRetrySync?: () => void;
 }
 
 export function ReviewList({
@@ -29,6 +32,8 @@ export function ReviewList({
   selectedIds,
   onToggleSelect,
   onSelectAll,
+  syncStatus,
+  onRetrySync,
 }: Props) {
   const [collapsedSections, setCollapsedSections] = useState<
     Set<ReviewItemType>
@@ -136,6 +141,71 @@ export function ReviewList({
     return null;
   };
 
+  const formatLastSyncedAgo = (iso: string | null | undefined) => {
+    if (!iso) return "Never";
+    const date = new Date(iso);
+    const diffMinutes = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    const hours = Math.floor(diffMinutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return date.toLocaleDateString();
+  };
+
+  const renderEmptyState = (sectionId: ReviewItemType) => {
+    const retry =
+      onRetrySync && syncStatus?.state === "error" ? (
+        <button
+          type="button"
+          className="text-primary underline-offset-4 hover:underline"
+          onClick={onRetrySync}
+        >
+          Retry
+        </button>
+      ) : null;
+
+    if (syncStatus?.state === "error") {
+      return (
+        <p className="py-2 text-sm text-muted-foreground">
+          Sync failed. {syncStatus.lastError ?? "Unknown error"}. {retry}
+        </p>
+      );
+    }
+
+    if (!syncStatus?.lastSyncAt) {
+      return (
+        <p className="py-2 text-sm text-muted-foreground">
+          No data yet. Click Sync Now to get started.
+        </p>
+      );
+    }
+
+    const minutesSince =
+      (Date.now() - new Date(syncStatus.lastSyncAt).getTime()) / 60000;
+    if (minutesSince > 60) {
+      return (
+        <p className="py-2 text-sm text-muted-foreground">
+          Data may be stale (last synced{" "}
+          {formatLastSyncedAgo(syncStatus.lastSyncAt)}).
+        </p>
+      );
+    }
+
+    if (sectionId === "needs_review" || sectionId === "draft") {
+      return (
+        <p className="py-2 text-sm text-muted-foreground">
+          All caught up! No items need review.
+        </p>
+      );
+    }
+
+    return (
+      <p className="py-2 text-sm text-muted-foreground">
+        No {sectionId === "processed" ? "auto-processed items today" : "items"}.
+      </p>
+    );
+  };
+
   return (
     <div className="space-y-3">
       {sections.map((section) => {
@@ -176,15 +246,7 @@ export function ReviewList({
             {!isCollapsed && (
               <CardContent className="pt-0">
                 {section.items.length === 0 ? (
-                  <p className="py-2 text-sm text-muted-foreground">
-                    {section.id === "exception"
-                      ? "No exceptions"
-                      : section.id === "needs_review"
-                        ? "Nothing needs review"
-                        : section.id === "draft"
-                          ? "No drafts ready"
-                          : "No auto-processed items today"}
-                  </p>
+                  renderEmptyState(section.id)
                 ) : (
                   <div className="space-y-1">
                     {/* Select all for batch operations */}
