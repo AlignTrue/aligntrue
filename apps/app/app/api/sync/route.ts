@@ -175,6 +175,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(status);
   } catch (err) {
+    // Record when this sync attempt failed
+    lastSyncAt = new Date().toISOString();
     lastError = err instanceof Error ? err.message : "Sync failed";
     return NextResponse.json(
       {
