@@ -90,7 +90,7 @@ export async function POST(request: Request) {
             fetched: 0,
             written: 0,
             skipped: 0,
-            disabled: false,
+            disabled: true,
           };
           lastError = `Gmail sync failed: ${err instanceof Error ? err.message : "unknown"}`;
         }
@@ -149,7 +149,7 @@ export async function POST(request: Request) {
             fetched: 0,
             written: 0,
             skipped: 0,
-            disabled: false,
+            disabled: true,
           };
           lastError = `Calendar sync failed: ${err instanceof Error ? err.message : "unknown"}`;
         }

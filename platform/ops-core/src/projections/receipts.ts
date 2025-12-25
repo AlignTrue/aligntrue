@@ -146,7 +146,7 @@ function buildStatusChangeReceipt(
   event: EventEnvelope,
   payload: EmailStatusChangedPayload,
 ): Receipt {
-  const isExternalTrigger = payload.trigger === "human";
+  const isExternalTrigger = payload.trigger !== "human";
   const safetyClass = isExternalTrigger
     ? SafetyClass.WriteExternalSideEffect
     : SafetyClass.WriteInternal;
