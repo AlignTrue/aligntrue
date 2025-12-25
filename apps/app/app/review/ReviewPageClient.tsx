@@ -60,11 +60,16 @@ export function ReviewPageClient({
   // Transform conversations into review items
   const reviewItems = useMemo((): ReviewItem[] => {
     return conversations.map((conv): ReviewItem => {
-      const threadKey = conv.thread_id ?? conv.conversation_id;
-      const entityKey = threadKey ? `email_thread:${threadKey}` : undefined;
-      const receipts = entityKey
-        ? receiptsByEntityRef.get(entityKey)
+      const conversationRef = Projections.entityRef(
+        "email_thread",
+        conv.conversation_id,
+      );
+      const threadRef = conv.thread_id
+        ? Projections.entityRef("email_thread", conv.thread_id)
         : undefined;
+      const receipts =
+        receiptsByEntityRef.get(conversationRef) ??
+        (threadRef ? receiptsByEntityRef.get(threadRef) : undefined);
 
       // Determine item type based on status and other factors
       let type: ReviewItemType = "needs_review";
