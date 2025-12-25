@@ -72,17 +72,19 @@ export function SyncStatus({
       onStatusChange?.(data);
       onSyncComplete?.(data);
     } catch (err) {
-      const next: SyncStatusType = {
-        ...status,
-        state: "error",
-        lastError: err instanceof Error ? err.message : "Sync failed",
-      };
-      setStatus(next);
-      onStatusChange?.(next);
+      setStatus((prev) => {
+        const next: SyncStatusType = {
+          ...prev,
+          state: "error",
+          lastError: err instanceof Error ? err.message : "Sync failed",
+        };
+        onStatusChange?.(next);
+        return next;
+      });
     } finally {
       setSyncing(false);
     }
-  }, [onStatusChange, onSyncComplete, status]);
+  }, [onStatusChange, onSyncComplete]);
 
   // Allow parent to trigger sync (e.g., for retry from empty state)
   useEffect(() => {

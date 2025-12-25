@@ -54,8 +54,8 @@ export function TimeAvailability({
           ) : (
             windows.map((w) => (
               <div key={`${w.start}-${w.end}`}>
-                {formatTimeRange(w.start, w.end) || `${w.start} → ${w.end}`} (
-                {w.duration_minutes}m)
+                {formatTimeRange(w.start, w.end) ||
+                  `${w.start} → ${w.end} (${w.duration_minutes}m)`}
               </div>
             ))
           )}
