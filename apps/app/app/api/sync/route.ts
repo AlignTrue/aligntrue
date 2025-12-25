@@ -120,15 +120,14 @@ export async function POST(request: Request) {
           ).toISOString();
 
           const calendarId = "primary";
-          const rawEvents = await Connectors.GoogleCalendar.fetchCalendarEvents(
-            {
+          const rawEvents =
+            await Connectors.GoogleCalendar.fetchAllCalendarEvents({
               accessToken,
               calendarId,
               timeMin,
               timeMax,
               maxResults: 250,
-            },
-          );
+            });
 
           const records =
             Connectors.GoogleCalendar.transformCalendarEvents(rawEvents);
