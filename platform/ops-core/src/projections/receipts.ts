@@ -2,7 +2,7 @@
  * Receipts Projection
  *
  * Aggregates all AI actions and their receipts for the Supervisor Console.
- * Keyed by source_ref (thread_id, message_id, entity_id) for fast lookup.
+ * Keyed by entity_ref (format: "{type}:{id}" e.g., "email_thread:abc123") for fast lookup.
  *
  * A receipt captures:
  * - What changed (diff)
@@ -23,6 +23,7 @@ import { SafetyClass } from "../safety-classes/types.js";
 import { EMAIL_STATUS_EVENT_TYPES } from "../emails/events.js";
 import type { EmailStatusChangedPayload } from "../emails/events.js";
 import { GMAIL_MUTATION_EVENT_TYPES } from "../gmail-mutations/events.js";
+import { entityRef } from "../entity-ref.js";
 
 export type ReceiptKind =
   | "status_change"
@@ -35,7 +36,7 @@ export type ReceiptKind =
 export interface Receipt {
   receipt_id: string;
   kind: ReceiptKind;
-  source_ref: string; // thread_id, message_id, entity_id
+  entity_ref: string; // "{type}:{id}" e.g., "email_thread:abc123"
   safety_class: SafetyClass;
 
   // What changed
@@ -73,12 +74,12 @@ export interface Receipt {
 
 export interface ReceiptsProjection {
   receipts: Receipt[];
-  by_source_ref: Record<string, Receipt[]>;
+  by_entity_ref: Record<string, Receipt[]>;
 }
 
 export interface ReceiptsProjectionState extends ProjectionFreshness {
   receipts: Map<string, Receipt>;
-  by_source_ref: Map<string, Set<string>>; // source_ref -> receipt_ids
+  by_entity_ref: Map<string, Set<string>>; // entity_ref -> receipt_ids
 }
 
 export const ReceiptsProjectionDef: ProjectionDefinition<ReceiptsProjectionState> =
@@ -88,7 +89,7 @@ export const ReceiptsProjectionDef: ProjectionDefinition<ReceiptsProjectionState
     init(): ReceiptsProjectionState {
       return {
         receipts: new Map(),
-        by_source_ref: new Map(),
+        by_entity_ref: new Map(),
         last_event_id: null,
         last_ingested_at: null,
       };
@@ -128,15 +129,15 @@ function addReceipt(
   const nextReceipts = new Map(state.receipts);
   nextReceipts.set(receipt.receipt_id, receipt);
 
-  const nextBySourceRef = new Map(state.by_source_ref);
-  const existing = nextBySourceRef.get(receipt.source_ref) ?? new Set();
+  const nextByEntityRef = new Map(state.by_entity_ref);
+  const existing = nextByEntityRef.get(receipt.entity_ref) ?? new Set();
   const nextSet = new Set(existing);
   nextSet.add(receipt.receipt_id);
-  nextBySourceRef.set(receipt.source_ref, nextSet);
+  nextByEntityRef.set(receipt.entity_ref, nextSet);
 
   return {
     receipts: nextReceipts,
-    by_source_ref: nextBySourceRef,
+    by_entity_ref: nextByEntityRef,
     last_event_id: event.event_id,
     last_ingested_at: event.ingested_at,
   };
@@ -154,7 +155,7 @@ function buildStatusChangeReceipt(
   const receipt: Receipt = {
     receipt_id: event.event_id,
     kind: "status_change",
-    source_ref: payload.source_ref,
+    entity_ref: entityRef("email_thread", payload.source_ref),
     safety_class: safetyClass,
     diff: [
       {
@@ -197,7 +198,7 @@ function buildGmailMutationReceipt(event: EventEnvelope): Receipt {
   const receipt: Receipt = {
     receipt_id: event.event_id,
     kind: "gmail_mutation",
-    source_ref: payload.thread_id ?? payload.message_id,
+    entity_ref: entityRef("email_thread", payload.thread_id),
     safety_class: SafetyClass.WriteExternalSideEffect,
     diff: [
       {
@@ -235,8 +236,8 @@ export function buildReceiptsProjectionFromState(
     return a.occurred_at > b.occurred_at ? -1 : 1;
   });
 
-  const by_source_ref: Record<string, Receipt[]> = {};
-  for (const [source_ref, receipt_ids] of state.by_source_ref) {
+  const by_entity_ref: Record<string, Receipt[]> = {};
+  for (const [entity_ref, receipt_ids] of state.by_entity_ref) {
     const receiptList: Receipt[] = [];
     for (const id of receipt_ids) {
       const receipt = state.receipts.get(id);
@@ -250,17 +251,17 @@ export function buildReceiptsProjectionFromState(
       }
       return a.occurred_at > b.occurred_at ? -1 : 1;
     });
-    by_source_ref[source_ref] = receiptList;
+    by_entity_ref[entity_ref] = receiptList;
   }
 
-  return { receipts, by_source_ref };
+  return { receipts, by_entity_ref };
 }
 
-export function getReceiptsForSourceRef(
+export function getReceiptsForEntity(
   projection: ReceiptsProjection,
-  source_ref: string,
+  entity_ref: string,
 ): Receipt[] {
-  return projection.by_source_ref[source_ref] ?? [];
+  return projection.by_entity_ref[entity_ref] ?? [];
 }
 
 export function hashReceiptsProjection(projection: ReceiptsProjection): string {

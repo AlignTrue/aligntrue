@@ -137,7 +137,7 @@ export type {
 export {
   ReceiptsProjectionDef,
   buildReceiptsProjectionFromState,
-  getReceiptsForSourceRef,
+  getReceiptsForEntity,
   hashReceiptsProjection,
 } from "./receipts.js";
 export type {
@@ -146,3 +146,5 @@ export type {
   Receipt,
   ReceiptKind,
 } from "./receipts.js";
+export { entityRef, parseEntityRef } from "../entity-ref.js";
+export type { EntityType } from "../entity-ref.js";

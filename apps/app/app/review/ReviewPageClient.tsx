@@ -47,13 +47,24 @@ export function ReviewPageClient({
   );
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
+  const receiptsByEntityRef = useMemo(
+    () =>
+      new Map(
+        Object.entries(receiptsProjection.by_entity_ref ?? {}) as Array<
+          [string, ReceiptsProjection["by_entity_ref"][string]]
+        >,
+      ),
+    [receiptsProjection.by_entity_ref],
+  );
+
   // Transform conversations into review items
   const reviewItems = useMemo((): ReviewItem[] => {
     return conversations.map((conv): ReviewItem => {
-      const receipts =
-        receiptsProjection.by_source_ref[
-          conv.thread_id ?? conv.conversation_id
-        ];
+      const threadKey = conv.thread_id ?? conv.conversation_id;
+      const entityKey = threadKey ? `email_thread:${threadKey}` : undefined;
+      const receipts = entityKey
+        ? receiptsByEntityRef.get(entityKey)
+        : undefined;
 
       // Determine item type based on status and other factors
       let type: ReviewItemType = "needs_review";
@@ -426,9 +437,11 @@ export function ReviewPageClient({
       {showReceiptsFor && (
         <ReceiptsDrawer
           sourceRef={
-            showReceiptsFor.conversation?.thread_id ??
-            showReceiptsFor.conversation?.conversation_id ??
-            showReceiptsFor.id
+            showReceiptsFor.conversation?.thread_id
+              ? `email_thread:${showReceiptsFor.conversation.thread_id}`
+              : showReceiptsFor.conversation?.conversation_id
+                ? `email_thread:${showReceiptsFor.conversation.conversation_id}`
+                : showReceiptsFor.id
           }
           receipts={showReceiptsFor.receipts ?? []}
           onClose={handleCloseReceipts}

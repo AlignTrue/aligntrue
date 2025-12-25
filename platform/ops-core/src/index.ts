@@ -43,6 +43,7 @@ export * as Tasks from "./tasks/index.js";
 export * as Notes from "./notes/index.js";
 export * as Convert from "./convert/index.js";
 export * as Projections from "./projections/index.js";
+export * as EntityRef from "./entity-ref.js";
 export * as Artifacts from "./artifacts/index.js";
 export * as Feedback from "./feedback/index.js";
 export * as Memory from "./memory/index.js";
