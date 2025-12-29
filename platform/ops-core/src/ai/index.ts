@@ -46,7 +46,7 @@ export interface StructuredOutputResult<T> {
 
 export async function generateStructuredOutput<T>(opts: {
   prompt: string;
-  schema: z.ZodSchema<T>;
+  schema: z.ZodType<T>;
   model?: string;
 }): Promise<StructuredOutputResult<T>> {
   const response = await generateText({
