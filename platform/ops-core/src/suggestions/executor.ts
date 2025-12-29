@@ -39,22 +39,26 @@ export interface SuggestionExecutorDeps {
     import("../artifacts/index.js").DerivedArtifact
   >;
   readonly feedbackEventStore: EventStore;
-  readonly suggestionEventStore?: EventStore;
-  readonly commandLog?: CommandLog;
-  readonly now?: () => string;
+  readonly suggestionEventStore?: EventStore | undefined;
+  readonly commandLog?: CommandLog | undefined;
+  readonly allowExternalPaths?: boolean | undefined;
+  readonly now?: (() => string) | undefined;
 }
 
 export class SuggestionExecutor {
   private readonly now: () => string;
   private readonly commandLog: CommandLog;
+  private readonly allowExternalPaths: boolean;
 
   constructor(private readonly deps: SuggestionExecutorDeps) {
     this.now = deps.now ?? (() => new Date().toISOString());
+    this.allowExternalPaths = deps.allowExternalPaths ?? false;
     this.commandLog =
       deps.commandLog ??
       new JsonlCommandLog(
         DEFAULT_SUGGESTION_COMMANDS_PATH,
         DEFAULT_SUGGESTION_OUTCOMES_PATH,
+        { allowExternalPaths: this.allowExternalPaths },
       );
   }
 
@@ -246,7 +250,9 @@ export class SuggestionExecutor {
       throw new ValidationError("Tasks are disabled (OPS_TASKS_ENABLED=0)");
     }
     const triage = diff as { task_id: string; to_bucket: Tasks.TaskBucket };
-    const ledger = Tasks.createJsonlTaskLedger();
+    const ledger = Tasks.createJsonlTaskLedger({
+      allowExternalPaths: this.allowExternalPaths,
+    });
     const cmd: CommandEnvelope<
       Tasks.TaskCommandType,
       Tasks.TaskCommandPayload
@@ -286,7 +292,9 @@ export class SuggestionExecutor {
       throw new ValidationError("Notes are disabled (OPS_NOTES_ENABLED=0)");
     }
     const payload = diff as { note_id: string; suggested_title: string };
-    const ledger = Notes.createJsonlNoteLedger();
+    const ledger = Notes.createJsonlNoteLedger({
+      allowExternalPaths: this.allowExternalPaths,
+    });
     const cmd: CommandEnvelope<
       Notes.NoteCommandType,
       Notes.NoteCommandPayload

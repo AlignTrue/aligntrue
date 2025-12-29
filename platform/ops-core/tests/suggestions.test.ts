@@ -93,6 +93,7 @@ describe("suggestions", () => {
     const executor = new Suggestions.SuggestionExecutor({
       artifactStore,
       feedbackEventStore: feedbackStore,
+      allowExternalPaths: true,
       commandLog: new Storage.JsonlCommandLog(
         join(dir, "suggestion-commands.jsonl"),
         join(dir, "suggestion-outcomes.jsonl"),
@@ -219,6 +220,7 @@ async function seedTasksLaterDueSoon(eventsPath: string) {
     eventsPath,
     commandsPath: join(eventsPath, "..", "cmds.jsonl"),
     outcomesPath: join(eventsPath, "..", "outcomes.jsonl"),
+    allowExternalPaths: true,
     now: () => NOW,
   });
 

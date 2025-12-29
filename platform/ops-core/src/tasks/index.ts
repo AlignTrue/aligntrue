@@ -27,10 +27,11 @@ export const DEFAULT_TASKS_EVENTS_PATH = join(
 );
 
 export function createJsonlTaskLedger(opts?: {
-  eventsPath?: string;
-  commandsPath?: string;
-  outcomesPath?: string;
-  now?: () => string;
+  eventsPath?: string | undefined;
+  commandsPath?: string | undefined;
+  outcomesPath?: string | undefined;
+  allowExternalPaths?: boolean | undefined;
+  now?: (() => string) | undefined;
 }): TaskLedger {
   const eventsPath =
     opts?.eventsPath ??
@@ -42,7 +43,9 @@ export function createJsonlTaskLedger(opts?: {
     opts?.outcomesPath ?? process.env["OPS_TASKS_OUTCOMES_PATH"];
 
   const eventStore = new JsonlEventStore(eventsPath);
-  const commandLog = new JsonlCommandLog(commandsPath, outcomesPath);
+  const commandLog = new JsonlCommandLog(commandsPath, outcomesPath, {
+    allowExternalPaths: opts?.allowExternalPaths,
+  });
   const ledgerOpts = opts?.now ? { now: opts.now } : undefined;
   return new TaskLedger(eventStore, commandLog, ledgerOpts);
 }

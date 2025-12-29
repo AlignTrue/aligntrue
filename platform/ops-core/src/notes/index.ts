@@ -27,10 +27,11 @@ export const DEFAULT_NOTES_EVENTS_PATH = join(
 );
 
 export function createJsonlNoteLedger(opts?: {
-  eventsPath?: string;
-  commandsPath?: string;
-  outcomesPath?: string;
-  now?: () => string;
+  eventsPath?: string | undefined;
+  commandsPath?: string | undefined;
+  outcomesPath?: string | undefined;
+  allowExternalPaths?: boolean | undefined;
+  now?: (() => string) | undefined;
 }): NoteLedger {
   const eventStore = new JsonlEventStore(
     opts?.eventsPath ?? DEFAULT_NOTES_EVENTS_PATH,
@@ -38,6 +39,7 @@ export function createJsonlNoteLedger(opts?: {
   const commandLog = new JsonlCommandLog(
     opts?.commandsPath,
     opts?.outcomesPath,
+    { allowExternalPaths: opts?.allowExternalPaths },
   );
   const ledgerOpts = opts?.now ? { now: opts.now } : undefined;
   return new NoteLedger(eventStore, commandLog, ledgerOpts);

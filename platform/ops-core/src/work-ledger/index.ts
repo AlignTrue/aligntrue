@@ -23,10 +23,11 @@ export const DEFAULT_WORK_LEDGER_PATH = join(
 );
 
 export function createJsonlWorkLedger(opts?: {
-  eventsPath?: string;
-  commandsPath?: string;
-  outcomesPath?: string;
-  now?: () => string;
+  eventsPath?: string | undefined;
+  commandsPath?: string | undefined;
+  outcomesPath?: string | undefined;
+  allowExternalPaths?: boolean | undefined;
+  now?: (() => string) | undefined;
 }): WorkLedger {
   const eventStore = new JsonlEventStore(
     opts?.eventsPath ?? DEFAULT_WORK_LEDGER_PATH,
@@ -34,6 +35,7 @@ export function createJsonlWorkLedger(opts?: {
   const commandLog = new JsonlCommandLog(
     opts?.commandsPath,
     opts?.outcomesPath,
+    { allowExternalPaths: opts?.allowExternalPaths },
   );
   const ledgerOpts = opts?.now ? { now: opts.now } : undefined;
   return new WorkLedger(eventStore, commandLog, ledgerOpts);

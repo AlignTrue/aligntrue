@@ -17,10 +17,11 @@ export const DEFAULT_EXECUTION_EVENTS_PATH = join(
 );
 
 export function createJsonlExecutionRuntime(opts?: {
-  eventsPath?: string;
-  commandsPath?: string;
-  outcomesPath?: string;
-  now?: () => string;
+  eventsPath?: string | undefined;
+  commandsPath?: string | undefined;
+  outcomesPath?: string | undefined;
+  allowExternalPaths?: boolean | undefined;
+  now?: (() => string) | undefined;
 }): ExecutionRuntime {
   const eventStore = new JsonlEventStore(
     opts?.eventsPath ?? DEFAULT_EXECUTION_EVENTS_PATH,
@@ -28,6 +29,7 @@ export function createJsonlExecutionRuntime(opts?: {
   const commandLog = new JsonlCommandLog(
     opts?.commandsPath,
     opts?.outcomesPath,
+    { allowExternalPaths: opts?.allowExternalPaths },
   );
   const budget = new BudgetTracker();
   return new ExecutionRuntime(eventStore, commandLog, {

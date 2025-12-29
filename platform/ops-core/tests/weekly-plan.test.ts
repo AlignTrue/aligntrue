@@ -118,6 +118,7 @@ async function seedTasks(eventsPath: string) {
     eventsPath,
     commandsPath: join(eventsPath, "..", "cmds.jsonl"),
     outcomesPath: join(eventsPath, "..", "outcomes.jsonl"),
+    allowExternalPaths: true,
     now: () => "2024-01-01T00:00:00Z",
   });
 

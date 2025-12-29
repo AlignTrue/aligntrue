@@ -16,7 +16,7 @@ const OPS_DATA_DIR_IS_ROOT = OPS_DATA_DIR_ABS === OPS_DATA_DIR_ROOT;
 
 type JsonlCommandLogOptions = {
   /** Allow absolute paths outside OPS_DATA_DIR (use only in trusted contexts like tests). */
-  allowExternalPaths?: boolean;
+  allowExternalPaths?: boolean | undefined;
 };
 
 export class JsonlCommandLog implements CommandLog {

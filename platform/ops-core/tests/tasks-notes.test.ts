@@ -50,6 +50,7 @@ describe("tasks + notes", () => {
       eventsPath,
       commandsPath,
       outcomesPath,
+      allowExternalPaths: true,
       now: () => NOW,
     });
 
@@ -86,6 +87,7 @@ describe("tasks + notes", () => {
       eventsPath,
       commandsPath,
       outcomesPath,
+      allowExternalPaths: true,
       now: () => NOW,
     });
 
@@ -132,6 +134,7 @@ describe("tasks + notes", () => {
       eventsPath,
       commandsPath,
       outcomesPath,
+      allowExternalPaths: true,
       now: () => NOW,
     });
 
@@ -169,6 +172,7 @@ describe("tasks + notes", () => {
       eventsPath,
       commandsPath,
       outcomesPath,
+      allowExternalPaths: true,
       now: () => NOW,
     });
 
