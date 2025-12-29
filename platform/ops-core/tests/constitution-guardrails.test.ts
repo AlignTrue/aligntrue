@@ -4,8 +4,10 @@ import type {
   EventEnvelope,
 } from "../src/contracts/envelopes.js";
 import type { EgressReceipt } from "../src/contracts/egress.js";
+import type { ActorRef } from "../src/envelopes/actor.js";
 
 const now = new Date().toISOString();
+const actor: ActorRef = { actor_id: "actor-1", actor_type: "agent" };
 
 function sortCanonical(events: EventEnvelope[]): EventEnvelope[] {
   return [...events].sort((a, b) => {
@@ -39,7 +41,7 @@ describe("constitution guardrails", () => {
       correlation_id: "corr-1",
       causation_id: "evt-0",
       causation_type: "event",
-      actor: { id: "actor-1", type: "agent" } as any,
+      actor,
       requested_at: now,
     };
 
@@ -53,7 +55,7 @@ describe("constitution guardrails", () => {
         correlation_id: "corr-1",
         causation_id: command.command_id,
         causation_type: "command",
-        actor: command.actor as any,
+        actor: command.actor,
         envelope_version: 1,
         payload_schema_version: 1,
       },
@@ -66,7 +68,7 @@ describe("constitution guardrails", () => {
         correlation_id: "corr-1",
         causation_id: command.command_id,
         causation_type: "command",
-        actor: command.actor as any,
+        actor: command.actor,
         envelope_version: 1,
         payload_schema_version: 1,
       },
@@ -93,7 +95,7 @@ describe("constitution guardrails", () => {
         occurred_at: now,
         ingested_at: now,
         correlation_id: "corr-1",
-        actor: { id: "actor-1", type: "agent" } as any,
+        actor,
         envelope_version: 1,
         payload_schema_version: 1,
         source_ref: "gmail",
@@ -105,7 +107,7 @@ describe("constitution guardrails", () => {
         occurred_at: now,
         ingested_at: now,
         correlation_id: "corr-1",
-        actor: { id: "actor-1", type: "agent" } as any,
+        actor,
         envelope_version: 1,
         payload_schema_version: 1,
         source_ref: "gmail",
