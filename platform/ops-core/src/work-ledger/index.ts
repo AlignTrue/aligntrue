@@ -33,8 +33,10 @@ export function createJsonlWorkLedger(opts?: {
     opts?.eventsPath ?? DEFAULT_WORK_LEDGER_PATH,
   );
   const commandLog = new JsonlCommandLog(
-    opts?.commandsPath,
-    opts?.outcomesPath,
+    opts?.commandsPath ??
+      join(OPS_DATA_DIR, "ops-core-work-ledger-commands.jsonl"),
+    opts?.outcomesPath ??
+      join(OPS_DATA_DIR, "ops-core-work-ledger-outcomes.jsonl"),
     { allowExternalPaths: opts?.allowExternalPaths },
   );
   const ledgerOpts = opts?.now ? { now: opts.now } : undefined;

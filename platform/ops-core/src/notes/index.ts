@@ -37,8 +37,8 @@ export function createJsonlNoteLedger(opts?: {
     opts?.eventsPath ?? DEFAULT_NOTES_EVENTS_PATH,
   );
   const commandLog = new JsonlCommandLog(
-    opts?.commandsPath,
-    opts?.outcomesPath,
+    opts?.commandsPath ?? join(OPS_DATA_DIR, "ops-core-notes-commands.jsonl"),
+    opts?.outcomesPath ?? join(OPS_DATA_DIR, "ops-core-notes-outcomes.jsonl"),
     { allowExternalPaths: opts?.allowExternalPaths },
   );
   const ledgerOpts = opts?.now ? { now: opts.now } : undefined;

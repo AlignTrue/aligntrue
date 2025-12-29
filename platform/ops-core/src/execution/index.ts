@@ -27,8 +27,8 @@ export function createJsonlExecutionRuntime(opts?: {
     opts?.eventsPath ?? DEFAULT_EXECUTION_EVENTS_PATH,
   );
   const commandLog = new JsonlCommandLog(
-    opts?.commandsPath,
-    opts?.outcomesPath,
+    opts?.commandsPath ?? join(OPS_DATA_DIR, "ops-core-runs-commands.jsonl"),
+    opts?.outcomesPath ?? join(OPS_DATA_DIR, "ops-core-runs-outcomes.jsonl"),
     { allowExternalPaths: opts?.allowExternalPaths },
   );
   const budget = new BudgetTracker();

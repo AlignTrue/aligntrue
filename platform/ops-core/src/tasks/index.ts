@@ -38,9 +38,13 @@ export function createJsonlTaskLedger(opts?: {
     process.env["OPS_TASKS_EVENTS_PATH"] ??
     DEFAULT_TASKS_EVENTS_PATH;
   const commandsPath =
-    opts?.commandsPath ?? process.env["OPS_TASKS_COMMANDS_PATH"];
+    opts?.commandsPath ??
+    process.env["OPS_TASKS_COMMANDS_PATH"] ??
+    join(OPS_DATA_DIR, "ops-core-tasks-commands.jsonl");
   const outcomesPath =
-    opts?.outcomesPath ?? process.env["OPS_TASKS_OUTCOMES_PATH"];
+    opts?.outcomesPath ??
+    process.env["OPS_TASKS_OUTCOMES_PATH"] ??
+    join(OPS_DATA_DIR, "ops-core-tasks-outcomes.jsonl");
 
   const eventStore = new JsonlEventStore(eventsPath);
   const commandLog = new JsonlCommandLog(commandsPath, outcomesPath, {

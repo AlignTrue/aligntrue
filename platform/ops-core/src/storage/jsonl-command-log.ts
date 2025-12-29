@@ -63,9 +63,14 @@ export class JsonlCommandLog implements CommandLog {
 }
 
 function resolveDataPath(
-  candidate: string,
+  candidate: string | undefined,
   allowExternalPaths: boolean,
 ): string {
+  if (!candidate) {
+    throw new Error(
+      "JsonlCommandLog requires a valid path (received undefined or empty)",
+    );
+  }
   const normalized = resolve(candidate);
 
   if (isAbsolute(candidate)) {

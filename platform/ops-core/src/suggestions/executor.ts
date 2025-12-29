@@ -1,8 +1,10 @@
 import {
+  OPS_DATA_DIR,
   OPS_NOTES_ENABLED,
   OPS_SUGGESTIONS_ENABLED,
   OPS_TASKS_ENABLED,
 } from "../config.js";
+import { join } from "node:path";
 import { ValidationError, PreconditionFailed } from "../errors.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/command.js";
 import type { EventEnvelope } from "../envelopes/event.js";
@@ -28,10 +30,14 @@ import {
   type SuggestionStatus,
 } from "./types.js";
 
-export const DEFAULT_SUGGESTION_COMMANDS_PATH =
-  "./data/ops-core-suggestion-commands.jsonl";
-export const DEFAULT_SUGGESTION_OUTCOMES_PATH =
-  "./data/ops-core-suggestion-command-outcomes.jsonl";
+export const DEFAULT_SUGGESTION_COMMANDS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-suggestion-commands.jsonl",
+);
+export const DEFAULT_SUGGESTION_OUTCOMES_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-suggestion-command-outcomes.jsonl",
+);
 
 export interface SuggestionExecutorDeps {
   readonly artifactStore: ArtifactStore<
