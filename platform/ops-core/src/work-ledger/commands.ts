@@ -27,6 +27,8 @@ import {
   type WorkLedgerState,
 } from "./state-machine.js";
 
+const WORK_LEDGER_ENVELOPE_VERSION = 1;
+
 export type WorkCommandType =
   | "work.create"
   | "work.update"
@@ -393,6 +395,7 @@ export class WorkLedger {
     payload: TPayload,
   ): EventEnvelope<WorkLedgerEvent["event_type"], TPayload> {
     const timestamp = this.now();
+    const capability_id = command.capability_id;
     return {
       event_id: generateEventId({ eventType, payload }),
       event_type: eventType,
@@ -403,8 +406,9 @@ export class WorkLedger {
       causation_id: command.command_id,
       source_ref: command.target_ref,
       actor: command.actor,
-      capability_scope: [],
-      schema_version: WORK_LEDGER_SCHEMA_VERSION,
+      ...(capability_id !== undefined ? { capability_id } : {}),
+      envelope_version: WORK_LEDGER_ENVELOPE_VERSION,
+      payload_schema_version: WORK_LEDGER_SCHEMA_VERSION,
     };
   }
 }

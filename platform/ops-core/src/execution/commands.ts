@@ -20,6 +20,8 @@ import { routeStep } from "./router.js";
 import { BudgetTracker } from "./budget.js";
 import { reduceEvent, initialState } from "./state-machine.js";
 
+const EXECUTION_ENVELOPE_VERSION = 1;
+
 type CommandApplicationResult = {
   events: ExecutionEvent[];
   reason?: string;
@@ -352,6 +354,7 @@ export class ExecutionRuntime {
     command: ExecutionCommandEnvelope,
   ): ExecutionEvent {
     const timestamp = this.now();
+    const capability_id = command.capability_id;
     return {
       event_id: generateEventId({ eventType, payload }),
       event_type: eventType,
@@ -362,8 +365,9 @@ export class ExecutionRuntime {
       causation_id: command.command_id,
       source_ref: command.target_ref,
       actor: command.actor,
-      capability_scope: [],
-      schema_version: EXECUTION_SCHEMA_VERSION,
+      ...(capability_id !== undefined ? { capability_id } : {}),
+      envelope_version: EXECUTION_ENVELOPE_VERSION,
+      payload_schema_version: EXECUTION_SCHEMA_VERSION,
     } as ExecutionEvent;
   }
 }

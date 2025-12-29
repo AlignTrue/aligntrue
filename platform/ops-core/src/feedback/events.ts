@@ -2,6 +2,8 @@ import type { EventEnvelope } from "../envelopes/event.js";
 import type { ActorRef } from "../envelopes/actor.js";
 import { generateEventId } from "../identity/id.js";
 
+const FEEDBACK_ENVELOPE_VERSION = 1;
+
 export const FEEDBACK_SCHEMA_VERSION = 1;
 
 export const FEEDBACK_TYPES = {
@@ -35,6 +37,7 @@ export interface FeedbackEventInput {
   readonly occurred_at: string;
   readonly ingested_at?: string;
   readonly capability_scope?: string[];
+  readonly capability_id?: string;
   readonly causation_id?: string;
   readonly source_ref?: string;
 }
@@ -48,15 +51,17 @@ export function buildFeedbackEvent(input: FeedbackEventInput): FeedbackEvent {
     ...(input.edits !== undefined && { edits: input.edits }),
   };
 
+  const capability_id = input.capability_id ?? input.capability_scope?.[0];
   const base = {
     payload,
     correlation_id: input.correlation_id,
     actor: input.actor,
-    capability_scope: input.capability_scope ?? [],
     occurred_at: input.occurred_at,
     ingested_at: input.ingested_at ?? input.occurred_at,
-    schema_version: FEEDBACK_SCHEMA_VERSION,
+    envelope_version: FEEDBACK_ENVELOPE_VERSION,
+    payload_schema_version: FEEDBACK_SCHEMA_VERSION,
     event_type: input.feedback_type,
+    ...(capability_id !== undefined ? { capability_id } : {}),
     ...(input.causation_id !== undefined && {
       causation_id: input.causation_id,
     }),

@@ -8,6 +8,9 @@ import type {
   TransitionTrigger,
 } from "./types.js";
 
+const EMAIL_EVENTS_ENVELOPE_VERSION = 1;
+const EMAIL_STATUS_PAYLOAD_SCHEMA_VERSION = 1;
+
 export const EMAIL_STATUS_EVENT_TYPES = {
   EmailStatusChanged: "email_status_changed",
 } as const;
@@ -66,10 +69,10 @@ export function buildEmailStatusChangedEvent(
     payload,
     occurred_at,
     ingested_at: ingested_at ?? occurred_at,
-    schema_version: 1,
+    envelope_version: EMAIL_EVENTS_ENVELOPE_VERSION,
+    payload_schema_version: EMAIL_STATUS_PAYLOAD_SCHEMA_VERSION,
     correlation_id:
       payload.assessment_id ?? payload.rule_id ?? payload.source_ref,
     actor: { actor_id: "system", actor_type: "service" },
-    capability_scope: [],
   };
 }

@@ -620,6 +620,56 @@ export default [
       // See .cursor/rules/security_linting_policy.mdc (Trust Boundaries) for rationale.
       "security/detect-object-injection": "off",
       "security/detect-non-literal-fs-filename": "off",
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/ops-shared/**", "**/packs/**"],
+              message:
+                "ops-core cannot import from ops-shared or packs (constitution Section 7).",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["platform/ops-shared/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/packs/**"],
+              message:
+                "ops-shared cannot import from packs (constitution Section 7).",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["platform/packs/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "../**/packs/**",
+                "**/ops-shared/**/src/**",
+                "**/ops-core/**/src/**",
+              ],
+              message:
+                "packs cannot import other packs directly or deep-import ops-core/ops-shared (use package exports/contracts).",
+            },
+          ],
+        },
+      ],
     },
   },
   {

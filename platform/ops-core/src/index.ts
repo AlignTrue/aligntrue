@@ -64,3 +64,4 @@ export * as Suggestions from "./suggestions/index.js";
 export * as Emails from "./emails/index.js";
 export * as AI from "./ai/index.js";
 export * as Providers from "./providers/index.js";
+export * as Contracts from "./contracts/index.js";

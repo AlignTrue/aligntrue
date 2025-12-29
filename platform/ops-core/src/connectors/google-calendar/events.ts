@@ -5,6 +5,9 @@ import { hashCanonical } from "../../identity/hash.js";
 import { ValidationError } from "../../errors.js";
 import type { CalendarEventRecord } from "./types.js";
 
+const CALENDAR_ENVELOPE_VERSION = 1;
+const CALENDAR_PAYLOAD_SCHEMA_VERSION = 1;
+
 export const CALENDAR_EVENT_TYPES = {
   CalendarItemIngested: "calendar_item_ingested",
 } as const;
@@ -47,11 +50,13 @@ export function buildCalendarIngestEvent(opts: {
   ingested_at: string;
   actor: ActorRef;
   capability_scope?: string[];
+  capability_id?: string;
 }): CalendarEventEnvelope {
   const { record, correlation_id, ingested_at, actor } = opts;
-  const capability_scope = opts.capability_scope ?? [
-    "connector:google_calendar",
-  ];
+  const capability_id =
+    opts.capability_id ??
+    opts.capability_scope?.[0] ??
+    "connector:google_calendar";
 
   if (!record.start_time) {
     throw new ValidationError("start_time is required for calendar events");
@@ -92,8 +97,9 @@ export function buildCalendarIngestEvent(opts: {
     correlation_id,
     source_ref,
     actor,
-    capability_scope,
-    schema_version: 1,
+    capability_id,
+    envelope_version: CALENDAR_ENVELOPE_VERSION,
+    payload_schema_version: CALENDAR_PAYLOAD_SCHEMA_VERSION,
   };
 
   return eventBase;

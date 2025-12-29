@@ -3,6 +3,8 @@ import type { ActorRef } from "../envelopes/actor.js";
 import { generateEventId } from "../identity/id.js";
 import type { SuggestionAction, SuggestionType } from "./types.js";
 
+const SUGGESTION_EVENTS_ENVELOPE_VERSION = 1;
+
 export const SUGGESTION_EVENTS_SCHEMA_VERSION = 1;
 
 export const SUGGESTION_EVENT_TYPES = {
@@ -30,6 +32,7 @@ export interface SuggestionGeneratedInput {
   readonly occurred_at: string;
   readonly ingested_at?: string;
   readonly capability_scope?: string[];
+  readonly capability_id?: string;
   readonly causation_id?: string;
   readonly source_ref?: string;
 }
@@ -49,6 +52,7 @@ export function buildSuggestionGeneratedEvent(
     target_refs: payload.target_refs,
   });
 
+  const capability_id = input.capability_id ?? input.capability_scope?.[0];
   return {
     event_id,
     event_type: SUGGESTION_EVENT_TYPES.SuggestionGenerated,
@@ -57,8 +61,9 @@ export function buildSuggestionGeneratedEvent(
     ingested_at: input.ingested_at ?? input.occurred_at,
     correlation_id: input.correlation_id,
     actor: input.actor,
-    capability_scope: input.capability_scope ?? [],
-    schema_version: SUGGESTION_EVENTS_SCHEMA_VERSION,
+    ...(capability_id !== undefined ? { capability_id } : {}),
+    envelope_version: SUGGESTION_EVENTS_ENVELOPE_VERSION,
+    payload_schema_version: SUGGESTION_EVENTS_SCHEMA_VERSION,
     ...(input.causation_id !== undefined && {
       causation_id: input.causation_id,
     }),
@@ -103,6 +108,7 @@ export interface SuggestionFeedbackInput {
   readonly context?: SuggestionFeedbackPayload["context"];
   readonly ingested_at?: string;
   readonly capability_scope?: string[];
+  readonly capability_id?: string;
   readonly causation_id?: string;
   readonly source_ref?: string;
 }
@@ -134,6 +140,7 @@ export function buildSuggestionFeedbackEvent(
     occurred_at: input.occurred_at,
   });
 
+  const capability_id = input.capability_id ?? input.capability_scope?.[0];
   return {
     event_id,
     event_type: SUGGESTION_EVENT_TYPES.SuggestionFeedbackReceived,
@@ -142,8 +149,9 @@ export function buildSuggestionFeedbackEvent(
     ingested_at: input.ingested_at ?? input.occurred_at,
     correlation_id: input.correlation_id,
     actor: input.actor,
-    capability_scope: input.capability_scope ?? [],
-    schema_version: SUGGESTION_EVENTS_SCHEMA_VERSION,
+    ...(capability_id !== undefined ? { capability_id } : {}),
+    envelope_version: SUGGESTION_EVENTS_ENVELOPE_VERSION,
+    payload_schema_version: SUGGESTION_EVENTS_SCHEMA_VERSION,
     ...(input.causation_id !== undefined && {
       causation_id: input.causation_id,
     }),

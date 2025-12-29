@@ -6,6 +6,9 @@ import { ValidationError } from "../../errors.js";
 import type { DocRef } from "../../docrefs/index.js";
 import type { EmailMessageRecord } from "./types.js";
 
+const GMAIL_ENVELOPE_VERSION = 1;
+const GMAIL_PAYLOAD_SCHEMA_VERSION = 1;
+
 export const EMAIL_EVENT_TYPES = {
   EmailMessageIngested: "email_message_ingested",
 } as const;
@@ -50,9 +53,13 @@ export function buildEmailIngestEvent(opts: {
   actor: ActorRef;
   capability_scope?: string[];
   doc_refs?: DocRef[];
+  capability_id?: string;
 }): EmailEventEnvelope {
   const { record, correlation_id, ingested_at, actor } = opts;
-  const capability_scope = opts.capability_scope ?? ["connector:google_gmail"];
+  const capability_id =
+    opts.capability_id ??
+    opts.capability_scope?.[0] ??
+    "connector:google_gmail";
 
   validateRecord(record);
 
@@ -95,8 +102,9 @@ export function buildEmailIngestEvent(opts: {
     correlation_id,
     source_ref,
     actor,
-    capability_scope,
-    schema_version: 1,
+    capability_id,
+    envelope_version: GMAIL_ENVELOPE_VERSION,
+    payload_schema_version: GMAIL_PAYLOAD_SCHEMA_VERSION,
   };
 
   return eventBase;
