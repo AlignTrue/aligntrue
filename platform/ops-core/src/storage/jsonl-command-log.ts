@@ -1,6 +1,6 @@
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute, join, resolve, sep } from "node:path";
+import { dirname, isAbsolute, join, parse, resolve, sep } from "node:path";
 import { OPS_DATA_DIR } from "../config.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type { CommandLog } from "./interfaces.js";
@@ -11,6 +11,8 @@ const DEFAULT_OUTCOMES_PATH = join(
   "ops-core-command-outcomes.jsonl",
 );
 const OPS_DATA_DIR_ABS = resolve(OPS_DATA_DIR);
+const OPS_DATA_DIR_ROOT = parse(OPS_DATA_DIR_ABS).root;
+const OPS_DATA_DIR_IS_ROOT = OPS_DATA_DIR_ABS === OPS_DATA_DIR_ROOT;
 
 export class JsonlCommandLog implements CommandLog {
   private readonly commandsPath: string;
@@ -57,6 +59,18 @@ function resolveDataPath(candidate: string): string {
   const absolute = isAbsolute(candidate)
     ? resolve(candidate)
     : resolve(OPS_DATA_DIR_ABS, candidate);
+
+  // Caller supplied an explicit absolute path (e.g., tmpdir in tests). Respect
+  // it after normalization, since this is an intentional override.
+  if (isAbsolute(candidate)) {
+    return absolute;
+  }
+
+  // If OPS_DATA_DIR points to the filesystem root ("/" or "C:\"),
+  // everything resides under that root by definition.
+  if (OPS_DATA_DIR_IS_ROOT) {
+    return absolute;
+  }
 
   if (
     absolute === OPS_DATA_DIR_ABS ||
