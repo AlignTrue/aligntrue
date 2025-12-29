@@ -29,17 +29,24 @@ function toJSONValue(value: unknown): JSONValue {
   }
 
   if (typeof value === "object") {
-    const result: { [key: string]: JSONValue } = {};
+    const result: { [key: string]: JSONValue } = Object.create(null);
     for (const [key, child] of Object.entries(
       value as Record<string, unknown>,
     )) {
       if (child === undefined) continue;
+      assertSafeKey(key);
       result[key] = toJSONValue(child);
     }
     return result;
   }
 
   throw new TypeError("Value cannot be canonicalized to JSON");
+}
+
+function assertSafeKey(key: string): void {
+  if (key === "__proto__" || key === "prototype" || key === "constructor") {
+    throw new TypeError(`Refusing to canonicalize unsafe object key: ${key}`);
+  }
 }
 
 function normalize(value: JSONValue): JSONValue {
@@ -52,7 +59,7 @@ function normalize(value: JSONValue): JSONValue {
   }
 
   const sortedKeys = Object.keys(value).sort();
-  const result: { [key: string]: JSONValue } = {};
+  const result: { [key: string]: JSONValue } = Object.create(null);
   for (const key of sortedKeys) {
     const child = (value as Record<string, JSONValue | undefined>)[key];
     if (child === undefined) continue;

@@ -1,6 +1,6 @@
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { OPS_DATA_DIR } from "../config.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type { CommandLog } from "./interfaces.js";
@@ -10,12 +10,19 @@ const DEFAULT_OUTCOMES_PATH = join(
   OPS_DATA_DIR,
   "ops-core-command-outcomes.jsonl",
 );
+const OPS_DATA_DIR_ABS = resolve(OPS_DATA_DIR);
 
 export class JsonlCommandLog implements CommandLog {
+  private readonly commandsPath: string;
+  private readonly outcomesPath: string;
+
   constructor(
-    private readonly commandsPath: string = DEFAULT_COMMANDS_PATH,
-    private readonly outcomesPath: string = DEFAULT_OUTCOMES_PATH,
-  ) {}
+    commandsPath: string = DEFAULT_COMMANDS_PATH,
+    outcomesPath: string = DEFAULT_OUTCOMES_PATH,
+  ) {
+    this.commandsPath = resolveDataPath(commandsPath);
+    this.outcomesPath = resolveDataPath(outcomesPath);
+  }
 
   async record(command: CommandEnvelope): Promise<void> {
     await ensureFile(this.commandsPath);
@@ -44,6 +51,23 @@ export class JsonlCommandLog implements CommandLog {
       return null;
     }
   }
+}
+
+function resolveDataPath(candidate: string): string {
+  const absolute = isAbsolute(candidate)
+    ? resolve(candidate)
+    : resolve(OPS_DATA_DIR_ABS, candidate);
+
+  if (
+    absolute === OPS_DATA_DIR_ABS ||
+    absolute.startsWith(`${OPS_DATA_DIR_ABS}${sep}`)
+  ) {
+    return absolute;
+  }
+
+  throw new Error(
+    `JsonlCommandLog refuses to write outside OPS_DATA_DIR (got ${candidate})`,
+  );
 }
 
 async function appendLine(path: string, value: unknown): Promise<void> {
