@@ -404,6 +404,7 @@ export class WorkLedger {
       ingested_at: timestamp,
       correlation_id: command.correlation_id,
       causation_id: command.command_id,
+      causation_type: "command",
       source_ref: command.target_ref,
       actor: command.actor,
       ...(capability_id !== undefined ? { capability_id } : {}),
