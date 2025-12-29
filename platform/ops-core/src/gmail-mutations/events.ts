@@ -2,6 +2,8 @@ import type { EventEnvelope } from "../envelopes/index.js";
 import { generateEventId } from "../identity/id.js";
 import type { GmailMutationOp } from "./types.js";
 
+const GMAIL_MUTATION_ENVELOPE_VERSION = 1;
+
 export const GMAIL_MUTATION_SCHEMA_VERSION = 1;
 
 export const GMAIL_MUTATION_EVENT_TYPES = {
@@ -84,8 +86,10 @@ export function buildMutationEvent<TPayload>(
     source_ref?: string;
     actor?: GmailMutationEvent["actor"];
     capability_scope?: string[];
+    capability_id?: string;
   },
 ): GmailMutationEvent {
+  const capability_id = opts.capability_id ?? opts.capability_scope?.[0];
   return {
     event_id: generateEventId({ event_type, payload }),
     event_type,
@@ -96,7 +100,8 @@ export function buildMutationEvent<TPayload>(
     causation_id: opts.causation_id,
     source_ref: opts.source_ref,
     actor: opts.actor,
-    capability_scope: opts.capability_scope ?? [],
-    schema_version: GMAIL_MUTATION_SCHEMA_VERSION,
+    ...(capability_id !== undefined ? { capability_id } : {}),
+    envelope_version: GMAIL_MUTATION_ENVELOPE_VERSION,
+    payload_schema_version: GMAIL_MUTATION_SCHEMA_VERSION,
   } as GmailMutationEvent;
 }

@@ -23,6 +23,8 @@ import {
 } from "./state-machine.js";
 import { contentHash, toggleCheckboxAtLine } from "./markdown.js";
 
+const NOTES_ENVELOPE_VERSION = 1;
+
 export type NoteCommandType =
   | "note.create"
   | "note.update"
@@ -269,6 +271,7 @@ export class NoteLedger {
     payload: TPayload,
   ): EventEnvelope<NoteEventType, TPayload> {
     const timestamp = this.now();
+    const capability_id = command.capability_id;
     return {
       event_id: generateEventId({ eventType, payload }),
       event_type: eventType,
@@ -277,10 +280,12 @@ export class NoteLedger {
       ingested_at: timestamp,
       correlation_id: command.correlation_id,
       causation_id: command.command_id,
+      causation_type: "command",
       source_ref: command.target_ref,
       actor: command.actor,
-      capability_scope: [],
-      schema_version: NOTES_SCHEMA_VERSION,
+      ...(capability_id !== undefined ? { capability_id } : {}),
+      envelope_version: NOTES_ENVELOPE_VERSION,
+      payload_schema_version: NOTES_SCHEMA_VERSION,
     };
   }
 }

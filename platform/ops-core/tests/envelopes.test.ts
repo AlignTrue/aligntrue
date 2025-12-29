@@ -22,8 +22,8 @@ describe("envelopes validation", () => {
       ingested_at: "2024-01-01T00:00:01Z",
       correlation_id: "corr-1",
       actor,
-      capability_scope: ["read"],
-      schema_version: 1,
+      envelope_version: 1,
+      payload_schema_version: 1,
     };
 
     const validated = Envelopes.validateEventEnvelope(envelope);

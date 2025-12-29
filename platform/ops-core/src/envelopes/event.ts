@@ -1,9 +1,10 @@
 import { ValidationError } from "../errors.js";
 import { ActorRef } from "./actor.js";
+import type { CommandCausationType } from "../contracts/envelopes.js";
 
 export interface EventEnvelope<T extends string = string, P = unknown> {
-  readonly event_id: string;
-  readonly event_type: T;
+  readonly event_id: string; // deterministic
+  readonly event_type: T; // namespaced
   readonly payload: P;
 
   // Time + causality
@@ -12,14 +13,17 @@ export interface EventEnvelope<T extends string = string, P = unknown> {
   readonly effective_at?: string;
   readonly correlation_id: string;
   readonly causation_id?: string;
+  readonly causation_type?: CommandCausationType;
   readonly source_ref?: string;
+  readonly source_sequence?: number;
 
-  // Actor + auth
+  // Actor + capability (scope derived by lookup)
   readonly actor: ActorRef;
-  readonly capability_scope: string[];
+  readonly capability_id?: string;
 
   // Versioning
-  readonly schema_version: number;
+  readonly envelope_version: number;
+  readonly payload_schema_version: number;
 }
 
 const REQUIRED_EVENT_FIELDS: (keyof EventEnvelope)[] = [
@@ -30,8 +34,8 @@ const REQUIRED_EVENT_FIELDS: (keyof EventEnvelope)[] = [
   "ingested_at",
   "correlation_id",
   "actor",
-  "capability_scope",
-  "schema_version",
+  "envelope_version",
+  "payload_schema_version",
 ];
 
 export function validateEventEnvelope(

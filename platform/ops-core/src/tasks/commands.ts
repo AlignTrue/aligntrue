@@ -25,6 +25,8 @@ import {
 } from "./state-machine.js";
 import type { TaskEffort, TaskImpact } from "./types.js";
 
+const TASKS_ENVELOPE_VERSION = 1;
+
 export type TaskCommandType =
   | "task.create"
   | "task.triage"
@@ -266,6 +268,7 @@ export class TaskLedger {
     payload: TPayload,
   ): EventEnvelope<TaskEventType, TPayload> {
     const timestamp = this.now();
+    const capability_id = command.capability_id;
     return {
       event_id: generateEventId({ eventType, payload }),
       event_type: eventType,
@@ -274,10 +277,12 @@ export class TaskLedger {
       ingested_at: timestamp,
       correlation_id: command.correlation_id,
       causation_id: command.command_id,
+      causation_type: "command",
       source_ref: command.target_ref,
       actor: command.actor,
-      capability_scope: [],
-      schema_version: TASKS_SCHEMA_VERSION,
+      ...(capability_id !== undefined ? { capability_id } : {}),
+      envelope_version: TASKS_ENVELOPE_VERSION,
+      payload_schema_version: TASKS_SCHEMA_VERSION,
     };
   }
 }
