@@ -56,7 +56,9 @@ describe("Work Ledger commands", () => {
   it("handles create and complete idempotently", async () => {
     const ledger = new WorkLedger.WorkLedger(
       new Storage.JsonlEventStore(eventsPath),
-      new Storage.JsonlCommandLog(commandsPath, outcomesPath),
+      new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+        allowExternalPaths: true,
+      }),
       { now: () => timestamps.shift() ?? new Date().toISOString() },
     );
 
@@ -94,7 +96,9 @@ describe("Work Ledger commands", () => {
   it("blocks readiness until dependency is completed", async () => {
     const ledger = new WorkLedger.WorkLedger(
       new Storage.JsonlEventStore(eventsPath),
-      new Storage.JsonlCommandLog(commandsPath, outcomesPath),
+      new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+        allowExternalPaths: true,
+      }),
       { now: () => timestamps.shift() ?? new Date().toISOString() },
     );
 
@@ -153,7 +157,9 @@ describe("Work Ledger commands", () => {
   it("removes blocked items from ready queue and restores on unblock", async () => {
     const ledger = new WorkLedger.WorkLedger(
       new Storage.JsonlEventStore(eventsPath),
-      new Storage.JsonlCommandLog(commandsPath, outcomesPath),
+      new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+        allowExternalPaths: true,
+      }),
       { now: () => timestamps.shift() ?? new Date().toISOString() },
     );
 

@@ -96,6 +96,7 @@ describe("suggestions", () => {
       commandLog: new Storage.JsonlCommandLog(
         join(dir, "suggestion-commands.jsonl"),
         join(dir, "suggestion-outcomes.jsonl"),
+        { allowExternalPaths: true },
       ),
     });
     const artifact = generated.artifacts[0];

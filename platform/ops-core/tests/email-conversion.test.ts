@@ -28,7 +28,9 @@ describe("email conversion and gmail mutations", () => {
     commandsPath = join(dir, "commands.jsonl");
     outcomesPath = join(dir, "outcomes.jsonl");
     eventStore = new Storage.JsonlEventStore(eventsPath);
-    commandLog = new Storage.JsonlCommandLog(commandsPath, outcomesPath);
+    commandLog = new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+      allowExternalPaths: true,
+    });
   });
 
   afterEach(async () => {

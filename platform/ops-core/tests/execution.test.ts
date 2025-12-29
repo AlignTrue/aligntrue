@@ -56,7 +56,9 @@ describe("Execution runtime", () => {
   it("rejects step success without proof refs", async () => {
     const runtime = new Execution.ExecutionRuntime(
       new Storage.JsonlEventStore(eventsPath),
-      new Storage.JsonlCommandLog(commandsPath, outcomesPath),
+      new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+        allowExternalPaths: true,
+      }),
       { now },
     );
 
@@ -96,7 +98,9 @@ describe("Execution runtime", () => {
   it("rebuilds run projections deterministically", async () => {
     const runtime = new Execution.ExecutionRuntime(
       new Storage.JsonlEventStore(eventsPath),
-      new Storage.JsonlCommandLog(commandsPath, outcomesPath),
+      new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+        allowExternalPaths: true,
+      }),
       { now },
     );
 

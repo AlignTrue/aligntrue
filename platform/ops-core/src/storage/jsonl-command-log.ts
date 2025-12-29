@@ -14,6 +14,11 @@ const OPS_DATA_DIR_ABS = resolve(OPS_DATA_DIR);
 const OPS_DATA_DIR_ROOT = parse(OPS_DATA_DIR_ABS).root;
 const OPS_DATA_DIR_IS_ROOT = OPS_DATA_DIR_ABS === OPS_DATA_DIR_ROOT;
 
+type JsonlCommandLogOptions = {
+  /** Allow absolute paths outside OPS_DATA_DIR (use only in trusted contexts like tests). */
+  allowExternalPaths?: boolean;
+};
+
 export class JsonlCommandLog implements CommandLog {
   private readonly commandsPath: string;
   private readonly outcomesPath: string;
@@ -21,9 +26,11 @@ export class JsonlCommandLog implements CommandLog {
   constructor(
     commandsPath: string = DEFAULT_COMMANDS_PATH,
     outcomesPath: string = DEFAULT_OUTCOMES_PATH,
+    options?: JsonlCommandLogOptions,
   ) {
-    this.commandsPath = resolveDataPath(commandsPath);
-    this.outcomesPath = resolveDataPath(outcomesPath);
+    const allowExternalPaths = options?.allowExternalPaths ?? false;
+    this.commandsPath = resolveDataPath(commandsPath, allowExternalPaths);
+    this.outcomesPath = resolveDataPath(outcomesPath, allowExternalPaths);
   }
 
   async record(command: CommandEnvelope): Promise<void> {
@@ -55,32 +62,45 @@ export class JsonlCommandLog implements CommandLog {
   }
 }
 
-function resolveDataPath(candidate: string): string {
-  const absolute = isAbsolute(candidate)
-    ? resolve(candidate)
-    : resolve(OPS_DATA_DIR_ABS, candidate);
+function resolveDataPath(
+  candidate: string,
+  allowExternalPaths: boolean,
+): string {
+  const normalized = resolve(candidate);
 
-  // Caller supplied an explicit absolute path (e.g., tmpdir in tests). Respect
-  // it after normalization, since this is an intentional override.
   if (isAbsolute(candidate)) {
-    return absolute;
+    if (allowExternalPaths) {
+      return normalized;
+    }
+    if (isWithinOpsData(normalized)) {
+      return normalized;
+    }
+    throw new Error(
+      `JsonlCommandLog refuses to write outside OPS_DATA_DIR (got ${candidate})`,
+    );
   }
 
-  // If OPS_DATA_DIR points to the filesystem root ("/" or "C:\"),
-  // everything resides under that root by definition.
-  if (OPS_DATA_DIR_IS_ROOT) {
-    return absolute;
+  if (isWithinOpsData(normalized)) {
+    return normalized;
   }
 
-  if (
-    absolute === OPS_DATA_DIR_ABS ||
-    absolute.startsWith(`${OPS_DATA_DIR_ABS}${sep}`)
-  ) {
-    return absolute;
+  const anchored = resolve(OPS_DATA_DIR_ABS, candidate);
+  if (isWithinOpsData(anchored)) {
+    return anchored;
   }
 
   throw new Error(
     `JsonlCommandLog refuses to write outside OPS_DATA_DIR (got ${candidate})`,
+  );
+}
+
+function isWithinOpsData(absolutePath: string): boolean {
+  if (OPS_DATA_DIR_IS_ROOT) {
+    return true;
+  }
+  return (
+    absolutePath === OPS_DATA_DIR_ABS ||
+    absolutePath.startsWith(`${OPS_DATA_DIR_ABS}${sep}`)
   );
 }
 

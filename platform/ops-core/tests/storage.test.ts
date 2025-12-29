@@ -50,7 +50,9 @@ describe("JSONL storage", () => {
   });
 
   it("records command outcomes idempotently", async () => {
-    const log = new Storage.JsonlCommandLog(commandsPath, outcomesPath);
+    const log = new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
+      allowExternalPaths: true,
+    });
     const command = {
       command_id: "c1",
       command_type: "do",
