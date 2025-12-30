@@ -5,6 +5,7 @@ import {
   PreconditionFailed,
   Storage,
   Contracts,
+  OPS_DATA_DIR,
 } from "@aligntrue/ops-core";
 import type {
   CommandEnvelope,
@@ -60,9 +61,8 @@ export type TaskCommandEnvelope<T extends TaskCommandType = TaskCommandType> =
 
 export type TaskCommandPayload = TaskCommandEnvelope["payload"];
 
-const DEFAULT_DATA_DIR = process.cwd();
 export const DEFAULT_TASKS_EVENTS_PATH = join(
-  DEFAULT_DATA_DIR,
+  OPS_DATA_DIR,
   "ops-core-tasks-events.jsonl",
 );
 
@@ -77,10 +77,8 @@ export function createJsonlTaskLedger(opts?: {
     opts?.eventsPath ?? DEFAULT_TASKS_EVENTS_PATH,
   );
   const commandLog = new Storage.JsonlCommandLog(
-    opts?.commandsPath ??
-      join(DEFAULT_DATA_DIR, "ops-core-tasks-commands.jsonl"),
-    opts?.outcomesPath ??
-      join(DEFAULT_DATA_DIR, "ops-core-tasks-outcomes.jsonl"),
+    opts?.commandsPath ?? join(OPS_DATA_DIR, "ops-core-tasks-commands.jsonl"),
+    opts?.outcomesPath ?? join(OPS_DATA_DIR, "ops-core-tasks-outcomes.jsonl"),
     { allowExternalPaths: opts?.allowExternalPaths },
   );
   return new TaskLedger(eventStore, commandLog, opts);

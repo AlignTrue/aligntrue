@@ -26,6 +26,7 @@ export {
   OPS_AI_BASE_URL,
   OPS_AI_MODEL,
   OPS_AI_API_KEY,
+  OPS_DATA_DIR,
 } from "./config.js";
 export {
   OpsError,

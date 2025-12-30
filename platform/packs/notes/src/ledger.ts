@@ -4,6 +4,7 @@ import {
   ValidationError,
   PreconditionFailed,
   Storage,
+  OPS_DATA_DIR,
 } from "@aligntrue/ops-core";
 import type {
   CommandEnvelope,
@@ -32,7 +33,6 @@ import {
 import { toggleCheckboxAtLine } from "./markdown.js";
 
 const NOTE_ENVELOPE_VERSION = 1;
-const DEFAULT_DATA_DIR = process.cwd();
 
 export type NoteCommandEnvelopes = {
   [NOTE_COMMAND_TYPES.Create]: CommandEnvelope<
@@ -56,7 +56,7 @@ export type NoteCommandPayload = NoteCommandEnvelope["payload"];
 export type { NoteCommandType };
 
 export const DEFAULT_NOTES_EVENTS_PATH = join(
-  DEFAULT_DATA_DIR,
+  OPS_DATA_DIR,
   "ops-core-notes.jsonl",
 );
 
@@ -71,10 +71,8 @@ export function createJsonlNoteLedger(opts?: {
     opts?.eventsPath ?? DEFAULT_NOTES_EVENTS_PATH,
   );
   const commandLog = new Storage.JsonlCommandLog(
-    opts?.commandsPath ??
-      join(DEFAULT_DATA_DIR, "ops-core-notes-commands.jsonl"),
-    opts?.outcomesPath ??
-      join(DEFAULT_DATA_DIR, "ops-core-notes-outcomes.jsonl"),
+    opts?.commandsPath ?? join(OPS_DATA_DIR, "ops-core-notes-commands.jsonl"),
+    opts?.outcomesPath ?? join(OPS_DATA_DIR, "ops-core-notes-outcomes.jsonl"),
     { allowExternalPaths: opts?.allowExternalPaths },
   );
   return new NoteLedger(
