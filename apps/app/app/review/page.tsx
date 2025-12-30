@@ -4,7 +4,7 @@ import {
   Projections,
 } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 import { ReviewPageClient } from "./ReviewPageClient";
 
 export const dynamic = "force-dynamic";
@@ -105,6 +105,8 @@ export default async function ReviewPage() {
       </div>
     );
   }
+
+  await getHost();
 
   const [conversations, receiptsProjection, availability] = await Promise.all([
     loadConversations(),

@@ -1,8 +1,9 @@
 import { OPS_CONTACTS_ENABLED, Projections } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 
 async function getContacts(): Promise<Projections.ContactProjection> {
+  await getHost();
   const rebuilt = await Projections.rebuildOne(
     Projections.ContactsProjectionDef,
     getEventStore(),

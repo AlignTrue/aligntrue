@@ -24,11 +24,12 @@ export async function POST(request: Request) {
     } as Notes.NoteCommandPayload;
 
     const command: Notes.NoteCommandEnvelope = {
-      command_id: Identity.generateCommandId({ command_type, payload }),
+      command_id: Identity.randomId(),
+      idempotency_key: Identity.deterministicId({ title, body_md }),
       command_type,
       payload,
       target_ref: `note:${note_id}`,
-      dedupe_scope: `note:${note_id}`,
+      dedupe_scope: "target",
       correlation_id: Identity.randomId(),
       actor: {
         actor_id: "web-user",

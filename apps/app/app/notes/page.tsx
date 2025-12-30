@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NotePreview } from "./NotePreview";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 
 async function getNotesView() {
   if (!OPS_NOTES_ENABLED) return null;
+  await getHost();
   const rebuilt = await Projections.rebuildOne(
     Projections.NotesProjectionDef,
     getEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
@@ -33,11 +34,12 @@ function buildCommand<T extends Notes.NoteCommandType>(
       ? `note:${(payload as { note_id: string }).note_id}`
       : "note:unknown";
   return {
-    command_id: Identity.generateCommandId({ command_type, payload }),
+    command_id: Identity.randomId(),
+    idempotency_key: Identity.generateCommandId({ command_type, payload }),
     command_type,
     payload,
     target_ref: target,
-    dedupe_scope: target,
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor: {
       actor_id: "web-user",

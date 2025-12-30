@@ -14,10 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 
 async function getTasksView() {
   if (!OPS_TASKS_ENABLED) return null;
+  await getHost();
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,
     getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
@@ -136,6 +137,7 @@ async function createDailyPlanAction(formData: FormData) {
     .slice(0, 3);
   if (!ids.length) return;
 
+  await getHost();
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,
     getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
@@ -161,6 +163,7 @@ async function generateWeeklyPlanAction(formData: FormData) {
   if (!OPS_PLANS_WEEKLY_ENABLED || !OPS_TASKS_ENABLED) return;
 
   const force = formData.get("force") === "on";
+  await getHost();
   const store = Suggestions.createArtifactStore();
   const rebuilt = await Projections.rebuildOne(
     Projections.TasksProjectionDef,

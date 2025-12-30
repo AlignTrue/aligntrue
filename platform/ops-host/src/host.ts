@@ -177,10 +177,13 @@ export async function createHost(config?: HostConfig): Promise<Host> {
   };
 }
 
-const require = createRequire(import.meta.url);
-
 async function resolvePack(packRef: PackReference): Promise<ResolvedPack> {
-  const pkgJsonPath = require.resolve(`${packRef.name}/package.json`);
+  const _nodeRequire = createRequire(import.meta.url);
+  // Use eval to hide require.resolve from bundlers like Turbopack
+
+  const pkgJsonPath = eval("_nodeRequire").resolve(
+    `${packRef.name}/package.json`,
+  );
   const pkgDir = dirname(pkgJsonPath);
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as {

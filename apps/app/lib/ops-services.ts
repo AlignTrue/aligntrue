@@ -1,9 +1,14 @@
-import { Convert, OPS_GMAIL_MUTATIONS_ENABLED } from "@aligntrue/ops-core";
+import {
+  Convert,
+  OPS_GMAIL_MUTATIONS_ENABLED,
+  Contracts,
+} from "@aligntrue/ops-core";
 import { createHost, Storage, type Host } from "@aligntrue/ops-host";
-import manifest from "../app.manifest.json";
+import manifestJson from "../app.manifest.json";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import * as GmailApi from "./gmail-api";
 
+const manifest = manifestJson as unknown as Contracts.AppManifest;
 let hostInstance: Host | null = null;
 
 export async function getHost(): Promise<Host> {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Emails, OPS_EMAIL_STATUS_ENABLED } from "@aligntrue/ops-core";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 
 export async function PATCH(
   request: NextRequest,
@@ -55,6 +55,7 @@ export async function PATCH(
     );
   }
 
+  await getHost();
   const store = getEventStore();
   try {
     await store.append(event);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { Identity } from "@aligntrue/ops-core";
-import { TASK_COMMAND_TYPES } from "@aligntrue/ops-core/contracts/tasks.js";
+import { Identity, Contracts } from "@aligntrue/ops-core";
+const { TASK_COMMAND_TYPES } = Contracts;
 import { getHost } from "@/lib/ops-services";
 
 export async function POST(request: Request) {

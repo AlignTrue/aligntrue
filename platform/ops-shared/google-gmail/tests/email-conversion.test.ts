@@ -2,9 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Convert, Storage, Tasks, Notes } from "../src/index.js";
-import * as GoogleGmail from "@aligntrue/ops-shared-google-gmail";
-import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
+import { Convert, Storage, Tasks, Notes } from "@aligntrue/ops-core";
+import * as GoogleGmail from "../src/index.js";
+import { Mutations as GmailMutations } from "../src/index.js";
 
 const ACTOR = { actor_id: "user-1", actor_type: "human" } as const;
 const NOW = "2024-01-01T00:00:00Z";

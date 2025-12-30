@@ -168,6 +168,8 @@ describe("cross-package imports", () => {
     const packageRoots = [
       join(workspaceRoot, "packages"),
       join(workspaceRoot, "platform"),
+      join(workspaceRoot, "platform/packs"),
+      join(workspaceRoot, "platform/ops-shared"),
     ];
     const workspacePackages = discoverWorkspacePackages(packageRoots);
     const packageMap = new Map(

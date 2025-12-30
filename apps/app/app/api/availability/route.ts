@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { Projections } from "@aligntrue/ops-core";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 
 export async function GET() {
+  await getHost();
   const rebuilt = await Projections.rebuildOne(
     Projections.TimelineProjectionDef,
     getEventStore(),

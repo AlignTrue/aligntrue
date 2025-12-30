@@ -2,7 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as GoogleCalendar from "@aligntrue/ops-shared-google-calendar";
+import * as GoogleCalendar from "../src/index.js";
 
 const baseEvent = {
   provider: "google_calendar" as const,
@@ -174,13 +174,13 @@ describe("contacts projection (calendar ingest v0)", () => {
 });
 
 async function loadCoreWithContactsEnabled(enabled: boolean): Promise<{
-  Projections: (typeof import("../src/index.js"))["Projections"];
-  Storage: (typeof import("../src/index.js"))["Storage"];
-  Identity: (typeof import("../src/index.js"))["Identity"];
+  Projections: (typeof import("@aligntrue/ops-core"))["Projections"];
+  Storage: (typeof import("@aligntrue/ops-core"))["Storage"];
+  Identity: (typeof import("@aligntrue/ops-core"))["Identity"];
 }> {
   process.env["OPS_CONTACTS_ENABLED"] = enabled ? "1" : "0";
   vi.resetModules();
-  const Core = await import("../src/index.js");
+  const Core = await import("@aligntrue/ops-core");
   return {
     Projections: Core.Projections,
     Storage: Core.Storage,

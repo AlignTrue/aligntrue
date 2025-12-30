@@ -5,12 +5,13 @@ import {
 } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getEventStore } from "@/lib/ops-services";
+import { getEventStore, getHost } from "@/lib/ops-services";
 import { formatTimestamp } from "@/lib/format";
 
 type TimelineItem = Projections.TimelineProjection["items"][number];
 
 async function getTimeline(): Promise<Projections.TimelineProjection> {
+  await getHost();
   const rebuilt = await Projections.rebuildOne(
     Projections.TimelineProjectionDef,
     getEventStore(),

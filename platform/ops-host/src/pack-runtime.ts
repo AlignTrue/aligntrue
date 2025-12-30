@@ -50,8 +50,13 @@ export async function createPackRuntime(
   );
 
   async function loadPack(specifier: string): Promise<void> {
-    const imported = await import(specifier);
-    const moduleCandidate = (imported?.default ?? imported) as PackModule;
+    // Use webpackIgnore to defer resolution to runtime (Next/Turbopack safe)
+    const imported = (await import(
+      /* webpackIgnore: true */ specifier as string
+    )) as { default?: PackModule } | PackModule;
+    const moduleCandidate = (
+      imported && "default" in imported ? imported.default : imported
+    ) as PackModule;
     if (!moduleCandidate?.manifest) {
       throw new Error(`Pack manifest not found in ${specifier}`);
     }

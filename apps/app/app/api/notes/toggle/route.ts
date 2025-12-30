@@ -17,14 +17,15 @@ export async function POST(request: Request) {
 
   const payload = { note_id: body.note_id, line_index: body.line_index };
   const command: Notes.NoteCommandEnvelope<"note.patch_checkbox"> = {
-    command_id: Identity.generateCommandId({
-      command_type: "note.patch_checkbox",
-      payload,
+    command_id: Identity.randomId(),
+    idempotency_key: Identity.deterministicId({
+      note_id: body.note_id,
+      line_index: body.line_index,
     }),
     command_type: "note.patch_checkbox",
     payload,
     target_ref: `note:${payload.note_id}`,
-    dedupe_scope: `note:${payload.note_id}`,
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor: { actor_id: "web-user", actor_type: "human" },
     requested_at: new Date().toISOString(),
