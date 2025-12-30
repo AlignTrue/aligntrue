@@ -18,10 +18,11 @@ function makeCommand<T extends WorkLedger.WorkCommandType>(
 ): WorkLedger.WorkCommandEnvelope<T> {
   return {
     command_id,
+    idempotency_key: command_id,
     command_type,
     payload,
     target_ref: "work-ledger",
-    dedupe_scope: "test",
+    dedupe_scope: "target",
     correlation_id: `corr-${command_id}`,
     actor,
     requested_at,

@@ -36,17 +36,15 @@ export function buildSuggestionCommand<T extends SuggestionCommandType>(
 ): SuggestionCommandEnvelope<T> {
   const target = `suggestion:${"suggestion_id" in payload ? payload.suggestion_id : "unknown"}`;
   const command_id = Identity.randomId();
-  const idempotency_key = Identity.generateCommandId({
-    command_type,
-    payload,
-  });
+  // Suggestion-level idempotency is tracked by command_id; state gating handles repeats.
+  const idempotency_key = command_id;
   return {
     command_id,
     idempotency_key,
     command_type,
     payload,
     target_ref: target,
-    dedupe_scope: target,
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor,
     requested_at: new Date().toISOString(),

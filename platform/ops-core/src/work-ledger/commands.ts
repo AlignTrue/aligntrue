@@ -79,6 +79,17 @@ export class WorkLedger {
     });
 
     if (start.status === "duplicate") {
+      // For completion, surface idempotent repeat as already_processed.
+      if (command.command_type === "work.complete") {
+        return {
+          command_id: command.command_id,
+          status: "already_processed",
+          reason: "Work item already completed",
+          ...(start.outcome?.produced_events
+            ? { produced_events: start.outcome.produced_events }
+            : {}),
+        };
+      }
       return start.outcome;
     }
     if (start.status === "in_flight") {

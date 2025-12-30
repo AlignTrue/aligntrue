@@ -109,7 +109,11 @@ export class SuggestionExecutor {
           artifact.content_hash,
         );
       }
-      return start.outcome;
+      // Same command replay: return original outcome. Different command id: treat as already processed.
+      if (start.outcome?.command_id === command.command_id) {
+        return start.outcome;
+      }
+      return await this.finish(command, [], "already_processed", "approved");
     }
 
     if (start.status === "in_flight") {
