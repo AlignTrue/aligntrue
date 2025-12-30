@@ -15,6 +15,7 @@
     "@aligntrue/ops-shared-google-gmail": "workspace:*",
     "@aligntrue/ops-shared-google-calendar": "workspace:*",
     "@aligntrue/ops-shared-google-common": "workspace:*",
+    "@aligntrue/ops-host": "workspace:*",
     "@aligntrue/ui": "workspace:*",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-popover": "^1.1.15",

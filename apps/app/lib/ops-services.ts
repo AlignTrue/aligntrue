@@ -1,8 +1,5 @@
-import {
-  Convert,
-  OPS_GMAIL_MUTATIONS_ENABLED,
-  Storage,
-} from "@aligntrue/ops-core";
+import { Convert, OPS_GMAIL_MUTATIONS_ENABLED } from "@aligntrue/ops-core";
+import { Storage } from "@aligntrue/ops-host";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import * as GmailApi from "./gmail-api";
 
@@ -18,6 +15,7 @@ export function getCommandLog(
 }
 
 export function getConversionService(): Convert.ConversionService {
+  // For now, continue using core conversion service; pack integration will follow in Phase 3.
   const eventStore = getEventStore();
   const commandLog = getCommandLog();
   return new Convert.ConversionService(eventStore, commandLog);

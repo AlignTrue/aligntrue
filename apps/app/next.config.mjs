@@ -3,6 +3,7 @@ const nextConfig = {
   typedRoutes: true,
   transpilePackages: [
     "@aligntrue/ui",
+    "@aligntrue/ops-host",
     "@aligntrue/ops-shared-google-gmail",
     "@aligntrue/ops-shared-google-calendar",
     "@aligntrue/ops-shared-google-common",
