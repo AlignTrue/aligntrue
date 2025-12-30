@@ -1,0 +1,31 @@
+{
+  "name": "@aligntrue/ui-blocks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aligntrue/ops-core": "workspace:*",
+    "@aligntrue/ui-contracts": "workspace:*",
+    "@aligntrue/ui-renderer": "workspace:*",
+    "ai": "^6.0.3",
+    "ajv": "^8.17.1",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0"
+  },
+  "license": "MIT"
+}

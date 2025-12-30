@@ -1,3 +1,12 @@
+/**
+ * Deterministic JSON stringify with sorted keys and no whitespace.
+ * Mirrors ops-core's canonicalize to keep hashing stable without depending
+ * on a non-exported symbol.
+ */
+export function canonicalize(value: unknown): string {
+  return JSON.stringify(normalize(toJSONValue(value)));
+}
+
 type JSONValue =
   | string
   | number
@@ -5,14 +14,6 @@ type JSONValue =
   | null
   | JSONValue[]
   | { [key: string]: JSONValue };
-
-/**
- * Deterministic JSON stringify with sorted object keys and no whitespace.
- * Accepts unknown and coerces to JSONValue, throwing on unsupported types.
- */
-export function canonicalize(value: unknown): string {
-  return JSON.stringify(normalize(toJSONValue(value)));
-}
 
 function toJSONValue(value: unknown): JSONValue {
   if (
@@ -89,6 +90,7 @@ function normalize(value: JSONValue): JSONValue {
     ) {
       continue;
     }
+    // eslint-disable-next-line security/detect-object-injection
     const child = (value as Record<string, JSONValue | undefined>)[key];
     if (child === undefined) continue;
     // Use defineProperty on a null-prototype object to avoid potential property injection

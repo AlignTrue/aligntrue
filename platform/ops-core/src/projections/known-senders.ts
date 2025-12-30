@@ -103,11 +103,21 @@ export function buildKnownSendersProjection(
 }
 
 function normalizeEmail(email: string): string {
-  const match = email.match(/<([^>]+)>/) ?? [null, email];
-  return (match[1] ?? email).toLowerCase().trim();
+  const start = email.indexOf("<");
+  const end = email.lastIndexOf(">");
+  if (start !== -1 && end !== -1 && end > start) {
+    return email
+      .substring(start + 1, end)
+      .toLowerCase()
+      .trim();
+  }
+  return email.toLowerCase().trim();
 }
 
 function extractDomain(email: string): string | undefined {
-  const match = email.match(/@(.+)$/);
-  return match?.[1];
+  const lastAt = email.lastIndexOf("@");
+  if (lastAt === -1 || lastAt === email.length - 1) {
+    return undefined;
+  }
+  return email.substring(lastAt + 1);
 }

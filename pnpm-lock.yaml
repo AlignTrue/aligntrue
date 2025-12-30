@@ -585,6 +585,59 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
+  packages/ui-contracts:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../platform/ops-core
+      json-schema:
+        specifier: ^0.4.0
+        version: 0.4.0
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
+      zod-to-json-schema:
+        specifier: ^3.23.3
+        version: 3.25.1(zod@4.2.1)
+    devDependencies:
+      '@types/json-schema':
+        specifier: ^7.0.15
+        version: 7.0.15
+
+  packages/ui-renderer:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../platform/ops-core
+      '@aligntrue/ui-contracts':
+        specifier: workspace:*
+        version: link:../ui-contracts
+      ai:
+        specifier: ^6.0.3
+        version: 6.0.3(zod@4.2.1)
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      ajv-formats:
+        specifier: ^2.1.1
+        version: 2.1.1(ajv@8.17.1)
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.7)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.3(react@19.2.3)
+
   platform/ops-cli:
     dependencies:
       '@aligntrue/core':
@@ -726,6 +779,34 @@ importers:
       '@aligntrue/ops-core':
         specifier: workspace:*
         version: link:../../ops-core
+
+  platform/ui-blocks:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../ops-core
+      '@aligntrue/ui-contracts':
+        specifier: workspace:*
+        version: link:../../packages/ui-contracts
+      '@aligntrue/ui-renderer':
+        specifier: workspace:*
+        version: link:../../packages/ui-renderer
+      ai:
+        specifier: ^6.0.3
+        version: 6.0.3(zod@4.2.1)
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.7
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
 
 packages:
 
@@ -2625,6 +2706,14 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
+
+  ajv-formats@2.1.1:
+    resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
+    peerDependencies:
+      ajv: ^8.0.0
+    peerDependenciesMeta:
+      ajv:
+        optional: true
 
   ajv-formats@3.0.1:
     resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
@@ -5266,6 +5355,11 @@ packages:
     resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
     engines: {node: '>=12.20'}
 
+  zod-to-json-schema@3.25.1:
+    resolution: {integrity: sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==}
+    peerDependencies:
+      zod: ^3.25 || ^4
+
   zod@4.2.1:
     resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
@@ -7065,6 +7159,10 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.1(zod@4.2.1)
       '@opentelemetry/api': 1.9.0
       zod: 4.2.1
+
+  ajv-formats@2.1.1(ajv@8.17.1):
+    optionalDependencies:
+      ajv: 8.17.1
 
   ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
@@ -10251,6 +10349,10 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yocto-queue@1.2.2: {}
+
+  zod-to-json-schema@3.25.1(zod@4.2.1):
+    dependencies:
+      zod: 4.2.1
 
   zod@4.2.1: {}
 

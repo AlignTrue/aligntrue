@@ -103,6 +103,10 @@ export type { DocRef } from "./docrefs/index.js";
 export type { PackManifest } from "./contracts/pack-manifest.js";
 export { validatePackEventType } from "./contracts/pack-manifest.js";
 export type {
+  CapabilityGrant,
+  CapabilityEventType,
+} from "./contracts/capability.js";
+export type {
   PackModule,
   PackContext,
   PackEventHandler,
