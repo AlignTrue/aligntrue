@@ -334,13 +334,13 @@ export class SuggestionExecutor {
       throw new ValidationError("Tasks are disabled (OPS_TASKS_ENABLED=0)");
     }
     const triage = diff as { task_id: string; to_bucket: TaskBucket };
-    const command_id = Identity.generateCommandId({
+    const idempotency_key = Identity.generateCommandId({
       command_type: TASK_COMMAND_TYPES.Triage,
       task_id: triage.task_id,
     });
     const cmd: CommandEnvelope<typeof TASK_COMMAND_TYPES.Triage> = {
-      command_id,
-      idempotency_key: command_id,
+      command_id: Identity.randomId(),
+      idempotency_key,
       command_type: TASK_COMMAND_TYPES.Triage,
       payload: {
         task_id: triage.task_id,
@@ -372,13 +372,13 @@ export class SuggestionExecutor {
       throw new ValidationError("Notes are disabled (OPS_NOTES_ENABLED=0)");
     }
     const payload = diff as { note_id: string; suggested_title: string };
-    const command_id = Identity.generateCommandId({
+    const idempotency_key = Identity.generateCommandId({
       command_type: NOTE_COMMAND_TYPES.Update,
       note_id: payload.note_id,
     });
     const cmd: CommandEnvelope<NoteCommandType, NoteCommandPayload> = {
-      command_id,
-      idempotency_key: command_id,
+      command_id: Identity.randomId(),
+      idempotency_key,
       command_type: NOTE_COMMAND_TYPES.Update,
       payload: {
         note_id: payload.note_id,
