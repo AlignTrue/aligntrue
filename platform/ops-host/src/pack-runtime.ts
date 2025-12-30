@@ -1,13 +1,21 @@
 import type {
+  CommandEnvelope,
   CommandLog,
+  CommandOutcome,
+  DedupeScope,
   EventEnvelope,
   EventStore,
   PackContext,
   PackManifest,
   PackModule,
+  PackCommandHandler,
   ProjectionRegistry,
 } from "@aligntrue/ops-core";
-import { Projections, validatePackEventType } from "@aligntrue/ops-core";
+import {
+  Projections,
+  validateDedupeScope,
+  validatePackEventType,
+} from "@aligntrue/ops-core";
 
 export interface RuntimeLoadedPack {
   manifest: PackManifest;
@@ -19,6 +27,7 @@ export interface PackRuntimeOptions {
   commandLog: CommandLog;
   projectionRegistry?: ProjectionRegistry;
   config?: Record<string, Record<string, unknown>>; // keyed by pack_id
+  appName?: string;
 }
 
 export interface PackRuntime {
@@ -27,6 +36,8 @@ export interface PackRuntime {
   loadPack(specifier: string): Promise<void>;
   unloadPack(packId: string): Promise<void>;
   dispatchEvent(event: EventEnvelope): Promise<void>;
+  dispatchCommand(command: CommandEnvelope): Promise<CommandOutcome>;
+  getPackForCommand(commandType: string): RuntimeLoadedPack | undefined;
 }
 
 export async function createPackRuntime(
@@ -100,6 +111,107 @@ export async function createPackRuntime(
     await handler(event, createContext(packId));
   }
 
+  async function dispatchCommand(
+    command: CommandEnvelope,
+  ): Promise<CommandOutcome> {
+    // Validate dedupe scope requirements first
+    const dedupeError = validateDedupeScope(command);
+    if (dedupeError) {
+      return {
+        command_id: command.command_id,
+        status: "rejected",
+        reason: dedupeError,
+      };
+    }
+
+    const scopeKey = computeScopeKey(
+      command.dedupe_scope,
+      command,
+      opts.appName ?? "unknown",
+    );
+
+    const start = await opts.commandLog.tryStart({
+      command_id: command.command_id,
+      idempotency_key: command.idempotency_key,
+      dedupe_scope: command.dedupe_scope,
+      scope_key: scopeKey,
+    });
+
+    if (start.status === "duplicate") {
+      return start.outcome;
+    }
+    if (start.status === "in_flight") {
+      return {
+        command_id: command.command_id,
+        status: "already_processing",
+        reason: "Command in flight",
+      };
+    }
+
+    const pack = getPackForCommand(command.command_type);
+    if (!pack) {
+      const rejection: CommandOutcome = {
+        command_id: command.command_id,
+        status: "rejected",
+        reason: "Pack not loaded for command",
+      };
+      await opts.commandLog.complete(command.command_id, rejection);
+      return rejection;
+    }
+
+    const handler =
+      pack.module.commandHandlers?.[command.command_type] ??
+      pack.module.handlers?.[command.command_type];
+    if (!handler) {
+      const rejection: CommandOutcome = {
+        command_id: command.command_id,
+        status: "rejected",
+        reason: "Command handler not found",
+      };
+      await opts.commandLog.complete(command.command_id, rejection);
+      return rejection;
+    }
+
+    try {
+      const outcome = await (handler as PackCommandHandler)(
+        command,
+        createContext(pack.manifest.pack_id),
+      );
+      const normalizedOutcome: CommandOutcome = {
+        command_id: command.command_id,
+        status: outcome?.status ?? "accepted",
+        ...(outcome?.produced_events !== undefined
+          ? { produced_events: outcome.produced_events }
+          : {}),
+        ...(outcome?.reason !== undefined ? { reason: outcome.reason } : {}),
+        ...(outcome?.completed_at !== undefined
+          ? { completed_at: outcome.completed_at }
+          : {}),
+      };
+      await opts.commandLog.complete(command.command_id, normalizedOutcome);
+      return normalizedOutcome;
+    } catch (err) {
+      const failure: CommandOutcome = {
+        command_id: command.command_id,
+        status: "failed",
+        reason: err instanceof Error ? err.message : "Unknown error",
+      };
+      await opts.commandLog.complete(command.command_id, failure);
+      return failure;
+    }
+  }
+
+  function getPackForCommand(
+    commandType: string,
+  ): RuntimeLoadedPack | undefined {
+    for (const pack of packs.values()) {
+      if (pack.manifest.public_commands?.includes(commandType)) {
+        return pack;
+      }
+    }
+    return undefined;
+  }
+
   function createContext(packId: string): PackContext {
     return {
       eventStore: opts.eventStore,
@@ -115,5 +227,25 @@ export async function createPackRuntime(
     loadPack,
     unloadPack,
     dispatchEvent,
+    dispatchCommand,
+    getPackForCommand,
   };
+}
+
+function computeScopeKey(
+  scope: DedupeScope,
+  command: CommandEnvelope,
+  appName: string,
+): string {
+  switch (scope) {
+    case "actor":
+      return command.actor.actor_id;
+    case "target":
+      return command.target_ref ?? "__missing_target__";
+    case "app":
+      return appName;
+    case "global":
+    default:
+      return "__global__";
+  }
 }

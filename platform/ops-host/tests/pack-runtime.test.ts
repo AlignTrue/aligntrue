@@ -8,6 +8,7 @@ import {
   type CommandEnvelope,
   type EventEnvelope,
   type EventStore,
+  type CommandLogTryStartResult,
 } from "@aligntrue/ops-core";
 import { createPackRuntime, type PackRuntime } from "../src/pack-runtime.js";
 
@@ -28,6 +29,7 @@ class InMemoryEventStore implements EventStore {
 
 class InMemoryCommandLog implements CommandLog {
   readonly outcomes = new Map<string, CommandOutcome>();
+  private readonly pending = new Set<string>();
   async record(command: CommandEnvelope): Promise<void> {
     // no-op
     void command;
@@ -37,6 +39,13 @@ class InMemoryCommandLog implements CommandLog {
   }
   async getByIdempotencyKey(commandId: string): Promise<CommandOutcome | null> {
     return this.outcomes.get(commandId) ?? null;
+  }
+  async tryStart(): Promise<CommandLogTryStartResult> {
+    return { status: "new" };
+  }
+  async complete(commandId: string, outcome: CommandOutcome): Promise<void> {
+    this.pending.delete(commandId);
+    this.outcomes.set(commandId, outcome);
   }
 }
 

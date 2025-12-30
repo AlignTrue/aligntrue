@@ -16,6 +16,6 @@ export async function reopenTask(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Reopen ${taskId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Reopen ${taskId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

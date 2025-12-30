@@ -16,6 +16,6 @@ export async function completeTask(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Complete ${taskId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Complete ${taskId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

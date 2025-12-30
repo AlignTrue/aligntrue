@@ -27,6 +27,6 @@ export async function manageDependency(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Dependency ${action} ${workId} -> ${blockerId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Dependency ${action} ${workId} -> ${blockerId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

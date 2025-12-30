@@ -52,6 +52,6 @@ export async function createWork(args: string[]): Promise<void> {
   const outcome = await ledger.execute(buildCommand("work.create", payload));
 
   console.log(
-    `Work item ${work_id} created (${outcome.status}, events: ${outcome.produced_events.length})`,
+    `Work item ${work_id} created (${outcome.status}, events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

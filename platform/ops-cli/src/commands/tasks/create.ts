@@ -56,6 +56,6 @@ export async function createTask(args: string[]): Promise<void> {
   const outcome = await ledger.execute(buildCommand("task.create", payload));
 
   console.log(
-    `Task ${task_id} created (${outcome.status}, events: ${outcome.produced_events.length})`,
+    `Task ${task_id} created (${outcome.status}, events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

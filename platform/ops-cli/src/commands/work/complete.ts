@@ -15,6 +15,6 @@ export async function completeWork(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Complete ${workId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Complete ${workId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

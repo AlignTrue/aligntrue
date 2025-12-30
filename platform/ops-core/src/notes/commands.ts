@@ -281,7 +281,9 @@ export class NoteLedger {
       correlation_id: command.correlation_id,
       causation_id: command.command_id,
       causation_type: "command",
-      source_ref: command.target_ref,
+      ...(command.target_ref !== undefined
+        ? { source_ref: command.target_ref }
+        : {}),
       actor: command.actor,
       ...(capability_id !== undefined ? { capability_id } : {}),
       envelope_version: NOTES_ENVELOPE_VERSION,

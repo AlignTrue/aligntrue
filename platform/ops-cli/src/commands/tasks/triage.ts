@@ -101,6 +101,6 @@ export async function triageTask(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Triage ${taskId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Triage ${taskId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

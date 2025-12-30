@@ -6,3 +6,5 @@ export * from "./capability.js";
 export * from "./eval.js";
 export * from "./ordering.js";
 export * from "./pack-module.js";
+export * from "./app-manifest.js";
+export * from "./host-events.js";

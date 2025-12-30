@@ -16,6 +16,6 @@ export async function blockWork(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Block ${workId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Block ${workId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

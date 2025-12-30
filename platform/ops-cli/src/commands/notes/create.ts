@@ -55,6 +55,6 @@ export async function createNote(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Note ${note_id} created (${outcome.status}, events: ${outcome.produced_events.length})`,
+    `Note ${note_id} created (${outcome.status}, events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

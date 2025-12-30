@@ -35,6 +35,7 @@ export {
 } from "./errors.js";
 
 export * as Envelopes from "./envelopes/index.js";
+export { validateDedupeScope } from "./envelopes/command.js";
 export * as Identity from "./identity/index.js";
 export * as Storage from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
@@ -50,6 +51,8 @@ export * as Memory from "./memory/index.js";
 export type {
   EventStore,
   CommandLog,
+  CommandLogTryStartInput,
+  CommandLogTryStartResult,
   ArtifactStore,
 } from "./storage/interfaces.js";
 export type {
@@ -61,6 +64,11 @@ export type {
 } from "./memory/types.js";
 export type { ActorRef } from "./envelopes/actor.js";
 export type { EventEnvelope } from "./envelopes/event.js";
+export type {
+  CommandEnvelope,
+  CommandOutcome,
+  DedupeScope,
+} from "./envelopes/command.js";
 export { generateEventId, hashCanonical } from "./identity/index.js";
 export { randomId, deterministicId } from "./identity/index.js";
 export * as Authz from "./authz/index.js";
@@ -100,6 +108,7 @@ export type {
   PackModule,
   PackContext,
   PackEventHandler,
+  PackCommandHandler,
 } from "./contracts/pack-module.js";
 export type {
   ProjectionDefinition,

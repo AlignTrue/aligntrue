@@ -58,7 +58,7 @@ export async function editNote(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Updated ${noteId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Updated ${noteId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }
 

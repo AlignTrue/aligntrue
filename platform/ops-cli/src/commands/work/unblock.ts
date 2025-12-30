@@ -15,6 +15,6 @@ export async function unblockWork(args: string[]): Promise<void> {
   );
 
   console.log(
-    `Unblock ${workId}: ${outcome.status} (events: ${outcome.produced_events.length})`,
+    `Unblock ${workId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,
   );
 }

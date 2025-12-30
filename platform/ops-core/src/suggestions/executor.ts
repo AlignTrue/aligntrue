@@ -259,21 +259,23 @@ export class SuggestionExecutor {
     const ledger = Tasks.createJsonlTaskLedger({
       allowExternalPaths: this.allowExternalPaths,
     });
+    const command_id = Identity.generateCommandId({
+      command_type: "task.triage",
+      task_id: triage.task_id,
+    });
     const cmd: CommandEnvelope<
       Tasks.TaskCommandType,
       Tasks.TaskCommandPayload
     > = {
-      command_id: Identity.generateCommandId({
-        command_type: "task.triage",
-        task_id: triage.task_id,
-      }),
+      command_id,
+      idempotency_key: command_id,
       command_type: "task.triage",
       payload: {
         task_id: triage.task_id,
         bucket: triage.to_bucket,
       },
       target_ref: `task:${triage.task_id}`,
-      dedupe_scope: `task:${triage.task_id}`,
+      dedupe_scope: "target",
       correlation_id: Identity.randomId(),
       actor,
       requested_at: this.now(),
@@ -301,21 +303,23 @@ export class SuggestionExecutor {
     const ledger = Notes.createJsonlNoteLedger({
       allowExternalPaths: this.allowExternalPaths,
     });
+    const command_id = Identity.generateCommandId({
+      command_type: "note.update",
+      note_id: payload.note_id,
+    });
     const cmd: CommandEnvelope<
       Notes.NoteCommandType,
       Notes.NoteCommandPayload
     > = {
-      command_id: Identity.generateCommandId({
-        command_type: "note.update",
-        note_id: payload.note_id,
-      }),
+      command_id,
+      idempotency_key: command_id,
       command_type: "note.update",
       payload: {
         note_id: payload.note_id,
         title: payload.suggested_title,
       },
       target_ref: `note:${payload.note_id}`,
-      dedupe_scope: `note:${payload.note_id}`,
+      dedupe_scope: "target",
       correlation_id: Identity.randomId(),
       actor,
       requested_at: this.now(),
