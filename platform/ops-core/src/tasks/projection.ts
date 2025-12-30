@@ -64,10 +64,13 @@ export function buildTasksProjectionFromState(
   state: TasksProjectionState,
 ): TasksProjection {
   const tasks = Array.from(state.tasks.values()).sort((a, b) => {
-    if (a.status === b.status) {
-      return b.updated_at.localeCompare(a.updated_at);
+    if (a.status !== b.status) {
+      return a.status === "open" ? -1 : 1;
     }
-    return a.status === "open" ? -1 : 1;
+    if (a.updated_at === b.updated_at) {
+      return a.id.localeCompare(b.id);
+    }
+    return a.updated_at > b.updated_at ? -1 : 1;
   });
   return { tasks };
 }
