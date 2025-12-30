@@ -257,6 +257,7 @@ export async function createPackRuntime(
         | "causation_id"
         | "command_id"
         | "idempotency_key"
+        | "requested_at"
       > &
         Partial<Pick<CommandEnvelope, "command_id" | "idempotency_key">>,
     ): Promise<CommandOutcome> => {

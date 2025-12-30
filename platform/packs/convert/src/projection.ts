@@ -4,6 +4,7 @@ import type {
 } from "@aligntrue/ops-core";
 import type { EventEnvelope } from "@aligntrue/ops-core";
 import { Contracts, Identity } from "@aligntrue/ops-core";
+type ConversionMeta = Contracts.ConversionMeta;
 
 const { TASK_EVENT_TYPES, NOTE_EVENT_TYPES } = Contracts;
 
@@ -91,7 +92,7 @@ export const ConversionsProjectionDef: ProjectionDefinition<ConversionsProjectio
 function buildRecordFromConversion(opts: {
   entity_id: string;
   entity_type: "task" | "note";
-  conversion?: Contracts.ConversionMeta;
+  conversion?: ConversionMeta;
   actor: Contracts.ActorRef | undefined;
 }): ConversionRecord | undefined {
   if (!opts.conversion) return undefined;

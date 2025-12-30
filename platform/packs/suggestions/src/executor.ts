@@ -281,7 +281,6 @@ export class SuggestionExecutor {
       target_ref: `task:${triage.task_id}`,
       dedupe_scope: "target",
       idempotency_key,
-      requested_at: this.now(),
       capability_id: Contracts.TASK_COMMAND_TYPES.Triage,
     });
   }
@@ -304,7 +303,6 @@ export class SuggestionExecutor {
       target_ref: `note:${payload.note_id}`,
       dedupe_scope: "target",
       idempotency_key,
-      requested_at: this.now(),
       capability_id: Contracts.NOTE_COMMAND_TYPES.Update,
     });
   }

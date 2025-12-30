@@ -2,6 +2,7 @@ import type {
   PackCommandHandler,
   EventStore,
   EventEnvelope,
+  CommandOutcome,
 } from "@aligntrue/ops-core";
 import {
   Contracts,
@@ -11,22 +12,49 @@ import {
   Emails,
 } from "@aligntrue/ops-core";
 
-const { CONVERT_COMMAND_TYPES, TASK_COMMAND_TYPES, NOTE_COMMAND_TYPES } =
-  Contracts;
+const {
+  CONVERT_COMMAND_TYPES,
+  TASK_COMMAND_TYPES,
+  NOTE_COMMAND_TYPES,
+  EMAIL_EVENT_TYPES,
+} = { ...Contracts, ...Emails };
 
 type ConvertPayload =
   | Contracts.ConvertEmailToTaskPayload
   | Contracts.ConvertEmailToNotePayload;
 
+function mapConversionMethod(
+  method: ConvertPayload["conversion_method"],
+): Contracts.ConversionMeta["conversion_method"] {
+  switch (method) {
+    case "user_action":
+      return "user_action";
+    case "suggestion":
+      return "ai_suggestion_accepted";
+    case "rule":
+      return "rule_triggered";
+    default:
+      return "user_action";
+  }
+}
+
 export const commandHandlers: Record<string, PackCommandHandler> = {
   [CONVERT_COMMAND_TYPES.EmailToTask]: async (command, context) => {
     if (!OPS_TASKS_ENABLED) {
-      return { status: "rejected", reason: "Tasks are disabled" };
+      return {
+        command_id: command.command_id,
+        status: "rejected",
+        reason: "Tasks are disabled",
+      };
     }
     const payload = command.payload as Contracts.ConvertEmailToTaskPayload;
     const email = await findEmail(context.eventStore, payload);
     if (!email) {
-      return { status: "failed", reason: "Email not found for conversion" };
+      return {
+        command_id: command.command_id,
+        status: "failed",
+        reason: "Email not found for conversion",
+      };
     }
 
     const now = new Date().toISOString();
@@ -35,7 +63,7 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
     const conversion: Contracts.ConversionMeta = {
       from_source_type: "email",
       from_source_ref: source_ref,
-      conversion_method: payload.conversion_method,
+      conversion_method: mapConversionMethod(payload.conversion_method),
       converted_at: now,
     };
 
@@ -44,7 +72,7 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
       title: payload.title ?? email.payload.subject ?? "(no subject)",
       bucket: "today",
       status: "open",
-      source_ref,
+      ...(source_ref ? { source_ref } : {}),
       conversion,
     };
 
@@ -56,22 +84,25 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
       capability_id: TASK_COMMAND_TYPES.Create,
     });
 
-    return {
-      status: childOutcome.status,
-      reason: childOutcome.reason,
-      produced_events: childOutcome.produced_events,
-      child_commands: childOutcome.child_commands,
-    };
+    return normalizeOutcome(command.command_id, childOutcome);
   },
 
   [CONVERT_COMMAND_TYPES.EmailToNote]: async (command, context) => {
     if (!OPS_NOTES_ENABLED) {
-      return { status: "rejected", reason: "Notes are disabled" };
+      return {
+        command_id: command.command_id,
+        status: "rejected",
+        reason: "Notes are disabled",
+      };
     }
     const payload = command.payload as Contracts.ConvertEmailToNotePayload;
     const email = await findEmail(context.eventStore, payload);
     if (!email) {
-      return { status: "failed", reason: "Email not found for conversion" };
+      return {
+        command_id: command.command_id,
+        status: "failed",
+        reason: "Email not found for conversion",
+      };
     }
 
     const now = new Date().toISOString();
@@ -80,7 +111,7 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
     const conversion: Contracts.ConversionMeta = {
       from_source_type: "email",
       from_source_ref: source_ref,
-      conversion_method: payload.conversion_method,
+      conversion_method: mapConversionMethod(payload.conversion_method),
       converted_at: now,
     };
 
@@ -94,7 +125,7 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
       title: payload.title ?? email.payload.subject ?? "Email note",
       body_md,
       content_hash: Identity.hashCanonical(body_md),
-      source_ref,
+      ...(source_ref ? { source_ref } : {}),
       conversion,
     };
 
@@ -106,27 +137,22 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
       capability_id: NOTE_COMMAND_TYPES.Create,
     });
 
-    return {
-      status: childOutcome.status,
-      reason: childOutcome.reason,
-      produced_events: childOutcome.produced_events,
-      child_commands: childOutcome.child_commands,
-    };
+    return normalizeOutcome(command.command_id, childOutcome);
   },
 };
 
-async function findEmail(eventStore: EventStore, input: ConvertPayload) {
+async function findEmail(
+  eventStore: EventStore,
+  input: ConvertPayload,
+): Promise<EventEnvelope<
+  (typeof EMAIL_EVENT_TYPES)["EmailMessageIngested"],
+  Emails.EmailMessageIngestedPayload
+> | null> {
   for await (const event of eventStore.stream()) {
-    if (event.event_type !== Emails.EMAIL_EVENT_TYPES.EmailMessageIngested)
-      continue;
+    if (event.event_type !== EMAIL_EVENT_TYPES.EmailMessageIngested) continue;
     const emailEvent = event as EventEnvelope<
-      (typeof Emails.EMAIL_EVENT_TYPES)["EmailMessageIngested"],
-      {
-        source_ref?: string;
-        message_id?: string;
-        subject?: string;
-        snippet?: string;
-      }
+      (typeof EMAIL_EVENT_TYPES)["EmailMessageIngested"],
+      Emails.EmailMessageIngestedPayload
     >;
     if (
       (input.source_ref &&
@@ -137,4 +163,21 @@ async function findEmail(eventStore: EventStore, input: ConvertPayload) {
     }
   }
   return null;
+}
+
+function normalizeOutcome(
+  parentCommandId: string,
+  outcome: CommandOutcome,
+): CommandOutcome {
+  return {
+    command_id: parentCommandId,
+    status: outcome.status,
+    ...(outcome.reason !== undefined ? { reason: outcome.reason } : {}),
+    ...(outcome.produced_events !== undefined
+      ? { produced_events: outcome.produced_events }
+      : {}),
+    ...(outcome.child_commands !== undefined
+      ? { child_commands: outcome.child_commands }
+      : {}),
+  };
 }
