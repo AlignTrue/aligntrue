@@ -183,6 +183,7 @@ async function resolvePack(packRef: PackReference): Promise<ResolvedPack> {
 
   const pkgJsonPath = eval("_nodeRequire").resolve(
     `${packRef.name}/package.json`,
+    { paths: [process.cwd()] },
   );
   const pkgDir = dirname(pkgJsonPath);
   // eslint-disable-next-line security/detect-non-literal-fs-filename

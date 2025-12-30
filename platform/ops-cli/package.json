@@ -20,6 +20,7 @@
     "@aligntrue/ops-shared-google-gmail": "workspace:*",
     "@aligntrue/ops-shared-google-calendar": "workspace:*",
     "@aligntrue/pack-tasks": "workspace:*",
+    "@aligntrue/pack-notes": "workspace:*",
     "@huggingface/transformers": "^3.0.0"
   },
   "devDependencies": {

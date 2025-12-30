@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type {
   CommandEnvelope,
@@ -8,6 +10,8 @@ import type { ActorRef } from "../src/envelopes/actor.js";
 
 const now = new Date().toISOString();
 const actor: ActorRef = { actor_id: "actor-1", actor_type: "agent" };
+
+const CORE_SRC = path.resolve(new URL("../src", import.meta.url).pathname);
 
 function sortCanonical(events: EventEnvelope[]): EventEnvelope[] {
   return [...events].sort((a, b) => {
@@ -142,10 +146,45 @@ describe("constitution guardrails", () => {
   });
 
   it("does not construct TaskLedger outside pack-tasks", () => {
-    expect(true).toBe(true);
+    const matches: string[] = [];
+    for (const file of walkTsFiles(CORE_SRC)) {
+      const content = fs.readFileSync(file, "utf8");
+      if (content.includes("TaskLedger")) {
+        matches.push(file);
+      }
+    }
+    expect(matches).toEqual([]);
   });
 
   it("ops-core does not import from packs", () => {
-    expect(true).toBe(true);
+    const forbiddenImport = new RegExp(
+      String.raw`from ["'].*(/packs/|@aligntrue/pack-)`,
+    );
+    const violations: string[] = [];
+    for (const file of walkTsFiles(CORE_SRC)) {
+      const content = fs.readFileSync(file, "utf8");
+      if (forbiddenImport.test(content)) {
+        violations.push(file);
+      }
+    }
+    expect(violations).toEqual([]);
   });
 });
+
+// Helpers
+function walkTsFiles(dir: string): string[] {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...walkTsFiles(full));
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))
+    ) {
+      files.push(full);
+    }
+  }
+  return files;
+}

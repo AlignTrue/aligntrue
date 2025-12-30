@@ -38,6 +38,12 @@ export interface CommandEnvelope<T extends string = string, P = unknown> {
   readonly causation_type?: CommandCausationType;
 }
 
+export interface PackIdentity {
+  readonly pack_id: string;
+  readonly pack_version: string;
+  readonly pack_integrity: string;
+}
+
 export interface CommandOutcome {
   readonly command_id: string;
   readonly status:
@@ -49,6 +55,11 @@ export interface CommandOutcome {
   readonly reason?: string;
   readonly produced_events?: string[];
   readonly completed_at?: string;
+  /**
+   * Set by runtime to record which pack handled the command.
+   * Handlers MUST NOT set this directly.
+   */
+  readonly handled_by?: PackIdentity;
 }
 
 const REQUIRED_COMMAND_FIELDS: (keyof CommandEnvelope)[] = [

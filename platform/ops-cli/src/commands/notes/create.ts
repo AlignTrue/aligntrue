@@ -1,4 +1,5 @@
 import { Identity } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { buildCommand, createLedger, ensureNotesEnabled } from "./shared.js";
 
@@ -46,11 +47,10 @@ export async function createNote(args: string[]): Promise<void> {
   const note_id: string = customId ?? Identity.deterministicId(title);
   const ledger = createLedger();
   const outcome = await ledger.execute(
-    buildCommand("note.create", {
+    buildCommand(PackNotes.NOTE_COMMAND_TYPES.Create, {
       note_id,
       title,
       body_md,
-      content_hash: "",
     }),
   );
 

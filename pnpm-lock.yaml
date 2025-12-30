@@ -93,6 +93,9 @@ importers:
       '@aligntrue/ops-shared-google-gmail':
         specifier: workspace:*
         version: link:../../platform/ops-shared/google-gmail
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../../platform/packs/notes
       '@aligntrue/pack-tasks':
         specifier: workspace:*
         version: link:../../platform/packs/tasks
@@ -602,6 +605,9 @@ importers:
       '@aligntrue/ops-shared-google-gmail':
         specifier: workspace:*
         version: link:../ops-shared/google-gmail
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../packs/notes
       '@aligntrue/pack-tasks':
         specifier: workspace:*
         version: link:../packs/tasks
@@ -683,6 +689,12 @@ importers:
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   platform/packs/hello-world:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../ops-core
+
+  platform/packs/notes:
     dependencies:
       '@aligntrue/ops-core':
         specifier: workspace:*

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { OPS_NOTES_ENABLED, Identity, Notes } from "@aligntrue/ops-core";
+import { OPS_NOTES_ENABLED, Identity } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
+import { getHost } from "@/lib/ops-services";
 
 export async function POST(request: Request) {
   if (!OPS_NOTES_ENABLED) {
@@ -16,13 +18,15 @@ export async function POST(request: Request) {
   }
 
   const payload = { note_id: body.note_id, line_index: body.line_index };
-  const command: Notes.NoteCommandEnvelope<"note.patch_checkbox"> = {
+  const command: PackNotes.NoteCommandEnvelope<
+    typeof PackNotes.NOTE_COMMAND_TYPES.PatchCheckbox
+  > = {
     command_id: Identity.randomId(),
     idempotency_key: Identity.deterministicId({
       note_id: body.note_id,
       line_index: body.line_index,
     }),
-    command_type: "note.patch_checkbox",
+    command_type: PackNotes.NOTE_COMMAND_TYPES.PatchCheckbox,
     payload,
     target_ref: `note:${payload.note_id}`,
     dedupe_scope: "target",
@@ -31,10 +35,9 @@ export async function POST(request: Request) {
     requested_at: new Date().toISOString(),
   };
 
-  const ledger = Notes.createJsonlNoteLedger();
-
   try {
-    const outcome = await ledger.execute(command);
+    const host = await getHost();
+    const outcome = await host.runtime.dispatchCommand(command);
     return NextResponse.json({ status: outcome.status });
   } catch (err) {
     return NextResponse.json(

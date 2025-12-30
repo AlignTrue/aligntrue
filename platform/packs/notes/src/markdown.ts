@@ -1,9 +1,3 @@
-import { hashCanonical } from "../identity/hash.js";
-
-export function contentHash(body_md: string): string {
-  return hashCanonical(body_md);
-}
-
 export function toggleCheckboxAtLine(
   body_md: string,
   lineIndex: number,
@@ -13,10 +7,15 @@ export function toggleCheckboxAtLine(
   afterLine: string;
 } {
   const lines = body_md.split("\n");
-  if (lineIndex < 0 || lineIndex >= lines.length) {
+  const idx = Math.floor(lineIndex);
+  if (idx < 0 || idx >= lines.length) {
     throw new Error("Line index out of range for checkbox toggle");
   }
-  const line = lines[lineIndex] ?? "";
+  // eslint-disable-next-line security/detect-object-injection
+  const line = lines[idx];
+  if (line === undefined) {
+    throw new Error("Line index out of range for checkbox toggle");
+  }
   const match = line.match(/^(\s*-\s*\[)( |x|X)(\]\s*)(.*)$/);
   if (!match) {
     throw new Error("Selected line is not a checkbox item");
@@ -26,7 +25,7 @@ export function toggleCheckboxAtLine(
   const nextChecked = effectiveChecked.toLowerCase() === "x" ? " " : "x";
   const nextLine = `${prefix}${nextChecked}${suffix}${rest}`;
   const nextLines = [...lines];
-  nextLines[lineIndex] = nextLine;
+  nextLines.splice(idx, 1, nextLine);
   return {
     nextBody: nextLines.join("\n"),
     beforeLine: line,

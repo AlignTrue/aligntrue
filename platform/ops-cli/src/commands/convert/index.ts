@@ -5,8 +5,10 @@ import {
   Convert,
   Storage,
   Identity,
+  type CommandEnvelope,
 } from "@aligntrue/ops-core";
 import { TaskLedger } from "@aligntrue/pack-tasks";
+import * as PackNotes from "@aligntrue/pack-notes";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import { exitWithError } from "../../utils/command-utilities.js";
 
@@ -49,11 +51,9 @@ async function convertEmailToTask(args: string[]): Promise<void> {
 
   const eventStore = new Storage.JsonlEventStore();
   const commandLog = new Storage.JsonlCommandLog();
+  const runtimeDispatch = buildRuntimeDispatch(eventStore, commandLog);
   const service = new Convert.ConversionService(eventStore, commandLog, {
-    runtimeDispatch: (cmd) => {
-      const ledger = new TaskLedger(eventStore, commandLog);
-      return ledger.execute(cmd as never);
-    },
+    runtimeDispatch,
   });
 
   const result = await service.convertEmailToTask({
@@ -121,7 +121,10 @@ async function convertEmailToNote(args: string[]): Promise<void> {
 
   const eventStore = new Storage.JsonlEventStore();
   const commandLog = new Storage.JsonlCommandLog();
-  const service = new Convert.ConversionService(eventStore, commandLog);
+  const runtimeDispatch = buildRuntimeDispatch(eventStore, commandLog);
+  const service = new Convert.ConversionService(eventStore, commandLog, {
+    runtimeDispatch,
+  });
 
   const result = await service.convertEmailToNote({
     message_id: messageId,
@@ -163,5 +166,32 @@ function cliActor(): Convert.ConvertEmailToTaskInput["actor"] {
     actor_id: process.env["USER"] || "cli-user",
     actor_type: "human",
     display_name: process.env["USER"] || "CLI User",
+  };
+}
+
+function buildRuntimeDispatch(
+  eventStore: Storage.JsonlEventStore,
+  commandLog: Storage.JsonlCommandLog,
+) {
+  return (cmd: unknown) => {
+    const envelope = cmd as Partial<CommandEnvelope>;
+    const commandType = envelope?.command_type ?? "";
+    if (
+      typeof commandType === "string" &&
+      commandType.startsWith("pack.tasks")
+    ) {
+      const ledger = new TaskLedger(eventStore, commandLog);
+      return ledger.execute(cmd as never);
+    }
+    if (
+      typeof commandType === "string" &&
+      commandType.startsWith("pack.notes")
+    ) {
+      const ledger = new PackNotes.NoteLedger(eventStore, commandLog);
+      return ledger.execute(cmd as never);
+    }
+    throw new Error(
+      `Unsupported command_type for convert runtimeDispatch: ${String(commandType)}`,
+    );
   };
 }

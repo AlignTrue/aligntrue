@@ -3,12 +3,12 @@ import {
   OPS_NOTES_ENABLED,
   Identity,
   Storage,
-  Notes,
   Projections,
 } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
 import { exitWithError } from "../../utils/command-utilities.js";
 
-export const CLI_ACTOR: Notes.NoteCommandEnvelope["actor"] = {
+export const CLI_ACTOR: PackNotes.NoteCommandEnvelope["actor"] = {
   actor_id: process.env["USER"] || "cli-user",
   actor_type: "human",
   display_name: process.env["USER"] || "CLI User",
@@ -27,14 +27,14 @@ export function ensureNotesEnabled(): void {
   }
 }
 
-export function createLedger(): Notes.NoteLedger {
-  return Notes.createJsonlNoteLedger();
+export function createLedger(): PackNotes.NoteLedger {
+  return PackNotes.createJsonlNoteLedger();
 }
 
-export function buildCommand<T extends Notes.NoteCommandType>(
+export function buildCommand<T extends PackNotes.NoteCommandType>(
   command_type: T,
-  payload: Notes.NoteCommandPayload,
-): Notes.NoteCommandEnvelope<T> {
+  payload: PackNotes.NoteCommandPayload,
+): PackNotes.NoteCommandEnvelope<T> {
   const target =
     "note_id" in payload
       ? `note:${(payload as { note_id: string }).note_id}`
@@ -50,15 +50,15 @@ export function buildCommand<T extends Notes.NoteCommandType>(
     correlation_id: Identity.randomId(),
     actor: CLI_ACTOR,
     requested_at: new Date().toISOString(),
-  } as Notes.NoteCommandEnvelope<T>;
+  } as PackNotes.NoteCommandEnvelope<T>;
 }
 
 export async function readNotesProjection() {
   const rebuilt = await Projections.rebuildOne(
-    Projections.NotesProjectionDef,
-    new Storage.JsonlEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
+    PackNotes.NotesProjectionDef,
+    new Storage.JsonlEventStore(PackNotes.DEFAULT_NOTES_EVENTS_PATH),
   );
-  return Projections.buildNotesProjectionFromState(
-    rebuilt.data as Projections.NotesProjectionState,
+  return PackNotes.buildNotesProjectionFromState(
+    rebuilt.data as PackNotes.NotesProjectionState,
   );
 }

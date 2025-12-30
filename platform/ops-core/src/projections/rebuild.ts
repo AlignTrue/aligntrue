@@ -24,7 +24,6 @@ import {
   buildRunsProjectionFromState,
   type RunsProjectionState,
 } from "./runs.js";
-import { NotesProjectionDef } from "./notes.js";
 import { InboxProjectionDef } from "./inbox.js";
 import { ConversionsProjectionDef } from "./conversions.js";
 
@@ -110,7 +109,6 @@ defaultRegistry
   .register(WorkItemsProjectionDef)
   .register(ReadyQueueProjectionDef)
   .register(RunsProjectionDef)
-  .register(NotesProjectionDef)
   .register(ConversionsProjectionDef)
   .register(InboxProjectionDef);
 

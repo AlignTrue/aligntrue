@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { OPS_NOTES_ENABLED, Identity, Notes } from "@aligntrue/ops-core";
+import { OPS_NOTES_ENABLED, Identity } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
+import { getHost } from "@/lib/ops-services";
 
 export async function POST(request: Request) {
   if (!OPS_NOTES_ENABLED) {
@@ -15,15 +17,17 @@ export async function POST(request: Request) {
     }
 
     const note_id = Identity.deterministicId(title);
-    const command_type = "note.create";
-    const payload = {
+    const command_type = PackNotes.NOTE_COMMAND_TYPES.Create;
+    const payload: PackNotes.NoteCreatedPayload = {
       note_id,
       title: title.trim(),
       body_md,
-      content_hash: "",
-    } as Notes.NoteCommandPayload;
+      content_hash: Identity.hashCanonical(body_md),
+    };
 
-    const command: Notes.NoteCommandEnvelope = {
+    const command: PackNotes.NoteCommandEnvelope<
+      typeof PackNotes.NOTE_COMMAND_TYPES.Create
+    > = {
       command_id: Identity.randomId(),
       idempotency_key: Identity.deterministicId({ title, body_md }),
       command_type,
@@ -38,8 +42,8 @@ export async function POST(request: Request) {
       requested_at: new Date().toISOString(),
     };
 
-    const ledger = Notes.createJsonlNoteLedger();
-    await ledger.execute(command);
+    const host = await getHost();
+    await host.runtime.dispatchCommand(command);
 
     return NextResponse.json({
       success: true,

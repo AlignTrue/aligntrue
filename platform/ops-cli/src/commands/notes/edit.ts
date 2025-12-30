@@ -9,7 +9,7 @@ import {
   ensureNotesEnabled,
   readNotesProjection,
 } from "./shared.js";
-import { Projections } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
 
 export async function editNote(args: string[]): Promise<void> {
   ensureNotesEnabled();
@@ -22,7 +22,7 @@ export async function editNote(args: string[]): Promise<void> {
 
   const projection = await readNotesProjection();
   const note = projection.notes.find(
-    (n: Projections.NoteLatest) => n.id === noteId,
+    (n: PackNotes.NoteLatest) => n.id === noteId,
   );
   if (!note) {
     exitWithError(1, `Note ${noteId} not found`);
@@ -51,7 +51,7 @@ export async function editNote(args: string[]): Promise<void> {
 
   const ledger = createLedger();
   const outcome = await ledger.execute(
-    buildCommand("note.update", {
+    buildCommand(PackNotes.NOTE_COMMAND_TYPES.Update, {
       note_id: noteId,
       body_md: nextBody,
     }),

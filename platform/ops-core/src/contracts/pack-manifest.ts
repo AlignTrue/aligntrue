@@ -10,6 +10,11 @@ export interface PackDependency {
 export interface PackManifest {
   readonly pack_id: string; // namespaced id, e.g., pack.personal-crm
   readonly version: string; // semver
+  /**
+   * Optional integrity hash of the built pack artifact.
+   * When present, hosts should record it in receipts.
+   */
+  readonly integrity?: string;
   readonly required_core: string; // semver range for ops-core
   readonly required_contracts?: PackDependency[]; // contract module versions
   readonly required_models?: PackDependency[]; // model/tool versions pinned

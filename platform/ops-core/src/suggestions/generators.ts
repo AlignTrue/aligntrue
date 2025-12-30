@@ -53,9 +53,19 @@ export interface TaskTriageGeneratorInput extends GeneratorCommonInput {
   readonly window_days?: number;
 }
 
+type NotesProjection = {
+  notes: Array<{
+    id: string;
+    title: string;
+    body_md: string;
+    content_hash: string;
+  }>;
+};
+
 export interface NoteHygieneGeneratorInput extends GeneratorCommonInput {
-  readonly notes: Projections.NotesProjection;
+  readonly notes: NotesProjection;
   readonly notes_hash: string;
+  readonly notes_projection_version: string;
 }
 
 export interface EmailConversionGeneratorInput extends GeneratorCommonInput {
@@ -170,7 +180,7 @@ export async function generateNoteHygieneSuggestions(
     referenced_entities: ["note"],
     referenced_fields: ["id", "title", "body_md"],
     filters: { title: "missing_or_empty" },
-    projection_version: Projections.NotesProjectionDef.version,
+    projection_version: input.notes_projection_version,
     created_at: now,
     created_by: input.actor,
     correlation_id,

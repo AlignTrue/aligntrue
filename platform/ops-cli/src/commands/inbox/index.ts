@@ -4,8 +4,8 @@ import {
   Suggestions,
   Storage,
   Projections,
-  Notes,
 } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
 import { createJsonlTaskLedger } from "@aligntrue/pack-tasks";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
@@ -43,7 +43,11 @@ async function handleGenerate(): Promise<void> {
   const suggestionEvents = Suggestions.createSuggestionEventStore();
 
   const { projection: tasks, hash: tasksHash } = await readTasksProjection();
-  const { projection: notes, hash: notesHash } = await readNotesProjection();
+  const {
+    projection: notes,
+    hash: notesHash,
+    version: notesVersion,
+  } = await readNotesProjection();
 
   const result = Suggestions.combineResults(
     await Suggestions.generateTaskTriageSuggestions({
@@ -56,6 +60,7 @@ async function handleGenerate(): Promise<void> {
       artifactStore,
       notes,
       notes_hash: notesHash,
+      notes_projection_version: notesVersion,
       actor: CLI_ACTOR,
     }),
   );
@@ -177,13 +182,19 @@ function ensureEnabled() {
 }
 
 async function readNotesProjection() {
-  const store = new Storage.JsonlEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH);
+  const store = new Storage.JsonlEventStore(
+    PackNotes.DEFAULT_NOTES_EVENTS_PATH,
+  );
   const rebuilt = await Projections.rebuildOne(
-    Projections.NotesProjectionDef,
+    PackNotes.NotesProjectionDef,
     store,
   );
-  const projection = Projections.buildNotesProjectionFromState(
-    rebuilt.data as Projections.NotesProjectionState,
+  const projection = PackNotes.buildNotesProjectionFromState(
+    rebuilt.data as PackNotes.NotesProjectionState,
   );
-  return { projection, hash: Projections.hashNotesProjection(projection) };
+  return {
+    projection,
+    hash: PackNotes.hashNotesProjection(projection),
+    version: PackNotes.NotesProjectionDef.version,
+  };
 }

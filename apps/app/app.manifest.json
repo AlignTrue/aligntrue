@@ -6,11 +6,19 @@
       "name": "@aligntrue/pack-tasks",
       "version": "0.0.1",
       "source": "workspace"
+    },
+    {
+      "name": "@aligntrue/pack-notes",
+      "version": "0.0.1",
+      "source": "workspace"
     }
   ],
   "capabilities": [
     "pack.tasks.create",
     "pack.tasks.complete",
-    "pack.tasks.triage"
+    "pack.tasks.triage",
+    "pack.notes.create",
+    "pack.notes.update",
+    "pack.notes.patch_checkbox"
   ]
 }

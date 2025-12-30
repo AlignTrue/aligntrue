@@ -1,14 +1,19 @@
-import type {
-  ProjectionDefinition,
-  ProjectionFreshness,
-} from "./definition.js";
-import type { EventEnvelope } from "../envelopes/index.js";
-import { hashCanonical } from "../identity/hash.js";
+import {
+  hashCanonical,
+  type ProjectionDefinition,
+  type ProjectionFreshness,
+  type EventEnvelope,
+} from "@aligntrue/ops-core";
 import {
   NOTE_EVENT_TYPES,
+  LEGACY_NOTE_EVENT_TYPES,
   type NoteEvent,
+  type NoteCreatedPayload,
   type NoteUpdatedPayload,
-} from "../notes/events.js";
+  type NotePatchedPayload,
+} from "./events.js";
+
+export const NOTE_PROJECTION = "pack.notes.latest" as const;
 
 export interface NoteLatest {
   id: string;
@@ -29,7 +34,7 @@ export interface NotesProjectionState extends ProjectionFreshness {
 }
 
 export const NotesProjectionDef: ProjectionDefinition<NotesProjectionState> = {
-  name: "note_latest",
+  name: NOTE_PROJECTION,
   version: "1.0.0",
   init(): NotesProjectionState {
     return {
@@ -45,28 +50,34 @@ export const NotesProjectionDef: ProjectionDefinition<NotesProjectionState> = {
     switch (event.event_type) {
       case NOTE_EVENT_TYPES.NoteCreated:
       case NOTE_EVENT_TYPES.NoteUpdated:
-      case NOTE_EVENT_TYPES.NotePatched: {
+      case NOTE_EVENT_TYPES.NotePatched:
+      case LEGACY_NOTE_EVENT_TYPES.NoteCreated:
+      case LEGACY_NOTE_EVENT_TYPES.NoteUpdated:
+      case LEGACY_NOTE_EVENT_TYPES.NotePatched: {
         const noteEvent = event as NoteEvent;
+        const payload = noteEvent.payload as { note_id: string };
+        const noteId = payload.note_id;
         const next = new Map(state.notes);
-        const existing = next.get(noteEvent.payload.note_id);
+        const existing = next.get(noteId);
 
-        if (noteEvent.event_type === NOTE_EVENT_TYPES.NoteCreated) {
-          next.set(noteEvent.payload.note_id, {
-            id: noteEvent.payload.note_id,
-            title: noteEvent.payload.title,
-            body_md: noteEvent.payload.body_md,
-            content_hash: noteEvent.payload.content_hash,
-            ...(noteEvent.payload.source_ref !== undefined
-              ? { source_ref: noteEvent.payload.source_ref }
+        if (
+          noteEvent.event_type === NOTE_EVENT_TYPES.NoteCreated ||
+          noteEvent.event_type === LEGACY_NOTE_EVENT_TYPES.NoteCreated
+        ) {
+          const createPayload = noteEvent.payload as NoteCreatedPayload;
+          next.set(noteId, {
+            id: noteId,
+            title: createPayload.title,
+            body_md: createPayload.body_md,
+            content_hash: createPayload.content_hash,
+            ...(createPayload.source_ref !== undefined
+              ? { source_ref: createPayload.source_ref }
               : {}),
             created_at: noteEvent.occurred_at,
             updated_at: noteEvent.ingested_at,
           });
         } else if (existing) {
-          next.set(
-            noteEvent.payload.note_id,
-            applyNoteUpdate(existing, noteEvent as NoteEvent),
-          );
+          next.set(noteId, applyNoteUpdate(existing, noteEvent));
         }
 
         return {
@@ -89,7 +100,8 @@ export const NotesProjectionDef: ProjectionDefinition<NotesProjectionState> = {
 
 function applyNoteUpdate(existing: NoteLatest, event: NoteEvent): NoteLatest {
   switch (event.event_type) {
-    case NOTE_EVENT_TYPES.NoteUpdated: {
+    case NOTE_EVENT_TYPES.NoteUpdated:
+    case LEGACY_NOTE_EVENT_TYPES.NoteUpdated: {
       const payload = event.payload as NoteUpdatedPayload;
       const next: NoteLatest = { ...existing, updated_at: event.ingested_at };
 
@@ -103,12 +115,15 @@ function applyNoteUpdate(existing: NoteLatest, event: NoteEvent): NoteLatest {
       return next;
     }
     case NOTE_EVENT_TYPES.NotePatched:
+    case LEGACY_NOTE_EVENT_TYPES.NotePatched: {
+      const payload = event.payload as NotePatchedPayload;
       return {
         ...existing,
-        body_md: event.payload.body_md,
-        content_hash: event.payload.content_hash,
+        body_md: payload.body_md,
+        content_hash: payload.content_hash,
         updated_at: event.ingested_at,
       };
+    }
     default:
       return existing;
   }

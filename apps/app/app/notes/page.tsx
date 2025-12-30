@@ -1,11 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  OPS_NOTES_ENABLED,
-  Identity,
-  Notes,
-  Projections,
-} from "@aligntrue/ops-core";
+import { OPS_NOTES_ENABLED, Identity, Projections } from "@aligntrue/ops-core";
+import * as PackNotes from "@aligntrue/pack-notes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,18 +13,18 @@ async function getNotesView() {
   if (!OPS_NOTES_ENABLED) return null;
   await getHost();
   const rebuilt = await Projections.rebuildOne(
-    Projections.NotesProjectionDef,
-    getEventStore(Notes.DEFAULT_NOTES_EVENTS_PATH),
+    PackNotes.NotesProjectionDef,
+    getEventStore(PackNotes.DEFAULT_NOTES_EVENTS_PATH),
   );
-  return Projections.buildNotesProjectionFromState(
-    rebuilt.data as Projections.NotesProjectionState,
+  return PackNotes.buildNotesProjectionFromState(
+    rebuilt.data as PackNotes.NotesProjectionState,
   );
 }
 
-function buildCommand<T extends Notes.NoteCommandType>(
+function buildCommand<T extends PackNotes.NoteCommandType>(
   command_type: T,
-  payload: Notes.NoteCommandPayload,
-): Notes.NoteCommandEnvelope<T> {
+  payload: PackNotes.NoteCommandPayload,
+): PackNotes.NoteCommandEnvelope<T> {
   const target =
     "note_id" in payload
       ? `note:${(payload as { note_id: string }).note_id}`
@@ -47,15 +43,15 @@ function buildCommand<T extends Notes.NoteCommandType>(
       actor_type: "human",
     },
     requested_at: new Date().toISOString(),
-  } as Notes.NoteCommandEnvelope<T>;
+  } as PackNotes.NoteCommandEnvelope<T>;
 }
 
-async function execute(command: Notes.NoteCommandEnvelope) {
+async function execute(command: PackNotes.NoteCommandEnvelope) {
   if (!OPS_NOTES_ENABLED) {
     throw new Error("Notes are disabled");
   }
-  const ledger = Notes.createJsonlNoteLedger();
-  await ledger.execute(command);
+  const host = await getHost();
+  await host.runtime.dispatchCommand(command);
   revalidatePath("/notes");
 }
 
@@ -66,11 +62,10 @@ async function createNoteAction(formData: FormData) {
   if (!title) return;
   const note_id = Identity.deterministicId(title);
   await execute(
-    buildCommand("note.create", {
+    buildCommand(PackNotes.NOTE_COMMAND_TYPES.Create, {
       note_id,
       title,
       body_md,
-      content_hash: "",
     }),
   );
   redirect("/notes");
@@ -82,7 +77,7 @@ async function updateNoteAction(formData: FormData) {
   const body_md = String(formData.get("body_md") ?? "");
   if (!note_id) return;
   await execute(
-    buildCommand("note.update", {
+    buildCommand(PackNotes.NOTE_COMMAND_TYPES.Update, {
       note_id,
       body_md,
     }),

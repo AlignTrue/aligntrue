@@ -1,7 +1,11 @@
 import { ValidationError } from "../errors.js";
 import type { ActorRef } from "../envelopes/actor.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
-import { deterministicId, generateCommandId } from "../identity/index.js";
+import {
+  deterministicId,
+  generateCommandId,
+  hashCanonical,
+} from "../identity/index.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import {
   EMAIL_EVENT_TYPES,
@@ -12,10 +16,10 @@ import {
   type TaskCreatedPayload,
 } from "../contracts/tasks.js";
 import {
-  type NoteCommandEnvelope,
+  NOTE_COMMAND_TYPES,
   type NoteCreatedPayload,
-} from "../notes/commands.js";
-import { contentHash } from "../notes/markdown.js";
+  type NoteCommandType,
+} from "../contracts/notes.js";
 import type { ConversionMeta } from "../types/conversion.js";
 import { OPS_TASKS_ENABLED, OPS_NOTES_ENABLED } from "../config.js";
 
@@ -153,17 +157,18 @@ export class ConversionService {
       note_id,
       title: input.title ?? email.payload.subject ?? "Email note",
       body_md,
-      content_hash: contentHash(body_md),
+      content_hash: hashCanonical(body_md),
       source_ref,
       conversion,
     };
 
-    const command: NoteCommandEnvelope<"note.create"> = this.buildCommand(
-      "note.create",
-      payload,
-      `note:${note_id}`,
-      input,
-    );
+    const command: CommandEnvelope<NoteCommandType, NoteCreatedPayload> =
+      this.buildCommand(
+        NOTE_COMMAND_TYPES.Create,
+        payload,
+        `note:${note_id}`,
+        input,
+      );
 
     const outcome = await this.runtimeDispatch(command);
     return { created_id: note_id, source_ref, outcome };

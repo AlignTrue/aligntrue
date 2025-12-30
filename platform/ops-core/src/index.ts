@@ -40,7 +40,6 @@ export * as Identity from "./identity/index.js";
 export * as Storage from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
-export * as Notes from "./notes/index.js";
 export * as Convert from "./convert/index.js";
 export * as Projections from "./projections/index.js";
 export * as EntityRef from "./entity-ref.js";

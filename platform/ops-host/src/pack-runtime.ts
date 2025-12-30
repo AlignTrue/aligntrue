@@ -176,6 +176,12 @@ export async function createPackRuntime(
       return rejection;
     }
 
+    const handledBy = {
+      pack_id: pack.manifest.pack_id,
+      pack_version: pack.manifest.version,
+      pack_integrity: pack.manifest.integrity ?? "unknown",
+    };
+
     try {
       const outcome = await (handler as PackCommandHandler)(
         command,
@@ -184,6 +190,7 @@ export async function createPackRuntime(
       const normalizedOutcome: CommandOutcome = {
         command_id: command.command_id,
         status: outcome?.status ?? "accepted",
+        handled_by: handledBy,
         ...(outcome?.produced_events !== undefined
           ? { produced_events: outcome.produced_events }
           : {}),
@@ -199,6 +206,7 @@ export async function createPackRuntime(
         command_id: command.command_id,
         status: "failed",
         reason: err instanceof Error ? err.message : "Unknown error",
+        handled_by: handledBy,
       };
       await opts.commandLog.complete(command.command_id, failure);
       return failure;

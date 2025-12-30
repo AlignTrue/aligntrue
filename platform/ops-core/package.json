@@ -24,6 +24,10 @@
       "types": "./dist/contracts/tasks.d.ts",
       "import": "./dist/contracts/tasks.js"
     },
+    "./contracts/notes": {
+      "types": "./dist/contracts/notes.d.ts",
+      "import": "./dist/contracts/notes.js"
+    },
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",

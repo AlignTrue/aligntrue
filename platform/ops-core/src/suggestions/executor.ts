@@ -17,7 +17,11 @@ import type {
 } from "../storage/interfaces.js";
 import { JsonlCommandLog } from "../storage/index.js";
 import { TASK_COMMAND_TYPES, type TaskBucket } from "../contracts/tasks.js";
-import * as Notes from "../notes/index.js";
+import {
+  NOTE_COMMAND_TYPES,
+  type NoteCommandType,
+  type NoteCommandPayload,
+} from "../contracts/notes.js";
 import * as Feedback from "../feedback/index.js";
 import type {
   ApproveSuggestionPayload,
@@ -300,20 +304,14 @@ export class SuggestionExecutor {
       throw new ValidationError("Notes are disabled (OPS_NOTES_ENABLED=0)");
     }
     const payload = diff as { note_id: string; suggested_title: string };
-    const ledger = Notes.createJsonlNoteLedger({
-      allowExternalPaths: this.allowExternalPaths,
-    });
     const command_id = Identity.generateCommandId({
-      command_type: "note.update",
+      command_type: NOTE_COMMAND_TYPES.Update,
       note_id: payload.note_id,
     });
-    const cmd: CommandEnvelope<
-      Notes.NoteCommandType,
-      Notes.NoteCommandPayload
-    > = {
+    const cmd: CommandEnvelope<NoteCommandType, NoteCommandPayload> = {
       command_id,
       idempotency_key: command_id,
-      command_type: "note.update",
+      command_type: NOTE_COMMAND_TYPES.Update,
       payload: {
         note_id: payload.note_id,
         title: payload.suggested_title,
@@ -324,7 +322,7 @@ export class SuggestionExecutor {
       actor,
       requested_at: this.now(),
     };
-    await ledger.execute(cmd);
+    await this.deps.runtimeDispatch(cmd);
   }
 
   private async finish(

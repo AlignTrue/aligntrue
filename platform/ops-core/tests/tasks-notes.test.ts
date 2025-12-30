@@ -2,7 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import { Identity, Projections, Notes, Storage } from "../src/index.js";
+import { Identity, Projections, Storage } from "../src/index.js";
+// eslint-disable-next-line no-restricted-imports
+import * as PackNotes from "../packs/notes/src/index.js";
 // eslint-disable-next-line no-restricted-imports
 import {
   createJsonlTaskLedger,
@@ -129,7 +131,7 @@ describe("tasks + notes", () => {
   });
 
   it("Note checkbox patch is idempotent on retry", async () => {
-    const noteLedger = Notes.createJsonlNoteLedger({
+    const noteLedger = PackNotes.createJsonlNoteLedger({
       eventsPath,
       commandsPath,
       outcomesPath,
@@ -137,15 +139,14 @@ describe("tasks + notes", () => {
       now: () => NOW,
     });
 
-    const createCmd = buildCommand("note.create", {
+    const createCmd = buildCommand(PackNotes.NOTE_COMMAND_TYPES.Create, {
       note_id: "note-1",
       title: "Checklist",
       body_md: "- [ ] item one",
-      content_hash: "",
     });
     await noteLedger.execute(createCmd);
 
-    const patchCmd = buildCommand("note.patch_checkbox", {
+    const patchCmd = buildCommand(PackNotes.NOTE_COMMAND_TYPES.PatchCheckbox, {
       note_id: "note-1",
       line_index: 0,
     });
@@ -157,17 +158,17 @@ describe("tasks + notes", () => {
     expect(second.status).toBe("accepted");
 
     const projection = await Projections.rebuildOne(
-      Projections.NotesProjectionDef,
+      PackNotes.NotesProjectionDef,
       eventStore,
     );
-    const view = Projections.buildNotesProjectionFromState(
-      projection.data as Projections.NotesProjectionState,
+    const view = PackNotes.buildNotesProjectionFromState(
+      projection.data as PackNotes.NotesProjectionState,
     );
     expect(view.notes[0]?.body_md.trim()).toBe("- [x] item one");
   });
 
   it("Note projection rebuild is deterministic", async () => {
-    const noteLedger = Notes.createJsonlNoteLedger({
+    const noteLedger = PackNotes.createJsonlNoteLedger({
       eventsPath,
       commandsPath,
       outcomesPath,
@@ -175,37 +176,36 @@ describe("tasks + notes", () => {
       now: () => NOW,
     });
 
-    const createCmd = buildCommand("note.create", {
+    const createCmd = buildCommand(PackNotes.NOTE_COMMAND_TYPES.Create, {
       note_id: "note-2",
       title: "Doc",
       body_md: "hello",
-      content_hash: "",
     });
     await noteLedger.execute(createCmd);
 
-    const updateCmd = buildCommand("note.update", {
+    const updateCmd = buildCommand(PackNotes.NOTE_COMMAND_TYPES.Update, {
       note_id: "note-2",
       body_md: "hello world",
     });
     await noteLedger.execute(updateCmd);
 
     const first = await Projections.rebuildOne(
-      Projections.NotesProjectionDef,
+      PackNotes.NotesProjectionDef,
       eventStore,
     );
-    const firstView = Projections.buildNotesProjectionFromState(
-      first.data as Projections.NotesProjectionState,
+    const firstView = PackNotes.buildNotesProjectionFromState(
+      first.data as PackNotes.NotesProjectionState,
     );
-    const firstHash = Projections.hashNotesProjection(firstView);
+    const firstHash = PackNotes.hashNotesProjection(firstView);
 
     const second = await Projections.rebuildOne(
-      Projections.NotesProjectionDef,
+      PackNotes.NotesProjectionDef,
       eventStore,
     );
-    const secondView = Projections.buildNotesProjectionFromState(
-      second.data as Projections.NotesProjectionState,
+    const secondView = PackNotes.buildNotesProjectionFromState(
+      second.data as PackNotes.NotesProjectionState,
     );
-    const secondHash = Projections.hashNotesProjection(secondView);
+    const secondHash = PackNotes.hashNotesProjection(secondView);
 
     expect(firstHash).toBe(secondHash);
     expect(firstView.notes.length).toBe(1);

@@ -1,47 +1,87 @@
-import { PreconditionFailed, ValidationError } from "../errors.js";
+import { join } from "node:path";
+import {
+  Identity,
+  ValidationError,
+  PreconditionFailed,
+  Storage,
+} from "@aligntrue/ops-core";
 import type {
   CommandEnvelope,
   CommandOutcome,
+  CommandLog,
+  EventStore,
   EventEnvelope,
-} from "../envelopes/index.js";
-import { generateEventId } from "../identity/id.js";
-import type { CommandLog, EventStore } from "../storage/interfaces.js";
+} from "@aligntrue/ops-core";
+import {
+  NOTE_COMMAND_TYPES,
+  type NoteCommandType,
+  type NoteCreatedPayload,
+  type NoteUpdatedPayload,
+  type NotePatchedPayload,
+} from "@aligntrue/ops-core/contracts/notes";
 import {
   NOTE_EVENT_TYPES,
   NOTES_SCHEMA_VERSION,
-  type NoteCreatedPayload,
   type NoteEvent,
-  type NoteEventType,
-  type NotePatchedPayload,
-  type NoteUpdatedPayload,
 } from "./events.js";
 import {
   initialState,
   reduceEvent,
-  type NoteState,
   type NotesLedgerState,
 } from "./state-machine.js";
-import { contentHash, toggleCheckboxAtLine } from "./markdown.js";
+import { toggleCheckboxAtLine } from "./markdown.js";
 
-const NOTES_ENVELOPE_VERSION = 1;
+const NOTE_ENVELOPE_VERSION = 1;
+const DEFAULT_DATA_DIR = process.cwd();
 
-export type NoteCommandType =
-  | "note.create"
-  | "note.update"
-  | "note.patch_checkbox";
-
-export type NoteCommandPayload =
-  | NoteCreatedPayload
-  | NoteUpdatedPayload
-  | { note_id: string; line_index: number };
+export type NoteCommandEnvelopes = {
+  [NOTE_COMMAND_TYPES.Create]: CommandEnvelope<
+    typeof NOTE_COMMAND_TYPES.Create,
+    NoteCreatedPayload
+  >;
+  [NOTE_COMMAND_TYPES.Update]: CommandEnvelope<
+    typeof NOTE_COMMAND_TYPES.Update,
+    NoteUpdatedPayload
+  >;
+  [NOTE_COMMAND_TYPES.PatchCheckbox]: CommandEnvelope<
+    typeof NOTE_COMMAND_TYPES.PatchCheckbox,
+    { note_id: string; line_index: number }
+  >;
+};
 
 export type NoteCommandEnvelope<T extends NoteCommandType = NoteCommandType> =
-  CommandEnvelope<T, NoteCommandPayload>;
+  NoteCommandEnvelopes[T];
 
-export interface NoteCommandContext {
-  readonly eventStore: EventStore;
-  readonly commandLog: CommandLog;
-  readonly now?: () => string;
+export type NoteCommandPayload = NoteCommandEnvelope["payload"];
+export type { NoteCommandType };
+
+export const DEFAULT_NOTES_EVENTS_PATH = join(
+  DEFAULT_DATA_DIR,
+  "ops-core-notes.jsonl",
+);
+
+export function createJsonlNoteLedger(opts?: {
+  eventsPath?: string | undefined;
+  commandsPath?: string | undefined;
+  outcomesPath?: string | undefined;
+  allowExternalPaths?: boolean | undefined;
+  now?: (() => string) | undefined;
+}) {
+  const eventStore = new Storage.JsonlEventStore(
+    opts?.eventsPath ?? DEFAULT_NOTES_EVENTS_PATH,
+  );
+  const commandLog = new Storage.JsonlCommandLog(
+    opts?.commandsPath ??
+      join(DEFAULT_DATA_DIR, "ops-core-notes-commands.jsonl"),
+    opts?.outcomesPath ??
+      join(DEFAULT_DATA_DIR, "ops-core-notes-outcomes.jsonl"),
+    { allowExternalPaths: opts?.allowExternalPaths },
+  );
+  return new NoteLedger(
+    eventStore,
+    commandLog,
+    opts?.now ? { now: opts.now } : undefined,
+  );
 }
 
 export class NoteLedger {
@@ -56,7 +96,7 @@ export class NoteLedger {
   }
 
   async execute(
-    command: CommandEnvelope<NoteCommandType, NoteCommandPayload>,
+    command: NoteCommandEnvelope<NoteCommandType>,
   ): Promise<CommandOutcome> {
     const existing = await this.commandLog.getByIdempotencyKey(
       command.command_id,
@@ -87,29 +127,28 @@ export class NoteLedger {
   }
 
   private applyCommand(
-    command: CommandEnvelope<NoteCommandType, NoteCommandPayload>,
+    command: CommandEnvelope<string, NoteCommandPayload>,
     state: NotesLedgerState,
   ): {
     events: NoteEvent[];
-    reason?: string | undefined;
-    outcomeStatus?: CommandOutcome["status"] | undefined;
+    reason?: string;
+    outcomeStatus?: CommandOutcome["status"];
   } {
     switch (command.command_type) {
-      case "note.create":
+      case NOTE_COMMAND_TYPES.Create:
         return this.handleCreate(
-          command as CommandEnvelope<"note.create", NoteCreatedPayload>,
+          command as NoteCommandEnvelope<typeof NOTE_COMMAND_TYPES.Create>,
           state,
         );
-      case "note.update":
+      case NOTE_COMMAND_TYPES.Update:
         return this.handleUpdate(
-          command as CommandEnvelope<"note.update", NoteUpdatedPayload>,
+          command as NoteCommandEnvelope<typeof NOTE_COMMAND_TYPES.Update>,
           state,
         );
-      case "note.patch_checkbox":
+      case NOTE_COMMAND_TYPES.PatchCheckbox:
         return this.handlePatchCheckbox(
-          command as CommandEnvelope<
-            "note.patch_checkbox",
-            { note_id: string; line_index: number }
+          command as NoteCommandEnvelope<
+            typeof NOTE_COMMAND_TYPES.PatchCheckbox
           >,
           state,
         );
@@ -121,13 +160,9 @@ export class NoteLedger {
   }
 
   private handleCreate(
-    command: CommandEnvelope<"note.create", NoteCreatedPayload>,
+    command: NoteCommandEnvelope<typeof NOTE_COMMAND_TYPES.Create>,
     state: NotesLedgerState,
-  ): {
-    events: NoteEvent[];
-    reason?: string;
-    outcomeStatus?: CommandOutcome["status"];
-  } {
+  ): { events: NoteEvent[] } {
     if (state.notes.has(command.payload.note_id)) {
       throw new PreconditionFailed("missing", "exists");
     }
@@ -136,7 +171,7 @@ export class NoteLedger {
     const payload: NoteCreatedPayload = {
       ...command.payload,
       body_md,
-      content_hash: contentHash(body_md),
+      content_hash: Identity.hashCanonical(body_md),
     };
 
     const event = this.buildEvent(
@@ -149,7 +184,7 @@ export class NoteLedger {
   }
 
   private handleUpdate(
-    command: CommandEnvelope<"note.update", NoteUpdatedPayload>,
+    command: NoteCommandEnvelope<typeof NOTE_COMMAND_TYPES.Update>,
     state: NotesLedgerState,
   ): {
     events: NoteEvent[];
@@ -176,7 +211,7 @@ export class NoteLedger {
         : existing.body_md;
     const content_hash =
       command.payload.body_md !== undefined
-        ? contentHash(body_md)
+        ? Identity.hashCanonical(body_md)
         : existing.content_hash;
 
     const payload: NoteUpdatedPayload = {
@@ -201,10 +236,7 @@ export class NoteLedger {
   }
 
   private handlePatchCheckbox(
-    command: CommandEnvelope<
-      "note.patch_checkbox",
-      { note_id: string; line_index: number }
-    >,
+    command: NoteCommandEnvelope<typeof NOTE_COMMAND_TYPES.PatchCheckbox>,
     state: NotesLedgerState,
   ): {
     events: NoteEvent[];
@@ -240,7 +272,7 @@ export class NoteLedger {
     const payload: NotePatchedPayload = {
       note_id: existing.id,
       body_md: nextBody,
-      content_hash: contentHash(nextBody),
+      content_hash: Identity.hashCanonical(nextBody),
       patch: {
         line_index: command.payload.line_index,
         before: beforeLine,
@@ -266,14 +298,14 @@ export class NoteLedger {
   }
 
   private buildEvent<TPayload>(
-    command: CommandEnvelope<NoteCommandType, NoteCommandPayload>,
+    command: CommandEnvelope<string, NoteCommandPayload>,
     eventType: NoteEvent["event_type"],
     payload: TPayload,
-  ): EventEnvelope<NoteEventType, TPayload> {
+  ): EventEnvelope<string, TPayload> {
     const timestamp = this.now();
-    const capability_id = command.capability_id;
+    const capability_id = command.capability_id ?? command.command_type;
     return {
-      event_id: generateEventId({ eventType, payload }),
+      event_id: Identity.generateEventId({ eventType, payload }),
       event_type: eventType,
       payload,
       occurred_at: command.requested_at ?? timestamp,
@@ -281,20 +313,13 @@ export class NoteLedger {
       correlation_id: command.correlation_id,
       causation_id: command.command_id,
       causation_type: "command",
+      actor: command.actor,
       ...(command.target_ref !== undefined
         ? { source_ref: command.target_ref }
         : {}),
-      actor: command.actor,
       ...(capability_id !== undefined ? { capability_id } : {}),
-      envelope_version: NOTES_ENVELOPE_VERSION,
+      envelope_version: NOTE_ENVELOPE_VERSION,
       payload_schema_version: NOTES_SCHEMA_VERSION,
     };
   }
 }
-
-export type { NoteState, NotesLedgerState };
-export type {
-  NoteCreatedPayload,
-  NoteUpdatedPayload,
-  NotePatchedPayload,
-} from "./events.js";

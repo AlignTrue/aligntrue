@@ -57,16 +57,6 @@ export type {
   ProjectionOutput as WorkLedgerProjectionOutput,
 } from "./rebuild.js";
 export {
-  NotesProjectionDef,
-  buildNotesProjectionFromState,
-  hashNotesProjection,
-} from "./notes.js";
-export type {
-  NotesProjectionState,
-  NotesProjection,
-  NoteLatest,
-} from "./notes.js";
-export {
   ConversionsProjectionDef,
   buildConversionsProjectionFromState,
   hashConversionsProjection,

@@ -8,7 +8,10 @@ import {
   TASK_EVENT_TYPES,
   type TaskCreatedPayload,
 } from "../contracts/tasks.js";
-import { NOTE_EVENT_TYPES, type NoteCreatedPayload } from "../notes/events.js";
+import {
+  NOTE_EVENT_TYPES,
+  type NoteCreatedPayload,
+} from "../contracts/notes.js";
 import type { ConversionMeta } from "../types/conversion.js";
 import type { ActorRef } from "../envelopes/actor.js";
 
