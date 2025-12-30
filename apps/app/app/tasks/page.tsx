@@ -4,9 +4,10 @@ import {
   OPS_TASKS_ENABLED,
   OPS_PLANS_DAILY_ENABLED,
   OPS_PLANS_WEEKLY_ENABLED,
+  OPS_DATA_DIR,
   Identity,
   Projections,
-  Suggestions,
+  Storage,
 } from "@aligntrue/ops-core";
 import {
   TasksProjectionDef,
@@ -44,7 +45,10 @@ async function getTasksView() {
 }
 
 async function loadPlans() {
-  const store = Suggestions.createArtifactStore();
+  const store = new Storage.JsonlArtifactStore(
+    `${OPS_DATA_DIR}/pack-suggestions-query.jsonl`,
+    `${OPS_DATA_DIR}/pack-suggestions-derived.jsonl`,
+  );
   const derived = await store.listDerivedArtifacts();
   const daily = derived
     .filter((d) => d.output_type === "daily_plan")

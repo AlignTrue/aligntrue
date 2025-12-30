@@ -21,6 +21,7 @@
     "@aligntrue/ops-shared-google-calendar": "workspace:*",
     "@aligntrue/pack-tasks": "workspace:*",
     "@aligntrue/pack-notes": "workspace:*",
+    "@aligntrue/pack-suggestions": "workspace:*",
     "@huggingface/transformers": "^3.0.0"
   },
   "devDependencies": {

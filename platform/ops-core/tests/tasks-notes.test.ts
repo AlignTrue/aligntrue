@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { Identity, Projections, Storage } from "../src/index.js";
 // eslint-disable-next-line no-restricted-imports
-import * as PackNotes from "../packs/notes/src/index.js";
+import * as PackNotes from "../../packs/notes/src/index.js";
 // eslint-disable-next-line no-restricted-imports
 import {
   createJsonlTaskLedger,
@@ -12,7 +12,7 @@ import {
   buildTasksProjectionFromState,
   hashTasksProjection,
   TASK_COMMAND_TYPES,
-} from "../packs/tasks/src/index.js";
+} from "../../packs/tasks/src/index.js";
 
 const ACTOR = { actor_id: "user-1", actor_type: "human" } as const;
 const NOW = "2024-01-01T00:00:00Z";

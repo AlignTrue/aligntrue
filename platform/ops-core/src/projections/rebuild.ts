@@ -24,8 +24,6 @@ import {
   buildRunsProjectionFromState,
   type RunsProjectionState,
 } from "./runs.js";
-import { InboxProjectionDef } from "./inbox.js";
-import { ConversionsProjectionDef } from "./conversions.js";
 
 export interface ProjectionOutput<T> {
   name: string;
@@ -108,9 +106,7 @@ export async function rebuildAll(
 defaultRegistry
   .register(WorkItemsProjectionDef)
   .register(ReadyQueueProjectionDef)
-  .register(RunsProjectionDef)
-  .register(ConversionsProjectionDef)
-  .register(InboxProjectionDef);
+  .register(RunsProjectionDef);
 
 export interface WorkLedgerProjections {
   workItems: ReturnType<typeof buildWorkItemsProjectionFromState>;

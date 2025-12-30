@@ -34,4 +34,15 @@ export interface PackContext {
   readonly commandLog: CommandLog;
   readonly projectionRegistry: ProjectionRegistry;
   readonly config: Record<string, unknown>;
+  dispatchChild: (
+    command: Omit<
+      CommandEnvelope,
+      | "actor"
+      | "correlation_id"
+      | "causation_id"
+      | "command_id"
+      | "idempotency_key"
+    > &
+      Partial<Pick<CommandEnvelope, "command_id" | "idempotency_key">>,
+  ) => Promise<CommandOutcome>;
 }

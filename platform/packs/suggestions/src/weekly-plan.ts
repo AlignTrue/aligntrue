@@ -2,38 +2,33 @@ import {
   OPS_PLANS_WEEKLY_ENABLED,
   OPS_WEEKLY_PLAN_MAX_PER_WEEK,
   OPS_WEEKLY_PLAN_MIN_HOURS,
-} from "../config.js";
-import * as Artifacts from "../artifacts/index.js";
-import type { ActorRef } from "../envelopes/actor.js";
-import { ValidationError } from "../errors.js";
-import type { ArtifactStore } from "../storage/interfaces.js";
-import type {
-  MemoryProvider,
-  MemoryReference,
-  QueryContext,
-} from "../memory/types.js";
-import { NoOpMemoryProvider } from "../memory/index.js";
-import type {
-  TaskBucket,
-  TaskStatus,
-  TaskImpact,
-  TaskEffort,
-} from "../contracts/tasks.js";
+  Artifacts,
+  Contracts,
+  Memory,
+  ValidationError,
+  type ActorRef,
+  type ArtifactStore,
+  type MemoryProvider,
+  type MemoryReference,
+  type QueryContext,
+} from "@aligntrue/ops-core";
 
-type TaskLatest = {
+const { NoOpMemoryProvider } = Memory;
+
+export type TaskLatest = {
   id: string;
   title: string;
-  bucket: TaskBucket;
-  status: TaskStatus;
-  impact?: TaskImpact;
-  effort?: TaskEffort;
+  bucket: Contracts.TaskBucket;
+  status: Contracts.TaskStatus;
+  impact?: Contracts.TaskImpact;
+  effort?: Contracts.TaskEffort;
   due_at?: string | null;
   source_ref?: string;
   created_at: string;
   updated_at: string;
 };
 
-type TasksProjection = {
+export type WeeklyTasksProjection = {
   tasks: TaskLatest[];
 };
 
@@ -48,7 +43,6 @@ export interface WeeklyPlanData {
 
 export interface WeeklyPlanResult {
   readonly outcome: "generated" | "unchanged" | "rejected";
-  // Allow explicit undefined when callers pass through optional values
   readonly artifact?: Artifacts.DerivedArtifact | undefined;
   readonly reason?: string | undefined;
 }
@@ -62,7 +56,7 @@ export interface WeeklyPlanInput {
     Artifacts.DerivedArtifact
   >;
   readonly memoryProvider?: MemoryProvider;
-  readonly tasksProjection: TasksProjection;
+  readonly tasksProjection: WeeklyTasksProjection;
   readonly tasksProjectionHash: string;
   readonly correlation_id: string;
   readonly now?: () => string;

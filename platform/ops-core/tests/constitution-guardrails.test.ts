@@ -169,6 +169,39 @@ describe("constitution guardrails", () => {
     }
     expect(violations).toEqual([]);
   });
+
+  it("ops-core does not contain ConversionService", () => {
+    const matches: string[] = [];
+    for (const file of walkTsFiles(CORE_SRC)) {
+      const content = fs.readFileSync(file, "utf8");
+      if (content.includes("class ConversionService")) {
+        matches.push(file);
+      }
+    }
+    expect(matches).toEqual([]);
+  });
+
+  it("ops-core does not contain SuggestionExecutor", () => {
+    const matches: string[] = [];
+    for (const file of walkTsFiles(CORE_SRC)) {
+      const content = fs.readFileSync(file, "utf8");
+      if (content.includes("class SuggestionExecutor")) {
+        matches.push(file);
+      }
+    }
+    expect(matches).toEqual([]);
+  });
+
+  it("ops-core does not export domain ProjectionDef files", () => {
+    const forbiddenFiles = [
+      "projections/conversions.ts",
+      "projections/inbox.ts",
+    ];
+    const existing = forbiddenFiles.filter((f) =>
+      fs.existsSync(path.join(CORE_SRC, f)),
+    );
+    expect(existing).toEqual([]);
+  });
 });
 
 // Helpers

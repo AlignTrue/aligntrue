@@ -15,6 +15,8 @@ import {
   validateDedupeScope,
   computeScopeKey,
   validatePackEventType,
+  Identity,
+  Contracts,
 } from "@aligntrue/ops-core";
 
 export interface RuntimeLoadedPack {
@@ -164,6 +166,7 @@ export async function createPackRuntime(
       return rejection;
     }
 
+    const childCommands: string[] = [];
     const handler =
       pack.module.commandHandlers?.[command.command_type] ??
       pack.module.handlers?.[command.command_type];
@@ -186,8 +189,12 @@ export async function createPackRuntime(
     try {
       const outcome = await (handler as PackCommandHandler)(
         command,
-        createContext(pack.manifest.pack_id),
+        createContext(pack.manifest.pack_id, command, childCommands),
       );
+      const mergedChildCommands = [
+        ...childCommands,
+        ...(outcome?.child_commands ?? []),
+      ];
       const normalizedOutcome: CommandOutcome = {
         command_id: command.command_id,
         status: outcome?.status ?? "accepted",
@@ -199,6 +206,9 @@ export async function createPackRuntime(
         ...(outcome?.completed_at !== undefined
           ? { completed_at: outcome.completed_at }
           : {}),
+        ...(mergedChildCommands.length
+          ? { child_commands: mergedChildCommands }
+          : {}),
       };
       await opts.commandLog.complete(command.command_id, normalizedOutcome);
       return normalizedOutcome;
@@ -208,6 +218,7 @@ export async function createPackRuntime(
         status: "failed",
         reason: err instanceof Error ? err.message : "Unknown error",
         handled_by: handledBy,
+        ...(childCommands.length ? { child_commands: childCommands } : {}),
       };
       await opts.commandLog.complete(command.command_id, failure);
       return failure;
@@ -225,12 +236,123 @@ export async function createPackRuntime(
     return undefined;
   }
 
-  function createContext(packId: string): PackContext {
+  function buildDispatchChild(
+    parentPackId: string,
+    parentCommand: CommandEnvelope | undefined,
+    childCommands: string[],
+  ) {
+    if (!parentCommand) {
+      return async () => {
+        throw new Error(
+          "dispatchChild is only available during command handling",
+        );
+      };
+    }
+
+    return async (
+      child: Omit<
+        CommandEnvelope,
+        | "actor"
+        | "correlation_id"
+        | "causation_id"
+        | "command_id"
+        | "idempotency_key"
+      > &
+        Partial<Pick<CommandEnvelope, "command_id" | "idempotency_key">>,
+    ): Promise<CommandOutcome> => {
+      const destinationPack = getPackForCommand(child.command_type);
+      const destPackId = destinationPack?.manifest.pack_id ?? "unknown";
+      const now = new Date().toISOString();
+      const childCommandId = child.command_id ?? Identity.randomId();
+      const idempotencyKey =
+        child.idempotency_key ??
+        Identity.deterministicId({
+          parent_command_id: parentCommand.command_id,
+          dest_pack_id: destPackId,
+          command_type: child.command_type,
+          target_ref: child.target_ref ?? "__missing_target__",
+          dedupe_scope: child.dedupe_scope,
+        });
+
+      const childEnvelope: CommandEnvelope = {
+        ...child,
+        command_id: childCommandId,
+        idempotency_key: idempotencyKey,
+        actor: parentCommand.actor,
+        correlation_id: parentCommand.correlation_id,
+        causation_id: parentCommand.command_id,
+        requested_at: now,
+        capability_id: child.capability_id ?? child.command_type,
+        invoked_by: {
+          pack_id: parentPackId,
+          command_id: parentCommand.command_id,
+        },
+      } as CommandEnvelope;
+
+      const outcome = await dispatchCommand(childEnvelope);
+      childCommands.push(childCommandId);
+
+      await emitChildDispatched(
+        childEnvelope,
+        parentCommand,
+        parentPackId,
+        destPackId,
+        idempotencyKey,
+      );
+
+      return outcome;
+    };
+  }
+
+  async function emitChildDispatched(
+    child: CommandEnvelope,
+    parentCommand: CommandEnvelope,
+    parentPackId: string,
+    destPackId: string,
+    idempotencyKey: string,
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    const payload: Contracts.ChildDispatchedPayload = {
+      parent_command_id: parentCommand.command_id,
+      parent_command_type: parentCommand.command_type,
+      child_command_id: child.command_id,
+      child_command_type: child.command_type,
+      ...(child.target_ref !== undefined
+        ? { child_target_ref: child.target_ref }
+        : {}),
+      invoked_by_pack_id: parentPackId,
+      child_idempotency_key: idempotencyKey,
+      dedupe_scope: child.dedupe_scope,
+    };
+    const event: EventEnvelope<
+      (typeof Contracts.HOST_EVENT_TYPES)["ChildDispatched"],
+      Contracts.ChildDispatchedPayload
+    > = {
+      event_id: Identity.generateEventId(payload),
+      event_type: Contracts.HOST_EVENT_TYPES.ChildDispatched,
+      payload,
+      occurred_at: now,
+      ingested_at: now,
+      correlation_id: child.correlation_id,
+      causation_id: child.causation_id ?? child.command_id,
+      actor: child.actor,
+      envelope_version: 1,
+      payload_schema_version: 1,
+    };
+    await opts.eventStore.append(event);
+  }
+
+  function createContext(
+    packId: string,
+    parentCommand?: CommandEnvelope,
+    childCommands: string[] = [],
+  ): PackContext {
     return {
       eventStore: opts.eventStore,
       commandLog: opts.commandLog,
       projectionRegistry,
       config: configByPack.get(packId) ?? {},
+      dispatchChild: buildDispatchChild(packId, parentCommand, childCommands),
     };
   }
 

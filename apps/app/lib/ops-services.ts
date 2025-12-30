@@ -1,7 +1,7 @@
 import {
-  Convert,
   OPS_GMAIL_MUTATIONS_ENABLED,
   Contracts,
+  Identity,
 } from "@aligntrue/ops-core";
 import { createHost, Storage, type Host } from "@aligntrue/ops-host";
 import manifestJson from "../app.manifest.json";
@@ -36,17 +36,18 @@ export function getCommandLog(
   return hostInstance.commandLog as Storage.JsonlCommandLog;
 }
 
-export function getConversionService(
-  eventStore: Storage.JsonlEventStore,
-  commandLog: Storage.JsonlCommandLog,
-): Convert.ConversionService {
+export async function dispatchConvertCommand(
+  kind: "task" | "note",
+  messageId: string,
+  actor: Contracts.ActorRef,
+  opts?: { title?: string; body_md?: string },
+) {
   if (!hostInstance) {
     throw new Error("Host not initialized. Call getHost() first.");
   }
-  return new Convert.ConversionService(eventStore, commandLog, {
-    runtimeDispatch: (command) =>
-      hostInstance!.runtime.dispatchCommand(command),
-  });
+  const command = buildConvertCommand(kind, messageId, actor, opts);
+  const outcome = await hostInstance.runtime.dispatchCommand(command);
+  return { command, outcome };
 }
 
 export function getGmailMutationExecutor(
@@ -73,4 +74,49 @@ export function getGmailMutationExecutor(
       },
     },
   });
+}
+
+function buildConvertCommand(
+  kind: "task" | "note",
+  messageId: string,
+  actor: Contracts.ActorRef,
+  opts?: { title?: string; body_md?: string },
+): Contracts.CommandEnvelope {
+  const command_id = Identity.randomId();
+  const command_type =
+    kind === "task"
+      ? Contracts.CONVERT_COMMAND_TYPES.EmailToTask
+      : Contracts.CONVERT_COMMAND_TYPES.EmailToNote;
+  const idempotency_key = Identity.generateCommandId({
+    source_type: "email",
+    source_ref: messageId,
+    op: command_type,
+  });
+
+  const payload =
+    kind === "task"
+      ? ({
+          message_id: messageId,
+          title: opts?.title,
+          conversion_method: "user_action",
+        } satisfies Contracts.ConvertEmailToTaskPayload)
+      : ({
+          message_id: messageId,
+          title: opts?.title,
+          body_md: opts?.body_md,
+          conversion_method: "user_action",
+        } satisfies Contracts.ConvertEmailToNotePayload);
+
+  return {
+    command_id,
+    idempotency_key,
+    command_type,
+    payload,
+    target_ref: `email:${messageId}`,
+    dedupe_scope: "target",
+    correlation_id: command_id,
+    actor,
+    requested_at: new Date().toISOString(),
+    capability_id: command_type,
+  };
 }

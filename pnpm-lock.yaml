@@ -608,6 +608,9 @@ importers:
       '@aligntrue/pack-notes':
         specifier: workspace:*
         version: link:../packs/notes
+      '@aligntrue/pack-suggestions':
+        specifier: workspace:*
+        version: link:../packs/suggestions
       '@aligntrue/pack-tasks':
         specifier: workspace:*
         version: link:../packs/tasks
@@ -694,6 +697,12 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
+  platform/packs/convert:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../ops-core
+
   platform/packs/hello-world:
     dependencies:
       '@aligntrue/ops-core':
@@ -701,6 +710,12 @@ importers:
         version: link:../../ops-core
 
   platform/packs/notes:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../ops-core
+
+  platform/packs/suggestions:
     dependencies:
       '@aligntrue/ops-core':
         specifier: workspace:*

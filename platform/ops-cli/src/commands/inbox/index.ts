@@ -1,10 +1,11 @@
 import {
   OPS_CORE_ENABLED,
   OPS_SUGGESTIONS_ENABLED,
-  Suggestions,
   Storage,
   Projections,
+  Contracts,
 } from "@aligntrue/ops-core";
+import * as PackSuggestions from "@aligntrue/pack-suggestions";
 import * as PackNotes from "@aligntrue/pack-notes";
 import { createJsonlTaskLedger } from "@aligntrue/pack-tasks";
 import { exitWithError } from "../../utils/command-utilities.js";
@@ -39,8 +40,8 @@ export async function inbox(args: string[]): Promise<void> {
 }
 
 async function handleGenerate(): Promise<void> {
-  const artifactStore = Suggestions.createArtifactStore();
-  const suggestionEvents = Suggestions.createSuggestionEventStore();
+  const artifactStore = PackSuggestions.createArtifactStore();
+  const suggestionEvents = PackSuggestions.createSuggestionEventStore();
 
   const { projection: tasks, hash: tasksHash } = await readTasksProjection();
   const {
@@ -49,14 +50,14 @@ async function handleGenerate(): Promise<void> {
     version: notesVersion,
   } = await readNotesProjection();
 
-  const result = Suggestions.combineResults(
-    await Suggestions.generateTaskTriageSuggestions({
+  const result = PackSuggestions.SuggestionGenerators.combineResults(
+    await PackSuggestions.SuggestionGenerators.generateTaskTriageSuggestions({
       artifactStore,
       tasks,
       tasks_hash: tasksHash,
       actor: CLI_ACTOR,
     }),
-    await Suggestions.generateNoteHygieneSuggestions({
+    await PackSuggestions.SuggestionGenerators.generateNoteHygieneSuggestions({
       artifactStore,
       notes,
       notes_hash: notesHash,
@@ -77,10 +78,10 @@ async function handleGenerate(): Promise<void> {
 async function handleList(args: string[]): Promise<void> {
   const statusArg = args.find((a) => a.startsWith("--status"));
   const status = statusArg ? (statusArg.split("=")[1] as string) : undefined;
-  const inbox = await Suggestions.rebuildInboxProjection({});
+  const inbox = await PackSuggestions.rebuildInboxProjection({});
   const items = status
     ? inbox.projection.suggestions.filter(
-        (s: Projections.InboxItem) => s.status === status,
+        (s: PackSuggestions.InboxItem) => s.status === status,
       )
     : inbox.projection.suggestions;
 
@@ -121,25 +122,33 @@ async function handleDecision(
     });
   }
 
-  const artifactStore = Suggestions.createArtifactStore();
-  const feedbackEvents = Suggestions.createFeedbackEventStore();
-  const executor = new Suggestions.SuggestionExecutor({
-    artifactStore,
-    feedbackEventStore: feedbackEvents,
-    runtimeDispatch: async (cmd) => {
-      const ledger = createJsonlTaskLedger();
-      return ledger.execute(cmd as never);
+  const artifactStore = PackSuggestions.createArtifactStore();
+  const feedbackEvents = PackSuggestions.createFeedbackEventStore();
+  const executor = new PackSuggestions.SuggestionExecutor(
+    {
+      artifactStore,
+      feedbackEventStore: feedbackEvents,
     },
-  });
+    {
+      eventStore: feedbackEvents, // Dummy eventStore for context if needed, though executor uses deps
+      commandLog: null as unknown as Storage.CommandLog,
+      projectionRegistry: null as unknown as Projections.ProjectionRegistry,
+      config: {},
+      dispatchChild: async (cmd) => {
+        const ledger = createJsonlTaskLedger();
+        return ledger.execute(cmd as never);
+      },
+    },
+  );
 
   const artifact = await artifactStore.getDerivedById(id);
-  if (!artifact || !Suggestions.isSuggestionArtifact(artifact)) {
+  if (!artifact || !PackSuggestions.isSuggestionArtifact(artifact)) {
     return exitWithError(1, "Suggestion not found");
   }
 
   if (command_type === "suggestion.approve") {
-    const command = Suggestions.buildSuggestionCommand(
-      command_type,
+    const command = PackSuggestions.buildSuggestionCommand(
+      Contracts.SUGGESTION_COMMAND_TYPES.Approve,
       { suggestion_id: id, expected_hash: artifact.content_hash },
       CLI_ACTOR,
     );
@@ -149,8 +158,8 @@ async function handleDecision(
   }
 
   if (command_type === "suggestion.reject") {
-    const command = Suggestions.buildSuggestionCommand(
-      command_type,
+    const command = PackSuggestions.buildSuggestionCommand(
+      Contracts.SUGGESTION_COMMAND_TYPES.Reject,
       { suggestion_id: id },
       CLI_ACTOR,
     );
@@ -159,8 +168,8 @@ async function handleDecision(
     return;
   }
 
-  const command = Suggestions.buildSuggestionCommand(
-    command_type,
+  const command = PackSuggestions.buildSuggestionCommand(
+    Contracts.SUGGESTION_COMMAND_TYPES.Snooze,
     { suggestion_id: id },
     CLI_ACTOR,
   );

@@ -1,6 +1,4 @@
-import type { DerivedArtifact } from "../artifacts/index.js";
-import type { TaskBucket } from "../contracts/tasks.js";
-import type { EmailStatus, SliceKind } from "../emails/types.js";
+import { Artifacts, Contracts, Emails } from "@aligntrue/ops-core";
 
 export type SuggestionType =
   | "task_triage"
@@ -16,8 +14,8 @@ export type SuggestionOutputType = `suggestion:${SuggestionType}`;
 export interface TaskTriageDiff {
   readonly type: "task_triage";
   readonly task_id: string;
-  readonly from_bucket: TaskBucket;
-  readonly to_bucket: TaskBucket;
+  readonly from_bucket: Contracts.TaskBucket;
+  readonly to_bucket: Contracts.TaskBucket;
   readonly reason: string;
   readonly due_at?: string | null;
 }
@@ -42,10 +40,10 @@ export interface EmailTriageDiff {
   readonly type: "email_triage";
   readonly source_ref: string;
   readonly thread_id: string;
-  readonly from_status: EmailStatus;
-  readonly to_status: EmailStatus;
+  readonly from_status: Emails.EmailStatus;
+  readonly to_status: Emails.EmailStatus;
   readonly assessment_id: string;
-  readonly slice_kind: SliceKind;
+  readonly slice_kind: Emails.SliceKind;
   readonly reason: string;
 }
 
@@ -66,7 +64,7 @@ export interface SuggestionContent {
 
 export interface EmailTriageSuggestionMeta {
   confidence: number;
-  slice_kind: SliceKind;
+  slice_kind: Emails.SliceKind;
   assessment_id: string;
   supersedes_suggestion_id?: string;
   superseded_by_suggestion_id?: string;
@@ -80,8 +78,8 @@ export function suggestionOutputType(
 }
 
 export function isSuggestionArtifact(
-  artifact: DerivedArtifact,
-): artifact is DerivedArtifact & {
+  artifact: Artifacts.DerivedArtifact,
+): artifact is Artifacts.DerivedArtifact & {
   readonly output_type: SuggestionOutputType;
   readonly output_data: SuggestionContent;
 } {

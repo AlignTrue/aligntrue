@@ -3,9 +3,12 @@ import {
   OPS_PLANS_DAILY_ENABLED,
   OPS_PLANS_WEEKLY_ENABLED,
   OPS_TASKS_ENABLED,
-  Suggestions,
+  Contracts,
   Identity,
 } from "@aligntrue/ops-core";
+import type { TasksProjection } from "@aligntrue/pack-tasks";
+import { createHost, type Host } from "@aligntrue/ops-host";
+import manifestJson from "../../../cli.manifest.json" assert { type: "json" };
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
 
@@ -14,6 +17,9 @@ const CLI_ACTOR = {
   actor_type: "human",
   display_name: process.env["USER"] || "CLI User",
 } as const;
+
+const manifest = manifestJson as unknown as Contracts.AppManifest;
+let hostInstance: Host | null = null;
 
 export async function plan(args: string[]): Promise<void> {
   const sub = args[0];
@@ -40,20 +46,12 @@ async function handleDaily(taskIds: string[]): Promise<void> {
   }
 
   const { hash } = await readTasksProjection();
-  const artifactStore = Suggestions.createArtifactStore();
-  const correlation_id = Identity.randomId();
-
-  const artifact = await Suggestions.buildAndStoreDailyPlan({
-    task_ids: taskIds,
-    date: new Date().toISOString().slice(0, 10),
-    tasks_projection_hash: hash,
-    actor: CLI_ACTOR,
-    artifactStore,
-    correlation_id,
-    auto_generated: false,
-  });
-
-  console.log(`Daily plan created: ${artifact.artifact_id}`);
+  const host = await getHost();
+  const command = buildDailyPlanCommand(taskIds, hash);
+  const outcome = await host.runtime.dispatchCommand(command);
+  console.log(
+    `Daily plan command dispatched (${command.command_id}): ${outcome.status}`,
+  );
 }
 
 async function handleWeekly(args: string[]): Promise<void> {
@@ -62,61 +60,22 @@ async function handleWeekly(args: string[]): Promise<void> {
   const json = args.includes("--json");
 
   const { projection, hash } = await readTasksProjection();
-  const artifactStore = Suggestions.createArtifactStore();
-  const correlation_id = Identity.randomId();
-
-  const result = await Suggestions.buildWeeklyPlan({
-    actor: CLI_ACTOR,
-    artifactStore,
-    tasksProjection: projection,
-    tasksProjectionHash: hash,
-    correlation_id,
-    force,
-  });
+  const host = await getHost();
+  const command = buildWeeklyPlanCommand(projection, hash, { force });
+  const outcome = await host.runtime.dispatchCommand(command);
 
   if (json) {
     console.log(
       JSON.stringify({
-        outcome: result.outcome,
-        reason: result.reason,
-        artifact_id: result.artifact?.artifact_id,
-        week_start: (
-          result.artifact?.output_data as Suggestions.WeeklyPlanData | undefined
-        )?.week_start,
+        outcome: outcome.status,
+        child_commands: outcome.child_commands,
       }),
     );
     return;
   }
 
-  const week =
-    (result.artifact?.output_data as Suggestions.WeeklyPlanData | undefined)
-      ?.week_start ?? "<unknown-week>";
-
-  if (result.outcome === "generated" && result.artifact) {
-    console.log(`Weekly plan for ${week}`);
-    console.log(`  Outcome: generated`);
-    console.log(`  Artifact: ${result.artifact.artifact_id}`);
-    console.log(
-      `  Tasks: ${
-        (result.artifact.output_data as Suggestions.WeeklyPlanData).task_refs
-          .length
-      }`,
-    );
-    return;
-  }
-
-  if (result.outcome === "unchanged") {
-    console.log(`Weekly plan for ${week}`);
-    console.log(`  Outcome: unchanged`);
-    if (result.artifact) {
-      console.log(`  Artifact: ${result.artifact.artifact_id}`);
-    }
-    return;
-  }
-
-  console.log(`Weekly plan for ${week}`);
   console.log(
-    `  Outcome: rejected${result.reason ? ` (${result.reason})` : ""}`,
+    `Weekly plan command dispatched (${command.command_id}): ${outcome.status}`,
   );
 }
 
@@ -136,6 +95,78 @@ function ensureEnabled() {
       hint: "Set OPS_PLANS_DAILY_ENABLED=1",
     });
   }
+}
+
+async function getHost(): Promise<Host> {
+  if (!hostInstance) {
+    hostInstance = await createHost({ manifest });
+  }
+  return hostInstance;
+}
+
+function buildDailyPlanCommand(taskIds: string[], tasksHash: string) {
+  const date = new Date().toISOString().slice(0, 10);
+  const command_id = Identity.randomId();
+  const idempotency_key = Identity.deterministicId({
+    command_type: Contracts.SUGGESTION_COMMAND_TYPES.BuildDailyPlan,
+    date,
+    task_ids: taskIds.join(","),
+  });
+  return {
+    command_id,
+    idempotency_key,
+    command_type: Contracts.SUGGESTION_COMMAND_TYPES.BuildDailyPlan,
+    payload: {
+      task_ids: taskIds,
+      date,
+      tasks_projection_hash: tasksHash,
+    },
+    target_ref: `daily_plan:${date}`,
+    dedupe_scope: "target",
+    correlation_id: command_id,
+    actor: CLI_ACTOR,
+    requested_at: new Date().toISOString(),
+  } satisfies Contracts.CommandEnvelope;
+}
+
+function buildWeeklyPlanCommand(
+  tasksProjection: TasksProjection,
+  tasksProjectionHash: string,
+  opts: { force?: boolean },
+) {
+  const week_start = startOfWeekUtc(new Date().toISOString());
+  const command_id = Identity.randomId();
+  const idempotency_key = Identity.deterministicId({
+    command_type: Contracts.SUGGESTION_COMMAND_TYPES.BuildWeeklyPlan,
+    week_start,
+  });
+  return {
+    command_id,
+    idempotency_key,
+    command_type: Contracts.SUGGESTION_COMMAND_TYPES.BuildWeeklyPlan,
+    payload: {
+      week_start,
+      force: opts.force,
+      tasks_projection: tasksProjection,
+      tasks_projection_hash: tasksProjectionHash,
+    },
+    target_ref: `weekly_plan:${week_start}`,
+    dedupe_scope: "target",
+    correlation_id: command_id,
+    actor: CLI_ACTOR,
+    requested_at: new Date().toISOString(),
+  } satisfies Contracts.CommandEnvelope;
+}
+
+function startOfWeekUtc(iso: string): string {
+  const date = new Date(iso);
+  const utcDate = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+  const day = utcDate.getUTCDay(); // 0 (Sun) - 6 (Sat)
+  const diff = day === 0 ? -6 : 1 - day; // Monday = 1
+  utcDate.setUTCDate(utcDate.getUTCDate() + diff);
+  return utcDate.toISOString().slice(0, 10);
 }
 
 function ensureWeeklyEnabled() {

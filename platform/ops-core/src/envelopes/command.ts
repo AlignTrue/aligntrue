@@ -30,6 +30,11 @@ export interface CommandEnvelope<T extends string = string, P = unknown> {
   // Actor + capability
   readonly actor: ActorRef;
   readonly capability_id?: string; // defaults to command_type if absent
+  /**
+   * Nested dispatch provenance. Set by runtime when a pack dispatches a child
+   * command. Handlers SHOULD NOT set directly.
+   */
+  readonly invoked_by?: { pack_id: string; command_id: string };
 
   // Time + causality
   readonly requested_at: string;
@@ -55,6 +60,10 @@ export interface CommandOutcome {
   readonly reason?: string;
   readonly produced_events?: string[];
   readonly completed_at?: string;
+  /**
+   * IDs of commands dispatched during handling (nested dispatch).
+   */
+  readonly child_commands?: string[];
   /**
    * Set by runtime to record which pack handled the command.
    * Handlers MUST NOT set this directly.

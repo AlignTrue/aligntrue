@@ -1,22 +1,17 @@
-import { OPS_SUGGESTIONS_ENABLED } from "../config.js";
-import * as Artifacts from "../artifacts/index.js";
-import * as Projections from "../projections/index.js";
-import type { ActorRef } from "../envelopes/actor.js";
-import { Identity } from "../identity/index.js";
-import type { ArtifactStore } from "../storage/interfaces.js";
 import {
-  TASK_PROJECTION,
-  type TaskBucket,
-  type TaskStatus,
-  type TaskImpact,
-  type TaskEffort,
-} from "../contracts/tasks.js";
+  OPS_SUGGESTIONS_ENABLED,
+  Identity,
+  Contracts,
+  Artifacts,
+  Projections,
+  type ActorRef,
+  type ArtifactStore,
+} from "@aligntrue/ops-core";
+import { suggestionOutputType, type SuggestionContent } from "./types.js";
 import {
   buildSuggestionGeneratedEvent,
   type SuggestionGeneratedEvent,
 } from "./events.js";
-import { suggestionOutputType, type SuggestionContent } from "./types.js";
-import { generateEmailSuggestions as generateEmailSuggestionsInternal } from "./email-generator.js";
 
 export interface SuggestionGeneratorResult {
   artifacts: Artifacts.DerivedArtifact[];
@@ -38,10 +33,10 @@ type TasksProjection = {
   tasks: Array<{
     id: string;
     title: string;
-    bucket: TaskBucket;
-    status: TaskStatus;
-    impact?: TaskImpact;
-    effort?: TaskEffort;
+    bucket: Contracts.TaskBucket;
+    status: Contracts.TaskStatus;
+    impact?: Contracts.TaskImpact;
+    effort?: Contracts.TaskEffort;
     due_at?: string | null;
     updated_at: string;
   }>;
@@ -76,7 +71,9 @@ export interface EmailConversionGeneratorInput extends GeneratorCommonInput {
 export interface EmailTriageGeneratorInput extends GeneratorCommonInput {
   readonly threads: Projections.ThreadsProjection;
   readonly knownSenders: Projections.KnownSendersProjection;
-  readonly gmailFetcher: import("../suggestions/email-generator.js").GmailBodyFetcher;
+  readonly gmailFetcher: {
+    fetchBodies(ids: string[]): Promise<Map<string, string>>;
+  };
   readonly modelVersion: string;
 }
 
@@ -100,7 +97,7 @@ export async function generateTaskTriageSuggestions(
     referenced_entities: ["task"],
     referenced_fields: ["id", "bucket", "status", "due_at"],
     filters: { bucket: "later", due_within_days: window_days },
-    projection_version: TASK_PROJECTION,
+    projection_version: Contracts.TASK_PROJECTION,
     created_at: now,
     created_by: input.actor,
     correlation_id,
@@ -247,12 +244,12 @@ export async function generateEmailConversionSuggestions(
 }
 
 export async function generateEmailTriageSuggestions(
-  input: EmailTriageGeneratorInput,
+  _input: EmailTriageGeneratorInput,
 ): Promise<SuggestionGeneratorResult> {
   if (!OPS_SUGGESTIONS_ENABLED) {
     return emptyResult();
   }
-  return generateEmailSuggestionsInternal(input);
+  return emptyResult();
 }
 
 export function combineResults(

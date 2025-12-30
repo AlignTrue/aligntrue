@@ -5,6 +5,7 @@ export const HOST_EVENT_TYPES = {
   PacksLoaded: "core.packs.loaded",
   PackLoadFailed: "core.packs.load_failed",
   CommandRejected: "core.command.rejected",
+  ChildDispatched: "core.command.child_dispatched",
 } as const;
 
 /**
@@ -50,6 +51,17 @@ export interface CommandRejectedPayload {
   details?: string;
 }
 
+export interface ChildDispatchedPayload {
+  parent_command_id: string;
+  parent_command_type: string;
+  child_command_id: string;
+  child_command_type: string;
+  child_target_ref?: string;
+  invoked_by_pack_id: string;
+  child_idempotency_key: string;
+  dedupe_scope: string;
+}
+
 // Events are EventEnvelope<type, payload> - envelope provides time + causality
 export type PacksLoadedEvent = EventEnvelope<
   (typeof HOST_EVENT_TYPES)["PacksLoaded"],
@@ -62,4 +74,9 @@ export type PackLoadFailedEvent = EventEnvelope<
 export type CommandRejectedEvent = EventEnvelope<
   (typeof HOST_EVENT_TYPES)["CommandRejected"],
   CommandRejectedPayload
+>;
+
+export type ChildDispatchedEvent = EventEnvelope<
+  (typeof HOST_EVENT_TYPES)["ChildDispatched"],
+  ChildDispatchedPayload
 >;

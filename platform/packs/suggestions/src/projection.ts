@@ -1,15 +1,10 @@
 import type {
   ProjectionDefinition,
   ProjectionFreshness,
-} from "./definition.js";
-import type { EventEnvelope } from "../envelopes/index.js";
-import { hashCanonical } from "../identity/hash.js";
-import * as Feedback from "../feedback/index.js";
-import {
-  SUGGESTION_EVENT_TYPES,
-  type SuggestionGeneratedEvent,
-} from "../suggestions/events.js";
-import type { SuggestionStatus, SuggestionType } from "../suggestions/types.js";
+  EventEnvelope,
+} from "@aligntrue/ops-core";
+import { Identity, Feedback, Contracts } from "@aligntrue/ops-core";
+import type { SuggestionStatus, SuggestionType } from "./types.js";
 
 export interface InboxItem {
   suggestion_id: string;
@@ -26,10 +21,14 @@ export interface InboxProjection {
 
 export interface InboxProjectionState extends ProjectionFreshness {
   suggestions: Map<string, InboxItem>;
+  last_event_id: string | null;
+  last_ingested_at: string | null;
 }
 
+export const SUGGESTIONS_PROJECTION = "pack.suggestions.inbox" as const;
+
 export const InboxProjectionDef: ProjectionDefinition<InboxProjectionState> = {
-  name: "suggestion_inbox",
+  name: SUGGESTIONS_PROJECTION,
   version: "1.0.0",
   init(): InboxProjectionState {
     return {
@@ -43,8 +42,15 @@ export const InboxProjectionDef: ProjectionDefinition<InboxProjectionState> = {
     event: EventEnvelope,
   ): InboxProjectionState {
     switch (event.event_type) {
-      case SUGGESTION_EVENT_TYPES.SuggestionGenerated: {
-        const suggestionEvent = event as SuggestionGeneratedEvent;
+      case Contracts.SUGGESTION_EVENT_TYPES.Generated: {
+        const suggestionEvent = event as EventEnvelope<
+          (typeof Contracts.SUGGESTION_EVENT_TYPES)["Generated"],
+          {
+            suggestion_id: string;
+            suggestion_type: SuggestionType;
+            target_refs: string[];
+          }
+        >;
         const next = new Map(state.suggestions);
         if (!next.has(suggestionEvent.payload.suggestion_id)) {
           next.set(suggestionEvent.payload.suggestion_id, {
@@ -98,7 +104,6 @@ export function buildInboxProjectionFromState(
 ): InboxProjection {
   const suggestions = Array.from(state.suggestions.values()).sort((a, b) => {
     if (a.status !== b.status) {
-      // new first, snoozed, rejected, approved sorted by name
       return a.status.localeCompare(b.status);
     }
     if (a.created_at === b.created_at) {
@@ -110,7 +115,7 @@ export function buildInboxProjectionFromState(
 }
 
 export function hashInboxProjection(projection: InboxProjection): string {
-  return hashCanonical(projection);
+  return Identity.hashCanonical(projection);
 }
 
 function mapFeedbackToStatus(event: Feedback.FeedbackEvent): SuggestionStatus {

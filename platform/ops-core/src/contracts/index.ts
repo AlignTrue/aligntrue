@@ -10,3 +10,5 @@ export * from "./app-manifest.js";
 export * from "./host-events.js";
 export * from "./tasks.js";
 export * from "./notes.js";
+export * from "./convert.js";
+export * from "./suggestions.js";

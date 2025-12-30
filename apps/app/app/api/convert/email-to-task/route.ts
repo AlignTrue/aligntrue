@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConversionService, getHost } from "@/lib/ops-services";
-import { Storage } from "@aligntrue/ops-host";
+import { getHost, dispatchConvertCommand } from "@/lib/ops-services";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -11,24 +10,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const host = await getHost();
-  const conversion = getConversionService(
-    host.eventStore as Storage.JsonlEventStore,
-    host.commandLog as Storage.JsonlCommandLog,
-  );
-
   try {
-    const result = await conversion.convertEmailToTask({
-      message_id: body.message_id,
-      title: typeof body.title === "string" ? body.title : undefined,
-      actor: { actor_id: "web-user", actor_type: "human" },
-      conversion_method: body.conversion_method ?? "user_action",
-    });
+    await getHost();
+    const actor = { actor_id: "web-user", actor_type: "human" as const };
+    const { outcome } = await dispatchConvertCommand(
+      "task",
+      body.message_id,
+      actor,
+      {
+        title: typeof body.title === "string" ? body.title : undefined,
+      },
+    );
 
     return NextResponse.json({
-      task_id: result.created_id,
-      source_ref: result.source_ref,
-      status: result.outcome.status,
+      status: outcome.status,
     });
   } catch (err) {
     return NextResponse.json(

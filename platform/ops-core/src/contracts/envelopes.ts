@@ -4,6 +4,7 @@
  */
 
 import type { ActorRef } from "../envelopes/actor.js";
+export type { ActorRef };
 
 export type CommandCausationType =
   | "event"

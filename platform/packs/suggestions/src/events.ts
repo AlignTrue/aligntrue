@@ -1,16 +1,10 @@
-import type { EventEnvelope } from "../envelopes/event.js";
-import type { ActorRef } from "../envelopes/actor.js";
-import { generateEventId } from "../identity/id.js";
+import type { EventEnvelope } from "@aligntrue/ops-core";
+import type { ActorRef } from "@aligntrue/ops-core";
+import { Contracts, Identity } from "@aligntrue/ops-core";
 import type { SuggestionAction, SuggestionType } from "./types.js";
 
 const SUGGESTION_EVENTS_ENVELOPE_VERSION = 1;
-
 export const SUGGESTION_EVENTS_SCHEMA_VERSION = 1;
-
-export const SUGGESTION_EVENT_TYPES = {
-  SuggestionGenerated: "suggestion.generated",
-  SuggestionFeedbackReceived: "suggestion.feedback.received",
-} as const;
 
 export interface SuggestionGeneratedPayload {
   readonly suggestion_id: string;
@@ -19,7 +13,7 @@ export interface SuggestionGeneratedPayload {
 }
 
 export type SuggestionGeneratedEvent = EventEnvelope<
-  (typeof SUGGESTION_EVENT_TYPES)["SuggestionGenerated"],
+  (typeof Contracts.SUGGESTION_EVENT_TYPES)["Generated"],
   SuggestionGeneratedPayload
 >;
 
@@ -46,7 +40,7 @@ export function buildSuggestionGeneratedEvent(
     target_refs: dedupeAndSort(input.target_refs),
   };
 
-  const event_id = generateEventId({
+  const event_id = Identity.generateEventId({
     suggestion_id: payload.suggestion_id,
     suggestion_type: payload.suggestion_type,
     target_refs: payload.target_refs,
@@ -55,7 +49,7 @@ export function buildSuggestionGeneratedEvent(
   const capability_id = input.capability_id ?? input.capability_scope?.[0];
   return {
     event_id,
-    event_type: SUGGESTION_EVENT_TYPES.SuggestionGenerated,
+    event_type: Contracts.SUGGESTION_EVENT_TYPES.Generated,
     payload,
     occurred_at: input.occurred_at,
     ingested_at: input.ingested_at ?? input.occurred_at,
@@ -90,7 +84,7 @@ export interface SuggestionFeedbackPayload {
 }
 
 export type SuggestionFeedbackEvent = EventEnvelope<
-  (typeof SUGGESTION_EVENT_TYPES)["SuggestionFeedbackReceived"],
+  (typeof Contracts.SUGGESTION_EVENT_TYPES)["FeedbackReceived"],
   SuggestionFeedbackPayload
 >;
 
@@ -133,7 +127,7 @@ export function buildSuggestionFeedbackEvent(
     ...(normalizedContext !== undefined && { context: normalizedContext }),
   };
 
-  const event_id = generateEventId({
+  const event_id = Identity.generateEventId({
     suggestion_id: payload.suggestion_id,
     suggested_action: payload.suggested_action,
     actual_action: payload.actual_action,
@@ -143,7 +137,7 @@ export function buildSuggestionFeedbackEvent(
   const capability_id = input.capability_id ?? input.capability_scope?.[0];
   return {
     event_id,
-    event_type: SUGGESTION_EVENT_TYPES.SuggestionFeedbackReceived,
+    event_type: Contracts.SUGGESTION_EVENT_TYPES.FeedbackReceived,
     payload,
     occurred_at: input.occurred_at,
     ingested_at: input.ingested_at ?? input.occurred_at,

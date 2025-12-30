@@ -1,7 +1,9 @@
-import * as Artifacts from "../artifacts/index.js";
-import type { ActorRef } from "../envelopes/actor.js";
-import { ValidationError } from "../errors.js";
-import type { ArtifactStore } from "../storage/interfaces.js";
+import {
+  Artifacts,
+  ValidationError,
+  type ActorRef,
+  type ArtifactStore,
+} from "@aligntrue/ops-core";
 
 export interface DailyPlanData {
   readonly date: string; // YYYY-MM-DD

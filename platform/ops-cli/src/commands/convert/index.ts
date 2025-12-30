@@ -2,13 +2,12 @@ import {
   OPS_TASKS_ENABLED,
   OPS_NOTES_ENABLED,
   OPS_GMAIL_MUTATIONS_ENABLED,
-  Convert,
-  Storage,
+  Contracts,
   Identity,
 } from "@aligntrue/ops-core";
-import { TaskLedger } from "@aligntrue/pack-tasks";
-import { NoteLedger } from "@aligntrue/pack-notes";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
+import { createHost, type Host } from "@aligntrue/ops-host";
+import manifestJson from "../../../cli.manifest.json" assert { type: "json" };
 import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP = `
@@ -16,6 +15,9 @@ Usage:
   aligntrue convert email-to-task <message_id>
   aligntrue convert email-to-note <message_id>
 `;
+
+const manifest = manifestJson as unknown as Contracts.AppManifest;
+let hostInstance: Host | null = null;
 
 export async function convert(args: string[]): Promise<void> {
   const sub = args[0];
@@ -48,24 +50,13 @@ async function convertEmailToTask(args: string[]): Promise<void> {
     });
   }
 
-  const eventStore = new Storage.JsonlEventStore();
-  const commandLog = new Storage.JsonlCommandLog();
-  const service = new Convert.ConversionService(eventStore, commandLog, {
-    runtimeDispatch: (cmd) => {
-      const ledger = new TaskLedger(eventStore, commandLog);
-      return ledger.execute(cmd as never);
-    },
+  const host = await getHost();
+  const command = buildConvertCommand("task", messageId, cliActor(), {
+    title: undefined,
   });
+  const outcome = await host.runtime.dispatchCommand(command);
 
-  const result = await service.convertEmailToTask({
-    message_id: messageId,
-    actor: cliActor(),
-    conversion_method: "user_action",
-  });
-
-  console.log(
-    `Converted email ${messageId} -> task ${result.created_id} (${result.outcome.status})`,
-  );
+  console.log(`Converted email ${messageId} -> task (${outcome.status})`);
 
   if (labelArchive && !OPS_GMAIL_MUTATIONS_ENABLED) {
     console.warn(
@@ -81,7 +72,7 @@ async function convertEmailToTask(args: string[]): Promise<void> {
     }
 
     const labelId = process.env["GMAIL_MUTATION_LABEL_ID"];
-    const executor = new GmailMutations.GmailMutationExecutor(eventStore, {
+    const executor = new GmailMutations.GmailMutationExecutor(host.eventStore, {
       flagEnabled: OPS_GMAIL_MUTATIONS_ENABLED,
     });
     const mutationId = Identity.randomId();
@@ -120,24 +111,11 @@ async function convertEmailToNote(args: string[]): Promise<void> {
     });
   }
 
-  const eventStore = new Storage.JsonlEventStore();
-  const commandLog = new Storage.JsonlCommandLog();
-  const service = new Convert.ConversionService(eventStore, commandLog, {
-    runtimeDispatch: (cmd) => {
-      const ledger = new NoteLedger(eventStore, commandLog);
-      return ledger.execute(cmd as never);
-    },
-  });
+  const host = await getHost();
+  const command = buildConvertCommand("note", messageId, cliActor(), {});
+  const outcome = await host.runtime.dispatchCommand(command);
 
-  const result = await service.convertEmailToNote({
-    message_id: messageId,
-    actor: cliActor(),
-    conversion_method: "user_action",
-  });
-
-  console.log(
-    `Converted email ${messageId} -> note ${result.created_id} (${result.outcome.status})`,
-  );
+  console.log(`Converted email ${messageId} -> note (${outcome.status})`);
 }
 
 function parseArgs(args: string[]): {
@@ -164,10 +142,62 @@ function parseArgs(args: string[]): {
   return { messageId, labelArchive };
 }
 
-function cliActor(): Convert.ConvertEmailToTaskInput["actor"] {
+function cliActor(): Contracts.ActorRef {
   return {
     actor_id: process.env["USER"] || "cli-user",
     actor_type: "human",
     display_name: process.env["USER"] || "CLI User",
+  };
+}
+
+async function getHost(): Promise<Host> {
+  if (!hostInstance) {
+    hostInstance = await createHost({ manifest });
+  }
+  return hostInstance;
+}
+
+function buildConvertCommand(
+  kind: "task" | "note",
+  messageId: string,
+  actor: Contracts.ActorRef,
+  opts: { title?: string; body_md?: string },
+): Contracts.CommandEnvelope {
+  const command_id = Identity.randomId();
+  const command_type =
+    kind === "task"
+      ? Contracts.CONVERT_COMMAND_TYPES.EmailToTask
+      : Contracts.CONVERT_COMMAND_TYPES.EmailToNote;
+  const idempotency_key = Identity.generateCommandId({
+    source_type: "email",
+    source_ref: messageId,
+    op: command_type,
+  });
+
+  const payload =
+    kind === "task"
+      ? ({
+          message_id: messageId,
+          title: opts.title,
+          conversion_method: "user_action",
+        } satisfies Contracts.ConvertEmailToTaskPayload)
+      : ({
+          message_id: messageId,
+          title: opts.title,
+          body_md: opts.body_md,
+          conversion_method: "user_action",
+        } satisfies Contracts.ConvertEmailToNotePayload);
+
+  return {
+    command_id,
+    idempotency_key,
+    command_type,
+    payload,
+    target_ref: `email:${messageId}`,
+    dedupe_scope: "target",
+    correlation_id: command_id,
+    actor,
+    requested_at: new Date().toISOString(),
+    capability_id: command_type,
   };
 }

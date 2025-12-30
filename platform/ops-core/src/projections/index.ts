@@ -56,25 +56,10 @@ export type {
   WorkLedgerProjections,
   ProjectionOutput as WorkLedgerProjectionOutput,
 } from "./rebuild.js";
-export {
-  ConversionsProjectionDef,
-  buildConversionsProjectionFromState,
-  hashConversionsProjection,
-} from "./conversions.js";
-export type {
-  ConversionsProjectionState,
-  ConversionsProjection,
-  ConversionRecord,
-} from "./conversions.js";
 export { RunsProjectionDef, buildRunsProjectionFromState } from "./runs.js";
 export { rebuildRuns } from "./rebuild.js";
 export type { ExecutionProjections } from "./rebuild.js";
 export type { RunsProjectionState, RunSummary, StepSummary } from "./runs.js";
-export {
-  InboxProjectionDef,
-  buildInboxProjectionFromState,
-  hashInboxProjection,
-} from "./inbox.js";
 export {
   ThreadsProjectionDef,
   buildThreadsProjectionFromState,
@@ -109,11 +94,6 @@ export {
   type FreeWindow,
   type FreeWindowsProjection,
 } from "./free-windows.js";
-export type {
-  InboxProjectionState,
-  InboxProjection,
-  InboxItem,
-} from "./inbox.js";
 export {
   ReceiptsProjectionDef,
   buildReceiptsProjectionFromState,

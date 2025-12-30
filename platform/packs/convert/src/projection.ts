@@ -1,19 +1,13 @@
 import type {
   ProjectionDefinition,
   ProjectionFreshness,
-} from "./definition.js";
-import type { EventEnvelope } from "../envelopes/index.js";
-import { hashCanonical } from "../identity/hash.js";
-import {
-  TASK_EVENT_TYPES,
-  type TaskCreatedPayload,
-} from "../contracts/tasks.js";
-import {
-  NOTE_EVENT_TYPES,
-  type NoteCreatedPayload,
-} from "../contracts/notes.js";
-import type { ConversionMeta } from "../types/conversion.js";
-import type { ActorRef } from "../envelopes/actor.js";
+} from "@aligntrue/ops-core";
+import type { EventEnvelope } from "@aligntrue/ops-core";
+import { Contracts, Identity } from "@aligntrue/ops-core";
+
+const { TASK_EVENT_TYPES, NOTE_EVENT_TYPES } = Contracts;
+
+export const CONVERSIONS_PROJECTION = "pack.convert.conversions" as const;
 
 export interface ConversionRecord {
   id: string;
@@ -21,9 +15,9 @@ export interface ConversionRecord {
   entity_type: "task" | "note";
   from_source_type: string;
   from_source_ref: string;
-  conversion_method: ConversionMeta["conversion_method"];
+  conversion_method: string;
   converted_at: string;
-  converted_by: ActorRef | undefined;
+  converted_by: Contracts.ActorRef | undefined;
 }
 
 export interface ConversionsProjection {
@@ -36,7 +30,7 @@ export interface ConversionsProjectionState extends ProjectionFreshness {
 
 export const ConversionsProjectionDef: ProjectionDefinition<ConversionsProjectionState> =
   {
-    name: "conversions",
+    name: CONVERSIONS_PROJECTION,
     version: "1.0.0",
     init(): ConversionsProjectionState {
       return {
@@ -53,7 +47,7 @@ export const ConversionsProjectionDef: ProjectionDefinition<ConversionsProjectio
         case TASK_EVENT_TYPES.TaskCreated: {
           const taskEvent = event as EventEnvelope<
             (typeof TASK_EVENT_TYPES)["TaskCreated"],
-            TaskCreatedPayload
+            Contracts.TaskCreatedPayload
           >;
           const record = buildRecordFromConversion({
             entity_id: taskEvent.payload.task_id,
@@ -69,7 +63,7 @@ export const ConversionsProjectionDef: ProjectionDefinition<ConversionsProjectio
         case NOTE_EVENT_TYPES.NoteCreated: {
           const noteEvent = event as EventEnvelope<
             (typeof NOTE_EVENT_TYPES)["NoteCreated"],
-            NoteCreatedPayload
+            Contracts.NoteCreatedPayload
           >;
           const record = buildRecordFromConversion({
             entity_id: noteEvent.payload.note_id,
@@ -97,12 +91,12 @@ export const ConversionsProjectionDef: ProjectionDefinition<ConversionsProjectio
 function buildRecordFromConversion(opts: {
   entity_id: string;
   entity_type: "task" | "note";
-  conversion?: ConversionMeta;
-  actor: ActorRef | undefined;
+  conversion?: Contracts.ConversionMeta;
+  actor: Contracts.ActorRef | undefined;
 }): ConversionRecord | undefined {
   if (!opts.conversion) return undefined;
   const conversion = opts.conversion;
-  const id = hashCanonical({
+  const id = Identity.hashCanonical({
     entity: opts.entity_id,
     entity_type: opts.entity_type,
     conversion,
@@ -148,5 +142,5 @@ export function buildConversionsProjectionFromState(
 export function hashConversionsProjection(
   projection: ConversionsProjection,
 ): string {
-  return hashCanonical(projection);
+  return Identity.hashCanonical(projection);
 }
