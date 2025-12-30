@@ -2,14 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Convert, Storage } from "@aligntrue/ops-core";
-// eslint-disable-next-line no-restricted-imports
-import {
-  TaskLedger,
-  TASK_EVENT_TYPES,
-} from "../../../packs/tasks/src/index.js";
-// eslint-disable-next-line no-restricted-imports
-import * as PackNotes from "../../../packs/notes/src/index.js";
+import { Convert, Storage, Notes } from "@aligntrue/ops-core";
 import * as GoogleGmail from "../src/index.js";
 import { Mutations as GmailMutations } from "../src/index.js";
 
@@ -46,19 +39,10 @@ describe("email conversion and gmail mutations", () => {
       tasksEnabled: true,
       notesEnabled: true,
       runtimeDispatch: (cmd) => {
-        const commandType = (cmd as any)?.command_type ?? "";
-        if (
-          typeof commandType === "string" &&
-          commandType.startsWith("pack.tasks")
-        ) {
-          return new TaskLedger(eventStore, commandLog, {
-            now: () => NOW,
-          }).execute(cmd as never);
-        }
-        const noteLedger = new PackNotes.NoteLedger(eventStore, commandLog, {
+        const ledger = new Tasks.TaskLedger(eventStore, commandLog, {
           now: () => NOW,
         });
-        return noteLedger.execute(cmd as never);
+        return ledger.execute(cmd as never);
       },
     });
 
@@ -75,9 +59,9 @@ describe("email conversion and gmail mutations", () => {
 
     let taskCreated = 0;
     for await (const event of eventStore.stream()) {
-      if (event.event_type === TASK_EVENT_TYPES.TaskCreated) {
+      if (event.event_type === Tasks.TASK_EVENT_TYPES.TaskCreated) {
         taskCreated += 1;
-        expect(event.payload.conversion).toBeDefined();
+        expect((event as Tasks.TaskEvent).payload.conversion).toBeDefined();
       }
     }
     expect(taskCreated).toBe(1);
@@ -89,10 +73,12 @@ describe("email conversion and gmail mutations", () => {
       now: () => NOW,
       tasksEnabled: true,
       notesEnabled: true,
-      runtimeDispatch: (cmd) =>
-        new TaskLedger(eventStore, commandLog, { now: () => NOW }).execute(
-          cmd as never,
-        ),
+      runtimeDispatch: (cmd) => {
+        const ledger = new Tasks.TaskLedger(eventStore, commandLog, {
+          now: () => NOW,
+        });
+        return ledger.execute(cmd as never);
+      },
     });
 
     await service.convertEmailToNote({
@@ -108,9 +94,9 @@ describe("email conversion and gmail mutations", () => {
 
     let noteCreated = 0;
     for await (const event of eventStore.stream()) {
-      if (event.event_type === PackNotes.NOTE_EVENT_TYPES.NoteCreated) {
+      if (event.event_type === Notes.NOTE_EVENT_TYPES.NoteCreated) {
         noteCreated += 1;
-        expect((event as PackNotes.NoteEvent).payload.conversion).toBeDefined();
+        expect((event as Notes.NoteEvent).payload.conversion).toBeDefined();
       }
     }
     expect(noteCreated).toBe(1);

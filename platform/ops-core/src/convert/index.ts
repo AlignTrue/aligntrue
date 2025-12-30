@@ -5,6 +5,7 @@ import {
   deterministicId,
   generateCommandId,
   hashCanonical,
+  randomId,
 } from "../identity/index.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import {
@@ -206,10 +207,7 @@ export class ConversionService {
       source_ref: (payload as { source_ref?: string }).source_ref,
       op: command_type,
     });
-    const command_id = generateCommandId({
-      idempotency_key,
-      requested_at,
-    });
+    const command_id = randomId();
     return {
       command_id,
       idempotency_key,

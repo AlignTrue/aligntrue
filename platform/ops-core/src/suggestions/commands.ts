@@ -36,8 +36,13 @@ export function buildSuggestionCommand<T extends SuggestionCommandType>(
 ): SuggestionCommandEnvelope<T> {
   const target = `suggestion:${"suggestion_id" in payload ? payload.suggestion_id : "unknown"}`;
   const command_id = Identity.randomId();
+  const idempotency_key = Identity.generateCommandId({
+    command_type,
+    payload,
+  });
   return {
     command_id,
+    idempotency_key,
     command_type,
     payload,
     target_ref: target,

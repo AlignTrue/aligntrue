@@ -64,9 +64,9 @@ export {
   TaskReopenedPayload,
   TaskEvent,
 };
-export const {
-  TASK_COMMAND_TYPES,
-  TASK_PROJECTION,
-  TASK_BUCKETS,
-  TASK_STATUSES,
-} = Contracts;
+
+// Re-export contracts for convenience
+export const TASK_COMMAND_TYPES = Contracts.TASK_COMMAND_TYPES;
+export const TASK_PROJECTION = Contracts.TASK_PROJECTION;
+export const TASK_BUCKETS = Contracts.TASK_BUCKETS;
+export const TASK_STATUSES = Contracts.TASK_STATUSES;
