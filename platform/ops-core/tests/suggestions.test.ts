@@ -243,6 +243,7 @@ async function seedTasksLaterDueSoon(eventsPath: string) {
 
   await ledger.execute({
     command_id: "cmd-1",
+    idempotency_key: "cmd-1",
     command_type: TASK_COMMAND_TYPES.Create,
     payload: {
       task_id: "task-1",

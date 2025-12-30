@@ -24,6 +24,7 @@ function buildCommand<T extends string, P>(
     opts?.id ?? Identity.deterministicId(JSON.stringify(payload));
   return {
     command_id,
+    idempotency_key: command_id,
     command_type,
     payload,
     target_ref: opts?.target_ref ?? "local",

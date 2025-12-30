@@ -12,7 +12,6 @@ import {
   type TaskCreatedPayload,
 } from "../contracts/tasks.js";
 import {
-  NoteLedger,
   type NoteCommandEnvelope,
   type NoteCreatedPayload,
 } from "../notes/commands.js";
@@ -166,10 +165,7 @@ export class ConversionService {
       input,
     );
 
-    const ledger = new NoteLedger(this.eventStore, this.commandLog, {
-      now: this.now,
-    });
-    const outcome = await ledger.execute(command);
+    const outcome = await this.runtimeDispatch(command);
     return { created_id: note_id, source_ref, outcome };
   }
 
@@ -199,20 +195,26 @@ export class ConversionService {
     target_ref: string,
     input: BaseConvertOpts,
   ): CommandEnvelope<T, P> {
-    const command_id = generateCommandId({
+    const requested_at = this.now();
+    const idempotency_key = generateCommandId({
       source_type: "email",
       source_ref: (payload as { source_ref?: string }).source_ref,
       op: command_type,
     });
+    const command_id = generateCommandId({
+      idempotency_key,
+      requested_at,
+    });
     return {
       command_id,
+      idempotency_key,
       command_type,
       payload,
       target_ref,
-      dedupe_scope: target_ref,
+      dedupe_scope: "target",
       correlation_id: input.correlation_id ?? command_id,
       actor: input.actor,
-      requested_at: this.now(),
+      requested_at,
     } as CommandEnvelope<T, P>;
   }
 }

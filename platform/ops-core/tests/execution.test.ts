@@ -138,8 +138,10 @@ function buildCommand<T extends Execution.ExecutionCommandType>(
   command_type: T,
   payload: Execution.ExecutionCommandPayload,
 ): Execution.ExecutionCommandEnvelope<T> {
+  const idempotency_key = Identity.generateCommandId({ command_type, payload });
   return {
-    command_id: Identity.generateCommandId({ command_type, payload }),
+    command_id: Identity.randomId(),
+    idempotency_key,
     command_type,
     payload,
     target_ref: "execution",

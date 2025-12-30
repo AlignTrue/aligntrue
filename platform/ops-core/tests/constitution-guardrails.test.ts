@@ -34,6 +34,7 @@ describe("constitution guardrails", () => {
   it("commits batch atomically and preserves produced event ids", () => {
     const command: CommandEnvelope = {
       command_id: "cmd-1",
+      idempotency_key: "idem-1",
       command_type: "core.TestCommand",
       payload: {},
       target_ref: "agg-1",

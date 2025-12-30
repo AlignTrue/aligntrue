@@ -33,9 +33,10 @@ function buildCommand<T extends Notes.NoteCommandType>(
     "note_id" in payload
       ? `note:${(payload as { note_id: string }).note_id}`
       : "note:unknown";
+  const idempotency_key = Identity.generateCommandId({ command_type, payload });
   return {
     command_id: Identity.randomId(),
-    idempotency_key: Identity.generateCommandId({ command_type, payload }),
+    idempotency_key,
     command_type,
     payload,
     target_ref: target,

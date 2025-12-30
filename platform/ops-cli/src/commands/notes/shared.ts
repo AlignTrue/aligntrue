@@ -39,12 +39,14 @@ export function buildCommand<T extends Notes.NoteCommandType>(
     "note_id" in payload
       ? `note:${(payload as { note_id: string }).note_id}`
       : "note:unknown";
+  const idempotency_key = Identity.generateCommandId({ command_type, payload });
   return {
-    command_id: Identity.generateCommandId({ command_type, payload }),
+    command_id: Identity.randomId(),
+    idempotency_key,
     command_type,
     payload,
     target_ref: target,
-    dedupe_scope: target,
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor: CLI_ACTOR,
     requested_at: new Date().toISOString(),

@@ -35,7 +35,8 @@ export interface EventEnvelope<T extends string = string, P = unknown> {
 }
 
 export interface CommandEnvelope<T extends string = string, P = unknown> {
-  readonly command_id: string; // deterministic idempotency key
+  readonly command_id: string; // unique per attempt
+  readonly idempotency_key: string; // deterministic dedupe key
   readonly command_type: T; // namespaced: pack.* / shared.* / core.*
   readonly payload: P;
 

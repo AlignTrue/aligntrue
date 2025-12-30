@@ -33,8 +33,10 @@ export function buildCommand<T extends WorkLedger.WorkCommandType>(
   command_type: T,
   payload: WorkLedger.WorkCommandPayload,
 ): WorkLedger.WorkCommandEnvelope<T> {
+  const idempotency_key = Identity.generateCommandId({ command_type, payload });
   return {
-    command_id: Identity.generateCommandId({ command_type, payload }),
+    command_id: Identity.randomId(),
+    idempotency_key,
     command_type,
     payload,
     target_ref: "work-ledger",

@@ -15,6 +15,7 @@ import {
   DEFAULT_TASKS_EVENTS_PATH,
   createJsonlTaskLedger,
   TASK_COMMAND_TYPES,
+  type TasksProjectionState,
   type TaskCommandType,
   type TaskCommandPayload,
   type TaskCommandEnvelope,
@@ -33,7 +34,9 @@ async function getTasksView() {
     TasksProjectionDef,
     getEventStore(DEFAULT_TASKS_EVENTS_PATH),
   );
-  const projection = buildTasksProjectionFromState(rebuilt.data as never);
+  const projection = buildTasksProjectionFromState(
+    rebuilt.data as TasksProjectionState,
+  );
   return {
     projection,
     hash: hashTasksProjection(projection),
@@ -68,12 +71,14 @@ function buildCommand<T extends TaskCommandType>(
     "task_id" in payload
       ? `task:${(payload as { task_id: string }).task_id}`
       : "task:unknown";
+  const idempotency_key = Identity.generateCommandId({ command_type, payload });
   return {
-    command_id: Identity.generateCommandId({ command_type, payload }),
+    command_id: Identity.randomId(),
+    idempotency_key,
     command_type,
     payload,
     target_ref: target,
-    dedupe_scope: target,
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor: {
       actor_id: "web-user",
@@ -150,7 +155,9 @@ async function createDailyPlanAction(formData: FormData) {
     TasksProjectionDef,
     getEventStore(DEFAULT_TASKS_EVENTS_PATH),
   );
-  const projection = buildTasksProjectionFromState(rebuilt.data as never);
+  const projection = buildTasksProjectionFromState(
+    rebuilt.data as TasksProjectionState,
+  );
   const hash = hashTasksProjection(projection);
   const artifactStore = Suggestions.createArtifactStore();
   await Suggestions.buildAndStoreDailyPlan({
@@ -175,7 +182,9 @@ async function generateWeeklyPlanAction(formData: FormData) {
     TasksProjectionDef,
     getEventStore(DEFAULT_TASKS_EVENTS_PATH),
   );
-  const projection = buildTasksProjectionFromState(rebuilt.data as never);
+  const projection = buildTasksProjectionFromState(
+    rebuilt.data as TasksProjectionState,
+  );
   const hash = hashTasksProjection(projection);
   const memoryProvider = {
     async index(

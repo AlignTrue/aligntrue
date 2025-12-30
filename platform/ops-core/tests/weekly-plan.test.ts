@@ -132,6 +132,7 @@ async function seedTasks(eventsPath: string) {
 
   await ledger.execute({
     command_id: "cmd-task-1",
+    idempotency_key: "cmd-task-1",
     command_type: TASK_COMMAND_TYPES.Create,
     payload: {
       task_id: "task-1",
