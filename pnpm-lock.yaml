@@ -84,6 +84,9 @@ importers:
       '@aligntrue/ops-shared-google-calendar':
         specifier: workspace:*
         version: link:../../platform/ops-shared/google-calendar
+      '@aligntrue/ops-shared-google-common':
+        specifier: workspace:*
+        version: link:../../platform/ops-shared/google-common
       '@aligntrue/ops-shared-google-gmail':
         specifier: workspace:*
         version: link:../../platform/ops-shared/google-gmail
@@ -634,6 +637,10 @@ importers:
       '@aligntrue/ops-shared-google-gmail':
         specifier: workspace:*
         version: link:../ops-shared/google-gmail
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   platform/ops-shared/google-calendar:
     dependencies:
@@ -662,6 +669,12 @@ importers:
       vitest:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  platform/packs/hello-world:
+    dependencies:
+      '@aligntrue/ops-core':
+        specifier: workspace:*
+        version: link:../../ops-core
 
 packages:
 

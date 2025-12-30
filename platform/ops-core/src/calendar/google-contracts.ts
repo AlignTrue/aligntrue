@@ -1,4 +1,5 @@
 import type { EventEnvelope } from "../envelopes/event.js";
+import type { DocRef } from "../docrefs/index.js";
 
 export const CALENDAR_EVENT_TYPES = {
   CalendarItemIngested: "calendar_item_ingested",
@@ -24,9 +25,23 @@ export interface CalendarEventRecord {
   attendees?: CalendarAttendee[];
 }
 
+export interface CalendarItemIngestedPayload {
+  source_ref: string;
+  provider: string;
+  calendar_id: string;
+  event_id: string;
+  title: string;
+  description?: string;
+  start_time: string;
+  end_time?: string;
+  organizer?: string;
+  location?: string;
+  attendees?: CalendarAttendee[];
+  raw_updated_at: string;
+  doc_refs?: DocRef[];
+}
+
 export type CalendarEventEnvelope = EventEnvelope<
   (typeof CALENDAR_EVENT_TYPES)["CalendarItemIngested"],
-  CalendarEventRecord & {
-    raw_updated_at: string;
-  }
+  CalendarItemIngestedPayload
 >;
