@@ -6,7 +6,7 @@ import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import {
   EMAIL_EVENT_TYPES,
   type EmailEventEnvelope,
-} from "../connectors/google-gmail/events.js";
+} from "../emails/gmail-contracts.js";
 import {
   TaskLedger,
   type TaskCreatedPayload,

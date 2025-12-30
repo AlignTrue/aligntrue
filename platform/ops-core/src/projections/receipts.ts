@@ -22,7 +22,7 @@ import { hashCanonical } from "../identity/hash.js";
 import { SafetyClass } from "../safety-classes/types.js";
 import { EMAIL_STATUS_EVENT_TYPES } from "../emails/events.js";
 import type { EmailStatusChangedPayload } from "../emails/events.js";
-import { GMAIL_MUTATION_EVENT_TYPES } from "../gmail-mutations/events.js";
+import { GMAIL_MUTATION_EVENT_TYPES } from "../emails/gmail-contracts.js";
 import { entityRef } from "../entity-ref.js";
 
 export type ReceiptKind =

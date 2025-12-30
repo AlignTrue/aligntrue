@@ -1,5 +1,10 @@
-import type { TokenSet } from "../connectors/google-common/token.js";
-import type { EmailMessageRecord } from "../connectors/google-gmail/types.js";
+import type { EmailMessageRecord } from "../emails/gmail-contracts.js";
+
+export interface TokenSet {
+  accessToken: string;
+  refreshToken?: string | undefined;
+  expiresAt?: number | undefined;
+}
 
 export interface EmailFetchOpts {
   accessToken: string;

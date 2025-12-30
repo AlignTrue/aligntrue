@@ -7,12 +7,11 @@ import { hashCanonical } from "../identity/hash.js";
 import {
   CALENDAR_EVENT_TYPES,
   type CalendarEventEnvelope,
-  type CalendarItemIngestedPayload,
-} from "../connectors/google-calendar/events.js";
+} from "../calendar/google-contracts.js";
 import {
   EMAIL_EVENT_TYPES,
   type EmailEventEnvelope,
-} from "../connectors/google-gmail/events.js";
+} from "../emails/gmail-contracts.js";
 import { OPS_CONTACTS_ENABLED } from "../config.js";
 import { extractContactIdsFromEvent } from "./contacts.js";
 import type { DocRef } from "../docrefs/index.js";
@@ -34,7 +33,7 @@ export interface TimelineItem {
   end_time?: string;
   location?: string;
   organizer?: string;
-  attendees?: CalendarItemIngestedPayload["attendees"];
+  attendees?: CalendarEventEnvelope["payload"]["attendees"];
   message_id?: string;
   thread_id?: string;
   from?: string;
@@ -139,11 +138,11 @@ function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
     ? extractContactIdsFromEvent(event)
     : [];
   return {
-    id: payload.source_ref,
+    id: event.source_ref ?? payload.event_id,
     type: "calendar_event",
     title: payload.title,
     occurred_at: payload.start_time,
-    source_ref: payload.source_ref,
+    source_ref: event.source_ref ?? payload.event_id,
     entity_refs: contactRefs,
     provider: payload.provider,
     calendar_id: payload.calendar_id,

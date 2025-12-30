@@ -41,6 +41,16 @@ export async function evaluateEgress(
 
   const modelCtx = request.context?.modelCall;
   if (!modelCtx) {
+    if (request.allowMissingModelContext) {
+      const receipt: EgressReceipt = {
+        envelope: request.envelope,
+        approved: true,
+        decisionReason: "missing_model_call_context_allowed",
+        timestamp: new Date().toISOString(),
+      };
+      return { allowed: true, receipt };
+    }
+
     const receipt: EgressReceipt = {
       envelope: request.envelope,
       approved: false,

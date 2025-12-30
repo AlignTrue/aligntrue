@@ -1,6 +1,6 @@
-import { EMAIL_EVENT_TYPES } from "../connectors/google-gmail/events.js";
+import { EMAIL_EVENT_TYPES } from "./gmail-contracts.js";
 import type { EventEnvelope } from "../envelopes/event.js";
-import type { EmailEventEnvelope } from "../connectors/google-gmail/events.js";
+import type { EmailEventEnvelope } from "./gmail-contracts.js";
 import type {
   EmailStatus,
   TransitionTrigger,

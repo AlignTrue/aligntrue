@@ -30,6 +30,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --max-warnings 0 --fix && pnpm lint",
     "lint:strict": "eslint . --max-warnings 0",
+    "lint:boundary-smoke": "bash scripts/lint-boundary-smoke.sh",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:fast && pnpm validate:docs && pnpm validate:workspace && pnpm validate:transpile-packages",

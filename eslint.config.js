@@ -646,6 +646,13 @@ export default [
               message:
                 "ops-shared cannot import from packs (constitution Section 7).",
             },
+            {
+              group: [
+                "@aligntrue/ops-core/dist/**",
+                "@aligntrue/ops-core/src/**",
+              ],
+              message: "ops-shared must use ops-core public exports only.",
+            },
           ],
         },
       ],

@@ -1,9 +1,9 @@
 import {
-  Connectors,
   Identity,
   OPS_MEMORY_PROVIDER_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
+import * as GoogleCalendar from "@aligntrue/ops-shared-google-calendar";
 import { Mem0Adapter } from "../../memory/index.js";
 import {
   loadTokenSet,
@@ -25,7 +25,7 @@ export async function syncCalendar(args: string[]): Promise<void> {
 
   const rawEvents = await withTokenRefresh(
     (accessToken) =>
-      Connectors.GoogleCalendar.fetchAllCalendarEvents({
+      GoogleCalendar.fetchAllCalendarEvents({
         accessToken,
         timeMin,
         timeMax,
@@ -33,10 +33,10 @@ export async function syncCalendar(args: string[]): Promise<void> {
     tokens,
   );
 
-  const records = Connectors.GoogleCalendar.transformCalendarEvents(rawEvents);
+  const records = GoogleCalendar.transformCalendarEvents(rawEvents);
 
   const eventStore = new Storage.JsonlEventStore();
-  const result = await Connectors.GoogleCalendar.ingestCalendarEvents({
+  const result = await GoogleCalendar.ingestCalendarEvents({
     eventStore,
     events: records,
     correlation_id: Identity.randomId(),
@@ -52,11 +52,13 @@ export async function syncCalendar(args: string[]): Promise<void> {
     result.written_records.length > 0
   ) {
     const provider = new Mem0Adapter();
-    const toIndex = result.written_records.map((r) => ({
-      entity_type: "timeline_item" as const,
-      entity_id: `${r.calendar_id}:${r.event_id}`,
-      content: buildCalendarContent(r),
-    }));
+    const toIndex = result.written_records.map(
+      (r: GoogleCalendar.CalendarEventRecord) => ({
+        entity_type: "timeline_item" as const,
+        entity_id: `${r.calendar_id}:${r.event_id}`,
+        content: buildCalendarContent(r),
+      }),
+    );
     const indexResult = await provider.index(toIndex);
     logKV("Indexed", indexResult.indexed);
   }
@@ -70,15 +72,15 @@ function daysAgoIso(days: number): string {
   return d.toISOString();
 }
 
-function buildCalendarContent(
-  record: Connectors.GoogleCalendar.CalendarEventRecord,
-) {
+function buildCalendarContent(record: GoogleCalendar.CalendarEventRecord) {
   const parts = [
     record.title,
     record.description,
     record.location,
     record.organizer,
-    record.attendees?.map((a) => a.display_name ?? a.email)?.join(" "),
+    record.attendees
+      ?.map((a: GoogleCalendar.CalendarAttendee) => a.display_name ?? a.email)
+      ?.join(" "),
   ];
   return parts.filter(Boolean).join(" ");
 }

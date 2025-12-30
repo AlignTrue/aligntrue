@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./emails/gmail-contracts": "./dist/emails/gmail-contracts.js",
+    "./calendar/google-contracts": "./dist/calendar/google-contracts.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

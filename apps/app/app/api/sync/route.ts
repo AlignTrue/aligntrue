@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import {
-  Connectors,
   Identity,
   Storage,
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
   OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
 } from "@aligntrue/ops-core";
+import * as GoogleGmail from "@aligntrue/ops-shared-google-gmail";
+import * as GoogleCalendar from "@aligntrue/ops-shared-google-calendar";
+import {
+  loadTokenSet,
+  withTokenRefresh,
+  type TokenSet,
+} from "@aligntrue/ops-shared-google-common";
 
 export const dynamic = "force-dynamic";
 
@@ -52,8 +58,7 @@ export async function POST(request: Request) {
     // Reset prior error state; this run will overwrite if any errors occur.
     lastError = null;
 
-    const { loadTokenSet, withTokenRefresh } = Connectors.GoogleCommon;
-    let tokenSet: Connectors.GoogleCommon.TokenSet | null = null;
+    let tokenSet: TokenSet | null = null;
     const getTokens = async () => {
       tokenSet ??= await loadTokenSet();
       return tokenSet;
@@ -69,7 +74,7 @@ export async function POST(request: Request) {
         const query = `newer_than:${days}d`;
         const rawMessages = await withTokenRefresh(
           (accessToken) =>
-            Connectors.GoogleGmail.fetchAllGmailMessages({
+            GoogleGmail.fetchAllGmailMessages({
               accessToken,
               query,
               maxResults: 100,
@@ -77,10 +82,9 @@ export async function POST(request: Request) {
           tokens,
         );
 
-        const records =
-          Connectors.GoogleGmail.transformGmailMessages(rawMessages);
+        const records = GoogleGmail.transformGmailMessages(rawMessages);
 
-        const ingestResult = await Connectors.GoogleGmail.ingestEmailMessages({
+        const ingestResult = await GoogleGmail.ingestEmailMessages({
           eventStore,
           emails: records,
           correlation_id: Identity.randomId(),
@@ -120,7 +124,7 @@ export async function POST(request: Request) {
         const calendarId = "primary";
         const rawEvents = await withTokenRefresh(
           (accessToken) =>
-            Connectors.GoogleCalendar.fetchAllCalendarEvents({
+            GoogleCalendar.fetchAllCalendarEvents({
               accessToken,
               calendarId,
               timeMin,
@@ -130,15 +134,13 @@ export async function POST(request: Request) {
           tokens,
         );
 
-        const records =
-          Connectors.GoogleCalendar.transformCalendarEvents(rawEvents);
+        const records = GoogleCalendar.transformCalendarEvents(rawEvents);
 
-        const ingestResult =
-          await Connectors.GoogleCalendar.ingestCalendarEvents({
-            eventStore,
-            events: records,
-            correlation_id: Identity.randomId(),
-          });
+        const ingestResult = await GoogleCalendar.ingestCalendarEvents({
+          eventStore,
+          events: records,
+          correlation_id: Identity.randomId(),
+        });
 
         results.calendar = {
           fetched: records.length,

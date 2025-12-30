@@ -48,16 +48,23 @@ export * as Artifacts from "./artifacts/index.js";
 export * as Feedback from "./feedback/index.js";
 export * as Memory from "./memory/index.js";
 export type {
+  EventStore,
+  CommandLog,
+  ArtifactStore,
+} from "./storage/interfaces.js";
+export type {
   MemoryProvider,
   MemoryReference,
   QueryContext,
   IndexableItem,
   IndexResult,
 } from "./memory/types.js";
+export type { ActorRef } from "./envelopes/actor.js";
+export type { EventEnvelope } from "./envelopes/event.js";
+export { generateEventId, hashCanonical } from "./identity/index.js";
+export { randomId, deterministicId } from "./identity/index.js";
 export * as Authz from "./authz/index.js";
 export * as Egress from "./egress/index.js";
-export * as Connectors from "./connectors/index.js";
-export * as GmailMutations from "./gmail-mutations/index.js";
 export * as SafetyClasses from "./safety-classes/index.js";
 export * as Execution from "./execution/index.js";
 export * as Suggestions from "./suggestions/index.js";
@@ -65,3 +72,26 @@ export * as Emails from "./emails/index.js";
 export * as AI from "./ai/index.js";
 export * as Providers from "./providers/index.js";
 export * as Contracts from "./contracts/index.js";
+export type {
+  EmailProvider,
+  EmailFetchOpts,
+  EmailBodyFetchOpts,
+  CalendarProvider,
+  CalendarFetchOpts,
+} from "./providers/index.js";
+export {
+  registerEmailProvider,
+  registerCalendarProvider,
+  getEmailProvider,
+  getCalendarProvider,
+  listProviders,
+} from "./providers/index.js";
+export { evaluateEgress } from "./egress/index.js";
+export type {
+  EgressEnvelope,
+  EgressReceipt,
+  EgressGatewayRequest,
+  EgressGatewayDecision,
+} from "./egress/types.js";
+export type { DocRef } from "./docrefs/index.js";
+export type { PackManifest } from "./contracts/pack-manifest.js";

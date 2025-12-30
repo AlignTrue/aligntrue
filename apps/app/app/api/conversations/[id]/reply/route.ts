@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   OPS_GMAIL_SEND_ENABLED,
-  Connectors,
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
 } from "@aligntrue/ops-core";
+import { sendPlainTextReply } from "@aligntrue/ops-shared-google-gmail";
 
 const FROM_ADDRESS =
   process.env["GMAIL_FROM_ADDRESS"] ?? process.env["GMAIL_MUTATION_FROM"];
@@ -48,7 +48,7 @@ export async function POST(
   const idempotencyKey = rawKey || crypto.randomUUID().slice(0, 8);
 
   try {
-    const result = await Connectors.GoogleGmail.sendPlainTextReply({
+    const result = await sendPlainTextReply({
       accessToken: ACCESS_TOKEN,
       from: FROM_ADDRESS,
       to: body.to,

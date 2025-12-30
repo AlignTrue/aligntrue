@@ -5,8 +5,8 @@ import {
   Convert,
   Storage,
   Identity,
-  GmailMutations,
 } from "@aligntrue/ops-core";
+import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP = `

@@ -2,7 +2,8 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { beforeEach, describe, expect, it, afterEach } from "vitest";
-import { Connectors, Projections, Storage } from "../src/index.js";
+import { Projections, Storage } from "../src/index.js";
+import * as GoogleCalendar from "@aligntrue/ops-shared-google-calendar";
 
 const baseEvent = {
   provider: "google_calendar" as const,
@@ -29,7 +30,7 @@ describe("timeline projection (calendar ingest v0)", () => {
   });
 
   it("produces deterministic timeline projection hash", async () => {
-    await Connectors.GoogleCalendar.ingestCalendarEvents({
+    await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [
         baseEvent,
@@ -69,14 +70,14 @@ describe("timeline projection (calendar ingest v0)", () => {
   });
 
   it("deduplicates repeated ingestion by source_ref", async () => {
-    const result1 = await Connectors.GoogleCalendar.ingestCalendarEvents({
+    const result1 = await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [baseEvent],
       flagEnabled: true,
       now: () => "2024-01-05T00:00:00Z",
       correlation_id: "corr-2",
     });
-    const result2 = await Connectors.GoogleCalendar.ingestCalendarEvents({
+    const result2 = await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [baseEvent],
       flagEnabled: true,
@@ -108,7 +109,7 @@ describe("timeline projection (calendar ingest v0)", () => {
   });
 
   it("respects connector kill switch and emits no events", async () => {
-    const result = await Connectors.GoogleCalendar.ingestCalendarEvents({
+    const result = await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [baseEvent],
       flagEnabled: false,

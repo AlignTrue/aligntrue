@@ -1,10 +1,8 @@
-import { Connectors } from "@aligntrue/ops-core";
+import {
+  loadTokenSet,
+  withTokenRefresh,
+} from "@aligntrue/ops-shared-google-common";
 import { exitWithError } from "../../utils/command-utilities.js";
-
-const { GoogleCommon } = Connectors;
-const { loadTokenSet, withTokenRefresh } = GoogleCommon;
-export type TokenSet = Connectors.GoogleCommon.TokenSet;
-export type SyncTokenOptions = Connectors.GoogleCommon.LoadTokenOptions;
 
 export function logSection(title: string): void {
   console.log(title);

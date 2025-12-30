@@ -2,7 +2,8 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { beforeEach, describe, expect, it, afterEach } from "vitest";
-import { Connectors, Projections, Storage } from "../src/index.js";
+import { Projections, Storage } from "../src/index.js";
+import * as GoogleGmail from "@aligntrue/ops-shared-google-gmail";
 
 const baseEmail = {
   provider: "google_gmail" as const,
@@ -30,7 +31,7 @@ describe("gmail ingest + timeline projection", () => {
   });
 
   it("produces deterministic timeline projection hash", async () => {
-    await Connectors.GoogleGmail.ingestEmailMessages({
+    await GoogleGmail.ingestEmailMessages({
       eventStore: store,
       emails: [
         baseEmail,
@@ -70,14 +71,14 @@ describe("gmail ingest + timeline projection", () => {
   });
 
   it("deduplicates repeated ingestion by source_ref", async () => {
-    const result1 = await Connectors.GoogleGmail.ingestEmailMessages({
+    const result1 = await GoogleGmail.ingestEmailMessages({
       eventStore: store,
       emails: [baseEmail],
       flagEnabled: true,
       now: () => "2024-02-05T00:00:00Z",
       correlation_id: "corr-gmail-2",
     });
-    const result2 = await Connectors.GoogleGmail.ingestEmailMessages({
+    const result2 = await GoogleGmail.ingestEmailMessages({
       eventStore: store,
       emails: [baseEmail],
       flagEnabled: true,
@@ -109,7 +110,7 @@ describe("gmail ingest + timeline projection", () => {
   });
 
   it("respects connector kill switch and emits no events", async () => {
-    const result = await Connectors.GoogleGmail.ingestEmailMessages({
+    const result = await GoogleGmail.ingestEmailMessages({
       eventStore: store,
       emails: [baseEmail],
       flagEnabled: false,
@@ -142,7 +143,7 @@ describe("gmail ingest + timeline projection", () => {
       { attachment_id: "att-2", filename: "bar.txt" },
     ];
 
-    await Connectors.GoogleGmail.ingestEmailMessages({
+    await GoogleGmail.ingestEmailMessages({
       eventStore: store,
       emails: [
         {

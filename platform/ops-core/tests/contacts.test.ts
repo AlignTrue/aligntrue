@@ -2,6 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as GoogleCalendar from "@aligntrue/ops-shared-google-calendar";
 
 const baseEvent = {
   provider: "google_calendar" as const,
@@ -27,11 +28,10 @@ describe("contacts projection (calendar ingest v0)", () => {
   });
 
   it("derives deterministic contact_id from email and merges across events", async () => {
-    const { Connectors, Projections, Storage } =
-      await loadCoreWithContactsEnabled(true);
+    const { Projections, Storage } = await loadCoreWithContactsEnabled(true);
     const store = new Storage.JsonlEventStore(eventsPath);
 
-    await Connectors.GoogleCalendar.ingestCalendarEvents({
+    await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [
         {
@@ -68,11 +68,10 @@ describe("contacts projection (calendar ingest v0)", () => {
   });
 
   it("creates source-scoped contact when email is missing", async () => {
-    const { Connectors, Projections, Storage } =
-      await loadCoreWithContactsEnabled(true);
+    const { Projections, Storage } = await loadCoreWithContactsEnabled(true);
     const store = new Storage.JsonlEventStore(eventsPath);
 
-    await Connectors.GoogleCalendar.ingestCalendarEvents({
+    await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [
         {
@@ -107,11 +106,11 @@ describe("contacts projection (calendar ingest v0)", () => {
   });
 
   it("produces deterministic projection hash on rebuild", async () => {
-    const { Connectors, Projections, Storage, Identity } =
+    const { Projections, Storage, Identity } =
       await loadCoreWithContactsEnabled(true);
     const store = new Storage.JsonlEventStore(eventsPath);
 
-    await Connectors.GoogleCalendar.ingestCalendarEvents({
+    await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [
         {
@@ -147,11 +146,10 @@ describe("contacts projection (calendar ingest v0)", () => {
   });
 
   it("respects contacts kill switch", async () => {
-    const { Connectors, Projections, Storage } =
-      await loadCoreWithContactsEnabled(false);
+    const { Projections, Storage } = await loadCoreWithContactsEnabled(false);
     const store = new Storage.JsonlEventStore(eventsPath);
 
-    await Connectors.GoogleCalendar.ingestCalendarEvents({
+    await GoogleCalendar.ingestCalendarEvents({
       eventStore: store,
       events: [
         {
@@ -176,7 +174,6 @@ describe("contacts projection (calendar ingest v0)", () => {
 });
 
 async function loadCoreWithContactsEnabled(enabled: boolean): Promise<{
-  Connectors: (typeof import("../src/index.js"))["Connectors"];
   Projections: (typeof import("../src/index.js"))["Projections"];
   Storage: (typeof import("../src/index.js"))["Storage"];
   Identity: (typeof import("../src/index.js"))["Identity"];
@@ -185,7 +182,6 @@ async function loadCoreWithContactsEnabled(enabled: boolean): Promise<{
   vi.resetModules();
   const Core = await import("../src/index.js");
   return {
-    Connectors: Core.Connectors,
     Projections: Core.Projections,
     Storage: Core.Storage,
     Identity: Core.Identity,

@@ -1,4 +1,4 @@
-import type { CalendarEventRecord } from "../connectors/google-calendar/types.js";
+import type { CalendarEventRecord } from "../calendar/google-contracts.js";
 import { hashCanonical } from "../identity/hash.js";
 
 export interface FreeWindow {

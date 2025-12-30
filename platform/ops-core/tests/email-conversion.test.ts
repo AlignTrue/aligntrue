@@ -2,14 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  Connectors,
-  Convert,
-  GmailMutations,
-  Storage,
-  Tasks,
-  Notes,
-} from "../src/index.js";
+import { Convert, Storage, Tasks, Notes } from "../src/index.js";
+import * as GoogleGmail from "@aligntrue/ops-shared-google-gmail";
+import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 
 const ACTOR = { actor_id: "user-1", actor_type: "human" } as const;
 const NOW = "2024-01-01T00:00:00Z";
@@ -207,7 +202,7 @@ describe("email conversion and gmail mutations", () => {
 });
 
 async function seedEmail(eventStore: Storage.JsonlEventStore) {
-  const event = Connectors.GoogleGmail.buildEmailIngestEvent({
+  const event = GoogleGmail.buildEmailIngestEvent({
     record: {
       provider: "google_gmail",
       message_id: "msg-1",

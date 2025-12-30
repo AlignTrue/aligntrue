@@ -7,7 +7,7 @@ import { hashCanonical } from "../identity/hash.js";
 import {
   EMAIL_EVENT_TYPES,
   type EmailEventEnvelope,
-} from "../connectors/google-gmail/events.js";
+} from "../emails/gmail-contracts.js";
 import {
   EMAIL_STATUS_EVENT_TYPES,
   type EmailStatusChangedPayload,

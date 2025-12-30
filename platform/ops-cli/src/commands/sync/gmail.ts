@@ -1,9 +1,9 @@
 import {
-  Connectors,
   Identity,
   OPS_MEMORY_PROVIDER_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
+import * as GoogleGmail from "@aligntrue/ops-shared-google-gmail";
 import { Mem0Adapter } from "../../memory/index.js";
 import {
   loadTokenSet,
@@ -24,7 +24,7 @@ export async function syncGmail(args: string[]): Promise<void> {
 
   const rawMessages = await withTokenRefresh(
     (accessToken) =>
-      Connectors.GoogleGmail.fetchAllGmailMessages({
+      GoogleGmail.fetchAllGmailMessages({
         accessToken,
         query,
         maxResults: 100,
@@ -32,10 +32,10 @@ export async function syncGmail(args: string[]): Promise<void> {
     tokens,
   );
 
-  const records = Connectors.GoogleGmail.transformGmailMessages(rawMessages);
+  const records = GoogleGmail.transformGmailMessages(rawMessages);
 
   const eventStore = new Storage.JsonlEventStore();
-  const result = await Connectors.GoogleGmail.ingestEmailMessages({
+  const result = await GoogleGmail.ingestEmailMessages({
     eventStore,
     emails: records,
     correlation_id: Identity.randomId(),
@@ -63,7 +63,7 @@ export async function syncGmail(args: string[]): Promise<void> {
   logKV("Done (ms)", Date.now() - started);
 }
 
-function buildEmailContent(record: Connectors.GoogleGmail.EmailMessageRecord) {
+function buildEmailContent(record: GoogleGmail.EmailMessageRecord) {
   const parts = [
     record.subject,
     record.from,

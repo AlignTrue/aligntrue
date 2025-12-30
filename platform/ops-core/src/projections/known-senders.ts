@@ -6,7 +6,7 @@ import type { EventEnvelope } from "../envelopes/index.js";
 import {
   EMAIL_EVENT_TYPES,
   type EmailEventEnvelope,
-} from "../connectors/google-gmail/events.js";
+} from "../emails/gmail-contracts.js";
 
 export const KNOWN_SENDERS_VERSION = "v1";
 

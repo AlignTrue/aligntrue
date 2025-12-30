@@ -4,11 +4,14 @@ import type {
 } from "./definition.js";
 import { OPS_CONTACTS_ENABLED } from "../config.js";
 import { deterministicId } from "../identity/id.js";
-import type { CalendarEventRecord } from "../connectors/google-calendar/types.js";
+import type {
+  CalendarAttendee,
+  CalendarEventRecord,
+} from "../calendar/google-contracts.js";
 import {
   CALENDAR_EVENT_TYPES,
   type CalendarEventEnvelope,
-} from "../connectors/google-calendar/events.js";
+} from "../calendar/google-contracts.js";
 import type { EventEnvelope } from "../envelopes/index.js";
 
 export interface Contact {
@@ -230,7 +233,7 @@ function buildContactCandidates(
   }
 
   if (payload.attendees?.length) {
-    payload.attendees.forEach((attendee, idx) => {
+    payload.attendees.forEach((attendee: CalendarAttendee, idx: number) => {
       const displayName = attendee.display_name ?? attendee.email;
       const attendeeCandidate = buildContactInternal({
         ...(attendee.email ? { email: attendee.email } : {}),

@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@aligntrue/ops-core": "workspace:*",
+    "@aligntrue/ops-shared-google-gmail": "workspace:*",
+    "@aligntrue/ops-shared-google-calendar": "workspace:*",
     "@aligntrue/ui": "workspace:*",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-popover": "^1.1.15",

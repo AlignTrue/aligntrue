@@ -5,6 +5,7 @@
 export interface EgressEnvelope {
   destination: string;
   classification?: string;
+  idempotencyKey?: string;
   payloadHash?: string;
   correlationId?: string;
   actionId?: string;
@@ -28,6 +29,7 @@ export interface EgressGatewayRequest {
   context?: Record<string, unknown> & {
     modelCall?: ModelCallContext;
   };
+  allowMissingModelContext?: boolean;
 }
 
 export interface EgressGatewayDecision {

@@ -1,5 +1,10 @@
-import type { TokenSet } from "../connectors/google-common/token.js";
-import type { CalendarEventRecord } from "../connectors/google-calendar/types.js";
+import type { CalendarEventRecord } from "../calendar/google-contracts.js";
+
+export interface TokenSet {
+  accessToken: string;
+  refreshToken?: string | undefined;
+  expiresAt?: number | undefined;
+}
 
 export interface CalendarFetchOpts {
   accessToken: string;

@@ -1,0 +1,23 @@
+{
+  "name": "@aligntrue/ops-host",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aligntrue/ops-core": "workspace:*",
+    "@aligntrue/ops-shared-google-common": "workspace:*",
+    "@aligntrue/ops-shared-google-gmail": "workspace:*",
+    "@aligntrue/ops-shared-google-calendar": "workspace:*"
+  }
+}

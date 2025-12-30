@@ -1,9 +1,9 @@
 import {
   Convert,
-  GmailMutations,
   OPS_GMAIL_MUTATIONS_ENABLED,
   Storage,
 } from "@aligntrue/ops-core";
+import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import * as GmailApi from "./gmail-api";
 
 export function getEventStore(path?: string): Storage.JsonlEventStore {

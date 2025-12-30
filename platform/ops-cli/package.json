@@ -15,6 +15,9 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/ops-core": "workspace:*",
+    "@aligntrue/ops-shared-google-common": "workspace:*",
+    "@aligntrue/ops-shared-google-gmail": "workspace:*",
+    "@aligntrue/ops-shared-google-calendar": "workspace:*",
     "@huggingface/transformers": "^3.0.0"
   },
   "devDependencies": {
