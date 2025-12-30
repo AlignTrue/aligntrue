@@ -7,6 +7,7 @@ import {
   Identity,
 } from "@aligntrue/ops-core";
 import { TaskLedger } from "@aligntrue/pack-tasks";
+import { NoteLedger } from "@aligntrue/pack-notes";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import { exitWithError } from "../../utils/command-utilities.js";
 
@@ -123,7 +124,7 @@ async function convertEmailToNote(args: string[]): Promise<void> {
   const commandLog = new Storage.JsonlCommandLog();
   const service = new Convert.ConversionService(eventStore, commandLog, {
     runtimeDispatch: (cmd) => {
-      const ledger = new TaskLedger(eventStore, commandLog);
+      const ledger = new NoteLedger(eventStore, commandLog);
       return ledger.execute(cmd as never);
     },
   });

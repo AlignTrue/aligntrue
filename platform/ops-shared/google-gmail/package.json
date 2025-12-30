@@ -24,6 +24,8 @@
     "@aligntrue/ops-shared-google-common": "workspace:*"
   },
   "devDependencies": {
+    "@aligntrue/pack-tasks": "workspace:*",
+    "@aligntrue/pack-notes": "workspace:*",
     "vitest": "^4.0.16"
   }
 }

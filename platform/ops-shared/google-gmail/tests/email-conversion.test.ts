@@ -2,7 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Convert, Storage, Notes } from "@aligntrue/ops-core";
+import { Convert, Storage } from "@aligntrue/ops-core";
+import * as Tasks from "@aligntrue/pack-tasks";
+import * as Notes from "@aligntrue/pack-notes";
 import * as GoogleGmail from "../src/index.js";
 import { Mutations as GmailMutations } from "../src/index.js";
 
@@ -74,7 +76,7 @@ describe("email conversion and gmail mutations", () => {
       tasksEnabled: true,
       notesEnabled: true,
       runtimeDispatch: (cmd) => {
-        const ledger = new Tasks.TaskLedger(eventStore, commandLog, {
+        const ledger = new Notes.NoteLedger(eventStore, commandLog, {
           now: () => NOW,
         });
         return ledger.execute(cmd as never);

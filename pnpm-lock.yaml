@@ -684,6 +684,12 @@ importers:
         specifier: workspace:*
         version: link:../google-common
     devDependencies:
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../../packs/notes
+      '@aligntrue/pack-tasks':
+        specifier: workspace:*
+        version: link:../../packs/tasks
       vitest:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
