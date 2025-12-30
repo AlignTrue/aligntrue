@@ -20,7 +20,12 @@ import {
   reduceEvent,
   type TasksLedgerState,
 } from "./state-machine.js";
-import { TASK_COMMAND_TYPES } from "../contracts/tasks.js";
+import {
+  TASK_COMMAND_TYPES,
+  TASK_BUCKETS,
+  TASK_IMPACTS,
+  TASK_EFFORTS,
+} from "../contracts/tasks.js";
 import { join } from "node:path";
 import { OPS_DATA_DIR } from "../config.js";
 import { JsonlCommandLog } from "../storage/jsonl-command-log.js";
@@ -150,6 +155,17 @@ export class TaskLedger {
       throw new PreconditionFailed("missing", "exists");
     }
 
+    const { bucket, impact, effort } = command.payload;
+    if (bucket && !TASK_BUCKETS.includes(bucket)) {
+      throw new ValidationError(`Invalid bucket: ${bucket}`);
+    }
+    if (impact && !TASK_IMPACTS.includes(impact)) {
+      throw new ValidationError(`Invalid impact: ${impact}`);
+    }
+    if (effort && !TASK_EFFORTS.includes(effort)) {
+      throw new ValidationError(`Invalid effort: ${effort}`);
+    }
+
     const payload: TaskCreatedPayload = {
       ...command.payload,
       bucket: command.payload.bucket ?? "today",
@@ -177,6 +193,17 @@ export class TaskLedger {
     const existing = state.tasks.get(payload.task_id);
     if (!existing) {
       throw new PreconditionFailed("exists", "missing");
+    }
+
+    const { bucket, impact, effort } = payload;
+    if (bucket && !TASK_BUCKETS.includes(bucket)) {
+      throw new ValidationError(`Invalid bucket: ${bucket}`);
+    }
+    if (impact && !TASK_IMPACTS.includes(impact)) {
+      throw new ValidationError(`Invalid impact: ${impact}`);
+    }
+    if (effort && !TASK_EFFORTS.includes(effort)) {
+      throw new ValidationError(`Invalid effort: ${effort}`);
     }
 
     const hasChange =

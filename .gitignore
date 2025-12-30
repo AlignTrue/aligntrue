@@ -99,4 +99,6 @@ packages/cli/data/ops-core-events.jsonl
 
 # Data
 apps/app/data/*
+platform/ops-core/data/*.jsonl
+platform/ops-core/data/data/
 platform/ops-core/docs/LM-STUDIO-SETUP.md
