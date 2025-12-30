@@ -1,7 +1,16 @@
 import { Convert, OPS_GMAIL_MUTATIONS_ENABLED } from "@aligntrue/ops-core";
-import { Storage } from "@aligntrue/ops-host";
+import { createHost, Storage, type Host } from "@aligntrue/ops-host";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import * as GmailApi from "./gmail-api";
+
+let hostInstance: Host | null = null;
+
+export async function getHost(): Promise<Host> {
+  if (!hostInstance) {
+    hostInstance = await createHost({ packs: [] });
+  }
+  return hostInstance;
+}
 
 export function getEventStore(path?: string): Storage.JsonlEventStore {
   return new Storage.JsonlEventStore(path);

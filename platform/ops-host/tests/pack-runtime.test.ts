@@ -63,7 +63,7 @@ async function createRuntime(): Promise<PackRuntime> {
 
 function helloWorldSpecifier(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  const p = resolve(here, "../../packs/hello-world/src/index.js");
+  const p = resolve(here, "../../packs/hello-world/src/index.ts");
   return pathToFileURL(p).href;
 }
 

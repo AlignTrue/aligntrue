@@ -81,6 +81,9 @@ importers:
       '@aligntrue/ops-core':
         specifier: workspace:*
         version: link:../../platform/ops-core
+      '@aligntrue/ops-host':
+        specifier: workspace:*
+        version: link:../../platform/ops-host
       '@aligntrue/ops-shared-google-calendar':
         specifier: workspace:*
         version: link:../../platform/ops-shared/google-calendar
