@@ -135,8 +135,17 @@ async function handleDecision(
       projectionRegistry: null as unknown as Projections.ProjectionRegistry,
       config: {},
       dispatchChild: async (cmd) => {
-        const ledger = createJsonlTaskLedger();
-        return ledger.execute(cmd as never);
+        if (cmd.command_type.startsWith("pack.tasks.")) {
+          const ledger = createJsonlTaskLedger();
+          return ledger.execute(cmd as never);
+        }
+        if (cmd.command_type.startsWith("pack.notes.")) {
+          const ledger = PackNotes.createJsonlNoteLedger();
+          return ledger.execute(cmd as never);
+        }
+        throw new Error(
+          `Unknown command type for dispatchChild: ${cmd.command_type}`,
+        );
       },
     },
   );
