@@ -28,7 +28,7 @@ import {
   TasksProjectionDef,
   buildTasksProjectionFromState,
   type TasksProjectionState,
-} from "./tasks.js";
+} from "../tasks/projection.js";
 import {
   NotesProjectionDef,
   buildNotesProjectionFromState,

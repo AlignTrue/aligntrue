@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { Identity } from "@aligntrue/ops-core";
+import { Identity, Storage } from "@aligntrue/ops-core";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
-import { getGmailMutationExecutor } from "@/lib/ops-services";
+import { getGmailMutationExecutor, getHost } from "@/lib/ops-services";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -45,7 +45,10 @@ export async function POST(request: Request) {
   const label_id =
     typeof body.label_id === "string" ? body.label_id : undefined;
 
-  const executor = getGmailMutationExecutor();
+  const host = await getHost();
+  const executor = getGmailMutationExecutor(
+    host.eventStore as Storage.JsonlEventStore,
+  );
 
   try {
     const result = await executor.execute({

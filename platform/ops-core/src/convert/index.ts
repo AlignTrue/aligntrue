@@ -7,11 +7,12 @@ import {
   EMAIL_EVENT_TYPES,
   type EmailEventEnvelope,
 } from "../emails/gmail-contracts.js";
+import { TASK_COMMAND_TYPES } from "../contracts/tasks.js";
 import {
   TaskLedger,
   type TaskCreatedPayload,
   type TaskCommandEnvelope,
-} from "../tasks/commands.js";
+} from "../tasks/index.js";
 import {
   NoteLedger,
   type NoteCommandEnvelope,
@@ -101,12 +102,13 @@ export class ConversionService {
       conversion,
     };
 
-    const command: TaskCommandEnvelope<"task.create"> = this.buildCommand(
-      "task.create",
-      payload,
-      `task:${task_id}`,
-      input,
-    );
+    const command: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Create> =
+      this.buildCommand(
+        TASK_COMMAND_TYPES.Create,
+        payload,
+        `task:${task_id}`,
+        input,
+      );
 
     const ledger = new TaskLedger(this.eventStore, this.commandLog, {
       now: this.now,

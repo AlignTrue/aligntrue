@@ -2,7 +2,14 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Storage, Tasks, Projections } from "../src/index.js";
+import { Storage, Projections, Tasks } from "../src/index.js";
+const {
+  createJsonlTaskLedger,
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  hashTasksProjection,
+  TASK_COMMAND_TYPES,
+} = Tasks;
 
 const ACTOR = { actor_id: "tester", actor_type: "human" } as const;
 
@@ -114,7 +121,7 @@ describe("weekly plan", () => {
 });
 
 async function seedTasks(eventsPath: string) {
-  const ledger = Tasks.createJsonlTaskLedger({
+  const ledger = createJsonlTaskLedger({
     eventsPath,
     commandsPath: join(eventsPath, "..", "cmds.jsonl"),
     outcomesPath: join(eventsPath, "..", "outcomes.jsonl"),
@@ -124,7 +131,7 @@ async function seedTasks(eventsPath: string) {
 
   await ledger.execute({
     command_id: "cmd-task-1",
-    command_type: "task.create",
+    command_type: TASK_COMMAND_TYPES.Create,
     payload: {
       task_id: "task-1",
       title: "Week task",
@@ -140,15 +147,10 @@ async function seedTasks(eventsPath: string) {
   });
 
   const store = new Storage.JsonlEventStore(eventsPath);
-  const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    store,
-  );
-  const projection = Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
-  );
+  const rebuilt = await Projections.rebuildOne(TasksProjectionDef, store);
+  const projection = buildTasksProjectionFromState(rebuilt.data);
   return {
     projection,
-    hash: Projections.hashTasksProjection(projection),
+    hash: hashTasksProjection(projection),
   };
 }

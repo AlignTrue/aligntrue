@@ -1,5 +1,5 @@
 import type { DerivedArtifact } from "../artifacts/index.js";
-import type { TaskBucket } from "../tasks/types.js";
+import type { TaskBucket } from "../contracts/tasks.js";
 import type { EmailStatus, SliceKind } from "../emails/types.js";
 
 export type SuggestionType =

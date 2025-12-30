@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getConversionService } from "@/lib/ops-services";
+import { getConversionService, getHost } from "@/lib/ops-services";
+import { Storage } from "@aligntrue/ops-host";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -10,7 +11,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const conversion = getConversionService();
+  const host = await getHost();
+  const conversion = getConversionService(
+    host.eventStore as Storage.JsonlEventStore,
+    host.commandLog as Storage.JsonlCommandLog,
+  );
 
   try {
     const result = await conversion.convertEmailToTask({

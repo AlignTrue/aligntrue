@@ -1,51 +1,81 @@
 import { PreconditionFailed, ValidationError } from "../errors.js";
+import { Identity } from "../identity/index.js";
 import type {
   CommandEnvelope,
   CommandOutcome,
   EventEnvelope,
 } from "../envelopes/index.js";
-import { generateEventId } from "../identity/id.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import {
   TASK_EVENT_TYPES,
   TASKS_SCHEMA_VERSION,
-  type TaskCompletedPayload,
-  type TaskCreatedPayload,
   type TaskEvent,
-  type TaskEventType,
-  type TaskReopenedPayload,
+  type TaskCreatedPayload,
   type TaskTriagedPayload,
+  type TaskCompletedPayload,
+  type TaskReopenedPayload,
 } from "./events.js";
 import {
   initialState,
   reduceEvent,
-  type TaskBucket,
-  type TaskState,
   type TasksLedgerState,
 } from "./state-machine.js";
-import type { TaskEffort, TaskImpact } from "./types.js";
+import { TASK_COMMAND_TYPES } from "../contracts/tasks.js";
+import { join } from "node:path";
+import { OPS_DATA_DIR } from "../config.js";
+import { JsonlCommandLog } from "../storage/jsonl-command-log.js";
+import { JsonlEventStore } from "../storage/jsonl-event-store.js";
 
 const TASKS_ENVELOPE_VERSION = 1;
 
 export type TaskCommandType =
-  | "task.create"
-  | "task.triage"
-  | "task.complete"
-  | "task.reopen";
+  (typeof TASK_COMMAND_TYPES)[keyof typeof TASK_COMMAND_TYPES];
 
-export type TaskCommandPayload =
-  | TaskCreatedPayload
-  | TaskTriagedPayload
-  | TaskCompletedPayload
-  | TaskReopenedPayload;
+type TaskCommandEnvelopes = {
+  [TASK_COMMAND_TYPES.Create]: CommandEnvelope<
+    typeof TASK_COMMAND_TYPES.Create,
+    TaskCreatedPayload
+  >;
+  [TASK_COMMAND_TYPES.Triage]: CommandEnvelope<
+    typeof TASK_COMMAND_TYPES.Triage,
+    TaskTriagedPayload
+  >;
+  [TASK_COMMAND_TYPES.Complete]: CommandEnvelope<
+    typeof TASK_COMMAND_TYPES.Complete,
+    TaskCompletedPayload
+  >;
+  [TASK_COMMAND_TYPES.Reopen]: CommandEnvelope<
+    typeof TASK_COMMAND_TYPES.Reopen,
+    TaskReopenedPayload
+  >;
+};
 
 export type TaskCommandEnvelope<T extends TaskCommandType = TaskCommandType> =
-  CommandEnvelope<T, TaskCommandPayload>;
+  TaskCommandEnvelopes[T];
 
-export interface TaskCommandContext {
-  readonly eventStore: EventStore;
-  readonly commandLog: CommandLog;
-  readonly now?: () => string;
+export type TaskCommandPayload = TaskCommandEnvelope["payload"];
+
+export const DEFAULT_TASKS_EVENTS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-tasks-events.jsonl",
+);
+
+export function createJsonlTaskLedger(opts?: {
+  eventsPath?: string;
+  commandsPath?: string;
+  outcomesPath?: string;
+  allowExternalPaths?: boolean;
+  now?: () => string;
+}) {
+  const eventStore = new JsonlEventStore(
+    opts?.eventsPath ?? DEFAULT_TASKS_EVENTS_PATH,
+  );
+  const commandLog = new JsonlCommandLog(
+    opts?.commandsPath ?? join(OPS_DATA_DIR, "ops-core-tasks-commands.jsonl"),
+    opts?.outcomesPath ?? join(OPS_DATA_DIR, "ops-core-tasks-outcomes.jsonl"),
+    { allowExternalPaths: opts?.allowExternalPaths },
+  );
+  return new TaskLedger(eventStore, commandLog, opts);
 }
 
 export class TaskLedger {
@@ -59,9 +89,7 @@ export class TaskLedger {
     this.now = opts?.now ?? (() => new Date().toISOString());
   }
 
-  async execute(
-    command: CommandEnvelope<TaskCommandType, TaskCommandPayload>,
-  ): Promise<CommandOutcome> {
+  async execute(command: TaskCommandEnvelope): Promise<CommandOutcome> {
     const existing = await this.commandLog.getByIdempotencyKey(
       command.command_id,
     );
@@ -91,49 +119,33 @@ export class TaskLedger {
   }
 
   private applyCommand(
-    command: CommandEnvelope<TaskCommandType, TaskCommandPayload>,
-    state: TasksLedgerState,
-  ): {
-    events: TaskEvent[];
-    reason?: string | undefined;
-    outcomeStatus?: CommandOutcome["status"] | undefined;
-  } {
-    switch (command.command_type) {
-      case "task.create":
-        return this.handleCreate(
-          command as CommandEnvelope<"task.create", TaskCreatedPayload>,
-          state,
-        );
-      case "task.triage":
-        return this.handleTriage(
-          command as CommandEnvelope<"task.triage", TaskTriagedPayload>,
-          state,
-        );
-      case "task.complete":
-        return this.handleComplete(
-          command as CommandEnvelope<"task.complete", TaskCompletedPayload>,
-          state,
-        );
-      case "task.reopen":
-        return this.handleReopen(
-          command as CommandEnvelope<"task.reopen", TaskReopenedPayload>,
-          state,
-        );
-      default:
-        throw new ValidationError(
-          `Unsupported command type: ${command.command_type}`,
-        );
-    }
-  }
-
-  private handleCreate(
-    command: CommandEnvelope<"task.create", TaskCreatedPayload>,
+    command: TaskCommandEnvelope,
     state: TasksLedgerState,
   ): {
     events: TaskEvent[];
     reason?: string;
     outcomeStatus?: CommandOutcome["status"];
   } {
+    switch (command.command_type) {
+      case TASK_COMMAND_TYPES.Create:
+        return this.handleCreate(command, state);
+      case TASK_COMMAND_TYPES.Triage:
+        return this.handleTriage(command, state);
+      case TASK_COMMAND_TYPES.Complete:
+        return this.handleComplete(command, state);
+      case TASK_COMMAND_TYPES.Reopen:
+        return this.handleReopen(command, state);
+      default: {
+        const type = (command as CommandEnvelope).command_type;
+        throw new ValidationError(`Unsupported command type: ${type}`);
+      }
+    }
+  }
+
+  private handleCreate(
+    command: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Create>,
+    state: TasksLedgerState,
+  ): { events: TaskEvent[] } {
     if (state.tasks.has(command.payload.task_id)) {
       throw new PreconditionFailed("missing", "exists");
     }
@@ -154,101 +166,86 @@ export class TaskLedger {
   }
 
   private handleTriage(
-    command: CommandEnvelope<"task.triage", TaskTriagedPayload>,
+    command: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Triage>,
     state: TasksLedgerState,
   ): {
     events: TaskEvent[];
     reason?: string;
     outcomeStatus?: CommandOutcome["status"];
   } {
-    const existing = state.tasks.get(command.payload.task_id);
+    const payload = command.payload;
+    const existing = state.tasks.get(payload.task_id);
     if (!existing) {
       throw new PreconditionFailed("exists", "missing");
     }
 
     const hasChange =
-      command.payload.bucket !== undefined ||
-      command.payload.impact !== undefined ||
-      command.payload.effort !== undefined ||
-      command.payload.due_at !== undefined ||
-      command.payload.title !== undefined;
+      payload.bucket !== undefined ||
+      payload.impact !== undefined ||
+      payload.effort !== undefined ||
+      payload.due_at !== undefined ||
+      payload.title !== undefined;
 
     if (!hasChange) {
       return { events: [], outcomeStatus: "already_processed" };
     }
 
-    if (command.payload.bucket && !isValidBucket(command.payload.bucket)) {
-      throw new PreconditionFailed("valid_bucket", command.payload.bucket);
-    }
-    if (command.payload.impact && !isValidImpact(command.payload.impact)) {
-      throw new PreconditionFailed("impact_L_M_H", command.payload.impact);
-    }
-    if (command.payload.effort && !isValidEffort(command.payload.effort)) {
-      throw new PreconditionFailed("effort_S_M_L", command.payload.effort);
-    }
-
     const event = this.buildEvent(
       command,
       TASK_EVENT_TYPES.TaskTriaged,
-      command.payload,
+      payload,
     ) as TaskEvent;
     reduceEvent(state, event);
     return { events: [event] };
   }
 
   private handleComplete(
-    command: CommandEnvelope<"task.complete", TaskCompletedPayload>,
+    command: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Complete>,
     state: TasksLedgerState,
   ): {
     events: TaskEvent[];
     reason?: string;
     outcomeStatus?: CommandOutcome["status"];
   } {
-    const existing = state.tasks.get(command.payload.task_id);
+    const payload = command.payload;
+    const existing = state.tasks.get(payload.task_id);
     if (!existing) {
       throw new PreconditionFailed("exists", "missing");
     }
     if (existing.status === "completed") {
-      return {
-        events: [],
-        outcomeStatus: "already_processed",
-        reason: "Task already completed",
-      };
+      return { events: [], outcomeStatus: "already_processed" };
     }
 
     const event = this.buildEvent(
       command,
       TASK_EVENT_TYPES.TaskCompleted,
-      command.payload,
+      payload,
     ) as TaskEvent;
     reduceEvent(state, event);
     return { events: [event] };
   }
 
   private handleReopen(
-    command: CommandEnvelope<"task.reopen", TaskReopenedPayload>,
+    command: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Reopen>,
     state: TasksLedgerState,
   ): {
     events: TaskEvent[];
     reason?: string;
     outcomeStatus?: CommandOutcome["status"];
   } {
-    const existing = state.tasks.get(command.payload.task_id);
+    const payload = command.payload;
+    const existing = state.tasks.get(payload.task_id);
     if (!existing) {
       throw new PreconditionFailed("exists", "missing");
     }
     if (existing.status === "open") {
-      return {
-        events: [],
-        outcomeStatus: "already_processed",
-        reason: "Task already open",
-      };
+      return { events: [], outcomeStatus: "already_processed" };
     }
 
     const event = this.buildEvent(
       command,
       TASK_EVENT_TYPES.TaskReopened,
-      command.payload,
+      payload,
     ) as TaskEvent;
     reduceEvent(state, event);
     return { events: [event] };
@@ -263,14 +260,14 @@ export class TaskLedger {
   }
 
   private buildEvent<TPayload>(
-    command: CommandEnvelope<TaskCommandType, TaskCommandPayload>,
+    command: TaskCommandEnvelope,
     eventType: TaskEvent["event_type"],
     payload: TPayload,
-  ): EventEnvelope<TaskEventType, TPayload> {
+  ): EventEnvelope<string, TPayload> {
     const timestamp = this.now();
-    const capability_id = command.capability_id;
+    const capability_id = command.capability_id ?? command.command_type;
     return {
-      event_id: generateEventId({ eventType, payload }),
+      event_id: Identity.generateEventId({ eventType, payload }),
       event_type: eventType,
       payload,
       occurred_at: command.requested_at ?? timestamp,
@@ -278,38 +275,13 @@ export class TaskLedger {
       correlation_id: command.correlation_id,
       causation_id: command.command_id,
       causation_type: "command",
+      actor: command.actor,
       ...(command.target_ref !== undefined
         ? { source_ref: command.target_ref }
         : {}),
-      actor: command.actor,
       ...(capability_id !== undefined ? { capability_id } : {}),
       envelope_version: TASKS_ENVELOPE_VERSION,
       payload_schema_version: TASKS_SCHEMA_VERSION,
     };
   }
 }
-
-function isValidBucket(bucket: TaskBucket): boolean {
-  return (
-    bucket === "today" ||
-    bucket === "week" ||
-    bucket === "later" ||
-    bucket === "waiting"
-  );
-}
-
-function isValidImpact(impact: TaskImpact): boolean {
-  return impact === "L" || impact === "M" || impact === "H";
-}
-
-function isValidEffort(effort: TaskEffort): boolean {
-  return effort === "S" || effort === "M" || effort === "L";
-}
-
-export type { TaskState, TasksLedgerState };
-export type {
-  TaskCreatedPayload,
-  TaskTriagedPayload,
-  TaskCompletedPayload,
-  TaskReopenedPayload,
-} from "./events.js";

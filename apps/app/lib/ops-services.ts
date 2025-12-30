@@ -36,15 +36,16 @@ export function getCommandLog(
   return hostInstance.commandLog as Storage.JsonlCommandLog;
 }
 
-export function getConversionService(): Convert.ConversionService {
+export function getConversionService(
+  eventStore: Storage.JsonlEventStore,
+  commandLog: Storage.JsonlCommandLog,
+): Convert.ConversionService {
   // For now, continue using core conversion service; pack integration will follow in Phase 3.
-  const eventStore = getEventStore();
-  const commandLog = getCommandLog();
   return new Convert.ConversionService(eventStore, commandLog);
 }
 
 export function getGmailMutationExecutor(
-  eventStore: Storage.JsonlEventStore = getEventStore(),
+  eventStore: Storage.JsonlEventStore,
 ): GmailMutations.GmailMutationExecutor {
   return new GmailMutations.GmailMutationExecutor(eventStore, {
     flagEnabled: OPS_GMAIL_MUTATIONS_ENABLED,

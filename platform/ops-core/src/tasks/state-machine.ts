@@ -4,7 +4,7 @@ import type {
   TaskEffort,
   TaskImpact,
   TaskStatus,
-} from "./types.js";
+} from "../contracts/tasks.js";
 
 export interface TaskState {
   id: string;
@@ -99,5 +99,3 @@ export function cloneState(state: TasksLedgerState): TasksLedgerState {
   }
   return { tasks };
 }
-
-export type { TaskBucket, TaskEffort, TaskImpact, TaskStatus };

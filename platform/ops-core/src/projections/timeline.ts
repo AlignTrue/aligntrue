@@ -134,15 +134,19 @@ export function hashTimelineProjection(projection: TimelineProjection): string {
 
 function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
   const payload = event.payload;
+  const source_ref = payload.source_ref ?? event.source_ref;
+  if (!source_ref) {
+    throw new Error(`Calendar event ${event.event_id} missing source_ref`);
+  }
   const contactRefs = OPS_CONTACTS_ENABLED
     ? extractContactIdsFromEvent(event)
     : [];
   return {
-    id: event.source_ref ?? payload.source_ref,
+    id: source_ref,
     type: "calendar_event",
     title: payload.title,
     occurred_at: payload.start_time,
-    source_ref: event.source_ref ?? payload.source_ref,
+    source_ref,
     entity_refs: contactRefs,
     provider: payload.provider,
     calendar_id: payload.calendar_id,
@@ -161,13 +165,17 @@ function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
 
 function toEmailTimelineItem(event: EmailEventEnvelope): TimelineItem {
   const payload = event.payload;
+  const source_ref = payload.source_ref ?? event.source_ref;
+  if (!source_ref) {
+    throw new Error(`Email event ${event.event_id} missing source_ref`);
+  }
   const title = payload.subject ?? "(no subject)";
   return {
-    id: payload.source_ref,
+    id: source_ref,
     type: "email_message",
     title,
     occurred_at: payload.internal_date,
-    source_ref: payload.source_ref,
+    source_ref,
     entity_refs: [],
     provider: payload.provider,
     message_id: payload.message_id,

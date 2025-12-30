@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getConversionService } from "@/lib/ops-services";
+import { getConversionService, getHost } from "@/lib/ops-services";
+import { Storage } from "@aligntrue/ops-host";
 
 const ACTOR = {
   actor_id: "web-user",
@@ -12,7 +13,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const service = getConversionService();
+  const host = await getHost();
+  const service = getConversionService(
+    host.eventStore as Storage.JsonlEventStore,
+    host.commandLog as Storage.JsonlCommandLog,
+  );
   try {
     const result = await service.convertEmailToTask({
       source_ref: id,

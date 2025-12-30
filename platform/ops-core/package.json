@@ -6,7 +6,9 @@
   "exports": {
     ".": "./dist/index.js",
     "./emails/gmail-contracts": "./dist/emails/gmail-contracts.js",
-    "./calendar/google-contracts": "./dist/calendar/google-contracts.js"
+    "./calendar/google-contracts": "./dist/calendar/google-contracts.js",
+    "./tasks": "./dist/tasks/index.js",
+    "./projections": "./dist/projections/index.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

@@ -13,7 +13,7 @@ import type {
   QueryContext,
 } from "../memory/types.js";
 import { NoOpMemoryProvider } from "../memory/index.js";
-import type { TasksProjection, TaskLatest } from "../projections/tasks.js";
+import type { TasksProjection, TaskLatest } from "../projections/index.js";
 
 export interface WeeklyPlanData {
   readonly week_start: string; // YYYY-MM-DD (Monday UTC)

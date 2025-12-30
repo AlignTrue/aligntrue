@@ -16,7 +16,9 @@ import type {
   EventStore,
 } from "../storage/interfaces.js";
 import { JsonlCommandLog } from "../storage/index.js";
-import * as Tasks from "../tasks/index.js";
+import { createJsonlTaskLedger } from "../tasks/ledger.js";
+import { TASK_COMMAND_TYPES, type TaskBucket } from "../contracts/tasks.js";
+import type { TaskCommandEnvelope } from "../tasks/ledger.js";
 import * as Notes from "../notes/index.js";
 import * as Feedback from "../feedback/index.js";
 import type {
@@ -255,21 +257,18 @@ export class SuggestionExecutor {
     if (!OPS_TASKS_ENABLED) {
       throw new ValidationError("Tasks are disabled (OPS_TASKS_ENABLED=0)");
     }
-    const triage = diff as { task_id: string; to_bucket: Tasks.TaskBucket };
-    const ledger = Tasks.createJsonlTaskLedger({
+    const triage = diff as { task_id: string; to_bucket: TaskBucket };
+    const ledger = createJsonlTaskLedger({
       allowExternalPaths: this.allowExternalPaths,
     });
     const command_id = Identity.generateCommandId({
-      command_type: "task.triage",
+      command_type: TASK_COMMAND_TYPES.Triage,
       task_id: triage.task_id,
     });
-    const cmd: CommandEnvelope<
-      Tasks.TaskCommandType,
-      Tasks.TaskCommandPayload
-    > = {
+    const cmd: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Triage> = {
       command_id,
       idempotency_key: command_id,
-      command_type: "task.triage",
+      command_type: TASK_COMMAND_TYPES.Triage,
       payload: {
         task_id: triage.task_id,
         bucket: triage.to_bucket,

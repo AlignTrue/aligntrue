@@ -2,7 +2,14 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import { Identity, Projections, Tasks, Notes, Storage } from "../src/index.js";
+import { Identity, Projections, Notes, Storage, Tasks } from "../src/index.js";
+const {
+  createJsonlTaskLedger,
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  hashTasksProjection,
+  TASK_COMMAND_TYPES,
+} = Tasks;
 
 const ACTOR = { actor_id: "user-1", actor_type: "human" } as const;
 const NOW = "2024-01-01T00:00:00Z";
@@ -46,7 +53,7 @@ describe("tasks + notes", () => {
   });
 
   it("Task create is idempotent by command_id", async () => {
-    const ledger = Tasks.createJsonlTaskLedger({
+    const ledger = createJsonlTaskLedger({
       eventsPath,
       commandsPath,
       outcomesPath,
@@ -61,7 +68,7 @@ describe("tasks + notes", () => {
       status: "open" as const,
     };
 
-    const cmd = buildCommand("task.create", payload, {
+    const cmd = buildCommand(TASK_COMMAND_TYPES.Create, payload, {
       id: "cmd-1",
       target_ref: payload.task_id,
       dedupe_scope: `task:${payload.task_id}`,
@@ -75,7 +82,7 @@ describe("tasks + notes", () => {
 
     let createEvents = 0;
     for await (const event of eventStore.stream()) {
-      if (event.event_type === Tasks.TASK_EVENT_TYPES.TaskCreated) {
+      if (event.event_type === "pack.tasks.task_created") {
         createEvents += 1;
       }
     }
@@ -83,7 +90,7 @@ describe("tasks + notes", () => {
   });
 
   it("Task projection rebuild is deterministic", async () => {
-    const ledger = Tasks.createJsonlTaskLedger({
+    const ledger = createJsonlTaskLedger({
       eventsPath,
       commandsPath,
       outcomesPath,
@@ -91,7 +98,7 @@ describe("tasks + notes", () => {
       now: () => NOW,
     });
 
-    const createCmd = buildCommand("task.create", {
+    const createCmd = buildCommand(TASK_COMMAND_TYPES.Create, {
       task_id: "task-2",
       title: "Plan",
       bucket: "today" as const,
@@ -99,30 +106,20 @@ describe("tasks + notes", () => {
     });
     await ledger.execute(createCmd);
 
-    const triageCmd = buildCommand("task.triage", {
+    const triageCmd = buildCommand(TASK_COMMAND_TYPES.Triage, {
       task_id: "task-2",
       bucket: "week" as const,
       impact: "M" as const,
     });
     await ledger.execute(triageCmd);
 
-    const first = await Projections.rebuildOne(
-      Projections.TasksProjectionDef,
-      eventStore,
-    );
-    const firstView = Projections.buildTasksProjectionFromState(
-      first.data as Projections.TasksProjectionState,
-    );
-    const firstHash = Projections.hashTasksProjection(firstView);
+    const first = await Projections.rebuildOne(TasksProjectionDef, eventStore);
+    const firstView = buildTasksProjectionFromState(first.data);
+    const firstHash = hashTasksProjection(firstView);
 
-    const second = await Projections.rebuildOne(
-      Projections.TasksProjectionDef,
-      eventStore,
-    );
-    const secondView = Projections.buildTasksProjectionFromState(
-      second.data as Projections.TasksProjectionState,
-    );
-    const secondHash = Projections.hashTasksProjection(secondView);
+    const second = await Projections.rebuildOne(TasksProjectionDef, eventStore);
+    const secondView = buildTasksProjectionFromState(second.data);
+    const secondHash = hashTasksProjection(secondView);
 
     expect(firstHash).toBe(secondHash);
     expect(firstView.tasks.length).toBe(1);

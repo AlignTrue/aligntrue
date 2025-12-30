@@ -90,7 +90,7 @@ async function createTaskAction(formData: FormData) {
   if (!title) return;
   const task_id = Identity.deterministicId(title);
   await execute(
-    buildCommand("task.create", {
+    buildCommand(Tasks.TASK_COMMAND_TYPES.Create, {
       task_id,
       title,
       bucket: "today",
@@ -106,7 +106,7 @@ async function triageTaskAction(formData: FormData) {
   const bucket = String(formData.get("bucket") ?? "") as Bucket;
   if (!task_id || !bucket) return;
   await execute(
-    buildCommand("task.triage", {
+    buildCommand(Tasks.TASK_COMMAND_TYPES.Triage, {
       task_id,
       bucket,
     }),
@@ -118,7 +118,7 @@ async function completeTaskAction(formData: FormData) {
   const task_id = String(formData.get("task_id") ?? "");
   if (!task_id) return;
   await execute(
-    buildCommand("task.complete", {
+    buildCommand(Tasks.TASK_COMMAND_TYPES.Complete, {
       task_id,
     }),
   );

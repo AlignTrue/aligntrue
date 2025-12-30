@@ -1,7 +1,9 @@
 import type { PackModule } from "@aligntrue/ops-core";
+import { Tasks } from "@aligntrue/ops-core";
 import { manifest } from "./manifest.js";
 import { commandHandlers } from "./commands.js";
-import { TasksProjectionDef } from "./projection.js";
+
+const { TasksProjectionDef } = Tasks;
 
 const moduleImpl: PackModule = {
   manifest,
@@ -19,6 +21,5 @@ export {
   type TasksProjection,
   type TasksProjectionState,
   type TaskLatest,
-} from "./projection.js";
-export * from "./events.js";
-export * from "./types.js";
+} from "@aligntrue/ops-core/projections";
+export * from "@aligntrue/ops-core/tasks";
