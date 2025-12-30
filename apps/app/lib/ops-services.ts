@@ -67,8 +67,9 @@ export function getConversionService(
         throw new Error("Host not initialized");
       }
 
-      // Try to find the email to get the canonical source_ref
+      // Try to find the email to get the canonical source_ref and message_id
       let canonical_ref = source_ref;
+      let canonical_message_id = source_ref;
       for await (const event of eventStore.stream()) {
         if (event.event_type !== Emails.EMAIL_EVENT_TYPES.EmailMessageIngested)
           continue;
@@ -78,6 +79,7 @@ export function getConversionService(
           payload.message_id === source_ref
         ) {
           canonical_ref = payload.source_ref;
+          canonical_message_id = payload.message_id;
           break;
         }
       }
@@ -87,7 +89,7 @@ export function getConversionService(
         op: "to_task",
       });
 
-      const command = buildConvertCommand("task", source_ref, actor, {
+      const command = buildConvertCommand("task", canonical_message_id, actor, {
         source_ref: canonical_ref,
       });
 
