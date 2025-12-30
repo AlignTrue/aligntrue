@@ -9,8 +9,11 @@ import type {
   CommandLogTryStartResult,
 } from "./interfaces.js";
 
-const DEFAULT_COMMANDS_PATH = join(OPS_DATA_DIR, "ops-core-commands.jsonl");
-const DEFAULT_OUTCOMES_PATH = join(
+export const DEFAULT_COMMANDS_PATH = join(
+  OPS_DATA_DIR,
+  "ops-core-commands.jsonl",
+);
+export const DEFAULT_OUTCOMES_PATH = join(
   OPS_DATA_DIR,
   "ops-core-command-outcomes.jsonl",
 );

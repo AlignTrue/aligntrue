@@ -13,14 +13,17 @@ export async function getHost(): Promise<Host> {
 }
 
 export function getEventStore(path?: string): Storage.JsonlEventStore {
-  return new Storage.JsonlEventStore(path);
+  return new Storage.JsonlEventStore(path ?? Storage.DEFAULT_EVENTS_PATH);
 }
 
 export function getCommandLog(
   commandsPath?: string,
   outcomesPath?: string,
 ): Storage.JsonlCommandLog {
-  return new Storage.JsonlCommandLog(commandsPath, outcomesPath);
+  return new Storage.JsonlCommandLog(
+    commandsPath ?? Storage.DEFAULT_COMMANDS_PATH,
+    outcomesPath ?? Storage.DEFAULT_OUTCOMES_PATH,
+  );
 }
 
 export function getConversionService(): Convert.ConversionService {
