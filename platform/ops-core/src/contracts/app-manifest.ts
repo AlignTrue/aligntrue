@@ -22,7 +22,7 @@ export interface ResolvedPack {
   readonly name: string;
   readonly requested_version: string;
   readonly resolved_version: string;
-  readonly integrity: string;
+  integrity: string;
   readonly source: "workspace" | "registry" | "git";
   readonly distPath?: string;
   readonly entryPath?: string;

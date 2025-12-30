@@ -1,6 +1,6 @@
 import { exitWithError } from "../../utils/command-utilities.js";
 import { ensureTasksEnabled, readTasksProjection } from "./shared.js";
-import { Projections } from "@aligntrue/ops-core";
+import type { TaskLatest } from "@aligntrue/pack-tasks";
 
 export async function listTasks(args: string[]): Promise<void> {
   ensureTasksEnabled();
@@ -20,11 +20,9 @@ export async function listTasks(args: string[]): Promise<void> {
     }
   }
 
-  const projection = await readTasksProjection();
+  const { projection } = await readTasksProjection();
   const tasks = bucketFilter
-    ? projection.tasks.filter(
-        (t: Projections.TaskLatest) => t.bucket === bucketFilter,
-      )
+    ? projection.tasks.filter((t: TaskLatest) => t.bucket === bucketFilter)
     : projection.tasks;
 
   if (!tasks.length) {

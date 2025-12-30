@@ -8,3 +8,4 @@ export * from "./ordering.js";
 export * from "./pack-module.js";
 export * from "./app-manifest.js";
 export * from "./host-events.js";
+export * from "./tasks.js";

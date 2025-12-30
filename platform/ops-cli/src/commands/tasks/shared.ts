@@ -1,59 +1,87 @@
+import { Identity, Projections, Contracts } from "@aligntrue/ops-core";
+import { createHost, type Host } from "@aligntrue/ops-host";
 import {
-  OPS_CORE_ENABLED,
-  OPS_TASKS_ENABLED,
-  Identity,
-  Storage,
-  Tasks,
-  Projections,
-} from "@aligntrue/ops-core";
-import { exitWithError } from "../../utils/command-utilities.js";
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  hashTasksProjection,
+  type TasksProjection,
+  type TasksProjectionState,
+} from "@aligntrue/pack-tasks";
 
-export const CLI_ACTOR: Tasks.TaskCommandEnvelope["actor"] = {
+const { TASK_COMMAND_TYPES } = Contracts;
+
+export interface TasksProjectionResult {
+  projection: TasksProjection;
+  hash: string;
+}
+
+const TASKS_PACK = {
+  name: "@aligntrue/pack-tasks",
+  version: "0.0.1",
+  source: "workspace",
+} as const;
+
+let hostPromise: Promise<Host> | null = null;
+
+export const CLI_ACTOR = {
   actor_id: process.env["USER"] || "cli-user",
-  actor_type: "human",
+  actor_type: "human" as const,
   display_name: process.env["USER"] || "CLI User",
 };
 
 export function ensureTasksEnabled(): void {
-  if (!OPS_CORE_ENABLED) {
-    exitWithError(1, "ops-core is disabled", {
-      hint: "Set OPS_CORE_ENABLED=1 to enable ops-core commands",
-    });
-  }
-  if (!OPS_TASKS_ENABLED) {
-    exitWithError(1, "Tasks are disabled", {
-      hint: "Set OPS_TASKS_ENABLED=1 to enable tasks",
-    });
-  }
+  // No env flag gating in Phase 3 for packs; keep placeholder if needed.
+  return;
 }
 
-export function createLedger(): Tasks.TaskLedger {
-  return Tasks.createJsonlTaskLedger();
+async function getHost(): Promise<Host> {
+  if (!hostPromise) {
+    hostPromise = createHost({
+      manifest: {
+        name: "@aligntrue/ops-cli",
+        version: "0.0.0",
+        packs: [TASKS_PACK],
+        capabilities: Object.values(TASK_COMMAND_TYPES),
+      },
+    });
+  }
+  return hostPromise;
 }
 
-export function buildCommand<T extends Tasks.TaskCommandType>(
-  command_type: T,
-  payload: Tasks.TaskCommandPayload,
-): Tasks.TaskCommandEnvelope<T> {
-  const target = `task:${"task_id" in payload ? (payload as { task_id: string }).task_id : "unknown"}`;
-  return {
-    command_id: Identity.generateCommandId({ command_type, payload }),
+export async function dispatchTaskCommand(
+  command_type: (typeof TASK_COMMAND_TYPES)[keyof typeof TASK_COMMAND_TYPES],
+  payload: Record<string, unknown>,
+) {
+  const host = await getHost();
+  const target = `task:${
+    "task_id" in payload ? (payload as { task_id: string }).task_id : "unknown"
+  }`;
+  const command = {
+    command_id: Identity.randomId(),
+    idempotency_key: Identity.deterministicId({
+      command_type,
+      payload,
+      target,
+    }),
+    dedupe_scope: "target",
     command_type,
     payload,
     target_ref: target,
-    dedupe_scope: target,
-    correlation_id: Identity.randomId(),
     actor: CLI_ACTOR,
     requested_at: new Date().toISOString(),
-  } as Tasks.TaskCommandEnvelope<T>;
+    correlation_id: Identity.randomId(),
+  };
+  return host.runtime.dispatchCommand(command);
 }
 
-export async function readTasksProjection() {
+export async function readTasksProjection(): Promise<TasksProjectionResult> {
+  const host = await getHost();
   const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+    TasksProjectionDef,
+    host.eventStore,
   );
-  return Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
+  const projection = buildTasksProjectionFromState(
+    rebuilt.data as TasksProjectionState,
   );
+  return { projection, hash: hashTasksProjection(projection) };
 }

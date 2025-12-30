@@ -1,5 +1,8 @@
 import { exitWithError } from "../../utils/command-utilities.js";
-import { buildCommand, createLedger, ensureTasksEnabled } from "./shared.js";
+import { dispatchTaskCommand, ensureTasksEnabled } from "./shared.js";
+import { Contracts } from "@aligntrue/ops-core";
+
+const { TASK_COMMAND_TYPES } = Contracts;
 
 export async function triageTask(args: string[]): Promise<void> {
   ensureTasksEnabled();
@@ -88,17 +91,14 @@ export async function triageTask(args: string[]): Promise<void> {
     });
   }
 
-  const ledger = createLedger();
-  const outcome = await ledger.execute(
-    buildCommand("task.triage", {
-      task_id: taskId,
-      bucket: bucket as never,
-      impact: impact as never,
-      effort: effort as never,
-      due_at: due_at as never,
-      title,
-    }),
-  );
+  const outcome = await dispatchTaskCommand(TASK_COMMAND_TYPES.Triage, {
+    task_id: taskId,
+    bucket: bucket as never,
+    impact: impact as never,
+    effort: effort as never,
+    due_at: due_at as never,
+    title,
+  });
 
   console.log(
     `Triage ${taskId}: ${outcome.status} (events: ${outcome.produced_events?.length ?? 0})`,

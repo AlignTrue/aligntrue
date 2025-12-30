@@ -4,10 +4,10 @@ import {
   Suggestions,
   Storage,
   Projections,
-  Tasks,
   Notes,
 } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
+import { readTasksProjection } from "../tasks/shared.js";
 
 const CLI_ACTOR = {
   actor_id: process.env["USER"] || "cli-user",
@@ -169,21 +169,6 @@ function ensureEnabled() {
       hint: "Set OPS_SUGGESTIONS_ENABLED=1",
     });
   }
-}
-
-async function readTasksProjection() {
-  const store = new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH);
-  const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    store,
-  );
-  const projection = Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
-  );
-  return {
-    projection,
-    hash: Projections.hashTasksProjection(projection),
-  };
 }
 
 async function readNotesProjection() {

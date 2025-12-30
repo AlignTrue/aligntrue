@@ -1,5 +1,6 @@
 import { Convert, OPS_GMAIL_MUTATIONS_ENABLED } from "@aligntrue/ops-core";
 import { createHost, Storage, type Host } from "@aligntrue/ops-host";
+import manifest from "../app.manifest.json";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import * as GmailApi from "./gmail-api";
 
@@ -7,23 +8,27 @@ let hostInstance: Host | null = null;
 
 export async function getHost(): Promise<Host> {
   if (!hostInstance) {
-    hostInstance = await createHost({ packs: [] });
+    hostInstance = await createHost({ manifest });
   }
   return hostInstance;
 }
 
-export function getEventStore(path?: string): Storage.JsonlEventStore {
-  return new Storage.JsonlEventStore(path ?? Storage.DEFAULT_EVENTS_PATH);
+export function getEventStore(_path?: string): Storage.JsonlEventStore {
+  if (!hostInstance) {
+    throw new Error("Host not initialized. Call getHost() first.");
+  }
+  // Host uses JsonlEventStore under the hood in this phase
+  return hostInstance.eventStore as Storage.JsonlEventStore;
 }
 
 export function getCommandLog(
-  commandsPath?: string,
-  outcomesPath?: string,
+  _commandsPath?: string,
+  _outcomesPath?: string,
 ): Storage.JsonlCommandLog {
-  return new Storage.JsonlCommandLog(
-    commandsPath ?? Storage.DEFAULT_COMMANDS_PATH,
-    outcomesPath ?? Storage.DEFAULT_OUTCOMES_PATH,
-  );
+  if (!hostInstance) {
+    throw new Error("Host not initialized. Call getHost() first.");
+  }
+  return hostInstance.commandLog as Storage.JsonlCommandLog;
 }
 
 export function getConversionService(): Convert.ConversionService {

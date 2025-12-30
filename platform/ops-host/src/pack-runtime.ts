@@ -2,7 +2,6 @@ import type {
   CommandEnvelope,
   CommandLog,
   CommandOutcome,
-  DedupeScope,
   EventEnvelope,
   EventStore,
   PackContext,
@@ -233,7 +232,7 @@ export async function createPackRuntime(
 }
 
 function computeScopeKey(
-  scope: DedupeScope,
+  scope: string,
   command: CommandEnvelope,
   appName: string,
 ): string {
@@ -246,6 +245,6 @@ function computeScopeKey(
       return appName;
     case "global":
     default:
-      return "__global__";
+      return scope ? `${scope}` : "__global__";
   }
 }

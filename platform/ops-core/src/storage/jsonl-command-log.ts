@@ -1,6 +1,6 @@
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute, join, parse, resolve, sep } from "node:path";
+import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { OPS_DATA_DIR } from "../config.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type {
@@ -298,27 +298,20 @@ function resolveDataPath(
       "JsonlCommandLog requires a valid path (received undefined or empty)",
     );
   }
-  const normalized = resolve(candidate);
 
-  if (isAbsolute(candidate)) {
-    if (allowExternalPaths) {
-      return normalized;
-    }
-    if (isWithinOpsData(normalized)) {
-      return normalized;
-    }
-    throw new Error(
-      `JsonlCommandLog refuses to write outside OPS_DATA_DIR (got ${candidate})`,
-    );
+  // If allowExternalPaths is true, we allow any absolute path.
+  // This is mostly for tests.
+  if (allowExternalPaths && isAbsolute(candidate)) {
+    return resolve(candidate);
   }
 
-  if (isWithinOpsData(normalized)) {
-    return normalized;
-  }
+  // Otherwise, we force everything into OPS_DATA_DIR_ABS.
+  // We resolve the candidate relative to OPS_DATA_DIR_ABS and then
+  // verify it didn't escape via '..'
+  const absolutePath = resolve(OPS_DATA_DIR_ABS, candidate);
 
-  const anchored = resolve(OPS_DATA_DIR_ABS, candidate);
-  if (isWithinOpsData(anchored)) {
-    return anchored;
+  if (isWithinOpsData(absolutePath)) {
+    return absolutePath;
   }
 
   throw new Error(
@@ -330,10 +323,8 @@ function isWithinOpsData(absolutePath: string): boolean {
   if (OPS_DATA_DIR_IS_ROOT) {
     return true;
   }
-  return (
-    absolutePath === OPS_DATA_DIR_ABS ||
-    absolutePath.startsWith(`${OPS_DATA_DIR_ABS}${sep}`)
-  );
+  const rel = relative(OPS_DATA_DIR_ABS, absolutePath);
+  return !rel.startsWith("..") && !isAbsolute(rel);
 }
 
 async function appendLine(path: string, value: unknown): Promise<void> {

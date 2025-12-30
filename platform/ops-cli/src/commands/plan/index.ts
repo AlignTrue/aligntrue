@@ -4,12 +4,10 @@ import {
   OPS_PLANS_WEEKLY_ENABLED,
   OPS_TASKS_ENABLED,
   Suggestions,
-  Storage,
-  Projections,
-  Tasks,
   Identity,
 } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
+import { readTasksProjection } from "../tasks/shared.js";
 
 const CLI_ACTOR = {
   actor_id: process.env["USER"] || "cli-user",
@@ -156,16 +154,4 @@ function ensureWeeklyEnabled() {
       hint: "Set OPS_PLANS_WEEKLY_ENABLED=1",
     });
   }
-}
-
-async function readTasksProjection() {
-  const store = new Storage.JsonlEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH);
-  const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    store,
-  );
-  const projection = Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
-  );
-  return { projection, hash: Projections.hashTasksProjection(projection) };
 }

@@ -35,7 +35,13 @@ function toJSONValue(value: unknown): JSONValue {
     )) {
       if (child === undefined) continue;
       assertSafeKey(key);
-      result[key] = toJSONValue(child);
+      // Use defineProperty to avoid potential property injection alerts
+      Object.defineProperty(result, key, {
+        value: toJSONValue(child),
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
     }
     return result;
   }
@@ -44,7 +50,15 @@ function toJSONValue(value: unknown): JSONValue {
 }
 
 function assertSafeKey(key: string): void {
-  if (key === "__proto__" || key === "prototype" || key === "constructor") {
+  if (
+    key === "__proto__" ||
+    key === "prototype" ||
+    key === "constructor" ||
+    key === "__defineGetter__" ||
+    key === "__defineSetter__" ||
+    key === "__lookupGetter__" ||
+    key === "__lookupSetter__"
+  ) {
     throw new TypeError(`Refusing to canonicalize unsafe object key: ${key}`);
   }
 }
@@ -63,7 +77,13 @@ function normalize(value: JSONValue): JSONValue {
   for (const key of sortedKeys) {
     const child = (value as Record<string, JSONValue | undefined>)[key];
     if (child === undefined) continue;
-    result[key] = normalize(child);
+    // Use defineProperty to avoid potential property injection alerts
+    Object.defineProperty(result, key, {
+      value: normalize(child),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   return result;
 }

@@ -7,6 +7,7 @@ const nextConfig = {
     "@aligntrue/ops-shared-google-gmail",
     "@aligntrue/ops-shared-google-calendar",
     "@aligntrue/ops-shared-google-common",
+    "@aligntrue/pack-tasks",
   ],
 };
 

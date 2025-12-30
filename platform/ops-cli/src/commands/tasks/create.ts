@@ -1,6 +1,8 @@
-import { Identity } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
-import { buildCommand, createLedger, ensureTasksEnabled } from "./shared.js";
+import { dispatchTaskCommand, ensureTasksEnabled } from "./shared.js";
+import { Identity, Contracts } from "@aligntrue/ops-core";
+
+const { TASK_COMMAND_TYPES } = Contracts;
 
 export async function createTask(args: string[]): Promise<void> {
   ensureTasksEnabled();
@@ -44,7 +46,7 @@ export async function createTask(args: string[]): Promise<void> {
   }
 
   const safeTitle: string = title;
-  const task_id: string = customId ?? Identity.deterministicId(safeTitle);
+  const task_id: string = customId ?? Identity.randomId();
   const payload = {
     task_id,
     title: safeTitle,
@@ -52,8 +54,7 @@ export async function createTask(args: string[]): Promise<void> {
     status: "open" as const,
   };
 
-  const ledger = createLedger();
-  const outcome = await ledger.execute(buildCommand("task.create", payload));
+  const outcome = await dispatchTaskCommand(TASK_COMMAND_TYPES.Create, payload);
 
   console.log(
     `Task ${task_id} created (${outcome.status}, events: ${outcome.produced_events?.length ?? 0})`,

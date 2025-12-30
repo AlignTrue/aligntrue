@@ -1,0 +1,16 @@
+{
+  "name": "@aligntrue/personal-crm",
+  "version": "0.0.1",
+  "packs": [
+    {
+      "name": "@aligntrue/pack-tasks",
+      "version": "0.0.1",
+      "source": "workspace"
+    }
+  ],
+  "capabilities": [
+    "pack.tasks.create",
+    "pack.tasks.complete",
+    "pack.tasks.triage"
+  ]
+}
