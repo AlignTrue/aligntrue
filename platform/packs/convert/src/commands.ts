@@ -58,7 +58,7 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
     }
 
     const now = new Date().toISOString();
-    const source_ref = email.payload.source_ref;
+    const source_ref = payload.source_ref ?? email.payload.source_ref;
     const task_id = Identity.deterministicId({ source_ref, op: "to_task" });
     const conversion: Contracts.ConversionMeta = {
       from_source_type: "email",
@@ -106,7 +106,7 @@ export const commandHandlers: Record<string, PackCommandHandler> = {
     }
 
     const now = new Date().toISOString();
-    const source_ref = email.payload.source_ref;
+    const source_ref = payload.source_ref ?? email.payload.source_ref;
     const note_id = Identity.deterministicId({ source_ref, op: "to_note" });
     const conversion: Contracts.ConversionMeta = {
       from_source_type: "email",

@@ -2,6 +2,7 @@ import {
   OPS_GMAIL_MUTATIONS_ENABLED,
   Contracts,
   Identity,
+  Emails,
 } from "@aligntrue/ops-core";
 import { createHost, Storage, type Host } from "@aligntrue/ops-host";
 import manifestJson from "../app.manifest.json";
@@ -40,7 +41,7 @@ export async function dispatchConvertCommand(
   kind: "task" | "note",
   messageId: string,
   actor: Contracts.ActorRef,
-  opts?: { title?: string; body_md?: string },
+  opts?: { title?: string; body_md?: string; source_ref?: string },
 ) {
   if (!hostInstance) {
     throw new Error("Host not initialized. Call getHost() first.");
@@ -48,6 +49,57 @@ export async function dispatchConvertCommand(
   const command = buildConvertCommand(kind, messageId, actor, opts);
   const outcome = await hostInstance.runtime.dispatchCommand(command);
   return { command, outcome };
+}
+
+export function getConversionService(
+  eventStore: Storage.JsonlEventStore,
+  _commandLog: Storage.JsonlCommandLog,
+) {
+  return {
+    async convertEmailToTask({
+      source_ref,
+      actor,
+    }: {
+      source_ref: string;
+      actor: Contracts.ActorRef;
+    }) {
+      if (!hostInstance) {
+        throw new Error("Host not initialized");
+      }
+
+      // Try to find the email to get the canonical source_ref
+      let canonical_ref = source_ref;
+      for await (const event of eventStore.stream()) {
+        if (event.event_type !== Emails.EMAIL_EVENT_TYPES.EmailMessageIngested)
+          continue;
+        const payload = event.payload as Emails.EmailMessageIngestedPayload;
+        if (
+          payload.source_ref === source_ref ||
+          payload.message_id === source_ref
+        ) {
+          canonical_ref = payload.source_ref;
+          break;
+        }
+      }
+
+      const task_id = Identity.deterministicId({
+        source_ref: canonical_ref,
+        op: "to_task",
+      });
+
+      const command = buildConvertCommand("task", source_ref, actor, {
+        source_ref: canonical_ref,
+      });
+
+      const outcome = await hostInstance.runtime.dispatchCommand(command);
+
+      return {
+        created_id: task_id,
+        source_ref: canonical_ref,
+        outcome,
+      };
+    },
+  };
 }
 
 export function getGmailMutationExecutor(
@@ -80,16 +132,19 @@ function buildConvertCommand(
   kind: "task" | "note",
   messageId: string,
   actor: Contracts.ActorRef,
-  opts?: { title?: string; body_md?: string },
+  opts?: { title?: string; body_md?: string; source_ref?: string },
 ): Contracts.CommandEnvelope {
   const command_id = Identity.randomId();
   const command_type =
     kind === "task"
       ? Contracts.CONVERT_COMMAND_TYPES.EmailToTask
       : Contracts.CONVERT_COMMAND_TYPES.EmailToNote;
+
+  // Use source_ref for idempotency if provided, else fall back to messageId
+  const stable_ref = opts?.source_ref ?? messageId;
   const idempotency_key = Identity.generateCommandId({
     source_type: "email",
-    source_ref: messageId,
+    source_ref: stable_ref,
     op: command_type,
   });
 
@@ -97,11 +152,13 @@ function buildConvertCommand(
     kind === "task"
       ? ({
           message_id: messageId,
+          source_ref: opts?.source_ref,
           title: opts?.title,
           conversion_method: "user_action",
         } satisfies Contracts.ConvertEmailToTaskPayload)
       : ({
           message_id: messageId,
+          source_ref: opts?.source_ref,
           title: opts?.title,
           body_md: opts?.body_md,
           conversion_method: "user_action",
@@ -112,7 +169,7 @@ function buildConvertCommand(
     idempotency_key,
     command_type,
     payload,
-    target_ref: `email:${messageId}`,
+    target_ref: `email:${stable_ref}`,
     dedupe_scope: "target",
     correlation_id: command_id,
     actor,
