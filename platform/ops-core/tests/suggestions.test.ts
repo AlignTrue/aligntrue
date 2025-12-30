@@ -106,6 +106,15 @@ describe("suggestions", () => {
         join(dir, "suggestion-outcomes.jsonl"),
         { allowExternalPaths: true },
       ),
+      runtimeDispatch: async (cmd) => {
+        const ledger = createJsonlTaskLedger({
+          eventsPath: tasksEventsPath,
+          commandsPath: join(dir, "tasks-commands.jsonl"),
+          outcomesPath: join(dir, "tasks-outcomes.jsonl"),
+          allowExternalPaths: true,
+        });
+        return ledger.execute(cmd as never);
+      },
     });
     const artifact = generated.artifacts[0];
 

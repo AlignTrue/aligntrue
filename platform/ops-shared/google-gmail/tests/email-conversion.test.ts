@@ -38,6 +38,12 @@ describe("email conversion and gmail mutations", () => {
       now: () => NOW,
       tasksEnabled: true,
       notesEnabled: true,
+      runtimeDispatch: (cmd) => {
+        const ledger = new Tasks.TaskLedger(eventStore, commandLog, {
+          now: () => NOW,
+        });
+        return ledger.execute(cmd as never);
+      },
     });
 
     await service.convertEmailToTask({
@@ -67,6 +73,12 @@ describe("email conversion and gmail mutations", () => {
       now: () => NOW,
       tasksEnabled: true,
       notesEnabled: true,
+      runtimeDispatch: (cmd) => {
+        const ledger = new Tasks.TaskLedger(eventStore, commandLog, {
+          now: () => NOW,
+        });
+        return ledger.execute(cmd as never);
+      },
     });
 
     await service.convertEmailToNote({

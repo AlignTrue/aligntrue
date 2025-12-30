@@ -40,8 +40,13 @@ export function getConversionService(
   eventStore: Storage.JsonlEventStore,
   commandLog: Storage.JsonlCommandLog,
 ): Convert.ConversionService {
-  // For now, continue using core conversion service; pack integration will follow in Phase 3.
-  return new Convert.ConversionService(eventStore, commandLog);
+  if (!hostInstance) {
+    throw new Error("Host not initialized. Call getHost() first.");
+  }
+  return new Convert.ConversionService(eventStore, commandLog, {
+    runtimeDispatch: (command) =>
+      hostInstance!.runtime.dispatchCommand(command),
+  });
 }
 
 export function getGmailMutationExecutor(

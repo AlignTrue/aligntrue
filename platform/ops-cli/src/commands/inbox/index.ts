@@ -5,6 +5,7 @@ import {
   Storage,
   Projections,
   Notes,
+  Tasks,
 } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
@@ -120,6 +121,10 @@ async function handleDecision(
   const executor = new Suggestions.SuggestionExecutor({
     artifactStore,
     feedbackEventStore: feedbackEvents,
+    runtimeDispatch: async (cmd) => {
+      const ledger = Tasks.createJsonlTaskLedger();
+      return ledger.execute(cmd as never);
+    },
   });
 
   const artifact = await artifactStore.getDerivedById(id);

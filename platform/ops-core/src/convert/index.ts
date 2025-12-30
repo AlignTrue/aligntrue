@@ -54,6 +54,9 @@ export class ConversionService {
   private readonly now: () => string;
   private readonly tasksEnabled: boolean;
   private readonly notesEnabled: boolean;
+  private readonly runtimeDispatch?:
+    | ((command: CommandEnvelope) => Promise<CommandOutcome>)
+    | undefined;
 
   constructor(
     private readonly eventStore: EventStore,
@@ -62,11 +65,13 @@ export class ConversionService {
       now?: () => string;
       tasksEnabled?: boolean;
       notesEnabled?: boolean;
+      runtimeDispatch?: (command: CommandEnvelope) => Promise<CommandOutcome>;
     },
   ) {
     this.now = opts?.now ?? (() => new Date().toISOString());
     this.tasksEnabled = opts?.tasksEnabled ?? OPS_TASKS_ENABLED;
     this.notesEnabled = opts?.notesEnabled ?? OPS_NOTES_ENABLED;
+    this.runtimeDispatch = opts?.runtimeDispatch;
   }
 
   async convertEmailToTask(
@@ -110,10 +115,11 @@ export class ConversionService {
         input,
       );
 
-    const ledger = new TaskLedger(this.eventStore, this.commandLog, {
-      now: this.now,
-    });
-    const outcome = await ledger.execute(command);
+    const outcome = this.runtimeDispatch
+      ? await this.runtimeDispatch(command)
+      : await new TaskLedger(this.eventStore, this.commandLog, {
+          now: this.now,
+        }).execute(command);
     return { created_id: task_id, source_ref, outcome };
   }
 

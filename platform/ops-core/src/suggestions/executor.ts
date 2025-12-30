@@ -16,9 +16,7 @@ import type {
   EventStore,
 } from "../storage/interfaces.js";
 import { JsonlCommandLog } from "../storage/index.js";
-import { createJsonlTaskLedger } from "../tasks/ledger.js";
 import { TASK_COMMAND_TYPES, type TaskBucket } from "../contracts/tasks.js";
-import type { TaskCommandEnvelope } from "../tasks/ledger.js";
 import * as Notes from "../notes/index.js";
 import * as Feedback from "../feedback/index.js";
 import type {
@@ -51,6 +49,9 @@ export interface SuggestionExecutorDeps {
   readonly commandLog?: CommandLog | undefined;
   readonly allowExternalPaths?: boolean | undefined;
   readonly now?: (() => string) | undefined;
+  readonly runtimeDispatch: (
+    command: CommandEnvelope,
+  ) => Promise<CommandOutcome>;
 }
 
 export class SuggestionExecutor {
@@ -59,6 +60,9 @@ export class SuggestionExecutor {
   private readonly allowExternalPaths: boolean;
 
   constructor(private readonly deps: SuggestionExecutorDeps) {
+    if (!deps.runtimeDispatch) {
+      throw new ValidationError("runtimeDispatch is required for suggestions");
+    }
     this.now = deps.now ?? (() => new Date().toISOString());
     this.allowExternalPaths = deps.allowExternalPaths ?? false;
     this.commandLog =
@@ -258,14 +262,11 @@ export class SuggestionExecutor {
       throw new ValidationError("Tasks are disabled (OPS_TASKS_ENABLED=0)");
     }
     const triage = diff as { task_id: string; to_bucket: TaskBucket };
-    const ledger = createJsonlTaskLedger({
-      allowExternalPaths: this.allowExternalPaths,
-    });
     const command_id = Identity.generateCommandId({
       command_type: TASK_COMMAND_TYPES.Triage,
       task_id: triage.task_id,
     });
-    const cmd: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Triage> = {
+    const cmd: CommandEnvelope<typeof TASK_COMMAND_TYPES.Triage> = {
       command_id,
       idempotency_key: command_id,
       command_type: TASK_COMMAND_TYPES.Triage,
@@ -280,7 +281,7 @@ export class SuggestionExecutor {
       requested_at: this.now(),
     };
     try {
-      await ledger.execute(cmd);
+      await this.deps.runtimeDispatch(cmd);
     } catch (error) {
       if (
         error instanceof PreconditionFailed &&

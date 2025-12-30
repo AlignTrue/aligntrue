@@ -629,6 +629,11 @@ export default [
               message:
                 "ops-core cannot import from ops-shared or packs (constitution Section 7).",
             },
+            {
+              group: ["@aligntrue/pack-*"],
+              message:
+                "ops-core cannot import from packs (use contracts/interfaces only).",
+            },
           ],
         },
       ],
