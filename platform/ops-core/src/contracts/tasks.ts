@@ -41,3 +41,33 @@ export const TASK_COMMAND_TYPES = {
 } as const;
 
 export const TASK_PROJECTION = "pack.tasks.latest" as const;
+
+// Payload contracts
+export interface TaskCreatedPayload {
+  task_id: string;
+  title: string;
+  bucket: TaskBucket;
+  status: TaskStatus;
+  impact?: TaskImpact;
+  effort?: TaskEffort;
+  due_at?: string;
+  source_ref?: string;
+  conversion?: import("../types/conversion.js").ConversionMeta;
+}
+
+export interface TaskTriagedPayload {
+  task_id: string;
+  bucket?: TaskBucket;
+  impact?: TaskImpact;
+  effort?: TaskEffort;
+  due_at?: string | null;
+  title?: string;
+}
+
+export interface TaskCompletedPayload {
+  task_id: string;
+}
+
+export interface TaskReopenedPayload {
+  task_id: string;
+}

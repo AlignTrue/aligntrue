@@ -1,8 +1,9 @@
 import type {
   ProjectionDefinition,
   ProjectionFreshness,
-} from "../projections/definition.js";
-import type { EventEnvelope } from "../envelopes/event.js";
+  EventEnvelope,
+} from "@aligntrue/ops-core";
+import { hashCanonical } from "@aligntrue/ops-core";
 import {
   TASK_EVENT_TYPES,
   LEGACY_TASK_EVENT_TYPES,
@@ -14,7 +15,6 @@ import {
   type TaskState,
   type TasksLedgerState,
 } from "./state-machine.js";
-import { hashCanonical } from "../identity/hash.js";
 
 export type TaskLatest = TaskState;
 

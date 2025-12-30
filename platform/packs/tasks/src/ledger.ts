@@ -1,11 +1,18 @@
-import { PreconditionFailed, ValidationError } from "../errors.js";
-import { Identity } from "../identity/index.js";
+import { join } from "node:path";
+import {
+  Identity,
+  ValidationError,
+  PreconditionFailed,
+  Storage,
+  Contracts,
+} from "@aligntrue/ops-core";
 import type {
   CommandEnvelope,
   CommandOutcome,
+  CommandLog,
+  EventStore,
   EventEnvelope,
-} from "../envelopes/index.js";
-import type { CommandLog, EventStore } from "../storage/interfaces.js";
+} from "@aligntrue/ops-core";
 import {
   TASK_EVENT_TYPES,
   TASKS_SCHEMA_VERSION,
@@ -20,16 +27,9 @@ import {
   reduceEvent,
   type TasksLedgerState,
 } from "./state-machine.js";
-import {
-  TASK_COMMAND_TYPES,
-  TASK_BUCKETS,
-  TASK_IMPACTS,
-  TASK_EFFORTS,
-} from "../contracts/tasks.js";
-import { join } from "node:path";
-import { OPS_DATA_DIR } from "../config.js";
-import { JsonlCommandLog } from "../storage/jsonl-command-log.js";
-import { JsonlEventStore } from "../storage/jsonl-event-store.js";
+
+const { TASK_COMMAND_TYPES, TASK_BUCKETS, TASK_IMPACTS, TASK_EFFORTS } =
+  Contracts;
 
 const TASKS_ENVELOPE_VERSION = 1;
 
@@ -60,8 +60,9 @@ export type TaskCommandEnvelope<T extends TaskCommandType = TaskCommandType> =
 
 export type TaskCommandPayload = TaskCommandEnvelope["payload"];
 
+const DEFAULT_DATA_DIR = process.cwd();
 export const DEFAULT_TASKS_EVENTS_PATH = join(
-  OPS_DATA_DIR,
+  DEFAULT_DATA_DIR,
   "ops-core-tasks-events.jsonl",
 );
 
@@ -72,12 +73,14 @@ export function createJsonlTaskLedger(opts?: {
   allowExternalPaths?: boolean;
   now?: () => string;
 }) {
-  const eventStore = new JsonlEventStore(
+  const eventStore = new Storage.JsonlEventStore(
     opts?.eventsPath ?? DEFAULT_TASKS_EVENTS_PATH,
   );
-  const commandLog = new JsonlCommandLog(
-    opts?.commandsPath ?? join(OPS_DATA_DIR, "ops-core-tasks-commands.jsonl"),
-    opts?.outcomesPath ?? join(OPS_DATA_DIR, "ops-core-tasks-outcomes.jsonl"),
+  const commandLog = new Storage.JsonlCommandLog(
+    opts?.commandsPath ??
+      join(DEFAULT_DATA_DIR, "ops-core-tasks-commands.jsonl"),
+    opts?.outcomesPath ??
+      join(DEFAULT_DATA_DIR, "ops-core-tasks-outcomes.jsonl"),
     { allowExternalPaths: opts?.allowExternalPaths },
   );
   return new TaskLedger(eventStore, commandLog, opts);

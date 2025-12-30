@@ -5,10 +5,20 @@ import {
   OPS_PLANS_DAILY_ENABLED,
   OPS_PLANS_WEEKLY_ENABLED,
   Identity,
-  Tasks,
   Projections,
   Suggestions,
 } from "@aligntrue/ops-core";
+import {
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  hashTasksProjection,
+  DEFAULT_TASKS_EVENTS_PATH,
+  createJsonlTaskLedger,
+  TASK_COMMAND_TYPES,
+  type TaskCommandType,
+  type TaskCommandPayload,
+  type TaskCommandEnvelope,
+} from "@aligntrue/pack-tasks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,15 +30,13 @@ async function getTasksView() {
   if (!OPS_TASKS_ENABLED) return null;
   await getHost();
   const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+    TasksProjectionDef,
+    getEventStore(DEFAULT_TASKS_EVENTS_PATH),
   );
-  const projection = Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
-  );
+  const projection = buildTasksProjectionFromState(rebuilt.data as never);
   return {
     projection,
-    hash: Projections.hashTasksProjection(projection),
+    hash: hashTasksProjection(projection),
   };
 }
 
@@ -52,10 +60,10 @@ const ACTOR = {
 
 type Bucket = "today" | "week" | "later" | "waiting";
 
-function buildCommand<T extends Tasks.TaskCommandType>(
+function buildCommand<T extends TaskCommandType>(
   command_type: T,
-  payload: Tasks.TaskCommandPayload,
-): Tasks.TaskCommandEnvelope<T> {
+  payload: TaskCommandPayload,
+): TaskCommandEnvelope<T> {
   const target =
     "task_id" in payload
       ? `task:${(payload as { task_id: string }).task_id}`
@@ -72,14 +80,14 @@ function buildCommand<T extends Tasks.TaskCommandType>(
       actor_type: "human",
     },
     requested_at: new Date().toISOString(),
-  } as Tasks.TaskCommandEnvelope<T>;
+  } as TaskCommandEnvelope<T>;
 }
 
-async function execute(command: Tasks.TaskCommandEnvelope) {
+async function execute(command: TaskCommandEnvelope) {
   if (!OPS_TASKS_ENABLED) {
     throw new Error("Tasks are disabled");
   }
-  const ledger = Tasks.createJsonlTaskLedger();
+  const ledger = createJsonlTaskLedger();
   await ledger.execute(command);
   revalidatePath("/tasks");
 }
@@ -90,7 +98,7 @@ async function createTaskAction(formData: FormData) {
   if (!title) return;
   const task_id = Identity.deterministicId(title);
   await execute(
-    buildCommand(Tasks.TASK_COMMAND_TYPES.Create, {
+    buildCommand(TASK_COMMAND_TYPES.Create, {
       task_id,
       title,
       bucket: "today",
@@ -106,7 +114,7 @@ async function triageTaskAction(formData: FormData) {
   const bucket = String(formData.get("bucket") ?? "") as Bucket;
   if (!task_id || !bucket) return;
   await execute(
-    buildCommand(Tasks.TASK_COMMAND_TYPES.Triage, {
+    buildCommand(TASK_COMMAND_TYPES.Triage, {
       task_id,
       bucket,
     }),
@@ -118,7 +126,7 @@ async function completeTaskAction(formData: FormData) {
   const task_id = String(formData.get("task_id") ?? "");
   if (!task_id) return;
   await execute(
-    buildCommand(Tasks.TASK_COMMAND_TYPES.Complete, {
+    buildCommand(TASK_COMMAND_TYPES.Complete, {
       task_id,
     }),
   );
@@ -139,13 +147,11 @@ async function createDailyPlanAction(formData: FormData) {
 
   await getHost();
   const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+    TasksProjectionDef,
+    getEventStore(DEFAULT_TASKS_EVENTS_PATH),
   );
-  const projection = Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
-  );
-  const hash = Projections.hashTasksProjection(projection);
+  const projection = buildTasksProjectionFromState(rebuilt.data as never);
+  const hash = hashTasksProjection(projection);
   const artifactStore = Suggestions.createArtifactStore();
   await Suggestions.buildAndStoreDailyPlan({
     task_ids: ids,
@@ -166,13 +172,11 @@ async function generateWeeklyPlanAction(formData: FormData) {
   await getHost();
   const store = Suggestions.createArtifactStore();
   const rebuilt = await Projections.rebuildOne(
-    Projections.TasksProjectionDef,
-    getEventStore(Tasks.DEFAULT_TASKS_EVENTS_PATH),
+    TasksProjectionDef,
+    getEventStore(DEFAULT_TASKS_EVENTS_PATH),
   );
-  const projection = Projections.buildTasksProjectionFromState(
-    rebuilt.data as Projections.TasksProjectionState,
-  );
-  const hash = Projections.hashTasksProjection(projection);
+  const projection = buildTasksProjectionFromState(rebuilt.data as never);
+  const hash = hashTasksProjection(projection);
   const memoryProvider = {
     async index(
       items: { entity_type: string; entity_id: string; content: string }[],

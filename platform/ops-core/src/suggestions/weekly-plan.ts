@@ -13,7 +13,29 @@ import type {
   QueryContext,
 } from "../memory/types.js";
 import { NoOpMemoryProvider } from "../memory/index.js";
-import type { TasksProjection, TaskLatest } from "../projections/index.js";
+import type {
+  TaskBucket,
+  TaskStatus,
+  TaskImpact,
+  TaskEffort,
+} from "../contracts/tasks.js";
+
+type TaskLatest = {
+  id: string;
+  title: string;
+  bucket: TaskBucket;
+  status: TaskStatus;
+  impact?: TaskImpact;
+  effort?: TaskEffort;
+  due_at?: string | null;
+  source_ref?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type TasksProjection = {
+  tasks: TaskLatest[];
+};
 
 export interface WeeklyPlanData {
   readonly week_start: string; // YYYY-MM-DD (Monday UTC)

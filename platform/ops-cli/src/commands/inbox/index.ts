@@ -5,8 +5,8 @@ import {
   Storage,
   Projections,
   Notes,
-  Tasks,
 } from "@aligntrue/ops-core";
+import { createJsonlTaskLedger } from "@aligntrue/pack-tasks";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
 
@@ -122,7 +122,7 @@ async function handleDecision(
     artifactStore,
     feedbackEventStore: feedbackEvents,
     runtimeDispatch: async (cmd) => {
-      const ledger = Tasks.createJsonlTaskLedger();
+      const ledger = createJsonlTaskLedger();
       return ledger.execute(cmd as never);
     },
   });

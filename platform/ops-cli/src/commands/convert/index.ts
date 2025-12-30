@@ -3,10 +3,10 @@ import {
   OPS_NOTES_ENABLED,
   OPS_GMAIL_MUTATIONS_ENABLED,
   Convert,
-  Tasks,
   Storage,
   Identity,
 } from "@aligntrue/ops-core";
+import { TaskLedger } from "@aligntrue/pack-tasks";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import { exitWithError } from "../../utils/command-utilities.js";
 
@@ -51,7 +51,7 @@ async function convertEmailToTask(args: string[]): Promise<void> {
   const commandLog = new Storage.JsonlCommandLog();
   const service = new Convert.ConversionService(eventStore, commandLog, {
     runtimeDispatch: (cmd) => {
-      const ledger = new Tasks.TaskLedger(eventStore, commandLog);
+      const ledger = new TaskLedger(eventStore, commandLog);
       return ledger.execute(cmd as never);
     },
   });

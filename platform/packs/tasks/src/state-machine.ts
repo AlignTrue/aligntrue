@@ -8,7 +8,7 @@ import type {
   TaskEffort,
   TaskImpact,
   TaskStatus,
-} from "../contracts/tasks.js";
+} from "@aligntrue/ops-core/contracts/tasks";
 
 export interface TaskState {
   id: string;

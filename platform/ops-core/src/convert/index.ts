@@ -7,12 +7,10 @@ import {
   EMAIL_EVENT_TYPES,
   type EmailEventEnvelope,
 } from "../emails/gmail-contracts.js";
-import { TASK_COMMAND_TYPES } from "../contracts/tasks.js";
 import {
-  TaskLedger,
+  TASK_COMMAND_TYPES,
   type TaskCreatedPayload,
-  type TaskCommandEnvelope,
-} from "../tasks/index.js";
+} from "../contracts/tasks.js";
 import {
   NoteLedger,
   type NoteCommandEnvelope,
@@ -54,9 +52,9 @@ export class ConversionService {
   private readonly now: () => string;
   private readonly tasksEnabled: boolean;
   private readonly notesEnabled: boolean;
-  private readonly runtimeDispatch?:
-    | ((command: CommandEnvelope) => Promise<CommandOutcome>)
-    | undefined;
+  private readonly runtimeDispatch: (
+    command: CommandEnvelope,
+  ) => Promise<CommandOutcome>;
 
   constructor(
     private readonly eventStore: EventStore,
@@ -65,13 +63,18 @@ export class ConversionService {
       now?: () => string;
       tasksEnabled?: boolean;
       notesEnabled?: boolean;
-      runtimeDispatch?: (command: CommandEnvelope) => Promise<CommandOutcome>;
+      runtimeDispatch: (command: CommandEnvelope) => Promise<CommandOutcome>;
     },
   ) {
     this.now = opts?.now ?? (() => new Date().toISOString());
     this.tasksEnabled = opts?.tasksEnabled ?? OPS_TASKS_ENABLED;
     this.notesEnabled = opts?.notesEnabled ?? OPS_NOTES_ENABLED;
-    this.runtimeDispatch = opts?.runtimeDispatch;
+    if (!opts?.runtimeDispatch) {
+      throw new ValidationError(
+        "runtimeDispatch is required for ConversionService",
+      );
+    }
+    this.runtimeDispatch = opts.runtimeDispatch;
   }
 
   async convertEmailToTask(
@@ -107,19 +110,14 @@ export class ConversionService {
       conversion,
     };
 
-    const command: TaskCommandEnvelope<typeof TASK_COMMAND_TYPES.Create> =
-      this.buildCommand(
-        TASK_COMMAND_TYPES.Create,
-        payload,
-        `task:${task_id}`,
-        input,
-      );
+    const command = this.buildCommand(
+      TASK_COMMAND_TYPES.Create,
+      payload,
+      `task:${task_id}`,
+      input,
+    );
 
-    const outcome = this.runtimeDispatch
-      ? await this.runtimeDispatch(command)
-      : await new TaskLedger(this.eventStore, this.commandLog, {
-          now: this.now,
-        }).execute(command);
+    const outcome = await this.runtimeDispatch(command);
     return { created_id: task_id, source_ref, outcome };
   }
 

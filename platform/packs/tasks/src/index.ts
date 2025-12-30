@@ -1,9 +1,35 @@
 import type { PackModule } from "@aligntrue/ops-core";
-import { Tasks } from "@aligntrue/ops-core";
 import { manifest } from "./manifest.js";
 import { commandHandlers } from "./commands.js";
-
-const { TasksProjectionDef } = Tasks;
+import {
+  TasksProjectionDef,
+  buildTasksProjectionFromState,
+  hashTasksProjection,
+} from "./projection.js";
+import {
+  TaskLedger,
+  createJsonlTaskLedger,
+  DEFAULT_TASKS_EVENTS_PATH,
+  type TaskCommandEnvelope,
+  type TaskCommandPayload,
+  type TaskCommandType,
+} from "./ledger.js";
+import {
+  TASK_EVENT_TYPES,
+  LEGACY_TASK_EVENT_TYPES,
+  TASKS_SCHEMA_VERSION,
+  type TaskCreatedPayload,
+  type TaskTriagedPayload,
+  type TaskCompletedPayload,
+  type TaskReopenedPayload,
+  type TaskEvent,
+} from "./events.js";
+import {
+  TasksProjection,
+  TasksProjectionState,
+  TaskLatest,
+} from "./projection.js";
+import { Contracts } from "@aligntrue/ops-core";
 
 const moduleImpl: PackModule = {
   manifest,
@@ -15,11 +41,32 @@ export default moduleImpl;
 export { manifest } from "./manifest.js";
 export { commandHandlers } from "./commands.js";
 export {
+  TaskLedger,
+  createJsonlTaskLedger,
+  DEFAULT_TASKS_EVENTS_PATH,
   TasksProjectionDef,
   buildTasksProjectionFromState,
   hashTasksProjection,
-  type TasksProjection,
-  type TasksProjectionState,
-  type TaskLatest,
-} from "@aligntrue/ops-core/projections";
-export * from "@aligntrue/ops-core/tasks";
+  TASK_EVENT_TYPES,
+  LEGACY_TASK_EVENT_TYPES,
+  TASKS_SCHEMA_VERSION,
+};
+export {
+  TasksProjection,
+  TasksProjectionState,
+  TaskLatest,
+  TaskCommandEnvelope,
+  TaskCommandPayload,
+  TaskCommandType,
+  TaskCreatedPayload,
+  TaskTriagedPayload,
+  TaskCompletedPayload,
+  TaskReopenedPayload,
+  TaskEvent,
+};
+export const {
+  TASK_COMMAND_TYPES,
+  TASK_PROJECTION,
+  TASK_BUCKETS,
+  TASK_STATUSES,
+} = Contracts;

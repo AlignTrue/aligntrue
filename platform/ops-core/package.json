@@ -4,11 +4,27 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./emails/gmail-contracts": "./dist/emails/gmail-contracts.js",
-    "./calendar/google-contracts": "./dist/calendar/google-contracts.js",
-    "./tasks": "./dist/tasks/index.js",
-    "./projections": "./dist/projections/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./emails/gmail-contracts": {
+      "types": "./dist/emails/gmail-contracts.d.ts",
+      "import": "./dist/emails/gmail-contracts.js"
+    },
+    "./calendar/google-contracts": {
+      "types": "./dist/calendar/google-contracts.d.ts",
+      "import": "./dist/calendar/google-contracts.js"
+    },
+    "./projections": {
+      "types": "./dist/projections/index.d.ts",
+      "import": "./dist/projections/index.js"
+    },
+    "./contracts/tasks": {
+      "types": "./dist/contracts/tasks.d.ts",
+      "import": "./dist/contracts/tasks.js"
+    },
+    "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

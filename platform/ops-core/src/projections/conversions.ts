@@ -4,7 +4,10 @@ import type {
 } from "./definition.js";
 import type { EventEnvelope } from "../envelopes/index.js";
 import { hashCanonical } from "../identity/hash.js";
-import { TASK_EVENT_TYPES, type TaskCreatedPayload } from "../tasks/events.js";
+import {
+  TASK_EVENT_TYPES,
+  type TaskCreatedPayload,
+} from "../contracts/tasks.js";
 import { NOTE_EVENT_TYPES, type NoteCreatedPayload } from "../notes/events.js";
 import type { ConversionMeta } from "../types/conversion.js";
 import type { ActorRef } from "../envelopes/actor.js";

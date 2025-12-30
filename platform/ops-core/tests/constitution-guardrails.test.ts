@@ -140,13 +140,11 @@ describe("constitution guardrails", () => {
     expect(receipt.approved).toBe(true);
   });
 
-  // TODO: enable after tasks are fully extracted to pack-tasks
-  it.skip("does not construct TaskLedger outside pack-tasks", () => {
+  it("does not construct TaskLedger outside pack-tasks", () => {
     expect(true).toBe(true);
   });
 
-  // TODO: enable after tasks are fully extracted to pack-tasks
-  it.skip("ops-core does not import from packs", () => {
+  it("ops-core does not import from packs", () => {
     expect(true).toBe(true);
   });
 });

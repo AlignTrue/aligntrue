@@ -61,16 +61,6 @@ export {
   buildNotesProjectionFromState,
   hashNotesProjection,
 } from "./notes.js";
-export {
-  TasksProjectionDef,
-  buildTasksProjectionFromState,
-  hashTasksProjection,
-} from "../tasks/projection.js";
-export type {
-  TasksProjection,
-  TasksProjectionState,
-  TaskLatest,
-} from "../tasks/projection.js";
 export type {
   NotesProjectionState,
   NotesProjection,
@@ -87,8 +77,8 @@ export type {
   ConversionRecord,
 } from "./conversions.js";
 export { RunsProjectionDef, buildRunsProjectionFromState } from "./runs.js";
-export { rebuildRuns, rebuildTasksAndNotes } from "./rebuild.js";
-export type { ExecutionProjections, TaskNoteProjections } from "./rebuild.js";
+export { rebuildRuns } from "./rebuild.js";
+export type { ExecutionProjections } from "./rebuild.js";
 export type { RunsProjectionState, RunSummary, StepSummary } from "./runs.js";
 export {
   InboxProjectionDef,

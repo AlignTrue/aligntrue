@@ -2,14 +2,15 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Storage, Projections, Tasks } from "../src/index.js";
-const {
+import { Storage, Projections } from "../src/index.js";
+// eslint-disable-next-line no-restricted-imports
+import {
   createJsonlTaskLedger,
   TasksProjectionDef,
   buildTasksProjectionFromState,
   hashTasksProjection,
   TASK_COMMAND_TYPES,
-} = Tasks;
+} from "../packs/tasks/src/index.js";
 
 const ACTOR = { actor_id: "tester", actor_type: "human" } as const;
 

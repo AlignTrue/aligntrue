@@ -5,6 +5,13 @@ import type { ActorRef } from "../envelopes/actor.js";
 import { Identity } from "../identity/index.js";
 import type { ArtifactStore } from "../storage/interfaces.js";
 import {
+  TASK_PROJECTION,
+  type TaskBucket,
+  type TaskStatus,
+  type TaskImpact,
+  type TaskEffort,
+} from "../contracts/tasks.js";
+import {
   buildSuggestionGeneratedEvent,
   type SuggestionGeneratedEvent,
 } from "./events.js";
@@ -27,8 +34,21 @@ export interface GeneratorCommonInput {
   readonly policy_version?: string;
 }
 
+type TasksProjection = {
+  tasks: Array<{
+    id: string;
+    title: string;
+    bucket: TaskBucket;
+    status: TaskStatus;
+    impact?: TaskImpact;
+    effort?: TaskEffort;
+    due_at?: string | null;
+    updated_at: string;
+  }>;
+};
+
 export interface TaskTriageGeneratorInput extends GeneratorCommonInput {
-  readonly tasks: Projections.TasksProjection;
+  readonly tasks: TasksProjection;
   readonly tasks_hash: string;
   readonly window_days?: number;
 }
@@ -70,7 +90,7 @@ export async function generateTaskTriageSuggestions(
     referenced_entities: ["task"],
     referenced_fields: ["id", "bucket", "status", "due_at"],
     filters: { bucket: "later", due_within_days: window_days },
-    projection_version: Projections.TasksProjectionDef.version,
+    projection_version: TASK_PROJECTION,
     created_at: now,
     created_by: input.actor,
     correlation_id,

@@ -1,15 +1,24 @@
-import type { EventEnvelope } from "../envelopes/event.js";
-import type { ConversionMeta } from "../types/conversion.js";
-import {
+import type { EventEnvelope } from "@aligntrue/ops-core";
+import type { ConversionMeta } from "@aligntrue/ops-core";
+import { Contracts } from "@aligntrue/ops-core";
+
+const {
   TASK_EVENT_TYPES,
   LEGACY_TASK_EVENT_TYPES,
-  type TaskBucket,
-  type TaskEffort,
-  type TaskImpact,
-  type TaskStatus,
-} from "../contracts/tasks.js";
+  TASK_BUCKETS,
+  TASK_IMPACTS,
+  TASK_EFFORTS,
+  TASK_STATUSES,
+} = Contracts;
 
-export { TASK_EVENT_TYPES, LEGACY_TASK_EVENT_TYPES };
+export {
+  TASK_EVENT_TYPES,
+  LEGACY_TASK_EVENT_TYPES,
+  TASK_BUCKETS,
+  TASK_IMPACTS,
+  TASK_EFFORTS,
+  TASK_STATUSES,
+};
 export const TASKS_SCHEMA_VERSION = 1;
 
 export type TaskEventType =
@@ -19,10 +28,10 @@ export type TaskEventType =
 export interface TaskCreatedPayload {
   task_id: string;
   title: string;
-  bucket: TaskBucket;
-  status: TaskStatus;
-  impact?: TaskImpact;
-  effort?: TaskEffort;
+  bucket: (typeof TASK_BUCKETS)[number];
+  status: (typeof TASK_STATUSES)[number];
+  impact?: (typeof TASK_IMPACTS)[number];
+  effort?: (typeof TASK_EFFORTS)[number];
   due_at?: string;
   source_ref?: string;
   conversion?: ConversionMeta;
@@ -30,9 +39,9 @@ export interface TaskCreatedPayload {
 
 export interface TaskTriagedPayload {
   task_id: string;
-  bucket?: TaskBucket;
-  impact?: TaskImpact;
-  effort?: TaskEffort;
+  bucket?: (typeof TASK_BUCKETS)[number];
+  impact?: (typeof TASK_IMPACTS)[number];
+  effort?: (typeof TASK_EFFORTS)[number];
   due_at?: string | null;
   title?: string;
 }
