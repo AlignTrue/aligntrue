@@ -2,6 +2,7 @@ import { writeFile, readFile, mkdtemp } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
+import { Identity } from "@aligntrue/ops-core";
 import { exitWithError } from "../../utils/command-utilities.js";
 import {
   buildCommand,
@@ -54,6 +55,7 @@ export async function editNote(args: string[]): Promise<void> {
     buildCommand(PackNotes.NOTE_COMMAND_TYPES.Update, {
       note_id: noteId,
       body_md: nextBody,
+      content_hash: Identity.hashCanonical(nextBody),
     }),
   );
 

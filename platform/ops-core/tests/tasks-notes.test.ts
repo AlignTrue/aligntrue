@@ -143,6 +143,7 @@ describe("tasks + notes", () => {
       note_id: "note-1",
       title: "Checklist",
       body_md: "- [ ] item one",
+      content_hash: Identity.hashCanonical("- [ ] item one"),
     });
     await noteLedger.execute(createCmd);
 
@@ -180,12 +181,14 @@ describe("tasks + notes", () => {
       note_id: "note-2",
       title: "Doc",
       body_md: "hello",
+      content_hash: Identity.hashCanonical("hello"),
     });
     await noteLedger.execute(createCmd);
 
     const updateCmd = buildCommand(PackNotes.NOTE_COMMAND_TYPES.Update, {
       note_id: "note-2",
       body_md: "hello world",
+      content_hash: Identity.hashCanonical("hello world"),
     });
     await noteLedger.execute(updateCmd);
 

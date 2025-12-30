@@ -66,6 +66,7 @@ async function createNoteAction(formData: FormData) {
       note_id,
       title,
       body_md,
+      content_hash: Identity.hashCanonical(body_md),
     }),
   );
   redirect("/notes");
@@ -80,6 +81,7 @@ async function updateNoteAction(formData: FormData) {
     buildCommand(PackNotes.NOTE_COMMAND_TYPES.Update, {
       note_id,
       body_md,
+      content_hash: Identity.hashCanonical(body_md),
     }),
   );
 }

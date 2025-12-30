@@ -51,6 +51,7 @@ export async function createNote(args: string[]): Promise<void> {
       note_id,
       title,
       body_md,
+      content_hash: Identity.hashCanonical(body_md),
     }),
   );
 
