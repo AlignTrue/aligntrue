@@ -19,6 +19,10 @@
     "@aligntrue/pack-notes": "workspace:*",
     "@aligntrue/pack-suggestions": "workspace:*",
     "@aligntrue/pack-tasks": "workspace:*",
+    "@aligntrue/ui-blocks": "workspace:*",
+    "@aligntrue/ui-contracts": "workspace:*",
+    "@aligntrue/file-utils": "workspace:*",
+    "@aligntrue/ui-renderer": "workspace:*",
     "@aligntrue/ui": "workspace:*",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-popover": "^1.1.15",
@@ -35,6 +39,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
+    "better-sqlite3": "^11.0.0",
     "remark-gfm": "^4.0.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
