@@ -138,11 +138,11 @@ function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
     ? extractContactIdsFromEvent(event)
     : [];
   return {
-    id: event.source_ref ?? payload.event_id,
+    id: event.source_ref ?? payload.source_ref,
     type: "calendar_event",
     title: payload.title,
     occurred_at: payload.start_time,
-    source_ref: event.source_ref ?? payload.event_id,
+    source_ref: event.source_ref ?? payload.source_ref,
     entity_refs: contactRefs,
     provider: payload.provider,
     calendar_id: payload.calendar_id,
@@ -155,6 +155,7 @@ function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
     ...(payload.location ? { location: payload.location } : {}),
     ...(payload.organizer ? { organizer: payload.organizer } : {}),
     ...(payload.attendees ? { attendees: payload.attendees } : {}),
+    ...(payload.doc_refs?.length ? { doc_refs: payload.doc_refs } : {}),
   };
 }
 
