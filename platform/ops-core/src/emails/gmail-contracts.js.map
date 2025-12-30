@@ -1,1 +1,0 @@
-{"version":3,"file":"gmail-contracts.js","sourceRoot":"","sources":["gmail-contracts.ts"],"names":[],"mappings":"AAGA,MAAM,CAAC,MAAM,iBAAiB,GAAG;IAC/B,oBAAoB,EAAE,wBAAwB;CACtC,CAAC;AA6CX,MAAM,CAAC,MAAM,0BAA0B,GAAG;IACxC,sBAAsB,EAAE,0BAA0B;IAClD,sBAAsB,EAAE,0BAA0B;IAClD,sBAAsB,EAAE,0BAA0B;IAClD,mBAAmB,EAAE,uBAAuB;CACpC,CAAC"}

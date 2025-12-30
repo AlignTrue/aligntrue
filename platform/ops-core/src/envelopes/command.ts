@@ -109,3 +109,24 @@ export function validateDedupeScope(
   }
   return undefined;
 }
+
+/**
+ * Compute the scope key for a command based on its dedupe scope.
+ */
+export function computeScopeKey(
+  scope: string,
+  command: CommandEnvelope,
+  appName: string = "unknown",
+): string {
+  switch (scope) {
+    case "actor":
+      return command.actor.actor_id;
+    case "target":
+      return command.target_ref ?? "__missing_target__";
+    case "app":
+      return appName;
+    case "global":
+    default:
+      return scope ? `${scope}` : "__global__";
+  }
+}

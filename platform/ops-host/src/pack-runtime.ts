@@ -13,6 +13,7 @@ import type {
 import {
   Projections,
   validateDedupeScope,
+  computeScopeKey,
   validatePackEventType,
 } from "@aligntrue/ops-core";
 
@@ -242,22 +243,4 @@ export async function createPackRuntime(
     dispatchCommand,
     getPackForCommand,
   };
-}
-
-function computeScopeKey(
-  scope: string,
-  command: CommandEnvelope,
-  appName: string,
-): string {
-  switch (scope) {
-    case "actor":
-      return command.actor.actor_id;
-    case "target":
-      return command.target_ref ?? "__missing_target__";
-    case "app":
-      return appName;
-    case "global":
-    default:
-      return scope ? `${scope}` : "__global__";
-  }
 }

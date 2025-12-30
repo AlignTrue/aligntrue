@@ -4,10 +4,11 @@ import {
   buildEmailStatusChangedEvent,
 } from "./events.js";
 import { ValidationError, PreconditionFailed } from "../errors.js";
-import type {
-  CommandEnvelope,
-  CommandOutcome,
-  EventEnvelope,
+import {
+  type CommandEnvelope,
+  type CommandOutcome,
+  type EventEnvelope,
+  computeScopeKey,
 } from "../envelopes/index.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import { initialState, reduceEvent } from "./state-machine.js";
@@ -39,12 +40,24 @@ export class EmailLedger {
   }
 
   async execute(command: EmailCommandEnvelope): Promise<CommandOutcome> {
-    const existing = await this.commandLog.getByIdempotencyKey(
-      command.command_id,
-    );
-    if (existing) return existing;
+    const start = await this.commandLog.tryStart({
+      command_id: command.command_id,
+      idempotency_key: command.idempotency_key,
+      dedupe_scope: command.dedupe_scope,
+      scope_key: computeScopeKey(command.dedupe_scope, command),
+    });
 
-    await this.commandLog.record(command);
+    if (start.status === "duplicate") {
+      return start.outcome;
+    }
+    if (start.status === "in_flight") {
+      return {
+        command_id: command.command_id,
+        status: "already_processing",
+        reason: "Command in flight",
+      };
+    }
+
     const state = await this.loadState();
     const { events, outcomeStatus, reason } = this.applyCommand(command, state);
 
@@ -61,7 +74,7 @@ export class EmailLedger {
       ...(reason ? { reason } : {}),
     };
 
-    await this.commandLog.recordOutcome(outcome);
+    await this.commandLog.complete(command.command_id, outcome);
     return outcome;
   }
 

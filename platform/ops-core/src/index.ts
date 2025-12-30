@@ -36,7 +36,7 @@ export {
 } from "./errors.js";
 
 export * as Envelopes from "./envelopes/index.js";
-export { validateDedupeScope } from "./envelopes/command.js";
+export { validateDedupeScope, computeScopeKey } from "./envelopes/command.js";
 export * as Identity from "./identity/index.js";
 export * as Storage from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";

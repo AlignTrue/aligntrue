@@ -6,4 +6,8 @@ export type {
   DedupeScope,
 } from "./command.js";
 export { validateEventEnvelope } from "./event.js";
-export { validateCommandEnvelope, validateDedupeScope } from "./command.js";
+export {
+  validateCommandEnvelope,
+  validateDedupeScope,
+  computeScopeKey,
+} from "./command.js";

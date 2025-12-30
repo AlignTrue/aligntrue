@@ -6,7 +6,11 @@ import {
 } from "../config.js";
 import { join } from "node:path";
 import { ValidationError, PreconditionFailed } from "../errors.js";
-import type { CommandEnvelope, CommandOutcome } from "../envelopes/command.js";
+import {
+  type CommandEnvelope,
+  type CommandOutcome,
+  computeScopeKey,
+} from "../envelopes/command.js";
 import type { EventEnvelope } from "../envelopes/event.js";
 import type { ActorRef } from "../envelopes/actor.js";
 import { Identity } from "../identity/index.js";
@@ -84,10 +88,14 @@ export class SuggestionExecutor {
     ensureSuggestionsEnabled();
     const payload = command.payload as ApproveSuggestionPayload;
 
-    const existing = await this.commandLog.getByIdempotencyKey(
-      command.command_id,
-    );
-    if (existing) {
+    const start = await this.commandLog.tryStart({
+      command_id: command.command_id,
+      idempotency_key: command.idempotency_key,
+      dedupe_scope: command.dedupe_scope,
+      scope_key: computeScopeKey(command.dedupe_scope, command),
+    });
+
+    if (start.status === "duplicate") {
       const artifact = await this.deps.artifactStore.getDerivedById(
         command.payload.suggestion_id,
       );
@@ -101,19 +109,39 @@ export class SuggestionExecutor {
           artifact.content_hash,
         );
       }
-      return existing;
+      return start.outcome;
+    }
+
+    if (start.status === "in_flight") {
+      return {
+        command_id: command.command_id,
+        status: "already_processing",
+        reason: "Command in flight",
+      };
     }
 
     const artifact = await this.deps.artifactStore.getDerivedById(
       command.payload.suggestion_id,
     );
     if (!artifact || !isSuggestionArtifact(artifact)) {
+      const rejection: CommandOutcome = {
+        command_id: command.command_id,
+        status: "failed",
+        reason: "Suggestion artifact not found",
+      };
+      await this.commandLog.complete(command.command_id, rejection);
       throw new PreconditionFailed("exists", "missing");
     }
 
     const status = await this.getStatus(command.payload.suggestion_id);
     if (status !== "new") {
       if (artifact.content_hash !== payload.expected_hash) {
+        const rejection: CommandOutcome = {
+          command_id: command.command_id,
+          status: "failed",
+          reason: "Hash mismatch",
+        };
+        await this.commandLog.complete(command.command_id, rejection);
         throw new PreconditionFailed(
           payload.expected_hash,
           artifact.content_hash,
@@ -124,6 +152,12 @@ export class SuggestionExecutor {
     }
 
     if (artifact.content_hash !== payload.expected_hash) {
+      const rejection: CommandOutcome = {
+        command_id: command.command_id,
+        status: "failed",
+        reason: "Hash mismatch",
+      };
+      await this.commandLog.complete(command.command_id, rejection);
       throw new PreconditionFailed(
         payload.expected_hash,
         artifact.content_hash,
@@ -152,15 +186,32 @@ export class SuggestionExecutor {
   ): Promise<CommandOutcome> {
     ensureSuggestionsEnabled();
 
-    const existing = await this.commandLog.getByIdempotencyKey(
-      command.command_id,
-    );
-    if (existing) return existing;
+    const start = await this.commandLog.tryStart({
+      command_id: command.command_id,
+      idempotency_key: command.idempotency_key,
+      dedupe_scope: command.dedupe_scope,
+      scope_key: computeScopeKey(command.dedupe_scope, command),
+    });
+
+    if (start.status === "duplicate") return start.outcome;
+    if (start.status === "in_flight") {
+      return {
+        command_id: command.command_id,
+        status: "already_processing",
+        reason: "Command in flight",
+      };
+    }
 
     const artifact = await this.deps.artifactStore.getDerivedById(
       command.payload.suggestion_id,
     );
     if (!artifact || !isSuggestionArtifact(artifact)) {
+      const rejection: CommandOutcome = {
+        command_id: command.command_id,
+        status: "failed",
+        reason: "Suggestion artifact not found",
+      };
+      await this.commandLog.complete(command.command_id, rejection);
       throw new PreconditionFailed("exists", "missing");
     }
 
@@ -187,15 +238,32 @@ export class SuggestionExecutor {
   ): Promise<CommandOutcome> {
     ensureSuggestionsEnabled();
 
-    const existing = await this.commandLog.getByIdempotencyKey(
-      command.command_id,
-    );
-    if (existing) return existing;
+    const start = await this.commandLog.tryStart({
+      command_id: command.command_id,
+      idempotency_key: command.idempotency_key,
+      dedupe_scope: command.dedupe_scope,
+      scope_key: computeScopeKey(command.dedupe_scope, command),
+    });
+
+    if (start.status === "duplicate") return start.outcome;
+    if (start.status === "in_flight") {
+      return {
+        command_id: command.command_id,
+        status: "already_processing",
+        reason: "Command in flight",
+      };
+    }
 
     const artifact = await this.deps.artifactStore.getDerivedById(
       command.payload.suggestion_id,
     );
     if (!artifact || !isSuggestionArtifact(artifact)) {
+      const rejection: CommandOutcome = {
+        command_id: command.command_id,
+        status: "failed",
+        reason: "Suggestion artifact not found",
+      };
+      await this.commandLog.complete(command.command_id, rejection);
       throw new PreconditionFailed("exists", "missing");
     }
 
@@ -338,7 +406,7 @@ export class SuggestionExecutor {
       completed_at: this.now(),
       ...(reason ? { reason: String(reason) } : {}),
     };
-    await this.commandLog.recordOutcome(outcome);
+    await this.commandLog.complete(command.command_id, outcome);
     return outcome;
   }
 }

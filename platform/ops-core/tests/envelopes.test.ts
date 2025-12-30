@@ -42,10 +42,11 @@ describe("envelopes validation", () => {
   it("validates command envelope", () => {
     const command: Envelopes.CommandEnvelope = {
       command_id: "c1",
+      idempotency_key: "idem-1",
       command_type: "do",
       payload: { ok: true },
       target_ref: "target-1",
-      dedupe_scope: "tenant-1",
+      dedupe_scope: "target",
       correlation_id: "corr-1",
       actor,
       requested_at: "2024-01-01T00:00:00Z",

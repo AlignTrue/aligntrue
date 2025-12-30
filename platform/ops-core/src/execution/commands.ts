@@ -1,6 +1,7 @@
 import {
   type CommandEnvelope,
   type CommandOutcome,
+  computeScopeKey,
 } from "../envelopes/index.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import { PreconditionFailed } from "../errors.js";
@@ -89,14 +90,24 @@ export class ExecutionRuntime {
   }
 
   async execute(command: ExecutionCommandEnvelope): Promise<CommandOutcome> {
-    const existing = await this.commandLog.getByIdempotencyKey(
-      command.command_id,
-    );
-    if (existing) {
-      return existing;
+    const start = await this.commandLog.tryStart({
+      command_id: command.command_id,
+      idempotency_key: command.idempotency_key,
+      dedupe_scope: command.dedupe_scope,
+      scope_key: computeScopeKey(command.dedupe_scope, command),
+    });
+
+    if (start.status === "duplicate") {
+      return start.outcome;
+    }
+    if (start.status === "in_flight") {
+      return {
+        command_id: command.command_id,
+        status: "already_processing",
+        reason: "Command in flight",
+      };
     }
 
-    await this.commandLog.record(command);
     const state = await this.loadState();
     const { events, reason, outcomeStatus } = await this.applyCommand(
       command,
@@ -116,7 +127,7 @@ export class ExecutionRuntime {
       ...(reason ? { reason } : {}),
     };
 
-    await this.commandLog.recordOutcome(outcome);
+    await this.commandLog.complete(command.command_id, outcome);
     return outcome;
   }
 
