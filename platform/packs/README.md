@@ -1,1 +1,33 @@
-# Packs Overview\n\nThis directory contains packs that implement the PackModule contract from `@aligntrue/ops-core`.\n\n## Authoring a Pack\n\n1. Create a package under `platform/packs/<pack-name>/` with `@aligntrue/ops-core` as a dependency.\n2. Define a `PackManifest` in `src/manifest.ts` with a `pack_id` (e.g., `hello-world`), version, required_core range, and public event/command types (namespaced `pack.<pack_id>.`).\n3. Implement a `PackModule` in `src/index.ts` that exports:\n - `manifest`\n - optional `handlers`: Record of event type -> handler\n - optional `projections`: array of `ProjectionDefinition`\n - optional `init` / `dispose` lifecycle hooks\n4. Keep all imports through public `@aligntrue/ops-core` exports (no deep imports).\n5. Namespaces: all pack events and commands MUST start with `pack.<pack_id>.`.\n\n## Example: hello-world\n\n- Manifest: `pack_id = \"hello-world\"`, event type `pack.hello-world.greeting.emitted`\n- Handlers: no-op handler proving dispatch works\n- Projection: counts greeting events\n\n## Testing\n\nUse `@aligntrue/ops-host` PackRuntime to load/unload packs and dispatch events. A minimal test pack should load with:\n\n`ts\nawait runtime.loadPack(\"@aligntrue/pack-hello-world\");\n`\n\nUse `projectionRegistry` to verify projections are registered/unregistered.\n**\* End Patch" лиை**ияти");">
+# Packs Overview
+
+This directory contains packs that implement the PackModule contract from `@aligntrue/ops-core`.
+
+## Authoring a Pack
+
+1. Create a package under `platform/packs/<pack-name>/` with `@aligntrue/ops-core` as a dependency.
+2. Define a `PackManifest` in `src/manifest.ts` with a `pack_id` (e.g., `hello-world`), version, required_core range, and public event/command types (namespaced `pack.<pack_id>.`).
+3. Implement a `PackModule` in `src/index.ts` that exports:
+
+- `manifest`
+- optional `handlers`: Record of event type -> handler
+- optional `projections`: array of `ProjectionDefinition`
+- optional `init` / `dispose` lifecycle hooks
+
+4. Keep all imports through public `@aligntrue/ops-core` exports (no deep imports).
+5. Namespaces: all pack events and commands MUST start with `pack.<pack_id>.`.
+
+## Example: hello-world
+
+- Manifest: `pack_id = "hello-world"`, event type `pack.hello-world.greeting.emitted`
+- Handlers: no-op handler proving dispatch works
+- Projection: counts greeting events
+
+## Testing
+
+Use `@aligntrue/ops-host` PackRuntime to load/unload packs and dispatch events. A minimal test pack should load with:
+
+```ts
+await runtime.loadPack("@aligntrue/pack-hello-world");
+```
+
+Use `projectionRegistry` to verify projections are registered/unregistered.

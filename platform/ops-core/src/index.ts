@@ -96,5 +96,13 @@ export type {
 export type { DocRef } from "./docrefs/index.js";
 export type { PackManifest } from "./contracts/pack-manifest.js";
 export { validatePackEventType } from "./contracts/pack-manifest.js";
-export type { PackModule, PackContext } from "./contracts/pack-module.js";
+export type {
+  PackModule,
+  PackContext,
+  PackEventHandler,
+} from "./contracts/pack-module.js";
+export type {
+  ProjectionDefinition,
+  ProjectionFreshness,
+} from "./projections/definition.js";
 export type { ProjectionRegistry } from "./projections/registry.js";

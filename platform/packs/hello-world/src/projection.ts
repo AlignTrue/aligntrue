@@ -1,4 +1,8 @@
-import type { ProjectionDefinition } from "@aligntrue/ops-core";
+import type {
+  ProjectionDefinition,
+  ProjectionFreshness,
+  EventEnvelope,
+} from "@aligntrue/ops-core";
 import { HELLO_EVENT } from "./handlers.js";
 
 export interface HelloWorldState {
@@ -15,7 +19,7 @@ export const HelloWorldProjection: ProjectionDefinition<HelloWorldState> = {
     last_event_id: null,
     last_ingested_at: null,
   }),
-  apply: (state, event) => {
+  apply: (state: HelloWorldState, event: EventEnvelope): HelloWorldState => {
     if (event.event_type === HELLO_EVENT) {
       return {
         count: state.count + 1,
@@ -25,7 +29,7 @@ export const HelloWorldProjection: ProjectionDefinition<HelloWorldState> = {
     }
     return state;
   },
-  getFreshness: (state) => ({
+  getFreshness: (state: HelloWorldState): ProjectionFreshness => ({
     last_event_id: state.last_event_id,
     last_ingested_at: state.last_ingested_at,
   }),
