@@ -22,6 +22,11 @@ export class ProjectionRegistry {
   getAll(): ProjectionDefinition<unknown>[] {
     return Array.from(this.definitions.values());
   }
+
+  unregister(name: string, version: string): void {
+    const key = projectionKey(name, version);
+    this.definitions.delete(key);
+  }
 }
 
 export const defaultRegistry = new ProjectionRegistry();

@@ -12,12 +12,16 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@aligntrue/ops-core": "workspace:*",
     "@aligntrue/ops-shared-google-common": "workspace:*",
     "@aligntrue/ops-shared-google-gmail": "workspace:*",
     "@aligntrue/ops-shared-google-calendar": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.16"
   }
 }

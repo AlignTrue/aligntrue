@@ -5,4 +5,5 @@ packages:
   - "apps/web"
   - "apps/app"
   - "platform/*"
+  - "platform/packs/*"
   - "platform/ops-shared/*"

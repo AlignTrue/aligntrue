@@ -30,3 +30,11 @@ export interface PackRegistration {
   readonly manifest: PackManifest;
   readonly location: string; // fs path or package name
 }
+
+export function validatePackEventType(
+  packId: string,
+  eventType: string,
+): boolean {
+  const prefix = `pack.${packId}.`;
+  return eventType.startsWith(prefix);
+}

@@ -95,3 +95,6 @@ export type {
 } from "./egress/types.js";
 export type { DocRef } from "./docrefs/index.js";
 export type { PackManifest } from "./contracts/pack-manifest.js";
+export { validatePackEventType } from "./contracts/pack-manifest.js";
+export type { PackModule, PackContext } from "./contracts/pack-module.js";
+export type { ProjectionRegistry } from "./projections/registry.js";
