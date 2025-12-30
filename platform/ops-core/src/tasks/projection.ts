@@ -5,8 +5,8 @@ import type {
 import type { EventEnvelope } from "../envelopes/event.js";
 import {
   TASK_EVENT_TYPES,
+  LEGACY_TASK_EVENT_TYPES,
   type TaskEvent,
-  type TaskEventType,
 } from "./events.js";
 import {
   initialState,
@@ -38,11 +38,15 @@ export const TasksProjectionDef: ProjectionDefinition<TasksProjectionState> = {
     state: TasksProjectionState,
     event: EventEnvelope,
   ): TasksProjectionState {
-    if (
-      Object.values(TASK_EVENT_TYPES).includes(
-        event.event_type as TaskEventType,
-      )
-    ) {
+    const isTaskEvent =
+      (Object.values(TASK_EVENT_TYPES) as string[]).includes(
+        event.event_type,
+      ) ||
+      (Object.values(LEGACY_TASK_EVENT_TYPES) as string[]).includes(
+        event.event_type,
+      );
+
+    if (isTaskEvent) {
       reduceEvent(state, event as TaskEvent);
       return {
         ...state,

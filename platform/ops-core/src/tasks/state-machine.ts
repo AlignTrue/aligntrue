@@ -1,4 +1,8 @@
-import { TASK_EVENT_TYPES, type TaskEvent } from "./events.js";
+import {
+  TASK_EVENT_TYPES,
+  LEGACY_TASK_EVENT_TYPES,
+  type TaskEvent,
+} from "./events.js";
 import type {
   TaskBucket,
   TaskEffort,
@@ -33,7 +37,8 @@ export function reduceEvent(
 ): TasksLedgerState {
   const next = state;
   switch (event.event_type) {
-    case TASK_EVENT_TYPES.TaskCreated: {
+    case TASK_EVENT_TYPES.TaskCreated:
+    case LEGACY_TASK_EVENT_TYPES.TaskCreated: {
       const {
         task_id,
         title,
@@ -58,7 +63,8 @@ export function reduceEvent(
       });
       break;
     }
-    case TASK_EVENT_TYPES.TaskTriaged: {
+    case TASK_EVENT_TYPES.TaskTriaged:
+    case LEGACY_TASK_EVENT_TYPES.TaskTriaged: {
       const { task_id, bucket, impact, effort, due_at, title } = event.payload;
       const existing = next.tasks.get(task_id);
       if (!existing) break;
@@ -70,7 +76,8 @@ export function reduceEvent(
       existing.updated_at = event.ingested_at;
       break;
     }
-    case TASK_EVENT_TYPES.TaskCompleted: {
+    case TASK_EVENT_TYPES.TaskCompleted:
+    case LEGACY_TASK_EVENT_TYPES.TaskCompleted: {
       const { task_id } = event.payload;
       const existing = next.tasks.get(task_id);
       if (!existing) break;
@@ -78,7 +85,8 @@ export function reduceEvent(
       existing.updated_at = event.ingested_at;
       break;
     }
-    case TASK_EVENT_TYPES.TaskReopened: {
+    case TASK_EVENT_TYPES.TaskReopened:
+    case LEGACY_TASK_EVENT_TYPES.TaskReopened: {
       const { task_id } = event.payload;
       const existing = next.tasks.get(task_id);
       if (!existing) break;

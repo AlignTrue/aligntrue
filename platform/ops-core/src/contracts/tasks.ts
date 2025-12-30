@@ -22,6 +22,17 @@ export const TASK_EVENT_TYPES = {
   TaskReopened: "pack.tasks.task_reopened",
 } as const;
 
+/**
+ * Legacy event types used before namespacing.
+ * Supported for backward compatibility during projection rebuilds.
+ */
+export const LEGACY_TASK_EVENT_TYPES = {
+  TaskCreated: "task_created",
+  TaskTriaged: "task_triaged",
+  TaskCompleted: "task_completed",
+  TaskReopened: "task_reopened",
+} as const;
+
 export const TASK_COMMAND_TYPES = {
   Create: "pack.tasks.create",
   Triage: "pack.tasks.triage",
