@@ -48,5 +48,7 @@ export {
 export * as SuggestionTypes from "./types.js";
 export * as SuggestionEvents from "./events.js";
 export * as SuggestionGenerators from "./generators.js";
+export * from "./daily-plan.js";
+export * from "./weekly-plan.js";
 export * as SuggestionPlans from "./daily-plan.js";
 export * as WeeklyPlans from "./weekly-plan.js";

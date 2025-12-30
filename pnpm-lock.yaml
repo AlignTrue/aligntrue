@@ -96,6 +96,9 @@ importers:
       '@aligntrue/pack-notes':
         specifier: workspace:*
         version: link:../../platform/packs/notes
+      '@aligntrue/pack-suggestions':
+        specifier: workspace:*
+        version: link:../../platform/packs/suggestions
       '@aligntrue/pack-tasks':
         specifier: workspace:*
         version: link:../../platform/packs/tasks

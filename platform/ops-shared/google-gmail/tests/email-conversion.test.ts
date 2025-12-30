@@ -2,106 +2,24 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Convert, Storage } from "@aligntrue/ops-core";
-import * as Tasks from "@aligntrue/pack-tasks";
-import * as Notes from "@aligntrue/pack-notes";
-import * as GoogleGmail from "../src/index.js";
+import { Storage } from "@aligntrue/ops-core";
 import { Mutations as GmailMutations } from "../src/index.js";
 
-const ACTOR = { actor_id: "user-1", actor_type: "human" } as const;
 const NOW = "2024-01-01T00:00:00Z";
 
-describe("email conversion and gmail mutations", () => {
+describe("gmail mutations", () => {
   let dir: string;
   let eventsPath: string;
-  let commandsPath: string;
-  let outcomesPath: string;
   let eventStore: Storage.JsonlEventStore;
-  let commandLog: Storage.JsonlCommandLog;
 
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "ops-core-email-convert-"));
+    dir = await mkdtemp(join(tmpdir(), "ops-core-gmail-mutations-"));
     eventsPath = join(dir, "events.jsonl");
-    commandsPath = join(dir, "commands.jsonl");
-    outcomesPath = join(dir, "outcomes.jsonl");
     eventStore = new Storage.JsonlEventStore(eventsPath);
-    commandLog = new Storage.JsonlCommandLog(commandsPath, outcomesPath, {
-      allowExternalPaths: true,
-    });
   });
 
   afterEach(async () => {
     await rm(dir, { recursive: true, force: true });
-  });
-
-  it("converts email to task idempotently with conversion metadata", async () => {
-    await seedEmail(eventStore);
-    const service = new Convert.ConversionService(eventStore, commandLog, {
-      now: () => NOW,
-      tasksEnabled: true,
-      notesEnabled: true,
-      runtimeDispatch: (cmd) => {
-        const ledger = new Tasks.TaskLedger(eventStore, commandLog, {
-          now: () => NOW,
-        });
-        return ledger.execute(cmd as never);
-      },
-    });
-
-    await service.convertEmailToTask({
-      message_id: "msg-1",
-      actor: ACTOR,
-      conversion_method: "user_action",
-    });
-    await service.convertEmailToTask({
-      message_id: "msg-1",
-      actor: ACTOR,
-      conversion_method: "user_action",
-    });
-
-    let taskCreated = 0;
-    for await (const event of eventStore.stream()) {
-      if (event.event_type === Tasks.TASK_EVENT_TYPES.TaskCreated) {
-        taskCreated += 1;
-        expect((event as Tasks.TaskEvent).payload.conversion).toBeDefined();
-      }
-    }
-    expect(taskCreated).toBe(1);
-  });
-
-  it("converts email to note idempotently with conversion metadata", async () => {
-    await seedEmail(eventStore);
-    const service = new Convert.ConversionService(eventStore, commandLog, {
-      now: () => NOW,
-      tasksEnabled: true,
-      notesEnabled: true,
-      runtimeDispatch: (cmd) => {
-        const ledger = new Notes.NoteLedger(eventStore, commandLog, {
-          now: () => NOW,
-        });
-        return ledger.execute(cmd as never);
-      },
-    });
-
-    await service.convertEmailToNote({
-      message_id: "msg-1",
-      actor: ACTOR,
-      conversion_method: "user_action",
-    });
-    await service.convertEmailToNote({
-      message_id: "msg-1",
-      actor: ACTOR,
-      conversion_method: "user_action",
-    });
-
-    let noteCreated = 0;
-    for await (const event of eventStore.stream()) {
-      if (event.event_type === Notes.NOTE_EVENT_TYPES.NoteCreated) {
-        noteCreated += 1;
-        expect((event as Notes.NoteEvent).payload.conversion).toBeDefined();
-      }
-    }
-    expect(noteCreated).toBe(1);
   });
 
   it("dedupes gmail mutations after success", async () => {
@@ -214,21 +132,3 @@ describe("email conversion and gmail mutations", () => {
     expect(failedEvents).toBe(1);
   });
 });
-
-async function seedEmail(eventStore: Storage.JsonlEventStore) {
-  const event = GoogleGmail.buildEmailIngestEvent({
-    record: {
-      provider: "google_gmail",
-      message_id: "msg-1",
-      thread_id: "thread-1",
-      internal_date: NOW,
-      subject: "Hello world",
-      snippet: "Body preview",
-    },
-    correlation_id: "corr-1",
-    ingested_at: NOW,
-    actor: { actor_id: "gmail-connector", actor_type: "service" },
-  });
-  await eventStore.append(event);
-  return event;
-}

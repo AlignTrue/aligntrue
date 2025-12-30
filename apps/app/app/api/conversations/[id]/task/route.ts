@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getConversionService, getHost } from "@/lib/ops-services";
-import { Storage } from "@aligntrue/ops-host";
+import { dispatchConvertCommand } from "@/lib/ops-services";
+import { Identity } from "@aligntrue/ops-core";
 
 const ACTOR = {
   actor_id: "web-user",
@@ -13,21 +13,16 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const host = await getHost();
-  const service = getConversionService(
-    host.eventStore as Storage.JsonlEventStore,
-    host.commandLog as Storage.JsonlCommandLog,
-  );
   try {
-    const result = await service.convertEmailToTask({
-      source_ref: id,
-      actor: ACTOR,
-    });
+    const { outcome } = await dispatchConvertCommand("task", id, ACTOR);
+
+    // Calculate deterministic task_id to match expected response format
+    const task_id = Identity.deterministicId({ source_ref: id, op: "to_task" });
 
     return NextResponse.json({
-      task_id: result.created_id,
-      source_ref: result.source_ref,
-      outcome: result.outcome,
+      task_id,
+      source_ref: id,
+      outcome,
     });
   } catch (err) {
     return NextResponse.json(

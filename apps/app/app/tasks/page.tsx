@@ -21,6 +21,7 @@ import {
   type TaskCommandPayload,
   type TaskCommandEnvelope,
 } from "@aligntrue/pack-tasks";
+import * as Suggestions from "@aligntrue/pack-suggestions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

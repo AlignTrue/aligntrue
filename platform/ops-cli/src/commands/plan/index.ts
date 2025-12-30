@@ -8,7 +8,9 @@ import {
 } from "@aligntrue/ops-core";
 import type { TasksProjection } from "@aligntrue/pack-tasks";
 import { createHost, type Host } from "@aligntrue/ops-host";
-import manifestJson from "../../../cli.manifest.json" assert { type: "json" };
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const manifestJson = require("../../../cli.manifest.json");
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
 

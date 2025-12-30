@@ -7,7 +7,9 @@ import {
 } from "@aligntrue/ops-core";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
 import { createHost, type Host } from "@aligntrue/ops-host";
-import manifestJson from "../../../cli.manifest.json" assert { type: "json" };
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const manifestJson = require("../../../cli.manifest.json");
 import { exitWithError } from "../../utils/command-utilities.js";
 
 const HELP = `
