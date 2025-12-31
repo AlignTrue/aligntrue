@@ -73,6 +73,7 @@ function getGitConflictFiles(basePath: string): string[] {
     execFileSync("git", ["rev-parse", "--git-dir"], {
       cwd: basePath,
       stdio: "pipe",
+      timeout: 2000, // 2 second timeout for rev-parse
     });
 
     // Get unmerged files from git status
@@ -80,6 +81,7 @@ function getGitConflictFiles(basePath: string): string[] {
       cwd: basePath,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
+      timeout: 5000, // 5 second timeout for git status
     });
 
     // Parse status output for unmerged files (UU, AA, DD, AU, UA, DU, UD)

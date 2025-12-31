@@ -3,20 +3,21 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, mkdtempSync } from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { detectDrift } from "../../src/team/drift.js";
 
 describe("drift detection", () => {
-  const testDir = join(process.cwd(), "tests/tmp/drift-test");
+  let testDir: string;
 
   beforeEach(() => {
-    // Clean up any existing test directory
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
+    // Create a unique test directory
+    const tmpBase = join(process.cwd(), "tests/tmp");
+    if (!existsSync(tmpBase)) {
+      mkdirSync(tmpBase, { recursive: true });
     }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpBase, "drift-test-"));
   });
 
   afterEach(() => {
@@ -150,16 +151,29 @@ Use approach B.
     });
 
     it("should detect git unmerged files in .aligntrue", async () => {
+      const git = (args: string[]) =>
+        execFileSync("git", args, {
+          cwd: testDir,
+          stdio: "pipe",
+          env: {
+            ...process.env,
+            GIT_AUTHOR_NAME: "Test User",
+            GIT_AUTHOR_EMAIL: "test@example.com",
+            GIT_COMMITTER_NAME: "Test User",
+            GIT_COMMITTER_EMAIL: "test@example.com",
+            GIT_CONFIG_NOSYSTEM: "1",
+            GIT_TERMINAL_PROMPT: "0",
+          },
+        });
+
       // Initialize git repo
-      execFileSync("git", ["init"], { cwd: testDir, stdio: "pipe" });
-      execFileSync("git", ["config", "user.email", "test@example.com"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
-      execFileSync("git", ["config", "user.name", "Test User"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
+      git(["init"]);
+      // Force branch name to main
+      try {
+        git(["checkout", "-b", "main"]);
+      } catch {
+        // Already on main or old git version
+      }
 
       // Create .aligntrue directory
       mkdirSync(join(testDir, ".aligntrue"), { recursive: true });
@@ -182,50 +196,32 @@ Use approach B.
         JSON.stringify(lockfile, null, 2),
         "utf-8",
       );
-      execFileSync("git", ["add", "."], { cwd: testDir, stdio: "pipe" });
-      execFileSync("git", ["commit", "-m", "Initial"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
+      git(["add", "."]);
+      git(["commit", "-m", "Initial", "--no-gpg-sign"]);
 
       // Create branch and make change
-      execFileSync("git", ["checkout", "-b", "feature"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
+      git(["checkout", "-b", "feature"]);
       writeFileSync(
         join(testDir, ".aligntrue/rules/test.md"),
         "# Test\n\nFeature change.",
         "utf-8",
       );
-      execFileSync("git", ["add", "."], { cwd: testDir, stdio: "pipe" });
-      execFileSync("git", ["commit", "-m", "Feature"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
+      git(["add", "."]);
+      git(["commit", "-m", "Feature", "--no-gpg-sign"]);
 
       // Go back to main and make conflicting change
-      execFileSync("git", ["checkout", "master"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
+      git(["checkout", "main"]);
       writeFileSync(
         join(testDir, ".aligntrue/rules/test.md"),
         "# Test\n\nMain change.",
         "utf-8",
       );
-      execFileSync("git", ["add", "."], { cwd: testDir, stdio: "pipe" });
-      execFileSync("git", ["commit", "-m", "Main"], {
-        cwd: testDir,
-        stdio: "pipe",
-      });
+      git(["add", "."]);
+      git(["commit", "-m", "Main", "--no-gpg-sign"]);
 
       // Try to merge (will conflict)
       try {
-        execFileSync("git", ["merge", "feature"], {
-          cwd: testDir,
-          stdio: "pipe",
-        });
+        git(["merge", "--no-edit", "--no-gpg-sign", "feature"]);
       } catch {
         // Expected to fail due to conflict
       }
@@ -237,6 +233,6 @@ Use approach B.
 
       expect(result.has_drift).toBe(true);
       expect(result.findings.some((f) => f.category === "conflict")).toBe(true);
-    }, 20000);
+    }, 30000);
   });
 });
