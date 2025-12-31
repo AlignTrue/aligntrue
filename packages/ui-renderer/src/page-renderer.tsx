@@ -1,5 +1,7 @@
 import type { RenderPlan } from "@aligntrue/ui-contracts";
 import React from "react";
+import type { BlockShell } from "./shell.js";
+import { BlockRenderer } from "./block-renderer.js";
 import type { BlockRegistry } from "./registry.js";
 import { LAYOUT_TEMPLATES } from "./layout-templates.js";
 import type { LayoutTemplateId } from "./layout-templates.js";
@@ -7,7 +9,8 @@ import type { LayoutTemplateId } from "./layout-templates.js";
 export interface PageRendererProps {
   readonly plan: RenderPlan;
   readonly registry: BlockRegistry;
-  readonly onMissingBlock?: (blockId: string) => void;
+  readonly shell: BlockShell;
+  readonly onMissingBlock?: ((blockId: string) => void) | undefined;
 }
 
 /**
@@ -17,6 +20,7 @@ export interface PageRendererProps {
 export function PageRenderer({
   plan,
   registry,
+  shell,
   onMissingBlock,
 }: PageRendererProps): React.ReactElement {
   const template =
@@ -29,21 +33,19 @@ export function PageRenderer({
   for (const slot of template.slots) bySlot.set(slot, []);
 
   for (const block of plan.core.blocks) {
-    const entry = registry.get(block.block_id);
-    if (!entry) {
-      onMissingBlock?.(block.block_id);
-      continue;
-    }
-    const Component = entry.Component;
     const bucket = bySlot.get(block.slot);
     if (!bucket) {
       onMissingBlock?.(block.block_id);
       continue;
     }
     bucket.push(
-      <Component
+      <BlockRenderer
         key={`${plan.plan_id}:${block.block_id}:${block.slot}`}
-        {...(block.props as Record<string, unknown>)}
+        planId={plan.plan_id}
+        block={block}
+        registry={registry}
+        shell={shell}
+        onMissingBlock={onMissingBlock}
       />,
     );
   }

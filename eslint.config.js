@@ -685,6 +685,29 @@ export default [
     },
   },
   {
+    files: ["platform/ui-blocks/src/blocks/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/components/ui/*", "**/components/ui/*"],
+              message:
+                "Use platform/ui-blocks/src/ui wrappers instead of importing shadcn primitives directly.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["platform/ui-blocks/src/ui/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": "off",
+    },
+  },
+  {
     files: ["**/*.test.ts", "**/*.test.tsx", "archive/**", "**/tests/**/*.ts"],
     languageOptions: {
       parser: typescriptParser,

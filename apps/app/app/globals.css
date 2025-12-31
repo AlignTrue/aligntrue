@@ -58,7 +58,9 @@
     --muted-foreground: hsl(219 12% 42%);
     --accent: hsl(210 90% 55%);
     --accent-foreground: hsl(0 0% 100%);
-    --destructive: hsl(0 72% 50%);
+    --success: hsl(142 76% 36%);
+    --warning: hsl(38 92% 50%);
+    --destructive: hsl(0 84% 60%);
     --destructive-foreground: hsl(0 0% 100%);
     --border: hsl(215 24% 88%);
     --input: hsl(215 24% 88%);
@@ -86,7 +88,9 @@
     --muted-foreground: hsl(215 15% 70%);
     --accent: hsl(210 90% 60%);
     --accent-foreground: hsl(0 0% 100%);
-    --destructive: hsl(0 62% 45%);
+    --success: hsl(142 76% 46%);
+    --warning: hsl(38 92% 60%);
+    --destructive: hsl(0 84% 70%);
     --destructive-foreground: hsl(210 30% 96%);
     --border: hsl(220 16% 20%);
     --input: hsl(220 16% 20%);

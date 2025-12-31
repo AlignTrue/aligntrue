@@ -8,7 +8,12 @@ export interface BlockActionSchema {
   readonly action_type: string; // e.g., "form.submitted"
   readonly payload_schema: JSONSchema7;
   readonly safety_class: SafetyClass;
+  readonly requires_approval?: boolean;
   readonly required_capability?: string;
+  readonly triggers?: {
+    readonly ui_state: boolean;
+    readonly plan_regen: boolean;
+  };
 }
 
 export interface BlockAction {

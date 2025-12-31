@@ -1,34 +1,41 @@
 import type { RenderPlan } from "@aligntrue/ui-contracts";
 import React from "react";
+import type { BlockShell } from "./shell.js";
 import type { BlockRegistry } from "./registry.js";
 
 export interface BlockRendererProps {
-  readonly plan: RenderPlan;
+  readonly planId: string;
+  readonly block: RenderPlan["core"]["blocks"][number];
   readonly registry: BlockRegistry;
-  readonly onMissingBlock?: (blockId: string) => void;
+  readonly shell: BlockShell;
+  readonly onMissingBlock?: ((blockId: string) => void) | undefined;
 }
 
 export function BlockRenderer({
-  plan,
+  planId,
+  block,
   registry,
+  shell,
   onMissingBlock,
-}: BlockRendererProps): React.ReactElement {
+}: BlockRendererProps): React.ReactElement | null {
+  const entry = registry.get(block.block_id);
+  if (!entry) {
+    onMissingBlock?.(block.block_id);
+    return null;
+  }
+
+  const { Frame, Header, Body } = shell;
+  const Component = entry.Component;
+
   return (
-    <>
-      {plan.core.blocks.map((block) => {
-        const entry = registry.get(block.block_id);
-        if (!entry) {
-          onMissingBlock?.(block.block_id);
-          return null;
-        }
-        const Component = entry.Component;
-        return (
-          <Component
-            key={`${plan.plan_id}:${block.block_id}:${block.slot}`}
-            {...(block.props as Record<string, unknown>)}
-          />
-        );
-      })}
-    </>
+    <Frame manifest={entry.manifest} ui={entry.manifest.ui}>
+      <Header title={entry.manifest.display_name ?? entry.manifest.block_id} />
+      <Body>
+        <Component
+          key={`${planId}:${block.block_id}:${block.slot}`}
+          {...(block.props as Record<string, unknown>)}
+        />
+      </Body>
+    </Frame>
   );
 }

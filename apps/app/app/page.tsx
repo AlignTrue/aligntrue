@@ -1,5 +1,8 @@
 import { PageRenderer } from "@aligntrue/ui-renderer";
-import { createPlatformBlockRegistry } from "@aligntrue/ui-blocks";
+import {
+  createPlatformBlockRegistry,
+  platformShell,
+} from "@aligntrue/ui-blocks";
 import type { RenderPlan } from "@aligntrue/ui-contracts";
 import { ActionTester } from "./ActionTester";
 
@@ -34,7 +37,11 @@ export default async function HomePage() {
       {actorId && plan?.plan_id ? (
         <ActionTester planId={plan.plan_id} actorId={actorId} />
       ) : null}
-      <PageRenderer plan={plan as RenderPlan} registry={registry} />
+      <PageRenderer
+        plan={plan as RenderPlan}
+        registry={registry}
+        shell={platformShell}
+      />
     </main>
   );
 }

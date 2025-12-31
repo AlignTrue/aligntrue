@@ -5,3 +5,4 @@ export * from "./block-renderer.js";
 export * from "./page-renderer.js";
 export * from "./redaction-applier.js";
 export * from "./validation.js";
+export * from "./shell.js";
