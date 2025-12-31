@@ -144,7 +144,8 @@ export function getOrCreatePlanAndReceipt(inputs: PlanInputs): PlanResult {
       insertPlanReceipt({
         ...receipt,
         ingested_at,
-        ai_failed: receipt.ai_failed ? 1 : 0,
+        ai_failed:
+          receipt.ai_failed === undefined ? null : receipt.ai_failed ? 1 : 0,
         ai_failed_reason: receipt.ai_failed_reason ?? null,
         model: receipt.model ?? null,
         workspace_id: receipt.workspace_id ?? null,

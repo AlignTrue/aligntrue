@@ -46,7 +46,7 @@ db.exec(`
     ingested_at TEXT NOT NULL,
     provider TEXT NOT NULL,
     model TEXT,
-    ai_failed INTEGER DEFAULT 0,
+    ai_failed INTEGER,
     ai_failed_reason TEXT,
     policy_id TEXT NOT NULL,
     policy_version TEXT NOT NULL,
@@ -185,7 +185,7 @@ export interface DbPlanReceipt {
   readonly ingested_at: string;
   readonly provider: string;
   readonly model: string | null;
-  readonly ai_failed: number;
+  readonly ai_failed: number | null;
   readonly ai_failed_reason: string | null;
   readonly policy_id: string;
   readonly policy_version: string;

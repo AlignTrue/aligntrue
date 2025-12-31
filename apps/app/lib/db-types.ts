@@ -15,7 +15,7 @@ export interface DbPlanReceipt {
   ingested_at: string;
   provider: string;
   model: string | null;
-  ai_failed: number; // SQLite: 0 or 1
+  ai_failed: number | null; // SQLite: 0 or 1 or null
   ai_failed_reason: string | null;
   policy_id: string;
   policy_version: string;
@@ -52,7 +52,7 @@ export function mapDbReceipt(row: DbPlanReceipt): PlanReceipt {
     ingested_at: row.ingested_at,
     provider: row.provider,
     model: row.model ?? undefined,
-    ai_failed: row.ai_failed === 1,
+    ai_failed: row.ai_failed === null ? undefined : row.ai_failed === 1,
     ai_failed_reason: row.ai_failed_reason ?? undefined,
     policy_id: row.policy_id,
     policy_version: row.policy_version,
