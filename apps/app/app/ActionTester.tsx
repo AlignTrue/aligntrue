@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 
 export function ActionTester({
   planId,
@@ -12,9 +12,9 @@ export function ActionTester({
   const [status, setStatus] = useState<string | null>(null);
 
   // Generate stable IDs to support deduplication testing across multiple clicks/retries
-  const actionId = useMemo(() => crypto.randomUUID(), []);
-  const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
-  const correlationId = useMemo(() => crypto.randomUUID(), []);
+  const [actionId] = useState(() => crypto.randomUUID());
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [correlationId] = useState(() => crypto.randomUUID());
 
   const sendAction = async () => {
     setStatus("sending");

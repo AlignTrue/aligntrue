@@ -99,7 +99,7 @@ export async function POST(req: Request) {
   const dispatched = body.action_type !== "entity_table.row_selected";
 
   const nextVersion = latestVersion + 1;
-  const content_hash = deterministicId(JSON.stringify(nextContent));
+  const content_hash = deterministicId(nextContent);
   insertState({
     plan_id: body.plan_id,
     version: nextVersion,
