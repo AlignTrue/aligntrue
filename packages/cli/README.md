@@ -64,9 +64,6 @@ Team Commands:
   team           Team mode management
   scopes         List configured scopes
 
-Settings:
-  telemetry      Telemetry settings
-
 Run aligntrue <command> --help for command-specific options
 ```
 
@@ -444,62 +441,6 @@ Team mode features active:
   - Lockfile: enabled
   - Bundle: enabled
 ```
-
-### `aligntrue telemetry`
-
-Manage anonymous telemetry collection settings.
-
-**Features:**
-
-- Opt-in only (disabled by default)
-- Anonymous usage data (no code, no paths, no PII)
-- Collects: command names, export targets, content hashes
-
-**Usage:**
-
-```bash
-aligntrue telemetry on|off|status
-```
-
-**Subcommands:**
-
-- `on` - Enable telemetry collection
-- `off` - Disable telemetry collection
-- `status` - Show current telemetry status
-
-**Examples:**
-
-Enable telemetry:
-
-```bash
-aligntrue telemetry on
-```
-
-Check status:
-
-```bash
-aligntrue telemetry status
-# Output: Telemetry: enabled
-```
-
-Disable telemetry:
-
-```bash
-aligntrue telemetry off
-```
-
-**What we collect (when enabled):**
-
-- Command name (init, sync, etc.)
-- Export targets used (cursor, agents, etc.)
-- Align content hashes (no code, no paths, no PII)
-
-**What we never collect:**
-
-- Repository names or paths
-- Rule content or guidance text
-- File paths or directory structures
-- Any personally identifiable information
 
 ### `aligntrue scopes`
 

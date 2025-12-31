@@ -3,38 +3,28 @@ import { deterministicId } from "@aligntrue/ui-contracts";
 import type { BlockRegistry } from "@aligntrue/ui-renderer";
 import { createBlockRegistry } from "@aligntrue/ui-renderer";
 import type { RegistryLike } from "@aligntrue/ui-renderer";
-import {
-  EntityTable,
-  entityTableManifest,
-} from "./blocks/EntityTable/index.js";
-import {
-  ApprovalGate,
-  approvalGateManifest,
-} from "./blocks/ApprovalGate/index.js";
-import {
-  ReceiptTimeline,
-  receiptTimelineManifest,
-} from "./blocks/ReceiptTimeline/index.js";
-import {
-  FormSurface,
-  formSurfaceManifest,
-} from "./blocks/FormSurface/index.js";
-import {
-  ActionProposalCard,
-  actionProposalCardManifest,
-} from "./blocks/ActionProposalCard/index.js";
-import { DiffViewer, diffViewerManifest } from "./blocks/DiffViewer/index.js";
-import {
-  InboxThread,
-  inboxThreadManifest,
-} from "./blocks/InboxThread/index.js";
-import { NoteList, noteListManifest } from "./blocks/NoteList/index.js";
-import { TaskList, taskListManifest } from "./blocks/TaskList/index.js";
-import { DataPanel, dataPanelManifest } from "./blocks/DataPanel/index.js";
-import {
-  StatusIndicator,
-  statusIndicatorManifest,
-} from "./blocks/StatusIndicator/index.js";
+import { EntityTable } from "./blocks/EntityTable/index.js";
+import { entityTableManifest } from "./blocks/EntityTable/manifest.js";
+import { ApprovalGate } from "./blocks/ApprovalGate/index.js";
+import { approvalGateManifest } from "./blocks/ApprovalGate/manifest.js";
+import { ReceiptTimeline } from "./blocks/ReceiptTimeline/index.js";
+import { receiptTimelineManifest } from "./blocks/ReceiptTimeline/manifest.js";
+import { FormSurface } from "./blocks/FormSurface/index.js";
+import { formSurfaceManifest } from "./blocks/FormSurface/manifest.js";
+import { ActionProposalCard } from "./blocks/ActionProposalCard/index.js";
+import { actionProposalCardManifest } from "./blocks/ActionProposalCard/manifest.js";
+import { DiffViewer } from "./blocks/DiffViewer/index.js";
+import { diffViewerManifest } from "./blocks/DiffViewer/manifest.js";
+import { InboxThread } from "./blocks/InboxThread/index.js";
+import { inboxThreadManifest } from "./blocks/InboxThread/manifest.js";
+import { NoteList } from "./blocks/NoteList/index.js";
+import { noteListManifest } from "./blocks/NoteList/manifest.js";
+import { TaskList } from "./blocks/TaskList/index.js";
+import { taskListManifest } from "./blocks/TaskList/manifest.js";
+import { DataPanel } from "./blocks/DataPanel/index.js";
+import { dataPanelManifest } from "./blocks/DataPanel/manifest.js";
+import { StatusIndicator } from "./blocks/StatusIndicator/index.js";
+import { statusIndicatorManifest } from "./blocks/StatusIndicator/manifest.js";
 import { withUiDefaults, UI_DEFAULTS } from "./ui/defaults.js";
 
 export interface ActionSchemaEntry {

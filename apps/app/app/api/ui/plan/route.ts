@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { RenderPlan, RenderRequest } from "@aligntrue/ui-contracts";
 import { buildRenderPlan } from "@aligntrue/ui-renderer";
-import { createPlatformRegistry } from "@aligntrue/ui-blocks";
+import { createPlatformRegistry } from "@aligntrue/ui-blocks/registry";
 import {
   getPlan,
   upsertPlan,

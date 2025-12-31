@@ -1,5 +1,5 @@
 import type { RenderPlan } from "@aligntrue/ui-contracts";
-import { createPlatformRegistry } from "@aligntrue/ui-blocks";
+import { createPlatformRegistry } from "@aligntrue/ui-blocks/registry";
 import { getOrCreatePlanAndReceipt } from "./plan-service";
 import { DEFAULT_POLICY } from "./default-policy";
 import { buildUIContext } from "./ui-context";

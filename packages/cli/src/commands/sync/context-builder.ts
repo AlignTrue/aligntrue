@@ -10,7 +10,6 @@ import {
   realpathSync,
 } from "fs";
 import { dirname, join, resolve } from "path";
-import { createHash } from "crypto";
 import * as clack from "@clack/prompts";
 import {
   getAlignTruePaths,
@@ -23,6 +22,7 @@ import {
 } from "@aligntrue/core";
 import { ExporterRegistry } from "@aligntrue/exporters";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
+import { computeHash } from "@aligntrue/schema";
 import { loadConfigWithValidation } from "../../utils/config-loader.js";
 import {
   AlignTrueError,
@@ -61,10 +61,7 @@ import { buildBackupRestoreHint } from "../../utils/backup-hints.js";
  * Generate fingerprint for section (matching schema behavior)
  */
 function _generateFingerprint(heading: string): string {
-  return createHash("sha256")
-    .update(heading.toLowerCase().trim())
-    .digest("hex")
-    .slice(0, 16);
+  return computeHash(heading.toLowerCase().trim()).slice(0, 16);
 }
 
 /**

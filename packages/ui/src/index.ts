@@ -5,3 +5,6 @@
 
 // Logo components
 export { AlignTrueLogo, AlignTrueLogoText } from "./components/AlignTrueLogo";
+
+// Shared utilities
+export { cn, formatBytes, isAbortError } from "./utils.js";
