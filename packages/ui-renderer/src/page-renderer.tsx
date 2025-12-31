@@ -35,12 +35,12 @@ export function PageRenderer({
   for (const block of plan.core.blocks) {
     const bucket = bySlot.get(block.slot);
     if (!bucket) {
-      onMissingBlock?.(block.block_id);
+      onMissingBlock?.(block.block_type);
       continue;
     }
     bucket.push(
       <BlockRenderer
-        key={`${plan.plan_id}:${block.block_id}:${block.slot}`}
+        key={`${plan.plan_id}:${block.block_instance_id}:${block.slot}`}
         planId={plan.plan_id}
         block={block}
         registry={registry}

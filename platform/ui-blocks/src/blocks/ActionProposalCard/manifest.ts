@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const actionProposalCardManifest: BlockManifest = finalizeManifest({
   block_id: "block.ActionProposalCard",
+  display_name: "Action Proposal Card",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

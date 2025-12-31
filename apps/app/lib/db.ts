@@ -43,8 +43,11 @@ db.exec(`
     plan_id TEXT NOT NULL,
     actor_id TEXT NOT NULL,
     idempotency_key TEXT NOT NULL,
-    state_version INTEGER NOT NULL,
-    result_json TEXT,
+    action_id TEXT NOT NULL,
+    status TEXT NOT NULL, -- "pending" | "completed" | "failed"
+    state_version INTEGER,
+    result_json TEXT, -- envelope preview or outcome summary
+    errors_json TEXT,
     created_at TEXT NOT NULL,
     PRIMARY KEY (plan_id, actor_id, idempotency_key)
   );
@@ -181,22 +184,91 @@ export function updateActionSequence(
 }
 
 // Processed actions (idempotency)
+export interface ProcessedAction {
+  readonly plan_id: string;
+  readonly actor_id: string;
+  readonly idempotency_key: string;
+  readonly action_id: string;
+  readonly status: "pending" | "completed" | "failed";
+  readonly state_version: number | null;
+  readonly result_json: unknown;
+  readonly errors_json: unknown;
+  readonly created_at: string;
+}
+
 export function getProcessedAction(
   plan_id: string,
   actor_id: string,
   idempotency_key: string,
-): { state_version: number; result_json: unknown } | null {
+): ProcessedAction | null {
   const row = db
     .prepare(
-      `SELECT state_version, result_json FROM processed_actions WHERE plan_id = ? AND actor_id = ? AND idempotency_key = ?`,
+      `SELECT plan_id, actor_id, idempotency_key, action_id, status, state_version, result_json, errors_json, created_at
+       FROM processed_actions WHERE plan_id = ? AND actor_id = ? AND idempotency_key = ?`,
     )
     .get(plan_id, actor_id, idempotency_key) as
-    | { state_version: number; result_json: string | null }
+    | {
+        plan_id: string;
+        actor_id: string;
+        idempotency_key: string;
+        action_id: string;
+        status: "pending" | "completed" | "failed";
+        state_version: number | null;
+        result_json: string | null;
+        errors_json: string | null;
+        created_at: string;
+      }
     | undefined;
   if (!row) return null;
   return {
-    state_version: row.state_version,
+    plan_id: row.plan_id,
+    actor_id: row.actor_id,
+    idempotency_key: row.idempotency_key,
+    action_id: row.action_id,
+    status: row.status,
+    state_version: row.state_version ?? null,
     result_json: row.result_json ? JSON.parse(row.result_json) : null,
+    errors_json: row.errors_json ? JSON.parse(row.errors_json) : null,
+    created_at: row.created_at,
+  };
+}
+
+export function getPendingActionRaw(
+  plan_id: string,
+  actor_id: string,
+): ProcessedAction | null {
+  const row = db
+    .prepare(
+      `SELECT plan_id, actor_id, idempotency_key, action_id, status, state_version, result_json, errors_json, created_at
+       FROM processed_actions
+       WHERE plan_id = ? AND actor_id = ? AND status = 'pending'
+       ORDER BY created_at DESC LIMIT 1`,
+    )
+    .get(plan_id, actor_id) as
+    | {
+        plan_id: string;
+        actor_id: string;
+        idempotency_key: string;
+        action_id: string;
+        status: "pending" | "completed" | "failed";
+        state_version: number | null;
+        result_json: string | null;
+        errors_json: string | null;
+        created_at: string;
+      }
+    | undefined;
+
+  if (!row) return null;
+  return {
+    plan_id: row.plan_id,
+    actor_id: row.actor_id,
+    idempotency_key: row.idempotency_key,
+    action_id: row.action_id,
+    status: row.status,
+    state_version: row.state_version ?? null,
+    result_json: row.result_json ? JSON.parse(row.result_json) : null,
+    errors_json: row.errors_json ? JSON.parse(row.errors_json) : null,
+    created_at: row.created_at,
   };
 }
 
@@ -204,24 +276,62 @@ export function insertProcessedAction(params: {
   plan_id: string;
   actor_id: string;
   idempotency_key: string;
-  state_version: number;
+  action_id: string;
+  status: "pending" | "completed" | "failed";
+  state_version?: number | null;
   result_json?: unknown;
+  errors_json?: unknown;
   created_at: string;
 }): void {
   db.prepare(
-    `INSERT INTO processed_actions (plan_id, actor_id, idempotency_key, state_version, result_json, created_at)
-     VALUES (@plan_id, @actor_id, @idempotency_key, @state_version, @result_json, @created_at)
+    `INSERT INTO processed_actions (plan_id, actor_id, idempotency_key, action_id, status, state_version, result_json, errors_json, created_at)
+     VALUES (@plan_id, @actor_id, @idempotency_key, @action_id, @status, @state_version, @result_json, @errors_json, @created_at)
      ON CONFLICT(plan_id, actor_id, idempotency_key) DO UPDATE SET
+       action_id = excluded.action_id,
+       status = excluded.status,
        state_version = excluded.state_version,
        result_json = excluded.result_json,
+       errors_json = excluded.errors_json,
        created_at = excluded.created_at`,
   ).run({
     plan_id: params.plan_id,
     actor_id: params.actor_id,
     idempotency_key: params.idempotency_key,
-    state_version: params.state_version,
+    action_id: params.action_id,
+    status: params.status,
+    state_version: params.state_version ?? null,
     result_json: params.result_json ? JSON.stringify(params.result_json) : null,
+    errors_json: params.errors_json ? JSON.stringify(params.errors_json) : null,
     created_at: params.created_at,
+  });
+}
+
+export function finalizeProcessedAction(
+  plan_id: string,
+  actor_id: string,
+  idempotency_key: string,
+  params: {
+    status: "completed" | "failed";
+    state_version?: number | null;
+    result_json?: unknown;
+    errors_json?: unknown;
+  },
+): void {
+  db.prepare(
+    `UPDATE processed_actions
+     SET status = @status,
+         state_version = @state_version,
+         result_json = @result_json,
+         errors_json = @errors_json
+     WHERE plan_id = @plan_id AND actor_id = @actor_id AND idempotency_key = @idempotency_key`,
+  ).run({
+    plan_id,
+    actor_id,
+    idempotency_key,
+    status: params.status,
+    state_version: params.state_version ?? null,
+    result_json: params.result_json ? JSON.stringify(params.result_json) : null,
+    errors_json: params.errors_json ? JSON.stringify(params.errors_json) : null,
   });
 }
 

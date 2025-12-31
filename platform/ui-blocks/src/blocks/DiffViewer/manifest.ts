@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const diffViewerManifest: BlockManifest = finalizeManifest({
   block_id: "block.DiffViewer",
+  display_name: "Diff Viewer",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

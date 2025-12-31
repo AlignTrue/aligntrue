@@ -1,8 +1,5 @@
 import { PageRenderer } from "@aligntrue/ui-renderer";
-import {
-  createPlatformBlockRegistry,
-  platformShell,
-} from "@aligntrue/ui-blocks";
+import { createPlatformRegistry, platformShell } from "@aligntrue/ui-blocks";
 import type { RenderPlan } from "@aligntrue/ui-contracts";
 import { ActionTester } from "./ActionTester";
 
@@ -15,7 +12,7 @@ type PlanWithMetadata = RenderPlan & {
 
 export default async function HomePage() {
   const plan = await fetchPlan();
-  const registry = createPlatformBlockRegistry();
+  const platformRegistry = createPlatformRegistry();
 
   if (!plan) {
     return <div>Failed to load plan.</div>;
@@ -39,7 +36,7 @@ export default async function HomePage() {
       ) : null}
       <PageRenderer
         plan={plan as RenderPlan}
-        registry={registry}
+        registry={platformRegistry.blocks}
         shell={platformShell}
       />
     </main>

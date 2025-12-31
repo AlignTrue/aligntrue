@@ -11,7 +11,8 @@ export interface RenderRequest {
 }
 
 export interface BlockRequest {
-  readonly block_id: string;
+  readonly block_instance_id: string;
+  readonly block_type: string;
   readonly props: unknown; // unvalidated
   readonly slot: string;
 }

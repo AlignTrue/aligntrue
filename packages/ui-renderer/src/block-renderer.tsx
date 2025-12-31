@@ -18,9 +18,9 @@ export function BlockRenderer({
   shell,
   onMissingBlock,
 }: BlockRendererProps): React.ReactElement | null {
-  const entry = registry.get(block.block_id);
+  const entry = registry.get(block.block_type);
   if (!entry) {
-    onMissingBlock?.(block.block_id);
+    onMissingBlock?.(block.block_type);
     return null;
   }
 
@@ -32,7 +32,7 @@ export function BlockRenderer({
       <Header title={entry.manifest.display_name ?? entry.manifest.block_id} />
       <Body>
         <Component
-          key={`${planId}:${block.block_id}:${block.slot}`}
+          key={`${planId}:${block.block_instance_id}:${block.slot}`}
           {...(block.props as Record<string, unknown>)}
         />
       </Body>

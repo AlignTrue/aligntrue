@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const approvalGateManifest: BlockManifest = finalizeManifest({
   block_id: "block.ApprovalGate",
+  display_name: "Approval Gate",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

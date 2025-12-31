@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const statusIndicatorManifest: BlockManifest = finalizeManifest({
   block_id: "block.StatusIndicator",
+  display_name: "Status Indicator",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

@@ -1,5 +1,8 @@
+import { deterministicId } from "@aligntrue/ops-core";
+import type { BlockActionSchema, BlockManifest } from "@aligntrue/ui-contracts";
 import type { BlockRegistry } from "@aligntrue/ui-renderer";
 import { createBlockRegistry } from "@aligntrue/ui-renderer";
+import type { RegistryLike } from "@aligntrue/ui-renderer";
 import {
   EntityTable,
   entityTableManifest,
@@ -33,9 +36,23 @@ import {
 } from "./blocks/StatusIndicator/index.js";
 import { withUiDefaults, UI_DEFAULTS } from "./ui/defaults.js";
 
-export function createPlatformBlockRegistry(): BlockRegistry {
+export interface ActionSchemaEntry {
+  readonly manifest: BlockManifest;
+  readonly schema: BlockActionSchema;
+}
+
+export interface PlatformRegistry extends RegistryLike {
+  readonly blocks: BlockRegistry;
+  readonly getActionSchema: (
+    blockType: string,
+    actionType: string,
+  ) => ActionSchemaEntry | undefined;
+  readonly manifestsHash: string;
+}
+
+export function createPlatformRegistry(): PlatformRegistry {
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  return createBlockRegistry([
+  const blocks = createBlockRegistry([
     {
       manifest: {
         ...entityTableManifest,
@@ -108,6 +125,35 @@ export function createPlatformBlockRegistry(): BlockRegistry {
     },
   ]);
   /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  const actionIndex = new Map<string, ActionSchemaEntry>();
+  for (const [, entry] of blocks.entries()) {
+    for (const action of entry.manifest.actions ?? []) {
+      actionIndex.set(`${entry.manifest.block_id}::${action.action_type}`, {
+        manifest: entry.manifest,
+        schema: action,
+      });
+    }
+  }
+
+  return Object.freeze({
+    blocks,
+    getManifest: (blockType: string) => blocks.get(blockType)?.manifest,
+    validateProps: (blockType: string, props: unknown) => {
+      const entry = blocks.get(blockType);
+      return (
+        entry?.validate(props) ?? {
+          valid: false,
+          errors: ["Unknown block type"],
+        }
+      );
+    },
+    getActionSchema: (blockType: string, actionType: string) =>
+      actionIndex.get(`${blockType}::${actionType}`),
+    manifestsHash: deterministicId(
+      Array.from(blocks.values()).map((entry) => entry.manifest),
+    ),
+  });
 }
 
 export { UI_DEFAULTS };

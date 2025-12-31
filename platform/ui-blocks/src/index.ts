@@ -1,6 +1,6 @@
 export * from "./policy-decision-point.js";
 export * from "./action-sequencer.js";
-export * from "./action-handler-registry.js";
+export * from "./action-dispatcher.js";
 export * from "./state-manager.js";
 export * from "./audit-emitter.js";
 export * from "./registry.js";

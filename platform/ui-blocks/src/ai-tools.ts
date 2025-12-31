@@ -5,14 +5,15 @@ import type { BlockManifest } from "@aligntrue/ui-contracts";
 /**
  * Tool exposed to the model to request a specific block render.
  * Registry allowlist should be enforced at the call site by constraining
- * block_id to known manifests.
+ * block_type to known manifests.
  */
 export function createRenderBlockTool(manifests: BlockManifest[]) {
   const allowed = manifests.map((m) => m.block_id);
   return tool({
     description: "Request rendering of a UI block from the allowlist",
     parameters: z.object({
-      block_id: z.enum(allowed as [string, ...string[]]),
+      block_instance_id: z.string(),
+      block_type: z.enum(allowed as [string, ...string[]]),
       slot: z.string(),
       props: z.record(z.string(), z.unknown()),
       correlation_id: z.string(),
@@ -32,7 +33,8 @@ export function createRenderPageTool(manifests: BlockManifest[]) {
       layout: z.enum(["single", "split", "dashboard", "inbox"]),
       blocks: z.array(
         z.object({
-          block_id: z.enum(allowed as [string, ...string[]]),
+          block_instance_id: z.string(),
+          block_type: z.enum(allowed as [string, ...string[]]),
           slot: z.string(),
           props: z.record(z.string(), z.unknown()),
         }),

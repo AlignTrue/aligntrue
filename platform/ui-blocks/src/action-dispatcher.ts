@@ -4,6 +4,7 @@ import Ajv, { type AnySchema } from "ajv";
 export interface ActionHandlerResult {
   readonly ui_state_patch?: unknown;
   readonly command_envelope?: unknown;
+  readonly outcome?: unknown;
 }
 
 export type ActionHandler = (
@@ -16,7 +17,7 @@ interface RegisteredHandler {
   readonly errors: () => string[];
 }
 
-export class ActionHandlerRegistry {
+export class ActionDispatcher {
   private readonly ajv: Ajv;
   private readonly handlers = new Map<string, RegisteredHandler>();
 

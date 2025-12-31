@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const taskListManifest: BlockManifest = finalizeManifest({
   block_id: "block.TaskList",
+  display_name: "Task List",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

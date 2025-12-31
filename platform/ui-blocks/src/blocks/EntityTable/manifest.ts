@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const entityTableManifest: BlockManifest = finalizeManifest({
   block_id: "block.EntityTable",
+  display_name: "Entity Table",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

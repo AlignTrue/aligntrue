@@ -21,7 +21,8 @@ const RenderRequestSchema = z.object({
   request_id: z.string(),
   blocks: z.array(
     z.object({
-      block_id: z.string(),
+      block_instance_id: z.string(),
+      block_type: z.string(),
       slot: z.string(),
       // allow any props; schema enforcement happens server-side
       props: z.record(z.string(), z.unknown()).passthrough(),

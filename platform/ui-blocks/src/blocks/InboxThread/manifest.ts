@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const inboxThreadManifest: BlockManifest = finalizeManifest({
   block_id: "block.InboxThread",
+  display_name: "Inbox Thread",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

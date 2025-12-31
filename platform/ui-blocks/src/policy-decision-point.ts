@@ -25,12 +25,12 @@ export function evaluatePlan(ctx: PolicyContext): PolicyDecision {
   const reasons: PolicyReason[] = [];
 
   for (const block of ctx.plan.blocks) {
-    const manifest = ctx.manifests.get(block.block_id);
+    const manifest = ctx.manifests.get(block.block_type);
     if (!manifest) {
       reasons.push({
         rule_id: "manifest.missing",
         severity: "block",
-        message: `Manifest not found for block ${block.block_id}`,
+        message: `Manifest not found for block ${block.block_type}`,
       });
       continue;
     }
@@ -39,7 +39,7 @@ export function evaluatePlan(ctx: PolicyContext): PolicyDecision {
       reasons.push({
         rule_id: "capability.block.missing",
         severity: "block",
-        message: `Actor lacks ${manifest.required_capability} for ${block.block_id}`,
+        message: `Actor lacks ${manifest.required_capability} for ${block.block_type}`,
       });
     }
 
@@ -47,7 +47,7 @@ export function evaluatePlan(ctx: PolicyContext): PolicyDecision {
       evaluateActionCapability(
         action,
         ctx.capabilities,
-        block.block_id,
+        block.block_type,
         reasons,
       );
     }

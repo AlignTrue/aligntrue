@@ -4,6 +4,7 @@ import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
 
 export const dataPanelManifest: BlockManifest = finalizeManifest({
   block_id: "block.DataPanel",
+  display_name: "Data Panel",
   version: "0.1.0",
   props_schema: {
     $schema: JSON_SCHEMA_DRAFT,

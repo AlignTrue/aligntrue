@@ -1,13 +1,14 @@
 import type {
+  BlockInstance,
   BlockRequest,
   LayoutRequest,
   RenderPlan,
   RenderRequest,
 } from "@aligntrue/ui-contracts";
 import { computePlanId } from "@aligntrue/ui-contracts";
-import type { PlanBlock, PlanCore } from "@aligntrue/ui-contracts";
+import type { PlanCore } from "@aligntrue/ui-contracts";
 import type { InputRef } from "@aligntrue/ui-contracts";
-import type { BlockRegistry } from "./registry.js";
+import type { RegistryLike } from "./registry-interface.js";
 import { validateLayoutTemplate } from "./layout-templates.js";
 
 export interface BuildPlanOptions {
@@ -18,7 +19,7 @@ export interface BuildPlanOptions {
 
 export function buildRenderPlan(
   request: RenderRequest,
-  registry: BlockRegistry,
+  registry: RegistryLike,
   opts: BuildPlanOptions = {},
 ): RenderPlan {
   const layout_template = normalizeLayout(request.layout);
@@ -61,25 +62,28 @@ function normalizeLayout(layout: LayoutRequest): string {
 
 function validateBlock(
   block: BlockRequest,
-  registry: BlockRegistry,
+  registry: RegistryLike,
   _layoutTemplate: string,
-): PlanBlock {
-  const entry = registry.get(block.block_id);
-  if (!entry) {
-    throw new Error(`Block ${block.block_id} is not registered`);
+): BlockInstance {
+  const manifest = registry.getManifest(block.block_type);
+  if (!manifest) {
+    throw new Error(`Unknown block_type: ${block.block_type}`);
   }
 
-  const result = entry.validate(block.props);
-  if (!result.valid) {
-    const message = result.errors?.join("; ") ?? "Unknown validation error";
-    throw new Error(`Props invalid for block ${block.block_id}: ${message}`);
+  const validation = registry.validateProps(block.block_type, block.props);
+  if (!validation.valid) {
+    const message = validation.errors?.join("; ") ?? "Unknown validation error";
+    throw new Error(
+      `Props invalid for block ${block.block_instance_id}: ${message}`,
+    );
   }
 
   // Note: layoutTemplate is currently only name; slots enforced at composition time.
   return {
-    block_id: block.block_id,
-    block_version: entry.manifest.version,
-    manifest_hash: entry.manifest.manifest_hash,
+    block_instance_id: block.block_instance_id,
+    block_type: block.block_type,
+    block_version: manifest.version,
+    manifest_hash: manifest.manifest_hash,
     props: block.props,
     slot: block.slot,
   };
@@ -101,10 +105,12 @@ function normalizeInputRefs(inputRefs: InputRef[]): InputRef[] {
   });
 }
 
-function stableSortBlocks(blocks: PlanBlock[]): PlanBlock[] {
+function stableSortBlocks(blocks: BlockInstance[]): BlockInstance[] {
   return [...blocks].sort((a, b) => {
     if (a.slot !== b.slot) return a.slot < b.slot ? -1 : 1;
-    if (a.block_id !== b.block_id) return a.block_id < b.block_id ? -1 : 1;
+    if (a.block_instance_id !== b.block_instance_id) {
+      return a.block_instance_id < b.block_instance_id ? -1 : 1;
+    }
     return 0;
   });
 }

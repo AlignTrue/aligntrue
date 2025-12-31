@@ -15,7 +15,8 @@ export function ensureFixturePlan(): { plan_id: string; plan: RenderPlan } {
     policy_version: "ui@0.0.1",
     blocks: [
       {
-        block_id: entityTableManifest.block_id,
+        block_instance_id: "entity-table-main",
+        block_type: entityTableManifest.block_id,
         block_version: entityTableManifest.version,
         manifest_hash: entityTableManifest.manifest_hash,
         slot: "main",
@@ -28,7 +29,8 @@ export function ensureFixturePlan(): { plan_id: string; plan: RenderPlan } {
         },
       },
       {
-        block_id: statusIndicatorManifest.block_id,
+        block_instance_id: "status-indicator-main",
+        block_type: statusIndicatorManifest.block_id,
         block_version: statusIndicatorManifest.version,
         manifest_hash: statusIndicatorManifest.manifest_hash,
         slot: "main",

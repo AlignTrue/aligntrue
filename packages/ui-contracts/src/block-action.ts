@@ -20,7 +20,8 @@ export interface BlockAction {
   readonly action_id: string; // client-generated
   readonly idempotency_key: string; // = hash(plan_id, action_type, client_sequence)
   readonly action_type: string;
-  readonly block_id: string;
+  readonly block_instance_id: string;
+  readonly block_type: string;
   readonly payload: unknown;
 
   readonly plan_id: string;

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export function ActionTester({
   planId,
-  actorId,
+  actorId: _actorId,
 }: {
   planId: string;
   actorId: string;
@@ -28,13 +28,13 @@ export function ActionTester({
       action_id: actionId,
       idempotency_key: idempotencyKey,
       action_type: "entity_table.row_selected",
-      block_id: "block.EntityTable",
+      block_instance_id: "entity-table-main",
+      block_type: "block.EntityTable",
       payload: { row_id: "1" },
       plan_id: planId,
       client_sequence: Date.now(),
       expected_state_version: latestVersion,
       correlation_id: correlationId,
-      actor: { actor_id: actorId, actor_type: "user" },
     };
 
     const res = await fetch("/api/ui/action", {
