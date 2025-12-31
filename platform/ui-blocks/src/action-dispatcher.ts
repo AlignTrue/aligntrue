@@ -76,11 +76,7 @@ export class ActionDispatcher {
       const result = await handler.handle(action);
       // If the handler returns command_envelope: null, it means it didn't handle it
       // but the payload was valid. This allows other handlers to try.
-      if (
-        result.command_envelope === null &&
-        handlers.length > 1 &&
-        handler !== handlers[handlers.length - 1]
-      ) {
+      if (result.command_envelope === null) {
         continue;
       }
       return { ok: true, result };
