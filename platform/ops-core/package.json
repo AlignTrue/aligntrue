@@ -28,6 +28,26 @@
       "types": "./dist/contracts/notes.d.ts",
       "import": "./dist/contracts/notes.js"
     },
+    "./contracts/capability": {
+      "types": "./dist/contracts/capability.d.ts",
+      "import": "./dist/contracts/capability.js"
+    },
+    "./envelopes": {
+      "types": "./dist/envelopes/index.d.ts",
+      "import": "./dist/envelopes/index.js"
+    },
+    "./safety-classes": {
+      "types": "./dist/safety-classes/index.d.ts",
+      "import": "./dist/safety-classes/index.js"
+    },
+    "./storage/interfaces": {
+      "types": "./dist/storage/interfaces.d.ts",
+      "import": "./dist/storage/interfaces.js"
+    },
+    "./identity": {
+      "types": "./dist/identity/index.d.ts",
+      "import": "./dist/identity/index.js"
+    },
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",

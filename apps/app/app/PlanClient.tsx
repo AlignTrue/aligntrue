@@ -2,14 +2,11 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { PageRenderer } from "@aligntrue/ui-renderer";
-import { createPlatformRegistry, platformShell } from "@aligntrue/ui-blocks";
+import { createPlatformRegistry } from "@aligntrue/ui-blocks/registry";
+import { platformShell } from "@aligntrue/ui-blocks/ui/shell";
 import type { RenderPlan } from "@aligntrue/ui-contracts";
 import { ActionTester } from "./ActionTester";
-
-export type PlanWithMetadata = RenderPlan & {
-  actor_id?: string;
-  status?: "approved" | "pending_approval" | "rejected";
-};
+import type { PlanWithMetadata } from "./types";
 
 export function PlanClient({
   initialPlan,

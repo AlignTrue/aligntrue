@@ -10,3 +10,5 @@ export * from "./ui-state.js";
 export * from "./redaction.js";
 export * from "./json-schema.js";
 export * from "./canonical.js";
+export * from "./identity.js";
+export * from "./hash.js";

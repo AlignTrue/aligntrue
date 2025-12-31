@@ -1,6 +1,5 @@
-import { deterministicId } from "@aligntrue/ops-core";
 import type { UIState } from "@aligntrue/ui-contracts";
-import { canonicalize } from "@aligntrue/ui-contracts";
+import { canonicalize, deterministicId } from "@aligntrue/ui-contracts";
 
 export function initialState(plan_id: string): UIState {
   const content = {

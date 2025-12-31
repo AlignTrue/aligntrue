@@ -1,4 +1,5 @@
-import { PlanClient, type PlanWithMetadata } from "./PlanClient";
+import { PlanClient } from "./PlanClient";
+import type { PlanWithMetadata } from "./types";
 
 export const runtime = "nodejs";
 

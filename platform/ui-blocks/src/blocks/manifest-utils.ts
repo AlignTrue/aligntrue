@@ -1,6 +1,5 @@
-import { deterministicId } from "@aligntrue/ops-core";
 import type { BlockManifest } from "@aligntrue/ui-contracts";
-import { canonicalize } from "@aligntrue/ui-contracts";
+import { canonicalize, deterministicId } from "@aligntrue/ui-contracts";
 
 export function finalizeManifest(
   manifest: Omit<BlockManifest, "manifest_hash" | "props_schema_hash">,

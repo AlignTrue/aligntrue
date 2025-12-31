@@ -20,12 +20,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aligntrue/ops-core": "workspace:*",
     "json-schema": "^0.4.0",
     "zod": "^4.2.1",
     "zod-to-json-schema": "^3.23.3"
   },
   "devDependencies": {
+    "@aligntrue/ops-core": "workspace:*",
     "@types/json-schema": "^7.0.15"
   },
   "license": "MIT"

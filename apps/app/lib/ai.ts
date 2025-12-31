@@ -25,7 +25,7 @@ export const RenderRequestSchema = z.object({
       block_type: z.string(),
       slot: z.string(),
       // allow any props; schema enforcement happens server-side
-      props: z.record(z.string(), z.unknown()).passthrough(),
+      props: z.record(z.string(), z.unknown()),
     }),
   ),
   layout: z.object({
@@ -72,16 +72,18 @@ export function extractRenderRequest(
     (tc) => tc.toolName === "render_page",
   );
   if (!toolCall) return null;
+  const baseArgs =
+    toolCall.args && typeof toolCall.args === "object" ? toolCall.args : {};
   const args = defaults
     ? {
-        ...toolCall.args,
+        ...baseArgs,
         request_id: defaults.request_id,
         actor: defaults.actor,
         correlation_id:
-          (toolCall.args as { correlation_id?: string } | undefined)
-            ?.correlation_id ?? defaults.correlation_id,
+          (baseArgs as { correlation_id?: string }).correlation_id ??
+          defaults.correlation_id,
       }
-    : toolCall.args;
+    : baseArgs;
   const parsed = RenderRequestSchema.safeParse(args);
   if (!parsed.success) return null;
   return parsed.data as RenderRequest;

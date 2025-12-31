@@ -1,3 +1,4 @@
+import "server-only";
 import Database from "better-sqlite3";
 import path from "node:path";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";

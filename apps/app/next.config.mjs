@@ -5,7 +5,6 @@ const nextConfig = {
   transpilePackages: [
     "@aligntrue/ui",
     "@aligntrue/ops-host",
-    "@aligntrue/ops-core",
     "@aligntrue/ops-shared-google-gmail",
     "@aligntrue/ops-shared-google-calendar",
     "@aligntrue/ops-shared-google-common",

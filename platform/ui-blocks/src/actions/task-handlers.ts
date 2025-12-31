@@ -1,7 +1,7 @@
-import { deterministicId } from "@aligntrue/ops-core";
 import { TASK_COMMAND_TYPES } from "@aligntrue/pack-tasks";
 import type { BlockAction, BlockManifest } from "@aligntrue/ui-contracts";
-import type { CommandEnvelope } from "@aligntrue/ops-core";
+import type { CommandEnvelope } from "@aligntrue/ops-core/envelopes";
+import { deterministicId } from "@aligntrue/ui-contracts";
 import type { ActionDispatcher } from "../action-dispatcher.js";
 import type { CommandDispatcher } from "./common.js";
 

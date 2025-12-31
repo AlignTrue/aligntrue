@@ -1,4 +1,4 @@
-import type { CapabilityGrant } from "@aligntrue/ops-core";
+import type { CapabilityGrant } from "@aligntrue/ops-core/contracts/capability";
 import type { PlanCore } from "@aligntrue/ui-contracts";
 import type { BlockManifest, BlockActionSchema } from "@aligntrue/ui-contracts";
 

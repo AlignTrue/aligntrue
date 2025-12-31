@@ -1,4 +1,4 @@
-import { generateText } from "ai";
+import { generateText, type ToolSet } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { deterministicId } from "@aligntrue/ops-core";
 import type { BlockManifest } from "@aligntrue/ui-contracts";
@@ -55,7 +55,7 @@ export async function generateRenderPlan(opts: {
   );
   const tools = {
     render_page: createRenderPageTool(opts.manifests),
-  };
+  } as unknown as ToolSet;
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {

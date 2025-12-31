@@ -8,6 +8,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "import": "./dist/registry.js"
+    },
+    "./ui/shell": {
+      "types": "./dist/ui/shell.d.ts",
+      "import": "./dist/ui/shell.js"
+    },
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",

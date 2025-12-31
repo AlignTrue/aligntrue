@@ -1,5 +1,5 @@
-import type { EventStore } from "@aligntrue/ops-core";
-import { Identity } from "@aligntrue/ops-core";
+import type { EventStore } from "@aligntrue/ops-core/storage/interfaces";
+import { Identity } from "@aligntrue/ops-core/identity";
 import type { RenderPlan, BlockManifest } from "@aligntrue/ui-contracts";
 import type { JSONSchema7 } from "@aligntrue/ui-contracts";
 import { applySchemaRedaction } from "@aligntrue/ui-renderer";

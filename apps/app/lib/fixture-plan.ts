@@ -1,5 +1,4 @@
 import type { RenderPlan, PlanCore } from "@aligntrue/ui-contracts";
-import { computePlanId } from "@aligntrue/ui-contracts";
 import {
   taskListManifest,
   statusIndicatorManifest,
@@ -64,7 +63,7 @@ export async function ensureFixturePlan(): Promise<{
     ],
   };
 
-  const plan_id = computePlanId(core);
+  const plan_id = FIXTURE_PLAN_ID;
   const created_at = new Date().toISOString();
   const plan: RenderPlan = {
     plan_id,

@@ -1,5 +1,5 @@
-import { deterministicId } from "@aligntrue/ops-core";
 import { canonicalize } from "./canonical.js";
+import { deterministicId } from "./identity.js";
 
 /**
  * Compute an idempotency key for an action given plan, type, and sequence.

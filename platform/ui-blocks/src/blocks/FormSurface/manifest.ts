@@ -1,7 +1,7 @@
 import { finalizeManifest } from "../manifest-utils.js";
 import type { BlockManifest, JSONSchema7 } from "@aligntrue/ui-contracts";
 import { JSON_SCHEMA_DRAFT } from "@aligntrue/ui-contracts";
-import { SafetyClasses } from "@aligntrue/ops-core";
+import { SafetyClass } from "@aligntrue/ops-core/safety-classes";
 
 export const formSurfaceManifest: BlockManifest = finalizeManifest({
   block_id: "block.FormSurface",
@@ -66,7 +66,7 @@ export const formSurfaceManifest: BlockManifest = finalizeManifest({
         },
         additionalProperties: false,
       } as unknown as JSONSchema7,
-      safety_class: SafetyClasses.SafetyClass.WriteInternal,
+      safety_class: SafetyClass.WriteInternal,
       triggers: { ui_state: false, plan_regen: true },
     },
   ],

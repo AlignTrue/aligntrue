@@ -1,5 +1,5 @@
-import { deterministicId } from "@aligntrue/ops-core";
 import type { BlockActionSchema, BlockManifest } from "@aligntrue/ui-contracts";
+import { deterministicId } from "@aligntrue/ui-contracts";
 import type { BlockRegistry } from "@aligntrue/ui-renderer";
 import { createBlockRegistry } from "@aligntrue/ui-renderer";
 import type { RegistryLike } from "@aligntrue/ui-renderer";
