@@ -308,6 +308,7 @@ export async function POST(req: Request) {
   };
   const nextContent: UIStateContent = baseContent;
 
+  let uiMutated = false;
   if (
     action.action_type === "entity_table.row_selected" &&
     (action.payload as { row_id?: string })?.row_id
@@ -317,25 +318,28 @@ export async function POST(req: Request) {
       ...(nextContent.selections ?? {}),
       selected_row: rowId,
     };
+    uiMutated = true;
   }
 
-  const dispatcher = new ActionDispatcher();
-  registerTaskHandlers(dispatcher, formSurfaceManifest, dispatchCommand);
-  const dispatchResult = await dispatcher.dispatch(action);
-  if (!dispatchResult.ok) {
-    finalizeProcessedAction(
-      action.plan_id,
-      action.actor.actor_id,
-      action.idempotency_key,
-      {
-        status: "failed",
-        errors_json: dispatchResult.errors,
-      },
-    );
-    return NextResponse.json(
-      { error: "dispatch_failed", errors: dispatchResult.errors },
-      { status: 500 },
-    );
+  if (!uiMutated) {
+    const dispatcher = new ActionDispatcher();
+    registerTaskHandlers(dispatcher, formSurfaceManifest, dispatchCommand);
+    const dispatchResult = await dispatcher.dispatch(action);
+    if (!dispatchResult.ok) {
+      finalizeProcessedAction(
+        action.plan_id,
+        action.actor.actor_id,
+        action.idempotency_key,
+        {
+          status: "failed",
+          errors_json: dispatchResult.errors,
+        },
+      );
+      return NextResponse.json(
+        { error: "dispatch_failed", errors: dispatchResult.errors },
+        { status: 500 },
+      );
+    }
   }
 
   const nextVersion = txResult.latestVersion + 1;
