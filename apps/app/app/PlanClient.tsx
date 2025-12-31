@@ -122,7 +122,7 @@ export function PlanClient({
         plan_id: plan.plan_id,
         client_sequence: nextSeq,
         correlation_id: crypto.randomUUID(),
-        actor: { actor_id: actorId ?? "unknown", actor_type: "user" },
+        actor: { actor_id: actorId ?? "unknown", actor_type: "human" },
         expected_state_version: expectedStateVersion,
       };
 
