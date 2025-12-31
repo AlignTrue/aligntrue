@@ -228,4 +228,16 @@ describe("compilePlan validation", () => {
 
     expect(result.blocks.length).toBe(2); // duplicate removed
   });
+
+  test("throws CompilerError for unknown intent", () => {
+    const context = buildTestContext();
+    // @ts-expect-error - testing invalid intent
+    context.intent = "detail";
+    const policy = buildTestPolicy();
+    const allowlists = buildAllowlists();
+
+    expect(() => compilePlan({ context, policy, ...allowlists })).toThrow(
+      /does not support intent: detail/,
+    );
+  });
 });

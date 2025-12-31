@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { RenderPlan } from "@aligntrue/ui-contracts";
+import { buildRenderPlan } from "@aligntrue/ui-renderer";
 import { createPlatformRegistry } from "@aligntrue/ui-blocks";
 import {
   getPlan,
@@ -44,10 +45,11 @@ export async function GET(req: Request) {
 
     const intentParam = url.searchParams.get("intent");
     const scopeParam = url.searchParams.get("scope");
-    const intent: "list" | "detail" | "create" | "dashboard" =
+    const intent: "list" | "detail" | "create" | "dashboard" | "triage" =
       intentParam === "detail" ||
       intentParam === "create" ||
-      intentParam === "dashboard"
+      intentParam === "dashboard" ||
+      intentParam === "triage"
         ? intentParam
         : "list";
     const scope: "today" | "week" | "all" | "search" =
@@ -109,10 +111,11 @@ export async function GET(req: Request) {
 
     const intentParam = url.searchParams.get("intent");
     const scopeParam = url.searchParams.get("scope");
-    const intent: "list" | "detail" | "create" | "dashboard" =
+    const intent: "list" | "detail" | "create" | "dashboard" | "triage" =
       intentParam === "detail" ||
       intentParam === "create" ||
-      intentParam === "dashboard"
+      intentParam === "dashboard" ||
+      intentParam === "triage"
         ? intentParam
         : "list";
     const scope: "today" | "week" | "all" | "search" =

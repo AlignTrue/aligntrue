@@ -18,6 +18,8 @@ const basePolicy = {
       "create_note_form",
     ],
     dashboard: ["tasks_list", "notes_list"],
+    detail: ["tasks_list", "notes_list"],
+    triage: ["tasks_list", "notes_list"],
   },
   default_layout: "single",
   surface_to_block: {

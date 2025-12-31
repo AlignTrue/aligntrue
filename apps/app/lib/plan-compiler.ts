@@ -83,10 +83,19 @@ function buildBlocks(
     allowed_block_types: ReadonlySet<string>;
   },
 ): CompiledBlock[] {
-  const requestedSurfaces =
-    layoutIntentCore?.must_include ??
-    policy.required_surfaces_by_intent[context.intent] ??
-    [];
+  let requestedSurfaces: readonly RequiredSurface[];
+
+  if (layoutIntentCore?.must_include) {
+    requestedSurfaces = layoutIntentCore.must_include;
+  } else {
+    const surfaces = policy.required_surfaces_by_intent[context.intent];
+    if (!surfaces) {
+      throw new CompilerError(
+        `Policy '${policy.policy_id}' does not support intent: ${context.intent}`,
+      );
+    }
+    requestedSurfaces = surfaces;
+  }
 
   // 1) Dedupe surfaces
   const uniqueSurfaces = [...new Set(requestedSurfaces)];

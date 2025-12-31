@@ -74,7 +74,6 @@ export function buildPlanReceipt(
     compiler_version: COMPILER_VERSION,
     context_hash: inputs.context_hash,
     layout_intent_core_hash: inputs.layout_intent_core_hash,
-    render_request_hash: inputs.render_request_hash,
     causation_id: inputs.causation_id,
     causation_type: inputs.causation_type,
     actor_id: inputs.actor.actor_id,

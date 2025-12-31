@@ -22,7 +22,7 @@ export interface NoteViewItem {
 export interface UIContext {
   tasks: { items: TaskViewItem[]; counts: Record<string, number> };
   notes: { items: NoteViewItem[] };
-  intent: "list" | "detail" | "create" | "dashboard";
+  intent: "list" | "detail" | "create" | "dashboard" | "triage";
   scope: "today" | "week" | "all" | "search";
   context_hash: string;
   input_refs?: InputRef[];
