@@ -30,6 +30,13 @@ export interface BlockAction {
   readonly actor: ActorRef;
 }
 
+export interface ActionIntent {
+  readonly block_instance_id: string;
+  readonly action_type: string;
+  readonly payload: unknown;
+  readonly idempotency_key?: string;
+}
+
 export interface ActionResult {
   readonly outcome: CommandOutcome;
 }

@@ -1,4 +1,4 @@
-import type { RenderPlan } from "@aligntrue/ui-contracts";
+import type { ActionIntent, RenderPlan } from "@aligntrue/ui-contracts";
 import React from "react";
 import type { BlockShell } from "./shell.js";
 import { BlockRenderer } from "./block-renderer.js";
@@ -11,6 +11,8 @@ export interface PageRendererProps {
   readonly registry: BlockRegistry;
   readonly shell: BlockShell;
   readonly onMissingBlock?: ((blockId: string) => void) | undefined;
+  readonly onAction?: ((intent: ActionIntent) => void) | undefined;
+  readonly disabled?: boolean | undefined;
 }
 
 /**
@@ -22,6 +24,8 @@ export function PageRenderer({
   registry,
   shell,
   onMissingBlock,
+  onAction,
+  disabled,
 }: PageRendererProps): React.ReactElement {
   const template =
     LAYOUT_TEMPLATES[plan.core.layout_template as LayoutTemplateId];
@@ -46,6 +50,8 @@ export function PageRenderer({
         registry={registry}
         shell={shell}
         onMissingBlock={onMissingBlock}
+        onAction={onAction}
+        disabled={disabled}
       />,
     );
   }

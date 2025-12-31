@@ -1,7 +1,13 @@
-import type { RenderPlan } from "@aligntrue/ui-contracts";
+import type { ActionIntent, RenderPlan } from "@aligntrue/ui-contracts";
 import React from "react";
 import type { BlockShell } from "./shell.js";
 import type { BlockRegistry } from "./registry.js";
+
+export interface InjectedBlockProps {
+  readonly block_instance_id: string;
+  readonly onAction?: ((intent: ActionIntent) => void) | undefined;
+  readonly disabled?: boolean | undefined;
+}
 
 export interface BlockRendererProps {
   readonly planId: string;
@@ -9,6 +15,8 @@ export interface BlockRendererProps {
   readonly registry: BlockRegistry;
   readonly shell: BlockShell;
   readonly onMissingBlock?: ((blockId: string) => void) | undefined;
+  readonly onAction?: ((intent: ActionIntent) => void) | undefined;
+  readonly disabled?: boolean | undefined;
 }
 
 export function BlockRenderer({
@@ -17,6 +25,8 @@ export function BlockRenderer({
   registry,
   shell,
   onMissingBlock,
+  onAction,
+  disabled,
 }: BlockRendererProps): React.ReactElement | null {
   const entry = registry.get(block.block_type);
   if (!entry) {
@@ -35,7 +45,12 @@ export function BlockRenderer({
     >
       <Header title={entry.manifest.display_name ?? entry.manifest.block_id} />
       <Body>
-        <Component {...(block.props as Record<string, unknown>)} />
+        <Component
+          {...(block.props as Record<string, unknown>)}
+          block_instance_id={block.block_instance_id}
+          onAction={onAction}
+          disabled={disabled}
+        />
       </Body>
     </Frame>
   );

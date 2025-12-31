@@ -3,11 +3,14 @@ import {
   taskListManifest,
   statusIndicatorManifest,
   formSurfaceManifest,
+  noteListManifest,
 } from "@aligntrue/ui-blocks";
 import { TASK_COMMAND_TYPES } from "@aligntrue/pack-tasks";
+import { NOTE_COMMAND_TYPES } from "@aligntrue/pack-notes";
 import { upsertPlan } from "./db";
 import { readTasksProjection } from "./projections/tasks";
-import { buildTasksViewModel } from "./ui-context";
+import { readNotesProjection } from "./projections/notes";
+import { buildTasksViewModel, buildNotesViewModel } from "./ui-context";
 
 const FIXTURE_PLAN_ID = "fixture-plan-1";
 
@@ -17,6 +20,8 @@ export async function ensureFixturePlan(): Promise<{
 }> {
   const tasksProjection = await readTasksProjection();
   const tasksVM = buildTasksViewModel(tasksProjection);
+  const notesProjection = await readNotesProjection();
+  const notesVM = buildNotesViewModel(notesProjection);
 
   const core: PlanCore = {
     layout_template: "single",
@@ -57,6 +62,32 @@ export async function ensureFixturePlan(): Promise<{
           submit: {
             allowed_command_types: [TASK_COMMAND_TYPES.Create],
             default_command_type: TASK_COMMAND_TYPES.Create,
+          },
+        },
+      },
+      {
+        block_instance_id: "notelist-main",
+        block_type: noteListManifest.block_id,
+        block_version: noteListManifest.version,
+        manifest_hash: noteListManifest.manifest_hash,
+        slot: "main",
+        props: {
+          title: "Notes",
+          notes: notesVM.items,
+        },
+      },
+      {
+        block_instance_id: "form-create-note",
+        block_type: formSurfaceManifest.block_id,
+        block_version: formSurfaceManifest.version,
+        manifest_hash: formSurfaceManifest.manifest_hash,
+        slot: "main",
+        props: {
+          form_id: "form-create-note",
+          fields: [{ name: "title", label: "Note title" }],
+          submit: {
+            allowed_command_types: [NOTE_COMMAND_TYPES.Create],
+            default_command_type: NOTE_COMMAND_TYPES.Create,
           },
         },
       },

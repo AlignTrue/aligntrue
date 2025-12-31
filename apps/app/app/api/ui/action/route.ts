@@ -24,6 +24,7 @@ import {
   formSurfaceManifest,
 } from "@aligntrue/ui-blocks";
 import type { CommandEnvelope, CommandOutcome } from "@aligntrue/ops-core";
+import { getHost } from "@/lib/ops-services";
 
 export const runtime = "nodejs";
 
@@ -81,8 +82,8 @@ function evaluateActionPdp(params: {
 async function dispatchCommand(
   envelope: CommandEnvelope,
 ): Promise<CommandOutcome> {
-  // TODO: integrate ops-host dispatch; for now return accepted stub
-  return { status: "accepted", command_id: envelope.command_id };
+  const host = await getHost();
+  return host.runtime.dispatchCommand(envelope);
 }
 
 export async function POST(req: Request) {
@@ -373,6 +374,9 @@ export async function POST(req: Request) {
     status: "accepted" as ActionStatus,
     state_version: nextVersion,
     dispatched: !uiMutated,
-    triggers_plan_regen: actionSchema.schema.triggers?.plan_regen ?? false,
+    triggers: {
+      plan_regen: actionSchema.schema.triggers?.plan_regen ?? false,
+      ui_state: actionSchema.schema.triggers?.ui_state ?? false,
+    },
   });
 }
