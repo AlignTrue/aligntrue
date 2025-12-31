@@ -34,7 +34,7 @@ export async function copyRulesToLocal(options: {
   const {
     source,
     gitRef,
-    gitPath: _gitPath,
+    gitPath,
     cwd,
     paths,
     configPath,
@@ -64,6 +64,7 @@ export async function copyRulesToLocal(options: {
     const result = await importRules({
       source,
       ref: gitRef,
+      path: gitPath,
       cwd,
       targetDir: rulesDir,
     });

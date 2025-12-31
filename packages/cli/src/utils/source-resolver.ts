@@ -581,6 +581,8 @@ export interface ImportOptions {
   source: string;
   /** Git ref (branch/tag/commit) - only for git sources */
   ref?: string | undefined;
+  /** Git path within repository - only for git sources */
+  path?: string | undefined;
   /** Target directory for imported rules (e.g., .aligntrue/rules) */
   targetDir: string;
   /** Current working directory */
@@ -621,7 +623,13 @@ export interface ImportResult {
 export async function importRules(
   options: ImportOptions,
 ): Promise<ImportResult> {
-  const { source, cwd = process.cwd(), targetDir, ref } = options;
+  const {
+    source,
+    cwd = process.cwd(),
+    targetDir,
+    ref,
+    path: gitPath,
+  } = options;
 
   // Build full source URL with ref if provided
   let fullSource = source;
@@ -654,6 +662,9 @@ export async function importRules(
 
     if (sourceType === "git") {
       const parsed = parseGitUrlComponents(fullSource);
+      if (gitPath) {
+        parsed.path = gitPath;
+      }
       resolved = await resolveGitSourceInternal(
         fullSource,
         parsed,
