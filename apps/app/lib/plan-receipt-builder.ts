@@ -1,28 +1,22 @@
-import { hashCanonical } from "@aligntrue/ops-core";
+import { hashCanonical, type ActorRef } from "@aligntrue/ops-core";
 import type {
   PlanMode,
   PlanReceipt,
   CompiledPlan,
 } from "@aligntrue/ui-contracts";
+import type { CompilerPolicy } from "./plan-compiler";
 
 const COMPILER_VERSION = "1.0.0";
-
-export interface PolicyRecord {
-  readonly policy_id: string;
-  readonly version: string;
-  readonly policy_hash: string;
-  readonly stage: string;
-}
 
 export interface BuildReceiptInputs {
   readonly idempotency_key: string;
   readonly render_request_hash: string; // hashCanonical of RenderRequest
   readonly mode: PlanMode;
   readonly workspace_id?: string;
-  readonly policy: PolicyRecord;
+  readonly policy: CompilerPolicy;
   readonly context_hash: string;
   readonly layout_intent_core_hash?: string;
-  readonly actor: { actor_id: string; actor_type: string };
+  readonly actor: ActorRef;
   readonly causation_id?: string;
   readonly causation_type?: string;
   readonly ai_result?: {

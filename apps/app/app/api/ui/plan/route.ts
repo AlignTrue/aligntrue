@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { RenderPlan } from "@aligntrue/ui-contracts";
+import type { RenderPlan, RenderRequest } from "@aligntrue/ui-contracts";
 import { buildRenderPlan } from "@aligntrue/ui-renderer";
 import { createPlatformRegistry } from "@aligntrue/ui-blocks";
 import {
@@ -129,12 +129,7 @@ export async function GET(req: Request) {
     try {
       const result = getOrCreatePlanAndReceipt({
         context,
-        policy: {
-          policy_id: DEFAULT_POLICY.policy_id,
-          version: DEFAULT_POLICY.version,
-          policy_hash: DEFAULT_POLICY.policy_hash,
-          stage: "approved",
-        },
+        policy: DEFAULT_POLICY,
         mode: "deterministic",
         actor,
         workspace_id: undefined,

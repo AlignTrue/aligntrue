@@ -7,6 +7,7 @@ import type {
   LayoutIntentCore,
   LayoutTemplate,
   RequiredSurface,
+  PolicyStage,
 } from "@aligntrue/ui-contracts";
 import type { UIContext } from "./ui-context";
 
@@ -22,6 +23,7 @@ export interface CompilerPolicy {
   readonly policy_id: string;
   readonly version: string;
   readonly policy_hash: string;
+  readonly stage: PolicyStage;
   readonly required_surfaces_by_intent: Record<
     string,
     readonly RequiredSurface[]

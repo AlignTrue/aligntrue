@@ -9,6 +9,7 @@ import type { CompilerPolicy } from "./plan-compiler";
 const basePolicy = {
   policy_id: "ui-default",
   version: "0.0.1",
+  stage: "approved" as const,
   required_surfaces_by_intent: {
     list: ["tasks_list", "notes_list", "create_task_form", "create_note_form"],
     create: [
@@ -68,6 +69,13 @@ const basePolicy = {
           default_command_type: "notes.create",
         },
       },
+    },
+    inbox_focus: {
+      block_type: taskListManifest.block_id,
+      version: taskListManifest.version,
+      manifest_hash: taskListManifest.manifest_hash,
+      slot: "main",
+      default_props: { title: "Inbox" },
     },
   },
 } satisfies Omit<CompilerPolicy, "policy_hash">;

@@ -1,4 +1,4 @@
-import { hashCanonical } from "@aligntrue/ops-core";
+import { hashCanonical, type ActorRef } from "@aligntrue/ops-core";
 import type {
   LayoutIntentCore,
   PlanMode,
@@ -7,7 +7,11 @@ import type {
   RenderRequest,
 } from "@aligntrue/ui-contracts";
 import { buildRenderPlan } from "@aligntrue/ui-renderer";
-import { compilePlan, CompilerError } from "./plan-compiler";
+import {
+  compilePlan,
+  CompilerError,
+  type CompilerPolicy,
+} from "./plan-compiler";
 import {
   insertPlanArtifact,
   insertPlanEvent,
@@ -26,18 +30,17 @@ import {
 import {
   computeIdempotencyKey,
   buildPlanReceipt,
-  type PolicyRecord,
 } from "./plan-receipt-builder";
 import type { UIContext } from "./ui-context";
 import type { createPlatformRegistry } from "@aligntrue/ui-blocks";
 
 export interface PlanInputs {
   context: UIContext;
-  policy: PolicyRecord;
+  policy: CompilerPolicy;
   layoutIntentCore?: LayoutIntentCore;
   mode: PlanMode;
   workspace_id?: string;
-  actor: { actor_id: string; actor_type: string };
+  actor: ActorRef;
   causation_id?: string;
   causation_type?: string;
   ai_result?: {
