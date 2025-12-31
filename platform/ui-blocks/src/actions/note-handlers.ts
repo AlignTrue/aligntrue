@@ -39,7 +39,7 @@ export function registerNoteHandlers(
         payload: {
           note_id: deterministicId({ title }),
           title,
-          content: title,
+          body_md: title ?? "",
         },
         target_ref: `plan:${action.plan_id}`,
         dedupe_scope: "target",
