@@ -54,4 +54,5 @@ export interface CommandEnvelope<T extends string = string, P = unknown> {
   readonly actor: ActorRef;
   readonly requested_at: string;
   readonly capability_id?: string;
+  readonly metadata?: Record<string, unknown>;
 }

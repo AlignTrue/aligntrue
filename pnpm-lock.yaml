@@ -806,6 +806,12 @@ importers:
       '@aligntrue/ops-core':
         specifier: workspace:*
         version: link:../ops-core
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../packs/notes
+      '@aligntrue/pack-tasks':
+        specifier: workspace:*
+        version: link:../packs/tasks
       '@aligntrue/ui-contracts':
         specifier: workspace:*
         version: link:../../packages/ui-contracts

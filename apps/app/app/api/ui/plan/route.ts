@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
-import type { RenderRequest, RenderPlan } from "@aligntrue/ui-contracts";
-import { getPlan, upsertPlan, type PlanStatus } from "@/lib/db";
+import type { RenderPlan, RenderRequest } from "@aligntrue/ui-contracts";
+import { buildRenderPlan } from "@aligntrue/ui-renderer";
+import { createPlatformRegistry } from "@aligntrue/ui-blocks";
+import {
+  getPlan,
+  upsertPlan,
+  type PlanStatus,
+  insertPlanDebug,
+} from "@/lib/db";
 import { ensureFixturePlan } from "@/lib/fixture-plan";
 import { getOrCreateActorId } from "@/lib/actor";
+import { buildUIContext } from "@/lib/ui-context";
+import { generateRenderPlan } from "@/lib/ai-generation";
 
 export const runtime = "nodejs";
 
@@ -17,12 +26,74 @@ type StatusResponse =
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
+  const mode = url.searchParams.get("mode") ?? "fixture";
   const planIdParam = url.searchParams.get("plan_id");
   const actor = await getOrCreateActorId();
 
+  if (mode === "ai") {
+    const registry = createPlatformRegistry();
+    const manifests = Array.from(registry.blocks.values()).map(
+      (entry) => entry.manifest,
+    );
+
+    const intentParam = url.searchParams.get("intent");
+    const scopeParam = url.searchParams.get("scope");
+    const intent: "list" | "detail" | "create" | "dashboard" =
+      intentParam === "detail" ||
+      intentParam === "create" ||
+      intentParam === "dashboard"
+        ? intentParam
+        : "list";
+    const scope: "today" | "week" | "all" | "search" =
+      scopeParam === "week" || scopeParam === "all" || scopeParam === "search"
+        ? scopeParam
+        : "today";
+
+    const context = await buildUIContext({
+      intent,
+      scope,
+    });
+    const ai = await generateRenderPlan({
+      context,
+      manifests,
+      actor,
+    });
+    if (!ai.request) {
+      return NextResponse.json(
+        { error: "plan_generation_failed", errors: ai.errors },
+        { status: 500 },
+      );
+    }
+
+    const created_at = new Date().toISOString();
+    const plan = buildRenderPlan(ai.request, registry, {
+      now: created_at,
+    });
+
+    upsertPlan({
+      plan_id: plan.plan_id,
+      core: plan.core,
+      meta: plan.meta,
+      status: "approved",
+      created_at,
+    });
+
+    insertPlanDebug({
+      plan_id: plan.plan_id,
+      render_request_json: ai.request,
+      validation_errors_json: ai.errors.length > 0 ? ai.errors : null,
+      manifests_hash: registry.manifestsHash,
+      context_hash: context.context_hash,
+      attempts: ai.attempts,
+      created_at,
+    });
+
+    return NextResponse.json({ ...plan, actor_id: actor.actor_id });
+  }
+
   const plan = planIdParam
     ? (getPlan(planIdParam) as (RenderPlan & { status: PlanStatus }) | null)
-    : (ensureFixturePlan().plan as RenderPlan & { status: PlanStatus });
+    : ((await ensureFixturePlan()).plan as RenderPlan & { status: PlanStatus });
 
   if (!plan) {
     return NextResponse.json({ error: "plan_not_found" }, { status: 404 });
@@ -61,12 +132,12 @@ export async function POST(req: Request) {
   }
 
   if (!requested) {
-    const { plan_id, plan } = ensureFixturePlan();
+    const { plan_id, plan } = await ensureFixturePlan();
     return NextResponse.json({ ...plan, actor_id: actor.actor_id, plan_id });
   }
 
   // Stub creation: for now, store the fixture but echo the request_id
-  const { plan_id, plan } = ensureFixturePlan();
+  const { plan_id, plan } = await ensureFixturePlan();
   upsertPlan({
     plan_id,
     core: plan.core,

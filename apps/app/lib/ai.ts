@@ -17,7 +17,7 @@ const InputRefSchema = z.object({
   artifact_id: z.string(),
 });
 
-const RenderRequestSchema = z.object({
+export const RenderRequestSchema = z.object({
   request_id: z.string(),
   blocks: z.array(
     z.object({
@@ -60,12 +60,29 @@ export function normalizeAIResult(raw: unknown): AIResult {
   return { toolCalls };
 }
 
-export function extractRenderRequest(result: AIResult): RenderRequest | null {
+export function extractRenderRequest(
+  result: AIResult,
+  defaults?: {
+    request_id: string;
+    actor: { actor_id: string; actor_type: string };
+    correlation_id: string;
+  },
+): RenderRequest | null {
   const toolCall = result.toolCalls?.find(
     (tc) => tc.toolName === "render_page",
   );
   if (!toolCall) return null;
-  const parsed = RenderRequestSchema.safeParse(toolCall.args);
+  const args = defaults
+    ? {
+        ...toolCall.args,
+        request_id: defaults.request_id,
+        actor: defaults.actor,
+        correlation_id:
+          (toolCall.args as { correlation_id?: string } | undefined)
+            ?.correlation_id ?? defaults.correlation_id,
+      }
+    : toolCall.args;
+  const parsed = RenderRequestSchema.safeParse(args);
   if (!parsed.success) return null;
   return parsed.data as RenderRequest;
 }

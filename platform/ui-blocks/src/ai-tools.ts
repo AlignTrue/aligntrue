@@ -30,6 +30,11 @@ export function createRenderPageTool(manifests: BlockManifest[]) {
   return tool({
     description: "Request a page composed of registered blocks",
     parameters: z.object({
+      request_id: z.string(),
+      actor: z.object({
+        actor_id: z.string(),
+        actor_type: z.string(),
+      }),
       layout: z.enum(["single", "split", "dashboard", "inbox"]),
       blocks: z.array(
         z.object({

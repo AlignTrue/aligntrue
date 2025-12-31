@@ -51,6 +51,16 @@ db.exec(`
     created_at TEXT NOT NULL,
     PRIMARY KEY (plan_id, actor_id, idempotency_key)
   );
+
+  CREATE TABLE IF NOT EXISTS plan_debug (
+    plan_id TEXT PRIMARY KEY,
+    render_request_json TEXT,
+    validation_errors_json TEXT,
+    manifests_hash TEXT,
+    context_hash TEXT,
+    attempts INTEGER,
+    created_at TEXT
+  );
 `);
 
 // Plans
@@ -363,4 +373,83 @@ export function pruneProcessedActions(
        )`,
     ).run(plan_id, actor_id, toDelete);
   }
+}
+
+// Plan debug artifacts
+export interface PlanDebug {
+  readonly plan_id: string;
+  readonly render_request_json: unknown | null;
+  readonly validation_errors_json: unknown | null;
+  readonly manifests_hash: string | null;
+  readonly context_hash: string | null;
+  readonly attempts: number | null;
+  readonly created_at: string;
+}
+
+export function insertPlanDebug(params: PlanDebug): void {
+  const stmt = db.prepare(`
+    INSERT INTO plan_debug (
+      plan_id,
+      render_request_json,
+      validation_errors_json,
+      manifests_hash,
+      context_hash,
+      attempts,
+      created_at
+    ) VALUES (@plan_id, @render_request_json, @validation_errors_json, @manifests_hash, @context_hash, @attempts, @created_at)
+    ON CONFLICT(plan_id) DO UPDATE SET
+      render_request_json = excluded.render_request_json,
+      validation_errors_json = excluded.validation_errors_json,
+      manifests_hash = excluded.manifests_hash,
+      context_hash = excluded.context_hash,
+      attempts = excluded.attempts,
+      created_at = excluded.created_at
+  `);
+
+  stmt.run({
+    plan_id: params.plan_id,
+    render_request_json: params.render_request_json
+      ? JSON.stringify(params.render_request_json)
+      : null,
+    validation_errors_json: params.validation_errors_json
+      ? JSON.stringify(params.validation_errors_json)
+      : null,
+    manifests_hash: params.manifests_hash,
+    context_hash: params.context_hash,
+    attempts: params.attempts ?? null,
+    created_at: params.created_at,
+  });
+}
+
+export function getPlanDebug(plan_id: string): PlanDebug | null {
+  const row = db
+    .prepare(
+      `SELECT plan_id, render_request_json, validation_errors_json, manifests_hash, context_hash, attempts, created_at FROM plan_debug WHERE plan_id = ?`,
+    )
+    .get(plan_id) as
+    | {
+        plan_id: string;
+        render_request_json: string | null;
+        validation_errors_json: string | null;
+        manifests_hash: string | null;
+        context_hash: string | null;
+        attempts: number | null;
+        created_at: string;
+      }
+    | undefined;
+
+  if (!row) return null;
+  return {
+    plan_id: row.plan_id,
+    render_request_json: row.render_request_json
+      ? JSON.parse(row.render_request_json)
+      : null,
+    validation_errors_json: row.validation_errors_json
+      ? JSON.parse(row.validation_errors_json)
+      : null,
+    manifests_hash: row.manifests_hash,
+    context_hash: row.context_hash,
+    attempts: row.attempts,
+    created_at: row.created_at,
+  };
 }

@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@aligntrue/ops-core": "workspace:*",
+    "@aligntrue/pack-notes": "workspace:*",
+    "@aligntrue/pack-tasks": "workspace:*",
     "@aligntrue/ui-contracts": "workspace:*",
     "@aligntrue/ui-renderer": "workspace:*",
     "ai": "^6.0.3",

@@ -5,9 +5,13 @@ import { useState } from "react";
 export function ActionTester({
   planId,
   actorId: _actorId,
+  onPlanRegen,
+  regenInFlight,
 }: {
   planId: string;
   actorId: string;
+  onPlanRegen?: () => Promise<void>;
+  regenInFlight?: boolean;
 }) {
   const [status, setStatus] = useState<string | null>(null);
 
@@ -46,6 +50,9 @@ export function ActionTester({
     setStatus(
       `${json.status ?? res.status} (state_version=${json.state_version ?? "-"})`,
     );
+    if (json.triggers_plan_regen && onPlanRegen) {
+      onPlanRegen();
+    }
   };
 
   return (
@@ -54,6 +61,7 @@ export function ActionTester({
         type="button"
         className="rounded border px-3 py-1 text-sm"
         onClick={sendAction}
+        disabled={regenInFlight}
       >
         Select first row (action test)
       </button>

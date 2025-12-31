@@ -28,6 +28,7 @@ import {
   InboxThread,
   inboxThreadManifest,
 } from "./blocks/InboxThread/index.js";
+import { NoteList, noteListManifest } from "./blocks/NoteList/index.js";
 import { TaskList, taskListManifest } from "./blocks/TaskList/index.js";
 import { DataPanel, dataPanelManifest } from "./blocks/DataPanel/index.js";
 import {
@@ -101,6 +102,13 @@ export function createPlatformRegistry(): PlatformRegistry {
         ui: withUiDefaults(inboxThreadManifest.ui),
       },
       Component: InboxThread as any,
+    },
+    {
+      manifest: {
+        ...noteListManifest,
+        ui: withUiDefaults(noteListManifest.ui),
+      },
+      Component: NoteList as any,
     },
     {
       manifest: {

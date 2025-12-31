@@ -20,10 +20,11 @@ export async function emitPlanAccepted(params: {
   const now = params.now ?? new Date().toISOString();
 
   const blocksPayload = plan.core.blocks.map((block) => {
-    const manifest = manifests.get(block.block_id);
+    const manifest = manifests.get(block.block_type);
     if (!manifest) {
       return {
-        block_id: block.block_id,
+        block_instance_id: block.block_instance_id,
+        block_type: block.block_type,
         block_version: block.block_version,
         slot: block.slot,
         props_hash: Identity.deterministicId(JSON.stringify(block.props)),
@@ -37,11 +38,14 @@ export async function emitPlanAccepted(params: {
     );
     for (const w of warnings) {
       // Log but do not throw; upstream can hook logger if desired.
-      console.warn(`[ui-blocks] Redaction warning for ${block.block_id}: ${w}`);
+      console.warn(
+        `[ui-blocks] Redaction warning for ${block.block_instance_id}: ${w}`,
+      );
     }
 
     return {
-      block_id: block.block_id,
+      block_instance_id: block.block_instance_id,
+      block_type: block.block_type,
       block_version: block.block_version,
       slot: block.slot,
       props_hash: Identity.deterministicId(JSON.stringify(block.props)),

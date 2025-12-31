@@ -41,6 +41,7 @@ export interface CommandEnvelope<T extends string = string, P = unknown> {
   readonly correlation_id: string;
   readonly causation_id?: string;
   readonly causation_type?: CommandCausationType;
+  readonly metadata?: Record<string, unknown>;
 }
 
 export interface PackIdentity {
