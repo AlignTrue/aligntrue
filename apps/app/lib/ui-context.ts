@@ -2,8 +2,8 @@ import { deterministicId } from "@aligntrue/ops-core";
 import type { InputRef } from "@aligntrue/ui-contracts";
 import type { TasksProjection } from "@aligntrue/pack-tasks";
 import type { NotesProjection } from "@aligntrue/pack-notes";
-import { readTasksProjection } from "./projections/tasks.js";
-import { readNotesProjection } from "./projections/notes.js";
+import { readTasksProjection } from "./projections/tasks";
+import { readNotesProjection } from "./projections/notes";
 
 export interface TaskViewItem {
   id: string;

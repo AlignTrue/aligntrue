@@ -28,13 +28,14 @@ export function BlockRenderer({
   const Component = entry.Component;
 
   return (
-    <Frame manifest={entry.manifest} ui={entry.manifest.ui}>
+    <Frame
+      key={`${planId}:${block.block_instance_id}:${block.slot}`}
+      manifest={entry.manifest}
+      ui={entry.manifest.ui}
+    >
       <Header title={entry.manifest.display_name ?? entry.manifest.block_id} />
       <Body>
-        <Component
-          key={`${planId}:${block.block_instance_id}:${block.slot}`}
-          {...(block.props as Record<string, unknown>)}
-        />
+        <Component {...(block.props as Record<string, unknown>)} />
       </Body>
     </Frame>
   );

@@ -20,8 +20,8 @@ import {
   createPlatformRegistry,
   ActionDispatcher,
   registerTaskHandlers,
+  formSurfaceManifest,
 } from "@aligntrue/ui-blocks";
-import { formSurfaceManifest } from "@aligntrue/ui-blocks/src/blocks/FormSurface/manifest";
 import type { CommandEnvelope, CommandOutcome } from "@aligntrue/ops-core";
 
 export const runtime = "nodejs";
@@ -286,7 +286,7 @@ export async function POST(req: Request) {
   })();
 
   if ("error" in txResult && txResult.error) {
-    const status = txResult.error === "state_version_conflict" ? 409 : 409;
+    const status = txResult.error === "action_in_flight" ? 429 : 409;
     return NextResponse.json(txResult, { status });
   }
   if ("duplicate" in txResult && txResult.duplicate) {

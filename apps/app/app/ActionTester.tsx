@@ -51,7 +51,7 @@ export function ActionTester({
       `${json.status ?? res.status} (state_version=${json.state_version ?? "-"})`,
     );
     if (json.triggers_plan_regen && onPlanRegen) {
-      onPlanRegen();
+      await onPlanRegen();
     }
   };
 
