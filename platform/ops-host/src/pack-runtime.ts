@@ -75,7 +75,9 @@ export async function createPackRuntime(
 
     // Call init hook
     if (moduleCandidate.init) {
-      await moduleCandidate.init(createContext(packId));
+      await moduleCandidate.init(
+        createContext(packId, undefined, [], moduleCandidate),
+      );
     }
 
     packs.set(packId, { manifest, module: moduleCandidate });
@@ -347,14 +349,26 @@ export async function createPackRuntime(
     packId: string,
     parentCommand?: CommandEnvelope,
     childCommands: string[] = [],
+    moduleOverride?: PackModule,
   ): PackContext {
-    return {
+    const baseContext: PackContext = {
       eventStore: opts.eventStore,
       commandLog: opts.commandLog,
       projectionRegistry,
       config: configByPack.get(packId) ?? {},
       dispatchChild: buildDispatchChild(packId, parentCommand, childCommands),
     };
+
+    const moduleRef = moduleOverride ?? packs.get(packId)?.module;
+    if (moduleRef?.extendContext) {
+      return moduleRef.extendContext(baseContext, {
+        packId,
+        ...(parentCommand !== undefined ? { parentCommand } : {}),
+        childCommands,
+      });
+    }
+
+    return baseContext;
   }
 
   return {

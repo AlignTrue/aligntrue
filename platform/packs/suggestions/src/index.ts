@@ -2,11 +2,20 @@ import type { PackModule } from "@aligntrue/ops-core";
 import { manifest } from "./manifest.js";
 import { commandHandlers } from "./command-handlers.js";
 import { InboxProjectionDef } from "./projection.js";
+import { createSuggestionStores } from "./storage.js";
+
+const stores = createSuggestionStores();
 
 const moduleImpl: PackModule = {
   manifest,
   commandHandlers,
   projections: [InboxProjectionDef],
+  extendContext: (base) => ({
+    ...base,
+    artifactStore: stores.artifactStore,
+    feedbackEventStore: stores.feedbackEventStore,
+    suggestionEventStore: stores.suggestionEventStore,
+  }),
 };
 
 export default moduleImpl;

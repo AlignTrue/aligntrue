@@ -34,6 +34,7 @@ export {
   IdempotencyViolation,
   PreconditionFailed,
 } from "./errors.js";
+export { defineCommandHandlers } from "./contracts/handler-registry.js";
 
 export * as Envelopes from "./envelopes/index.js";
 export { validateDedupeScope, computeScopeKey } from "./envelopes/command.js";

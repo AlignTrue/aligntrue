@@ -3,8 +3,17 @@ let Identity: typeof import("@aligntrue/ops-core").Identity;
 let Feedback: typeof import("@aligntrue/ops-core").Feedback;
 let Contracts: typeof import("@aligntrue/ops-core").Contracts;
 type CommandEnvelope = import("@aligntrue/ops-core").CommandEnvelope;
+type PackContext = import("@aligntrue/ops-core").PackContext;
 let commandHandlers:
   | typeof import("../src/index.js").commandHandlers
+  | undefined;
+let packModule:
+  | (typeof import("../src/index.js").default & {
+      extendContext?: (
+        base: PackContext,
+        opts?: { packId: string },
+      ) => PackContext;
+    })
   | undefined;
 let InboxProjectionDef:
   | typeof import("../src/projection.js").InboxProjectionDef
@@ -12,17 +21,15 @@ let InboxProjectionDef:
 let buildInboxProjectionFromState:
   | typeof import("../src/projection.js").buildInboxProjectionFromState
   | undefined;
-let StorageModule: typeof import("../src/storage.js");
-
 async function loadModule() {
   process.env["OPS_SUGGESTIONS_ENABLED"] = "1";
   const core = await import("@aligntrue/ops-core");
   Identity = core.Identity;
   Feedback = core.Feedback;
   Contracts = core.Contracts;
-  StorageModule = await import("../src/storage.js");
   const mod = await import("../src/index.js");
   commandHandlers = mod.commandHandlers;
+  packModule = mod.default as typeof packModule;
   InboxProjectionDef = mod.InboxProjectionDef;
   buildInboxProjectionFromState = mod.buildInboxProjectionFromState;
 }
@@ -95,6 +102,49 @@ describe("pack-suggestions command handlers", () => {
   beforeAll(async () => {
     await loadModule();
   });
+
+  function makeContext(overrides: Partial<PackContext> = {}): PackContext {
+    const noop = async () => {};
+    const asyncEmpty = async function* () {};
+    const projectionRegistry: PackContext["projectionRegistry"] = {
+      register: () => {},
+      unregister: () => {},
+    };
+    return {
+      eventStore: {
+        append: noop,
+        stream: asyncEmpty,
+        getById: async () => null,
+      },
+      commandLog: {
+        record: noop,
+        recordOutcome: noop,
+        getByIdempotencyKey: async () => null,
+        tryStart: async () => ({ status: "new" as const }),
+        complete: noop,
+      },
+      projectionRegistry,
+      config: {},
+      dispatchChild: async () => {
+        throw new Error("dispatchChild stub not set");
+      },
+      ...overrides,
+    };
+  }
+
+  it("reuses the same stores across context invocations", () => {
+    if (!packModule || !packModule.extendContext) {
+      throw new Error("pack module not loaded");
+    }
+    const base = makeContext();
+    const first = packModule.extendContext(base, { packId: "suggestions" });
+    const second = packModule.extendContext(base, { packId: "suggestions" });
+
+    expect(first.artifactStore).toBe(second.artifactStore);
+    expect(first.feedbackEventStore).toBe(second.feedbackEventStore);
+    expect(first.suggestionEventStore).toBe(second.suggestionEventStore);
+  });
+
   it("approve returns CommandOutcome with child command ids", async () => {
     const feedbackEvents: Feedback.FeedbackEvent[] = [];
     const suggestionArtifact = {
@@ -136,16 +186,6 @@ describe("pack-suggestions command handlers", () => {
       async *stream() {},
     };
 
-    vi.spyOn(StorageModule, "createArtifactStore").mockReturnValue(
-      artifactStore as never,
-    );
-    vi.spyOn(StorageModule, "createFeedbackEventStore").mockReturnValue(
-      feedbackEventStore as never,
-    );
-    vi.spyOn(StorageModule, "createSuggestionEventStore").mockReturnValue(
-      suggestionEventStore as never,
-    );
-
     const dispatchChild = vi.fn().mockResolvedValue({
       command_id: "child-1",
       status: "accepted",
@@ -156,7 +196,12 @@ describe("pack-suggestions command handlers", () => {
     const outcome = await commandHandlers[
       Contracts.SUGGESTION_COMMAND_TYPES.Approve
     ](command, {
-      dispatchChild,
+      ...makeContext({
+        artifactStore,
+        feedbackEventStore,
+        suggestionEventStore,
+        dispatchChild,
+      }),
     });
 
     expect(outcome.command_id).toBe(command.command_id);
@@ -204,16 +249,6 @@ describe("pack-suggestions command handlers", () => {
       async *stream() {},
     };
 
-    vi.spyOn(StorageModule, "createArtifactStore").mockReturnValue(
-      artifactStore as never,
-    );
-    vi.spyOn(StorageModule, "createFeedbackEventStore").mockReturnValue(
-      feedbackEventStore as never,
-    );
-    vi.spyOn(StorageModule, "createSuggestionEventStore").mockReturnValue(
-      suggestionEventStore as never,
-    );
-
     const dispatchChild = vi.fn().mockResolvedValue({
       command_id: "child-1",
       status: "accepted",
@@ -224,7 +259,12 @@ describe("pack-suggestions command handlers", () => {
     const first = await commandHandlers[
       Contracts.SUGGESTION_COMMAND_TYPES.Approve
     ](command, {
-      dispatchChild,
+      ...makeContext({
+        artifactStore,
+        feedbackEventStore,
+        suggestionEventStore,
+        dispatchChild,
+      }),
     });
     expect(first.status).toBe("accepted");
 
@@ -232,7 +272,12 @@ describe("pack-suggestions command handlers", () => {
     const second = await commandHandlers[
       Contracts.SUGGESTION_COMMAND_TYPES.Approve
     ](command, {
-      dispatchChild,
+      ...makeContext({
+        artifactStore,
+        feedbackEventStore,
+        suggestionEventStore,
+        dispatchChild,
+      }),
     });
     expect(second.status).toBe("already_processed");
   });

@@ -73,6 +73,7 @@ export interface SyncResult extends Partial<OperationResult> {
   success: boolean;
   exportResults?: Map<string, ExportResult>;
   overwrittenFiles?: string[];
+  lockfilePath?: string;
   conflicts?: Array<{
     heading: string;
     files: Array<{ path: string; mtime: Date }>;

@@ -83,7 +83,7 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
   },
-  "packageManager": "pnpm@10.26.2",
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=20",
     "pnpm": ">=10.26.0"
