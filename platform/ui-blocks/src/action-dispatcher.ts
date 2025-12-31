@@ -19,7 +19,7 @@ interface RegisteredHandler {
 
 export class ActionDispatcher {
   private readonly ajv: Ajv;
-  private readonly handlers = new Map<string, RegisteredHandler>();
+  private readonly handlers = new Map<string, RegisteredHandler[]>();
 
   constructor(ajvInstance?: Ajv) {
     this.ajv = ajvInstance ?? new Ajv({ strict: true, allErrors: true });
@@ -41,15 +41,19 @@ export class ActionDispatcher {
     const validateFn = this.ajv.compile(
       actionSchema.payload_schema as AnySchema,
     );
-    this.handlers.set(actionType, {
-      handle: handler,
-      validate: (payload: unknown) =>
-        validateFn(payload) as boolean | Promise<boolean>,
-      errors: () =>
-        (validateFn.errors ?? []).map((e) =>
-          `${e.instancePath || "/"} ${e.message ?? ""}`.trim(),
-        ),
-    });
+    const existing = this.handlers.get(actionType) ?? [];
+    this.handlers.set(actionType, [
+      ...existing,
+      {
+        handle: handler,
+        validate: (payload: unknown) =>
+          validateFn(payload) as boolean | Promise<boolean>,
+        errors: () =>
+          (validateFn.errors ?? []).map((e) =>
+            `${e.instancePath || "/"} ${e.message ?? ""}`.trim(),
+          ),
+      },
+    ]);
   }
 
   async dispatch(
@@ -57,15 +61,37 @@ export class ActionDispatcher {
   ): Promise<
     { ok: true; result: ActionHandlerResult } | { ok: false; errors: string[] }
   > {
-    const handler = this.handlers.get(action.action_type);
-    if (!handler) {
+    const handlers = this.handlers.get(action.action_type);
+    if (!handlers || handlers.length === 0) {
       return { ok: false, errors: [`No handler for ${action.action_type}`] };
     }
-    const valid = await handler.validate(action.payload);
-    if (!valid) {
-      return { ok: false, errors: handler.errors() };
+
+    let lastErrors: string[] = [];
+    for (const handler of handlers) {
+      const valid = await handler.validate(action.payload);
+      if (!valid) {
+        lastErrors = handler.errors();
+        continue;
+      }
+      const result = await handler.handle(action);
+      // If the handler returns command_envelope: null, it means it didn't handle it
+      // but the payload was valid. This allows other handlers to try.
+      if (
+        result.command_envelope === null &&
+        handlers.length > 1 &&
+        handler !== handlers[handlers.length - 1]
+      ) {
+        continue;
+      }
+      return { ok: true, result };
     }
-    const result = await handler.handle(action);
-    return { ok: true, result };
+
+    return {
+      ok: false,
+      errors:
+        lastErrors.length > 0
+          ? lastErrors
+          : [`No handler matched for ${action.action_type}`],
+    };
   }
 }

@@ -42,9 +42,8 @@ export async function ensureFixturePlan(): Promise<{
         manifest_hash: statusIndicatorManifest.manifest_hash,
         slot: "main",
         props: {
-          label: "Task counts",
+          label: "Tasks ok",
           state: "ok",
-          counts: tasksVM.counts,
         },
       },
       {

@@ -20,6 +20,7 @@ import {
   createPlatformRegistry,
   ActionDispatcher,
   registerTaskHandlers,
+  registerNoteHandlers,
   formSurfaceManifest,
 } from "@aligntrue/ui-blocks";
 import type { CommandEnvelope, CommandOutcome } from "@aligntrue/ops-core";
@@ -324,6 +325,7 @@ export async function POST(req: Request) {
   if (!uiMutated) {
     const dispatcher = new ActionDispatcher();
     registerTaskHandlers(dispatcher, formSurfaceManifest, dispatchCommand);
+    registerNoteHandlers(dispatcher, formSurfaceManifest, dispatchCommand);
     const dispatchResult = await dispatcher.dispatch(action);
     if (!dispatchResult.ok) {
       finalizeProcessedAction(
