@@ -12,6 +12,8 @@ export const formSurfaceManifest: BlockManifest = finalizeManifest({
     type: "object",
     properties: {
       form_id: { type: "string" },
+      title: { type: "string" },
+      submit_label: { type: "string" },
       fields: {
         type: "array",
         items: {

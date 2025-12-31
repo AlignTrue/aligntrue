@@ -1,7 +1,6 @@
 import type { RenderPlan, PlanCore } from "@aligntrue/ui-contracts";
 import {
   taskListManifest,
-  statusIndicatorManifest,
   formSurfaceManifest,
   noteListManifest,
 } from "@aligntrue/ui-blocks";
@@ -40,17 +39,6 @@ export async function ensureFixturePlan(): Promise<{
         },
       },
       {
-        block_instance_id: "status-indicator-main",
-        block_type: statusIndicatorManifest.block_id,
-        block_version: statusIndicatorManifest.version,
-        manifest_hash: statusIndicatorManifest.manifest_hash,
-        slot: "main",
-        props: {
-          label: "Tasks ok",
-          state: "ok",
-        },
-      },
-      {
         block_instance_id: "form-create-task",
         block_type: formSurfaceManifest.block_id,
         block_version: formSurfaceManifest.version,
@@ -58,7 +46,9 @@ export async function ensureFixturePlan(): Promise<{
         slot: "main",
         props: {
           form_id: "form-create-task",
-          fields: [{ name: "title", label: "Task title" }],
+          title: "New Task",
+          submit_label: "Add Task",
+          fields: [{ name: "title", label: "What needs to be done?" }],
           submit: {
             allowed_command_types: [TASK_COMMAND_TYPES.Create],
             default_command_type: TASK_COMMAND_TYPES.Create,
@@ -84,6 +74,8 @@ export async function ensureFixturePlan(): Promise<{
         slot: "main",
         props: {
           form_id: "form-create-note",
+          title: "New Note",
+          submit_label: "Add Note",
           fields: [{ name: "title", label: "Note title" }],
           submit: {
             allowed_command_types: [NOTE_COMMAND_TYPES.Create],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageRenderer } from "@aligntrue/ui-renderer";
 import { createPlatformRegistry } from "@aligntrue/ui-blocks/registry";
 import { platformShell } from "@aligntrue/ui-blocks/ui/shell";
@@ -33,12 +33,15 @@ export function PlanClient({
     const stored = localStorage.getItem(sequenceKey);
     return stored ? parseInt(stored, 10) : Date.now();
   });
+  const sequenceRef = useRef(clientSequence);
 
   useEffect(() => {
     if (typeof window === "undefined" || !plan?.plan_id) return;
     const stored = localStorage.getItem(sequenceKey);
     if (stored) {
-      setClientSequence(parseInt(stored, 10));
+      const seq = parseInt(stored, 10);
+      setClientSequence(seq);
+      sequenceRef.current = seq;
     }
   }, [plan?.plan_id, sequenceKey]);
 
@@ -100,7 +103,7 @@ export function PlanClient({
       );
       if (!blockDef) return;
 
-      const nextSeq = clientSequence + 1;
+      const nextSeq = ++sequenceRef.current;
       const key =
         intent.idempotency_key ??
         deterministicId({
@@ -161,7 +164,6 @@ export function PlanClient({
     },
     [
       actorId,
-      clientSequence,
       expectedStateVersion,
       inFlightActions,
       plan.core.blocks,
