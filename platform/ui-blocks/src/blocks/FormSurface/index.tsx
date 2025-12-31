@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { InjectedBlockProps } from "@aligntrue/ui-renderer";
 import { BlockForm } from "../../ui/BlockForm.js";
 import { BlockStack } from "../../ui/BlockStack.js";
@@ -27,11 +27,24 @@ export function FormSurface({
   onAction,
   disabled,
 }: FormSurfaceProps) {
-  const initialValues = useMemo(
-    () => Object.fromEntries(fields.map((f) => [f.name, f.value ?? ""])),
-    [fields],
+  const [values, setValues] = useState<Record<string, string>>(() =>
+    Object.fromEntries(fields.map((f) => [f.name, f.value ?? ""])),
   );
-  const [values, setValues] = useState<Record<string, string>>(initialValues);
+
+  // Sync state when fields change to ensure new fields have their default values
+  useEffect(() => {
+    setValues((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const field of fields) {
+        if (!(field.name in next)) {
+          next[field.name] = field.value ?? "";
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [fields]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
