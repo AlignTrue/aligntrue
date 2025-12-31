@@ -18,7 +18,7 @@ type StatusResponse =
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const planIdParam = url.searchParams.get("plan_id");
-  const actor = getOrCreateActorId();
+  const actor = await getOrCreateActorId();
 
   const planRecord = planIdParam
     ? getPlan(planIdParam)
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     "plan_id" in planRecord
       ? (planRecord as RenderPlan & { status?: string })
       : {
-          plan_id: planIdParam,
+          plan_id: planIdParam as string,
           core: planRecord.core,
           meta: planRecord.meta,
           status: planRecord.status,
@@ -61,7 +61,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const actor = getOrCreateActorId();
+  const actor = await getOrCreateActorId();
   const now = new Date().toISOString();
   let requested: RenderRequest | undefined;
   try {

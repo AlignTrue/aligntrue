@@ -22,6 +22,12 @@ interface ActionRequest extends BlockAction {
   payload: { row_id?: string; [key: string]: unknown };
 }
 
+interface UIStateContent {
+  selections?: Record<string, string>;
+  form_values?: Record<string, unknown>;
+  expanded_sections?: string[];
+}
+
 export async function POST(req: Request) {
   let body: ActionRequest;
   try {
@@ -72,11 +78,12 @@ export async function POST(req: Request) {
   }
 
   // UI-only mutation: handle entity_table.row_selected
-  const nextContent = latestState?.content ?? {
-    selections: {},
-    form_values: {},
-    expanded_sections: [],
-  };
+  const nextContent: UIStateContent =
+    (latestState?.content as UIStateContent) ?? {
+      selections: {},
+      form_values: {},
+      expanded_sections: [],
+    };
 
   if (
     body.action_type === "entity_table.row_selected" &&

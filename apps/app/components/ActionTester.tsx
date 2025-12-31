@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export function ActionTester({
   planId,
@@ -11,6 +11,11 @@ export function ActionTester({
 }) {
   const [status, setStatus] = useState<string | null>(null);
 
+  // Generate stable IDs to support deduplication testing across multiple clicks/retries
+  const actionId = useMemo(() => crypto.randomUUID(), []);
+  const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
+  const correlationId = useMemo(() => crypto.randomUUID(), []);
+
   const sendAction = async () => {
     setStatus("sending");
     const stateRes = await fetch("/api/ui/state?plan_id=" + planId, {
@@ -20,15 +25,15 @@ export function ActionTester({
     const latestVersion = stateJson.state?.version ?? 0;
 
     const action = {
-      action_id: crypto.randomUUID(),
-      idempotency_key: crypto.randomUUID(),
+      action_id: actionId,
+      idempotency_key: idempotencyKey,
       action_type: "entity_table.row_selected",
       block_id: "block.EntityTable",
       payload: { row_id: "1" },
       plan_id: planId,
       client_sequence: Date.now(),
       expected_state_version: latestVersion,
-      correlation_id: crypto.randomUUID(),
+      correlation_id: correlationId,
       actor: { actor_id: actorId, actor_type: "user" },
     };
 

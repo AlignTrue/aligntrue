@@ -5,8 +5,8 @@ import type { ActorRef } from "@aligntrue/ops-core";
 const COOKIE_NAME = "ui_actor_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
-export function getOrCreateActorId(): ActorRef {
-  const jar = cookies();
+export async function getOrCreateActorId(): Promise<ActorRef> {
+  const jar = await cookies();
   const existing = jar.get(COOKIE_NAME)?.value;
   const actor_id = existing ?? randomUUID();
   if (!existing) {
@@ -17,5 +17,5 @@ export function getOrCreateActorId(): ActorRef {
       maxAge: COOKIE_MAX_AGE,
     });
   }
-  return { actor_id, actor_type: "user" };
+  return { actor_id, actor_type: "human" };
 }

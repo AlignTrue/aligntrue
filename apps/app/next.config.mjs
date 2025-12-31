@@ -1,6 +1,7 @@
 const nextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
+  serverExternalPackages: ["better-sqlite3"],
   transpilePackages: [
     "@aligntrue/ui",
     "@aligntrue/ops-host",

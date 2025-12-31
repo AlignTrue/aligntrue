@@ -1,8 +1,10 @@
 import type { RenderPlan, PlanCore } from "@aligntrue/ui-contracts";
 import { computePlanId } from "@aligntrue/ui-contracts";
-import { entityTableManifest } from "@aligntrue/ui-blocks/src/blocks/EntityTable/manifest.js";
-import { statusIndicatorManifest } from "@aligntrue/ui-blocks/src/blocks/StatusIndicator/manifest.js";
-import { upsertPlan } from "./db.js";
+import {
+  entityTableManifest,
+  statusIndicatorManifest,
+} from "@aligntrue/ui-blocks";
+import { upsertPlan } from "./db";
 
 const FIXTURE_PLAN_ID = "fixture-plan-1";
 
