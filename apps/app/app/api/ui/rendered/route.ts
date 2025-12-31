@@ -24,10 +24,18 @@ export async function POST(req: Request) {
   }
 
   // Non-authoritative telemetry
-  console.info("[telemetry] ui.plan.rendered", {
-    ...body,
-    source: "client_telemetry",
-  });
+  // We stringify the telemetry data to prevent log injection (js/log-injection)
+  // as JSON.stringify escapes newlines and other control characters.
+  console.info(
+    `[telemetry] ui.plan.rendered ${JSON.stringify({
+      plan_id: body.plan_id,
+      render_instance_id: body.render_instance_id,
+      blocks_rendered: body.blocks_rendered,
+      rendered_at: body.rendered_at,
+      actor_id: body.actor_id,
+      source: "client_telemetry",
+    })}`,
+  );
 
   return NextResponse.json({ ok: true });
 }

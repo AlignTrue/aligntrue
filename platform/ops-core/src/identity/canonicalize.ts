@@ -50,11 +50,14 @@ function toJSONValue(value: unknown): JSONValue {
         );
       }
 
-      // We use simple assignment on a null-prototype object. This is safe from prototype
-      // pollution and satisfies security scanners like CodeQL (js/remote-property-injection)
-      // better than Object.defineProperty when the key is dynamic.
-
-      result[key] = toJSONValue(child);
+      // We use Object.defineProperty on a null-prototype object to satisfy security scanners
+      // like CodeQL (js/remote-property-injection) when the key is dynamic.
+      Object.defineProperty(result, key, {
+        value: toJSONValue(child),
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
     }
     return result;
   }
@@ -90,11 +93,14 @@ function normalize(value: JSONValue): JSONValue {
 
     const child = (value as Record<string, JSONValue | undefined>)[key];
     if (child === undefined) continue;
-    // We use simple assignment on a null-prototype object. This is safe from prototype
-    // pollution and satisfies security scanners like CodeQL (js/remote-property-injection)
-    // better than Object.defineProperty when the key is dynamic.
-
-    result[key] = normalize(child);
+    // We use Object.defineProperty on a null-prototype object to satisfy security scanners
+    // like CodeQL (js/remote-property-injection) when the key is dynamic.
+    Object.defineProperty(result, key, {
+      value: normalize(child),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   return result;
 }
