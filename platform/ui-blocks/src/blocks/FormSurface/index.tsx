@@ -32,16 +32,30 @@ export function FormSurface({
   );
 
   // Sync state when fields change to ensure new fields have their default values
+  // and stale fields are removed.
   useEffect(() => {
     setValues((prev) => {
+      const fieldNames = new Set(fields.map((f) => f.name));
       const next = { ...prev };
       let changed = false;
+
+      // Add missing fields
       for (const field of fields) {
         if (!(field.name in next)) {
           next[field.name] = field.value ?? "";
           changed = true;
         }
       }
+
+      // Remove stale fields
+      for (const name in next) {
+        if (!fieldNames.has(name)) {
+          // eslint-disable-next-line security/detect-object-injection
+          delete next[name];
+          changed = true;
+        }
+      }
+
       return changed ? next : prev;
     });
   }, [fields]);
