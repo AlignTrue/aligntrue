@@ -6,6 +6,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getEventStore, getHost } from "@/lib/ops-services";
+import { getBaseUrl } from "@/lib/utils";
 
 async function getEmailTimeline() {
   await getHost();
@@ -19,10 +20,7 @@ async function getEmailTimeline() {
   return view.items.filter((item) => item.type === "email_message");
 }
 
-const APP_BASE =
-  (process.env["APP_BASE_URL"] ?? process.env["VERCEL_URL"])
-    ? `https://${process.env["APP_BASE_URL"] ?? process.env["VERCEL_URL"]}`
-    : "http://localhost:3000";
+const APP_BASE = getBaseUrl();
 
 const LABEL_ID = process.env["GMAIL_MUTATION_LABEL_ID"];
 
