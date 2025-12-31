@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "node:path";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
 
-type PlanStatus = "approved" | "pending_approval" | "rejected";
+export type PlanStatus = "approved" | "pending_approval" | "rejected";
 
 const DB_PATH = path.join(process.cwd(), "data", "ui.db");
 
@@ -76,16 +76,20 @@ export function upsertPlan(params: {
   });
 }
 
-export function getPlan(
-  plan_id: string,
-): { core: unknown; meta: unknown; status: PlanStatus } | null {
+export function getPlan(plan_id: string): {
+  plan_id: string;
+  core: unknown;
+  meta: unknown;
+  status: PlanStatus;
+} | null {
   const row = db
-    .prepare(`SELECT core, meta, status FROM plans WHERE plan_id = ?`)
+    .prepare(`SELECT plan_id, core, meta, status FROM plans WHERE plan_id = ?`)
     .get(plan_id) as
-    | { core: string; meta: string; status: PlanStatus }
+    | { plan_id: string; core: string; meta: string; status: PlanStatus }
     | undefined;
   if (!row) return null;
   return {
+    plan_id: row.plan_id,
     core: JSON.parse(row.core),
     meta: JSON.parse(row.meta),
     status: row.status,

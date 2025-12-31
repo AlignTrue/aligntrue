@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { RenderRequest, RenderPlan } from "@aligntrue/ui-contracts";
-import { getPlan, upsertPlan } from "@/lib/db";
+import { getPlan, upsertPlan, type PlanStatus } from "@/lib/db";
 import { ensureFixturePlan } from "@/lib/fixture-plan";
 import { getOrCreateActorId } from "@/lib/actor";
 
@@ -20,23 +20,13 @@ export async function GET(req: Request) {
   const planIdParam = url.searchParams.get("plan_id");
   const actor = await getOrCreateActorId();
 
-  const planRecord = planIdParam
-    ? getPlan(planIdParam)
-    : ensureFixturePlan().plan;
-  if (!planRecord) {
+  const plan = planIdParam
+    ? (getPlan(planIdParam) as (RenderPlan & { status: PlanStatus }) | null)
+    : (ensureFixturePlan().plan as RenderPlan & { status: PlanStatus });
+
+  if (!plan) {
     return NextResponse.json({ error: "plan_not_found" }, { status: 404 });
   }
-
-  // If ensureFixturePlan returned a RenderPlan, coerce shape
-  const plan =
-    "plan_id" in planRecord
-      ? (planRecord as RenderPlan & { status?: string })
-      : {
-          plan_id: planIdParam as string,
-          core: planRecord.core,
-          meta: planRecord.meta,
-          status: planRecord.status,
-        };
 
   const status = plan.status ?? "approved";
   if (status === "pending_approval") {
