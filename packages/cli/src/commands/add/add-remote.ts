@@ -48,7 +48,7 @@ export async function addRemote(options: {
       config.remotes = {};
     }
 
-    const remoteUrl = gitRef ? `${baseUrl}#${gitRef}` : baseUrl;
+    const remoteUrl = gitRef ? { url: baseUrl, branch: gitRef } : baseUrl;
 
     const existingRemote = config.remotes[remoteKey as "personal" | "shared"];
     if (existingRemote && !Array.isArray(existingRemote)) {
@@ -57,7 +57,12 @@ export async function addRemote(options: {
           ? existingRemote
           : existingRemote.url;
 
-      if (existingUrl === remoteUrl || existingUrl === baseUrl) {
+      const isSameUrl =
+        existingUrl === baseUrl ||
+        (typeof remoteUrl === "string" && existingUrl === remoteUrl) ||
+        (typeof remoteUrl === "object" && existingUrl === remoteUrl.url);
+
+      if (isSameUrl) {
         spinner.stop("Remote already configured", 1);
 
         if (isTTY()) {
