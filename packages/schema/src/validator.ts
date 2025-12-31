@@ -15,6 +15,8 @@ const ajv = new Ajv({
   validateSchema: false, // Disable metaschema validation to avoid the missing schema error
 });
 addFormats(ajv);
+ajv.addKeyword("x-sensitive");
+ajv.addKeyword("x-redaction");
 
 const validateFn: ValidateFunction = ajv.compile(alignSchema);
 

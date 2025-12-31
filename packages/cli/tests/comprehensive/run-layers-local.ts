@@ -26,6 +26,7 @@ import {
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import { globSync } from "glob";
 
 interface LayerResult {
@@ -49,7 +50,7 @@ const layerNames = [
 ];
 
 // Get workspace root by going up from this file
-const currentDir = new URL(import.meta.url).pathname;
+const currentDir = fileURLToPath(import.meta.url);
 const cliDir = resolve(currentDir, "../../../");
 const workspaceRoot = resolve(cliDir, "../../");
 const cliPath = resolve(cliDir, "dist/index.js");

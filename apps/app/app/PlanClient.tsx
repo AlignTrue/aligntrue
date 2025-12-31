@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageRenderer } from "@aligntrue/ui-renderer";
 import { createPlatformRegistry } from "@aligntrue/ui-blocks/registry";
 import { platformShell } from "@aligntrue/ui-blocks/ui/shell";
-import type {
+import {
   ActionIntent,
   BlockAction,
   RenderPlan,
+  deterministicId,
 } from "@aligntrue/ui-contracts";
 import type { PlanWithMetadata } from "./types";
 
@@ -94,13 +95,21 @@ export function PlanClient({
 
   const handleAction = useCallback(
     async (intent: ActionIntent) => {
-      const key = intent.idempotency_key ?? crypto.randomUUID();
-      if (inFlightActions.has(key)) return;
-
       const blockDef = plan.core.blocks.find(
         (b) => b.block_instance_id === intent.block_instance_id,
       );
       if (!blockDef) return;
+
+      const nextSeq = clientSequence + 1;
+      const key =
+        intent.idempotency_key ??
+        deterministicId({
+          plan_id: plan.plan_id,
+          action_type: intent.action_type,
+          client_sequence: nextSeq,
+        });
+
+      if (inFlightActions.has(key)) return;
 
       setInFlightActions((prev) => {
         const next = new Set(prev);
@@ -108,7 +117,6 @@ export function PlanClient({
         return next;
       });
 
-      const nextSeq = clientSequence + 1;
       setClientSequence(nextSeq);
       localStorage.setItem(sequenceKey, String(nextSeq));
 

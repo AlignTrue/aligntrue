@@ -22,7 +22,13 @@ export class ActionDispatcher {
   private readonly handlers = new Map<string, RegisteredHandler[]>();
 
   constructor(ajvInstance?: Ajv) {
-    this.ajv = ajvInstance ?? new Ajv({ strict: true, allErrors: true });
+    if (ajvInstance) {
+      this.ajv = ajvInstance;
+    } else {
+      this.ajv = new Ajv({ strict: true, allErrors: true });
+      this.ajv.addKeyword("x-sensitive");
+      this.ajv.addKeyword("x-redaction");
+    }
   }
 
   registerFromManifest(

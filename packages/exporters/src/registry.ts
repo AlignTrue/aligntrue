@@ -29,6 +29,8 @@ export class ExporterRegistry {
   constructor() {
     this.ajv = new Ajv({ strict: true, allErrors: true });
     addFormats(this.ajv);
+    this.ajv.addKeyword("x-sensitive");
+    this.ajv.addKeyword("x-redaction");
 
     // Load and add manifest schema
     this.ajv.addSchema(manifestSchema, "manifest");

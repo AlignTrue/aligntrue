@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import type {
   CommandEnvelope,
@@ -11,7 +12,7 @@ import type { ActorRef } from "../src/envelopes/actor.js";
 const now = new Date().toISOString();
 const actor: ActorRef = { actor_id: "actor-1", actor_type: "agent" };
 
-const CORE_SRC = path.resolve(new URL("../src", import.meta.url).pathname);
+const CORE_SRC = fileURLToPath(new URL("../src", import.meta.url));
 
 function sortCanonical(events: EventEnvelope[]): EventEnvelope[] {
   return [...events].sort((a, b) => {

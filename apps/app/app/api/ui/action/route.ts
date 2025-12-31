@@ -43,6 +43,8 @@ interface UIStateContent {
 
 const PENDING_TIMEOUT_MS = 60_000;
 const ajv = new Ajv({ strict: true, allErrors: true });
+ajv.addKeyword("x-sensitive");
+ajv.addKeyword("x-redaction");
 const EMPTY_STATE: UIStateContent = {
   selections: {},
   form_values: {},

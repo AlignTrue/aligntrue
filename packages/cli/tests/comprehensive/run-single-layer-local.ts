@@ -12,6 +12,7 @@ import { spawnSync, type ExecException } from "node:child_process";
 import { mkdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import { globSync } from "glob";
 
 const layerNames = [
@@ -42,7 +43,7 @@ if (isNaN(layer) || layer < 1 || layer > 8) {
 }
 
 // Get workspace root
-const currentDir = new URL(import.meta.url).pathname;
+const currentDir = fileURLToPath(import.meta.url);
 const cliDir = resolve(currentDir, "../../../");
 const workspaceRoot = resolve(cliDir, "../../");
 const cliPath = resolve(cliDir, "dist/index.js");

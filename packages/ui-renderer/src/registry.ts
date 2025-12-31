@@ -59,5 +59,7 @@ function initAjv(existing?: Ajv): Ajv {
   if (existing) return existing;
   const ajv = new Ajv({ strict: true, allErrors: true });
   addFormats(ajv);
+  ajv.addKeyword("x-sensitive");
+  ajv.addKeyword("x-redaction");
   return ajv;
 }

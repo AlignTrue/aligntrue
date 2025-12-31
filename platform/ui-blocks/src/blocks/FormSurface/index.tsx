@@ -1,6 +1,5 @@
 import React from "react";
 import type { InjectedBlockProps } from "@aligntrue/ui-renderer";
-import { deterministicId } from "@aligntrue/ui-contracts";
 import { BlockForm } from "../../ui/BlockForm.js";
 import { BlockStack } from "../../ui/BlockStack.js";
 import { formSurfaceManifest } from "./manifest.js";
@@ -40,11 +39,6 @@ export function FormSurface({
       block_instance_id,
       action_type: "form.submitted",
       payload: { form_id, command_type: commandType, values },
-      idempotency_key: deterministicId({
-        block_instance_id,
-        action_type: "form.submitted",
-        payload: { form_id, command_type: commandType, values },
-      }),
     });
   };
 

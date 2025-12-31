@@ -63,6 +63,8 @@ const ajv = new Ajv({
   validateSchema: false, // Avoid metaschema validation issues
 });
 addFormats(ajv);
+ajv.addKeyword("x-sensitive");
+ajv.addKeyword("x-redaction");
 
 const validateSchemaFn: ValidateFunction = ajv.compile(configSchema);
 
