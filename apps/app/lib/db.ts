@@ -25,6 +25,65 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  -- Stored plan artifacts for deterministic serving
+  CREATE TABLE IF NOT EXISTS plan_artifacts (
+    plan_id TEXT PRIMARY KEY,
+    compiled_plan_json TEXT NOT NULL,
+    render_request_json TEXT NOT NULL,
+    render_plan_json TEXT NOT NULL,
+    render_request_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+
+  -- Receipt metadata (idempotent)
+  CREATE TABLE IF NOT EXISTS plan_receipts (
+    receipt_id TEXT PRIMARY KEY,
+    plan_id TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL UNIQUE,
+    mode TEXT NOT NULL,
+    workspace_id TEXT,
+    occurred_at TEXT NOT NULL,
+    ingested_at TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    model TEXT,
+    ai_failed INTEGER DEFAULT 0,
+    ai_failed_reason TEXT,
+    policy_id TEXT NOT NULL,
+    policy_version TEXT NOT NULL,
+    policy_hash TEXT NOT NULL,
+    policy_stage TEXT NOT NULL,
+    compiler_version TEXT NOT NULL,
+    context_hash TEXT NOT NULL,
+    layout_intent_core_hash TEXT,
+    render_request_hash TEXT NOT NULL,
+    causation_id TEXT,
+    causation_type TEXT,
+    actor_id TEXT NOT NULL,
+    actor_type TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS plan_served_events (
+    event_id TEXT PRIMARY KEY,
+    receipt_id TEXT NOT NULL,
+    plan_id TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL,
+    workspace_id TEXT,
+    served_at TEXT NOT NULL,
+    correlation_id TEXT NOT NULL,
+    actor_id TEXT NOT NULL,
+    actor_type TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS plan_events (
+    event_id TEXT PRIMARY KEY,
+    event_type TEXT NOT NULL,
+    plan_id TEXT,
+    idempotency_key TEXT,
+    receipt_id TEXT,
+    occurred_at TEXT NOT NULL,
+    details_json TEXT
+  );
+
   CREATE TABLE IF NOT EXISTS ui_state (
     plan_id TEXT NOT NULL,
     version INTEGER NOT NULL,
@@ -62,7 +121,160 @@ db.exec(`
     attempts INTEGER,
     created_at TEXT
   );
+
+  CREATE INDEX IF NOT EXISTS idx_receipts_plan_id ON plan_receipts (plan_id);
+  CREATE INDEX IF NOT EXISTS idx_plan_events_type ON plan_events (event_type);
+  CREATE INDEX IF NOT EXISTS idx_served_events_receipt ON plan_served_events (receipt_id);
 `);
+
+// Generic transaction helper for SQLite (serializes writers)
+export function runInTransaction<T>(fn: () => T): T {
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    const result = fn();
+    db.exec("COMMIT");
+    return result;
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+export function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    error instanceof Error && error.message.includes("UNIQUE constraint failed")
+  );
+}
+
+// Plan artifacts
+export interface PlanArtifact {
+  readonly plan_id: string;
+  readonly compiled_plan_json: string;
+  readonly render_request_json: string;
+  readonly render_plan_json: string;
+  readonly render_request_hash: string;
+  readonly created_at: string;
+}
+
+export function insertPlanArtifact(params: PlanArtifact): void {
+  db.prepare(
+    `INSERT OR IGNORE INTO plan_artifacts
+     (plan_id, compiled_plan_json, render_request_json, render_plan_json, render_request_hash, created_at)
+     VALUES (@plan_id, @compiled_plan_json, @render_request_json, @render_plan_json, @render_request_hash, @created_at)`,
+  ).run(params);
+}
+
+export function getPlanArtifact(plan_id: string): PlanArtifact | null {
+  const row = db
+    .prepare(
+      `SELECT plan_id, compiled_plan_json, render_request_json, render_plan_json, render_request_hash, created_at
+       FROM plan_artifacts WHERE plan_id = ?`,
+    )
+    .get(plan_id) as PlanArtifact | undefined;
+  return row ?? null;
+}
+
+// Plan receipts
+export interface DbPlanReceipt {
+  readonly receipt_id: string;
+  readonly plan_id: string;
+  readonly idempotency_key: string;
+  readonly mode: string;
+  readonly workspace_id: string | null;
+  readonly occurred_at: string;
+  readonly ingested_at: string;
+  readonly provider: string;
+  readonly model: string | null;
+  readonly ai_failed: number;
+  readonly ai_failed_reason: string | null;
+  readonly policy_id: string;
+  readonly policy_version: string;
+  readonly policy_hash: string;
+  readonly policy_stage: string;
+  readonly compiler_version: string;
+  readonly context_hash: string;
+  readonly layout_intent_core_hash: string | null;
+  readonly render_request_hash: string;
+  readonly causation_id: string | null;
+  readonly causation_type: string | null;
+  readonly actor_id: string;
+  readonly actor_type: string;
+}
+
+export function insertPlanReceipt(row: DbPlanReceipt): void {
+  db.prepare(
+    `INSERT INTO plan_receipts (
+      receipt_id, plan_id, idempotency_key, mode, workspace_id,
+      occurred_at, ingested_at, provider, model, ai_failed, ai_failed_reason,
+      policy_id, policy_version, policy_hash, policy_stage, compiler_version,
+      context_hash, layout_intent_core_hash, render_request_hash,
+      causation_id, causation_type, actor_id, actor_type
+    ) VALUES (
+      @receipt_id, @plan_id, @idempotency_key, @mode, @workspace_id,
+      @occurred_at, @ingested_at, @provider, @model, @ai_failed, @ai_failed_reason,
+      @policy_id, @policy_version, @policy_hash, @policy_stage, @compiler_version,
+      @context_hash, @layout_intent_core_hash, @render_request_hash,
+      @causation_id, @causation_type, @actor_id, @actor_type
+    )`,
+  ).run({
+    ...row,
+    workspace_id: row.workspace_id ?? null,
+    model: row.model ?? null,
+    ai_failed_reason: row.ai_failed_reason ?? null,
+    layout_intent_core_hash: row.layout_intent_core_hash ?? null,
+    causation_id: row.causation_id ?? null,
+    causation_type: row.causation_type ?? null,
+  });
+}
+
+export function getReceiptByIdempotencyKey(
+  idempotency_key: string,
+): DbPlanReceipt | null {
+  const row = db
+    .prepare(`SELECT * FROM plan_receipts WHERE idempotency_key = ?`)
+    .get(idempotency_key) as DbPlanReceipt | undefined;
+  return row ?? null;
+}
+
+// Plan served events
+export interface PlanServedEventRow {
+  readonly event_id: string;
+  readonly receipt_id: string;
+  readonly plan_id: string;
+  readonly idempotency_key: string;
+  readonly workspace_id: string | null;
+  readonly served_at: string;
+  readonly correlation_id: string;
+  readonly actor_id: string;
+  readonly actor_type: string;
+}
+
+export function insertPlanServedEvent(row: PlanServedEventRow): void {
+  db.prepare(
+    `INSERT INTO plan_served_events
+     (event_id, receipt_id, plan_id, idempotency_key, workspace_id, served_at, correlation_id, actor_id, actor_type)
+     VALUES (@event_id, @receipt_id, @plan_id, @idempotency_key, @workspace_id, @served_at, @correlation_id, @actor_id, @actor_type)`,
+  ).run({ ...row, workspace_id: row.workspace_id ?? null });
+}
+
+// Plan events (diagnostics)
+export interface PlanEventRow {
+  readonly event_id: string;
+  readonly event_type: string;
+  readonly plan_id: string | null;
+  readonly idempotency_key: string | null;
+  readonly receipt_id: string | null;
+  readonly occurred_at: string;
+  readonly details_json: string | null;
+}
+
+export function insertPlanEvent(row: PlanEventRow): void {
+  db.prepare(
+    `INSERT INTO plan_events
+     (event_id, event_type, plan_id, idempotency_key, receipt_id, occurred_at, details_json)
+     VALUES (@event_id, @event_type, @plan_id, @idempotency_key, @receipt_id, @occurred_at, @details_json)`,
+  ).run(row);
+}
 
 // Plans
 export function upsertPlan(params: {

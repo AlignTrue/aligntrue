@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import type { RenderPlan, RenderRequest } from "@aligntrue/ui-contracts";
-import { buildRenderPlan } from "@aligntrue/ui-renderer";
+import type { RenderPlan } from "@aligntrue/ui-contracts";
 import { createPlatformRegistry } from "@aligntrue/ui-blocks";
 import {
   getPlan,
@@ -12,6 +11,13 @@ import { ensureFixturePlan } from "@/lib/fixture-plan";
 import { getOrCreateActorId } from "@/lib/actor";
 import { buildUIContext } from "@/lib/ui-context";
 import { generateRenderPlan } from "@/lib/ai-generation";
+import { DEFAULT_POLICY } from "@/lib/default-policy";
+import {
+  CompilerError,
+  PlanArtifactMissingError,
+  getOrCreatePlanAndReceipt,
+  logServeEvent,
+} from "@/lib/plan-service";
 
 export const runtime = "nodejs";
 
@@ -89,6 +95,78 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ ...plan, actor_id: actor.actor_id });
+  }
+
+  if (mode === "compiled") {
+    const registry = createPlatformRegistry();
+    const manifests = Array.from(registry.blocks.values()).map(
+      (entry) => entry.manifest,
+    );
+    const allowed_manifest_hashes = new Set(
+      manifests.map((m) => m.manifest_hash),
+    );
+    const allowed_block_types = new Set(manifests.map((m) => m.block_id));
+
+    const intentParam = url.searchParams.get("intent");
+    const scopeParam = url.searchParams.get("scope");
+    const intent: "list" | "detail" | "create" | "dashboard" =
+      intentParam === "detail" ||
+      intentParam === "create" ||
+      intentParam === "dashboard"
+        ? intentParam
+        : "list";
+    const scope: "today" | "week" | "all" | "search" =
+      scopeParam === "week" || scopeParam === "all" || scopeParam === "search"
+        ? scopeParam
+        : "today";
+
+    const context = await buildUIContext({ intent, scope });
+    const correlation_id = crypto.randomUUID();
+
+    try {
+      const result = getOrCreatePlanAndReceipt({
+        context,
+        policy: {
+          policy_id: DEFAULT_POLICY.policy_id,
+          version: DEFAULT_POLICY.version,
+          policy_hash: DEFAULT_POLICY.policy_hash,
+          stage: "approved",
+        },
+        mode: "deterministic",
+        actor,
+        workspace_id: undefined,
+        allowed_manifest_hashes,
+        allowed_block_types,
+        registry,
+      });
+
+      logServeEvent({
+        receipt: result.receipt,
+        workspace_id: undefined,
+        correlation_id,
+        actor,
+      });
+
+      return NextResponse.json({
+        ...result.plan,
+        actor_id: actor.actor_id,
+        receipt_id: result.receipt.receipt_id,
+      });
+    } catch (error) {
+      if (error instanceof PlanArtifactMissingError) {
+        return NextResponse.json(
+          { error: "plan_artifact_missing", plan_id: error.planId },
+          { status: 500 },
+        );
+      }
+      if (error instanceof CompilerError) {
+        return NextResponse.json(
+          { error: "plan_compile_failed", message: error.message },
+          { status: 500 },
+        );
+      }
+      throw error;
+    }
   }
 
   const plan = planIdParam

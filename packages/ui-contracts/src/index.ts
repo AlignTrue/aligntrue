@@ -12,3 +12,7 @@ export * from "./json-schema.js";
 export * from "./canonical.js";
 export * from "./identity.js";
 export * from "./hash.js";
+export * from "./block-slot.js";
+export * from "./compiled-plan.js";
+export * from "./layout-intent.js";
+export * from "./plan-receipt.js";
