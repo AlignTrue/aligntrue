@@ -35,13 +35,18 @@ export function PlanClient({
   });
   const sequenceRef = useRef(clientSequence);
 
+  // Keep the ref in sync with the state to ensure handleAction (which is memoized)
+  // always uses the latest sequence number without needing to be re-created.
+  useEffect(() => {
+    sequenceRef.current = clientSequence;
+  }, [clientSequence]);
+
   useEffect(() => {
     if (typeof window === "undefined" || !plan?.plan_id) return;
     const stored = localStorage.getItem(sequenceKey);
     if (stored) {
       const seq = parseInt(stored, 10);
       setClientSequence(seq);
-      sequenceRef.current = seq;
     }
   }, [plan?.plan_id, sequenceKey]);
 
