@@ -233,6 +233,10 @@ export async function POST(req: Request) {
             errors_json: ["pending_timeout"],
           },
         );
+        return {
+          error: "action_timed_out",
+          message: "Previous action timed out",
+        };
       } else {
         return { error: "action_in_flight" };
       }
@@ -368,6 +372,7 @@ export async function POST(req: Request) {
   return NextResponse.json({
     status: "accepted" as ActionStatus,
     state_version: nextVersion,
-    dispatched: false,
+    dispatched: !uiMutated,
+    triggers_plan_regen: actionSchema.schema.triggers?.plan_regen ?? false,
   });
 }
