@@ -15,7 +15,32 @@ const DEFAULT_CONTENT: PolicyContent["surfaces_by_intent"] = {
   notes: ["notes_list", "create_note_form"],
 };
 
-type ApiPolicy = {
+export function computeToggledPolicy(
+  prev: ApiPolicy | null,
+  intent: string,
+  surface: string,
+): ApiPolicy {
+  // Merge defaults with current policy so we never drop default surfaces
+  const merged = prev?.surfaces_by_intent
+    ? { ...DEFAULT_CONTENT, ...prev.surfaces_by_intent }
+    : DEFAULT_CONTENT;
+  // eslint-disable-next-line security/detect-object-injection
+  const existing = new Set(merged[intent] ?? []);
+  if (existing.has(surface)) {
+    existing.delete(surface);
+  } else {
+    existing.add(surface);
+  }
+  return {
+    policy_id: prev?.policy_id ?? null,
+    surfaces_by_intent: {
+      ...merged,
+      [intent]: Array.from(existing),
+    },
+  };
+}
+
+export type ApiPolicy = {
   policy_id: string | null;
   surfaces_by_intent: Record<string, string[]>;
 };
@@ -46,23 +71,7 @@ export default function SettingsPage() {
   }, [policy]);
 
   function toggle(intent: string, surface: string) {
-    setPolicy((prev) => {
-      const current = prev?.surfaces_by_intent ?? surfaces;
-      // eslint-disable-next-line security/detect-object-injection
-      const existing = new Set(current[intent] ?? []);
-      if (existing.has(surface)) {
-        existing.delete(surface);
-      } else {
-        existing.add(surface);
-      }
-      return {
-        policy_id: prev?.policy_id ?? null,
-        surfaces_by_intent: {
-          ...current,
-          [intent]: Array.from(existing),
-        },
-      };
-    });
+    setPolicy((prev) => computeToggledPolicy(prev, intent, surface));
   }
 
   async function handleSave() {
@@ -79,8 +88,8 @@ export default function SettingsPage() {
         }),
       });
       if (res.ok) {
-        const json = (await res.json()) as { policy_id: string };
-        setMessage(`Saved policy ${json.policy_id}`);
+        await res.json();
+        setMessage("Preferences saved");
       } else {
         setMessage("Failed to save policy");
       }

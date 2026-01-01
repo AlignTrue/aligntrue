@@ -14,7 +14,7 @@ async function getNotesView() {
   await getHost();
   const rebuilt = await Projections.rebuildOne(
     PackNotes.NotesProjectionDef,
-    getEventStore(PackNotes.DEFAULT_NOTES_EVENTS_PATH),
+    getEventStore(),
   );
   return PackNotes.buildNotesProjectionFromState(
     rebuilt.data as PackNotes.NotesProjectionState,

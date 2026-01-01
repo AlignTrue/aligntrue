@@ -19,7 +19,10 @@ export async function getHost(): Promise<Host> {
   return hostInstance;
 }
 
-export function getEventStore(_path?: string): Storage.JsonlEventStore {
+export function getEventStore(path?: string): Storage.JsonlEventStore {
+  if (path) {
+    return new Storage.JsonlEventStore(path);
+  }
   if (!hostInstance) {
     throw new Error("Host not initialized. Call getHost() first.");
   }
