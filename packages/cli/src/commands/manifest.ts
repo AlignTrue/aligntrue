@@ -30,8 +30,6 @@ import {
   remotes,
   uninstall,
 } from "./index.js";
-import { OPS_CORE_ENABLED } from "@aligntrue/ops-core";
-import * as ops from "@aligntrue/ops-cli";
 
 /**
  * Command category for grouping in help output
@@ -219,73 +217,7 @@ const SYNC_COMMANDS: CommandMeta[] = [
   },
 ];
 
-const OPS_COMMANDS: CommandMeta[] = OPS_CORE_ENABLED
-  ? [
-      {
-        name: "work",
-        summary: "Manage work ledger (create/show/ready/block/complete/dep)",
-        category: "diagnostics",
-        handler: ops.work.work,
-      },
-      {
-        name: "inbox",
-        summary:
-          "Manage suggestion inbox (generate/list/approve/reject/snooze)",
-        category: "diagnostics",
-        handler: ops.inbox.inbox,
-      },
-      {
-        name: "plan",
-        summary: "Create plans (daily)",
-        category: "diagnostics",
-        handler: ops.plan.plan,
-      },
-      {
-        name: "timeline",
-        summary: "List timeline items (calendar ingest v0, read-only)",
-        category: "diagnostics",
-        handler: ops.timeline.timeline,
-      },
-      {
-        name: "contacts",
-        summary: "List contacts derived from calendar events (read-only)",
-        category: "diagnostics",
-        handler: ops.contacts.contacts,
-      },
-      {
-        name: "convert",
-        summary: "Convert email to task or note (optionally label+archive)",
-        category: "diagnostics",
-        handler: ops.convert.convert,
-      },
-      {
-        name: "task",
-        summary: "Manage tasks (create/list/triage/complete/reopen)",
-        category: "diagnostics",
-        handler: ops.tasks.task,
-      },
-      {
-        name: "note",
-        summary: "Manage notes (create/edit/show/list)",
-        category: "diagnostics",
-        handler: ops.notes.note,
-      },
-      {
-        name: "run",
-        summary: "Manage execution runs (start/show/step)",
-        category: "diagnostics",
-        handler: ops.run.run,
-      },
-      {
-        name: "data",
-        summary: "Sync data from Calendar/Gmail (calendar, gmail, all)",
-        category: "diagnostics",
-        handler: ops.sync.sync,
-      },
-    ]
-  : [];
-
-export const COMMANDS: CommandMeta[] = [...SYNC_COMMANDS, ...OPS_COMMANDS];
+export const COMMANDS: CommandMeta[] = SYNC_COMMANDS;
 
 /**
  * Category display metadata
