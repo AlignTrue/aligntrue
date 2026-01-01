@@ -17,6 +17,7 @@ import {
   validatePackEventType,
   Identity,
   Contracts,
+  handlePolicySetCommand,
 } from "@aligntrue/ops-core";
 
 export interface RuntimeLoadedPack {
@@ -155,6 +156,19 @@ export async function createPackRuntime(
         status: "already_processing",
         reason: "Command in flight",
       };
+    }
+
+    if (command.command_type === Contracts.POLICY_COMMAND_TYPES.Set) {
+      return handlePolicySetCommand({
+        command: command as Contracts.CommandEnvelope<
+          (typeof Contracts.POLICY_COMMAND_TYPES)["Set"],
+          Contracts.PolicySetPayload
+        >,
+        eventStore: opts.eventStore,
+        commandLog: opts.commandLog,
+        scopeKey,
+        startResult: start,
+      });
     }
 
     const pack = getPackForCommand(command.command_type);

@@ -11,8 +11,7 @@ export function Nav() {
         <div className="flex gap-4 text-sm">
           <Link href="/tasks">Tasks</Link>
           <Link href="/notes">Notes</Link>
-          <Link href="/review">Review</Link>
-          <Link href="/timeline">Timeline</Link>
+          <Link href="/settings">Settings</Link>
         </div>
       </div>
     </nav>

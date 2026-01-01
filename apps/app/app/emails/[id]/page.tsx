@@ -1,12 +1,11 @@
 import { notFound, redirect } from "next/navigation";
-import {
-  OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
-  Projections,
-} from "@aligntrue/ops-core";
+import { Projections } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { getBaseUrl } from "@/lib/utils";
+
+const GMAIL_ENABLED = process.env.NEXT_PUBLIC_CONNECTOR_GMAIL_ENABLED === "1";
 
 const APP_BASE = getBaseUrl();
 const LABEL_ID = process.env["GMAIL_MUTATION_LABEL_ID"];
@@ -79,7 +78,7 @@ export default async function EmailDetailPage({
 }: {
   params: { id: string };
 }) {
-  if (!OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
+  if (!GMAIL_ENABLED) {
     notFound();
   }
 

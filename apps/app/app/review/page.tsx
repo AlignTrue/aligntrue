@@ -1,13 +1,13 @@
-import {
-  OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
-  OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
-  Projections,
-} from "@aligntrue/ops-core";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { notFound } from "next/navigation";
+import { Projections } from "@aligntrue/ops-core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { ReviewPageClient } from "./ReviewPageClient";
 
 export const dynamic = "force-dynamic";
+
+const GMAIL_ENABLED = process.env.NEXT_PUBLIC_CONNECTOR_GMAIL_ENABLED === "1";
+const CALENDAR_ENABLED =
+  process.env.NEXT_PUBLIC_CONNECTOR_GOOGLE_CALENDAR_ENABLED === "1";
 
 async function loadConversations() {
   const rebuilt = await Projections.rebuildOne(
@@ -90,20 +90,8 @@ function toMs(value?: string | null): number | null {
 }
 
 export default async function ReviewPage() {
-  if (!OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
-    return (
-      <div className="mx-auto max-w-5xl space-y-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Gmail connector is disabled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            Set OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED=1 to enable the Review
-            console.
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!GMAIL_ENABLED) {
+    notFound();
   }
 
   await getHost();
@@ -119,7 +107,7 @@ export default async function ReviewPage() {
       conversations={conversations}
       receiptsProjection={receiptsProjection}
       availability={availability}
-      calendarEnabled={OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED}
+      calendarEnabled={CALENDAR_ENABLED}
     />
   );
 }

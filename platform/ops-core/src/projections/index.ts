@@ -95,6 +95,11 @@ export {
   type FreeWindowsProjection,
 } from "./free-windows.js";
 export {
+  ActivePolicyProjectionDef,
+  buildActivePolicyProjectionFromState,
+} from "./policy.js";
+export type { ActivePolicyProjection } from "./policy.js";
+export {
   ReceiptsProjectionDef,
   buildReceiptsProjectionFromState,
   getReceiptsForEntity,

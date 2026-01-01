@@ -12,5 +12,6 @@ export * from "./tasks.js";
 export * from "./notes.js";
 export * from "./convert.js";
 export * from "./suggestions.js";
+export * from "./policy.js";
 export * from "./handler-registry.js";
 export type { ConversionMeta } from "../types/conversion.js";

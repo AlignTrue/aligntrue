@@ -1,12 +1,13 @@
-import {
-  OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
-  OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
-  Projections,
-} from "@aligntrue/ops-core";
+import { notFound } from "next/navigation";
+import { Projections } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { formatTimestamp } from "@/lib/format";
+
+const CALENDAR_ENABLED =
+  process.env.NEXT_PUBLIC_CONNECTOR_GOOGLE_CALENDAR_ENABLED === "1";
+const GMAIL_ENABLED = process.env.NEXT_PUBLIC_CONNECTOR_GMAIL_ENABLED === "1";
 
 type TimelineItem = Projections.TimelineProjection["items"][number];
 
@@ -22,23 +23,8 @@ async function getTimeline(): Promise<Projections.TimelineProjection> {
 }
 
 export default async function TimelinePage() {
-  if (
-    !OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED &&
-    !OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED
-  ) {
-    return (
-      <div className="mx-auto max-w-4xl space-y-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Timeline connectors are disabled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            Set OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED=1 or
-            OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED=1.
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!CALENDAR_ENABLED && !GMAIL_ENABLED) {
+    notFound();
   }
 
   const timeline = await getTimeline();

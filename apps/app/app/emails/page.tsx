@@ -1,12 +1,12 @@
 import { revalidatePath } from "next/cache";
-import {
-  OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
-  Projections,
-} from "@aligntrue/ops-core";
+import { notFound } from "next/navigation";
+import { Projections } from "@aligntrue/ops-core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { getBaseUrl } from "@/lib/utils";
+
+const GMAIL_ENABLED = process.env.NEXT_PUBLIC_CONNECTOR_GMAIL_ENABLED === "1";
 
 async function getEmailTimeline() {
   await getHost();
@@ -69,19 +69,8 @@ async function convertToNoteAction(formData: FormData) {
 }
 
 export default async function EmailsPage() {
-  if (!OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED) {
-    return (
-      <div className="mx-auto max-w-4xl space-y-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Gmail connector is disabled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            Set OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED=1 to enable email timeline.
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!GMAIL_ENABLED) {
+    notFound();
   }
 
   const emails = await getEmailTimeline();
@@ -124,7 +113,7 @@ export default async function EmailsPage() {
                   name="thread_id"
                   value={email.thread_id ?? ""}
                 />
-                {OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED ? (
+                {GMAIL_ENABLED ? (
                   <label className="flex items-center gap-2 text-sm text-muted-foreground">
                     <input type="checkbox" name="mutation" />
                     Also label + archive

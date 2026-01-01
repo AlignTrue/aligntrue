@@ -14,6 +14,7 @@ import {
   buildWorkItemsProjectionFromState,
   type WorkItemsProjectionState,
 } from "./work-items.js";
+import { ActivePolicyProjectionDef } from "./policy.js";
 import {
   ReadyQueueProjectionDef,
   buildReadyQueueProjectionFromState,
@@ -106,7 +107,8 @@ export async function rebuildAll(
 defaultRegistry
   .register(WorkItemsProjectionDef)
   .register(ReadyQueueProjectionDef)
-  .register(RunsProjectionDef);
+  .register(RunsProjectionDef)
+  .register(ActivePolicyProjectionDef);
 
 export interface WorkLedgerProjections {
   workItems: ReturnType<typeof buildWorkItemsProjectionFromState>;

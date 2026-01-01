@@ -42,6 +42,7 @@ export * as Identity from "./identity/index.js";
 export * as Storage from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
+export { handlePolicySetCommand } from "./handlers/policy.js";
 export * as Projections from "./projections/index.js";
 export * as EntityRef from "./entity-ref.js";
 export * as Artifacts from "./artifacts/index.js";

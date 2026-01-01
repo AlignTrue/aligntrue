@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import type { RenderPlan, RenderRequest } from "@aligntrue/ui-contracts";
 import { buildRenderPlan } from "@aligntrue/ui-renderer";
 import { createPlatformRegistry } from "@aligntrue/ui-blocks/registry";
@@ -19,6 +20,8 @@ import {
   getOrCreatePlanAndReceipt,
   logServeEvent,
 } from "@/lib/plan-service";
+import { Projections, hashCanonical } from "@aligntrue/ops-core";
+import { getEventStore, getHost } from "@/lib/ops-services";
 
 export const runtime = "nodejs";
 
@@ -36,6 +39,7 @@ export async function GET(req: Request) {
   const mode = url.searchParams.get("mode") ?? "fixture";
   const planIdParam = url.searchParams.get("plan_id");
   const actor = await getOrCreateActorId();
+  const policy = await loadPolicyForActor(actor.actor_id);
 
   if (mode === "ai") {
     const registry = createPlatformRegistry();
@@ -129,7 +133,7 @@ export async function GET(req: Request) {
     try {
       const result = getOrCreatePlanAndReceipt({
         context,
-        policy: DEFAULT_POLICY,
+        policy,
         mode: "deterministic",
         actor,
         workspace_id: undefined,
@@ -227,4 +231,33 @@ export async function POST(req: Request) {
   });
 
   return NextResponse.json({ ...plan, actor_id: actor.actor_id, plan_id });
+}
+
+async function loadPolicyForActor(userId: string) {
+  await getHost();
+  const rebuilt = await Projections.rebuildOne(
+    Projections.ActivePolicyProjectionDef,
+    getEventStore(),
+  );
+  const state = Projections.buildActivePolicyProjectionFromState(rebuilt.data);
+  const active = state.by_user.get(userId);
+  if (!active) return DEFAULT_POLICY;
+
+  const base = {
+    ...DEFAULT_POLICY,
+    required_surfaces_by_intent: active.surfaces_by_intent,
+  };
+  const policy_hash = hashCanonical({
+    policy_id: active.active_policy_id,
+    version: base.version,
+    stage: base.stage,
+    required_surfaces_by_intent: active.surfaces_by_intent,
+    default_layout: base.default_layout,
+    surface_to_block: base.surface_to_block,
+  });
+  return {
+    ...base,
+    policy_id: active.active_policy_id,
+    policy_hash,
+  };
 }
