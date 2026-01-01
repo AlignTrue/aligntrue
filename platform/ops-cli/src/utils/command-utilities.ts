@@ -1,4 +1,18 @@
-import { AlignTrueError } from "@aligntrue/core";
+/**
+ * Error class for ops CLI with structured metadata
+ */
+export class OpsCliError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly exitCode: number,
+    public readonly hint?: string,
+    public readonly nextSteps?: string[],
+  ) {
+    super(message);
+    this.name = "OpsCliError";
+  }
+}
 
 /**
  * Minimal exit helper for ops CLI commands.
@@ -13,7 +27,7 @@ export function exitWithError(
   const resolvedMessage =
     message || (exitCode === 2 ? "Invalid command usage" : "Command failed");
 
-  const error = new AlignTrueError(
+  const error = new OpsCliError(
     resolvedMessage,
     exitCode === 2 ? "CLI_USAGE_ERROR" : "CLI_COMMAND_ERROR",
     exitCode,

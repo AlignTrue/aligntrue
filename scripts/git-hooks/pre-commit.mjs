@@ -55,47 +55,9 @@ async function main() {
     process.exit(1);
   }
 
-  // Auto-regenerate repo files if docs source changed
-  s.start("Checking for docs updates...");
-  try {
-    const docsSources = [
-      "apps/docs/content/index.mdx",
-      "apps/docs/content/07-contributing/creating-aligns.md",
-      "apps/docs/content/07-policies/security.md",
-    ];
-    const devDocsPattern = /^apps\/docs\/content\/06-development\/.+\.mdx?$/;
-
-    const sourceDocsChanged = stagedFiles.some(
-      (f) => docsSources.includes(f) || devDocsPattern.test(f),
-    );
-
-    if (sourceDocsChanged) {
-      s.stop("Regenerating repo files from docs...");
-      try {
-        execSync("pnpm generate:repo-files", { stdio: "pipe" });
-
-        // Stage the regenerated files
-        execSync(
-          "git add README.md CONTRIBUTING.md DEVELOPMENT.md SECURITY.md",
-          {
-            stdio: "pipe",
-          },
-        );
-
-        s.start("Docs check");
-        s.stop("✅ Repo files regenerated and staged.");
-      } catch (genError) {
-        s.stop("❌ Regeneration failed.", 1);
-        console.error("Run manually: pnpm generate:repo-files");
-        process.exit(1);
-      }
-    } else {
-      s.stop("✅ Docs check complete.");
-    }
-  } catch (error) {
-    // Non-fatal: continue with commit if this check fails
-    s.stop("⚠️  Docs check skipped.");
-  }
+  // Note: Docs site moved to aligntrue-sync repo
+  // Docs checks disabled in this platform repo
+  clack.log.info("✅ Docs check skipped (docs in sync repo)");
 
   const packageJsonChanged = stagedFiles.some((file) =>
     file.endsWith("package.json"),
@@ -260,58 +222,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Validate documentation accuracy if docs files changed
-  const docsChanged = stagedFiles.some(
-    (f) =>
-      f.startsWith("apps/docs/content/") ||
-      f === "package.json" ||
-      f.startsWith("packages/cli/src/index.ts") ||
-      f.startsWith("packages/exporters/src/") ||
-      f.startsWith("packages/cli/tests/integration/performance.test.ts"),
-  );
-
-  if (docsChanged) {
-    s.start("Validating documentation accuracy...");
-    try {
-      execSync("node scripts/validate-docs-accuracy.mjs", { stdio: "pipe" });
-      s.stop("✅ Documentation accuracy validated.");
-    } catch (error) {
-      s.stop("❌ Documentation validation failed.", 1);
-      console.error("");
-      clack.log.error("Documentation accuracy validation failed.");
-      console.error("");
-      console.error(
-        "📚 Documentation must match implementation (code is source of truth):",
-      );
-      console.error("   • Node.js version requirements");
-      console.error("   • CLI command counts");
-      console.error("   • Exporter counts");
-      console.error("   • Performance threshold claims");
-      console.error("");
-      console.error(
-        "🔍 Re-run validation: node scripts/validate-docs-accuracy.mjs",
-      );
-      console.error("");
-      clack.outro("💡 Update docs to match code and re-stage the files.");
-      process.exit(1);
-    }
-  }
-
-  // Link validation (docs + CLI messages)
-  s.start("Checking documentation links...");
-  try {
-    execSync("pnpm validate:docs-links", { stdio: "pipe" });
-    s.stop("✅ Documentation links validated.");
-  } catch (error) {
-    s.stop("❌ Link validation failed.", 1);
-    console.error("");
-    clack.log.error("Broken documentation links detected.");
-    console.error("");
-    console.error("🔍 Re-run: pnpm validate:docs-links");
-    console.error("");
-    clack.outro("Fix the links above and re-stage the files.");
-    process.exit(1);
-  }
+  // Note: Docs validation moved to aligntrue-sync repo
 
   clack.outro("✅ Pre-commit checks passed");
   process.exit(0);

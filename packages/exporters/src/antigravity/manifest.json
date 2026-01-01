@@ -1,9 +1,0 @@
-{
-  "name": "antigravity",
-  "version": "1.0.0",
-  "description": "Export AlignTrue rules to Antigravity .agent/rules/*.md format",
-  "outputs": [".agent/rules/*.md"],
-  "handler": "./index.js",
-  "license": "MIT",
-  "fidelityNotes": ["Session metadata stored in vendor.antigravity namespace"]
-}

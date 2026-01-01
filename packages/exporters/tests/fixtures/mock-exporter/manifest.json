@@ -1,8 +1,0 @@
-{
-  "name": "mock-exporter",
-  "version": "2.0.0",
-  "description": "Mock exporter for handler loading tests",
-  "outputs": [".mock/*.txt"],
-  "handler": "./index.ts",
-  "license": "MIT"
-}

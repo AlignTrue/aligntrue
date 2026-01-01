@@ -1,7 +1,0 @@
-# AlignTrue: Prevent duplicate context
-# Managed by AlignTrue to prevent duplicate agent context
-# Edit .aligntrue/config.yaml to change this behavior
-
-AGENTS.md
-
-# AlignTrue: End duplicate prevention

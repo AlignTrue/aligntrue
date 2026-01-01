@@ -13,7 +13,6 @@
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
-    "@aligntrue/core": "workspace:*",
     "@aligntrue/ops-core": "workspace:*",
     "@aligntrue/ops-host": "workspace:*",
     "@aligntrue/ops-shared-google-common": "workspace:*",

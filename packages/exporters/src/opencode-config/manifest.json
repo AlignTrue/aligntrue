@@ -1,9 +1,0 @@
-{
-  "name": "opencode-config",
-  "version": "1.0.0",
-  "description": "Export AlignTrue rules to opencode opencode.json configuration format",
-  "outputs": ["opencode.json"],
-  "handler": "./index.js",
-  "license": "MIT",
-  "fidelityNotes": ["Complements AGENTS.md exporter"]
-}

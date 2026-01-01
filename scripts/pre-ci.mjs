@@ -22,10 +22,6 @@ const steps = [
     cmd: "TURBO_CONCURRENCY=1 pnpm test",
     stdio: "inherit",
   },
-  {
-    name: "Validate bundle sizes",
-    cmd: "node scripts/validate-bundle-sizes.mjs",
-  },
 ];
 
 console.log("🔍 Running pre-CI validation...");

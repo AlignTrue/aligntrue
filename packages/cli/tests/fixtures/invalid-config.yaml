@@ -1,7 +1,0 @@
-# Invalid YAML syntax
-exporters:
-  - cursor
-invalid: yaml: syntax:
-  nested: [unclosed
-
-

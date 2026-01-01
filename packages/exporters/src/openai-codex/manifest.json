@@ -1,9 +1,0 @@
-{
-  "name": "openai-codex",
-  "version": "1.0.0",
-  "description": "Export AlignTrue rules to AGENTS.md format (OpenAI Codex CLI compatible)",
-  "outputs": ["AGENTS.md"],
-  "handler": "./index.js",
-  "license": "MIT",
-  "fidelityNotes": ["Uses universal AGENTS.md format"]
-}

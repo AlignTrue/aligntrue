@@ -1,8 +1,0 @@
-id: test-align
-version: 1.0.0
-spec_version: "1"
-sections:
-  - heading: Test Rule
-    level: 2
-    content: Test rule for testing
-    fingerprint: test-rule

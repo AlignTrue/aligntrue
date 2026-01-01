@@ -1,5 +1,0 @@
-{
-  "version": "1.0.0",
-  "description": "Missing name field",
-  "outputs": [".test/*.txt"]
-}

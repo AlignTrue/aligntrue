@@ -18,8 +18,14 @@ import {
   constants,
 } from "fs";
 import { dirname, join, basename } from "path";
-import { randomBytes } from "crypto";
-import { computeHash } from "@aligntrue/schema";
+import { createHash, randomBytes } from "crypto";
+
+/**
+ * Compute SHA-256 hash of content
+ */
+function computeHash(content: string): string {
+  return createHash("sha256").update(content, "utf8").digest("hex");
+}
 
 /**
  * Compute SHA-256 checksum of a file

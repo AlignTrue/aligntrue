@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "child_process";
 
+// Note: Docs-related validators moved to aligntrue-sync repo
 const validators = [
   {
     name: "Workspace protocol",
@@ -10,22 +11,12 @@ const validators = [
   {
     name: "UI tsconfig",
     script: "validate-ui-tsconfig.mjs",
-    hint: "Check apps/docs and packages/ui tsconfig paths for mismatches.",
+    hint: "Check apps/app and packages/ui tsconfig paths for mismatches.",
   },
   {
     name: "Transpile packages",
     script: "validate-transpile-packages.mjs",
     hint: "Verify pnpm-workspace and turbo filters allow building packages.",
-  },
-  {
-    name: "No duplicate docs",
-    script: "validate-no-duplicate-docs.mjs",
-    hint: "Ensure docs filenames are unique and not copied between sections.",
-  },
-  {
-    name: "Documentation accuracy",
-    script: "validate-docs-accuracy.mjs",
-    hint: "Update docs to match CLI command counts, Node version, and exporter totals.",
   },
 ];
 

@@ -1,9 +1,0 @@
-{
-  "name": "qwen-config",
-  "version": "1.0.0",
-  "description": "Export AlignTrue rules to Qwen Code .qwen/settings.json configuration format",
-  "outputs": [".qwen/settings.json"],
-  "handler": "./index.js",
-  "license": "MIT",
-  "fidelityNotes": ["Complements AGENTS.md exporter"]
-}
