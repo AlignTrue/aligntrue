@@ -18,7 +18,7 @@ export interface TasksProjectionResult {
 
 const TASKS_PACK = {
   name: "@aligntrue/pack-tasks",
-  version: "0.0.1",
+  version: "0.9.3",
   source: "workspace",
 } as const;
 

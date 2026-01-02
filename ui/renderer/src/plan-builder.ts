@@ -28,7 +28,7 @@ export function buildRenderPlan(
   );
 
   const input_refs = normalizeInputRefs(request.input_refs);
-  const policy_version = opts.policy_version ?? "ui@0.0.1";
+  const policy_version = opts.policy_version ?? "ui@0.9.3";
 
   const core: PlanCore = {
     blocks: stableSortBlocks(blocks),

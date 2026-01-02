@@ -9,7 +9,7 @@ const packHost = createPackHost<
 >({
   pack: {
     name: "@aligntrue/pack-notes",
-    version: "0.0.1",
+    version: "0.9.3",
     source: "workspace",
   },
   capabilities: Object.values(PackNotes.NOTE_COMMAND_TYPES),

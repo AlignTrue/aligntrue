@@ -26,7 +26,7 @@ function buildTestContext(): UIContext {
 function buildTestPolicy(): CompilerPolicy {
   return {
     policy_id: "test-policy",
-    version: "0.0.1",
+    version: "0.9.3",
     policy_hash: "test-policy-hash",
     required_surfaces_by_intent: {
       list: ["tasks_list", "notes_list"],
@@ -35,14 +35,14 @@ function buildTestPolicy(): CompilerPolicy {
     surface_to_block: {
       tasks_list: {
         block_type: "block.TaskList",
-        version: "0.0.1",
+        version: "0.9.3",
         manifest_hash: "tasklist-hash",
         slot: "main",
         default_props: { title: "Tasks" },
       },
       notes_list: {
         block_type: "block.NoteList",
-        version: "0.0.1",
+        version: "0.9.3",
         manifest_hash: "notelist-hash",
         slot: "main",
         default_props: { title: "Notes" },
@@ -61,7 +61,7 @@ function buildAllowlists() {
 function buildPolicyWithInvalidSlot(): CompilerPolicy {
   return {
     policy_id: "policy-invalid-slot",
-    version: "0.0.1",
+    version: "0.9.3",
     policy_hash: "policy-invalid-slot-hash",
     required_surfaces_by_intent: {
       list: ["tasks_list"],
@@ -70,7 +70,7 @@ function buildPolicyWithInvalidSlot(): CompilerPolicy {
     surface_to_block: {
       tasks_list: {
         block_type: "block.TaskList",
-        version: "0.0.1",
+        version: "0.9.3",
         manifest_hash: "tasklist-hash",
         // Invalid slot on purpose
         slot: "invalid" as "main",
@@ -83,7 +83,7 @@ function buildPolicyWithInvalidSlot(): CompilerPolicy {
 function buildPolicyWithMissingSurface(): CompilerPolicy {
   return {
     policy_id: "policy-missing-surface",
-    version: "0.0.1",
+    version: "0.9.3",
     policy_hash: "policy-missing-surface-hash",
     required_surfaces_by_intent: {
       list: ["tasks_list", "notes_list"],
@@ -93,7 +93,7 @@ function buildPolicyWithMissingSurface(): CompilerPolicy {
       // notes_list mapping intentionally omitted
       tasks_list: {
         block_type: "block.TaskList",
-        version: "0.0.1",
+        version: "0.9.3",
         manifest_hash: "tasklist-hash",
         slot: "main",
         default_props: { title: "Tasks" },
@@ -118,7 +118,7 @@ describe("compilePlan determinism", () => {
     const params = {
       context_hash: "test-hash",
       policy_id: "ui-default",
-      policy_version: "0.0.1",
+      policy_version: "0.9.3",
       policy_hash: "policy-hash",
       layout_intent_core_hash: null,
       mode: "deterministic" as const,

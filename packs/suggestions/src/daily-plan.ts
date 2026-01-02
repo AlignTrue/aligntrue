@@ -37,7 +37,7 @@ export async function buildAndStoreDailyPlan(
   }
 
   const created_at = input.created_at ?? new Date().toISOString();
-  const policy_version = input.policy_version ?? "suggestions@0.0.1";
+  const policy_version = input.policy_version ?? "suggestions@0.9.3";
 
   const query = Artifacts.buildQueryArtifact({
     referenced_entities: ["task"],

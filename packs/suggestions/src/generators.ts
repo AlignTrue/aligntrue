@@ -86,7 +86,7 @@ export async function generateTaskTriageSuggestions(
 
   const now = input.now ?? new Date().toISOString();
   const correlation_id = input.correlation_id ?? Identity.randomId();
-  const policy_version = input.policy_version ?? "suggestions@0.0.1";
+  const policy_version = input.policy_version ?? "suggestions@0.9.3";
   const window_days = input.window_days ?? 7;
   const cutoff = addDays(now, window_days);
 
@@ -168,7 +168,7 @@ export async function generateNoteHygieneSuggestions(
 
   const now = input.now ?? new Date().toISOString();
   const correlation_id = input.correlation_id ?? Identity.randomId();
-  const policy_version = input.policy_version ?? "suggestions@0.0.1";
+  const policy_version = input.policy_version ?? "suggestions@0.9.3";
 
   const artifacts: Artifacts.DerivedArtifact[] = [];
   const events: SuggestionGeneratedEvent[] = [];

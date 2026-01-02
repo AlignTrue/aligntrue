@@ -132,7 +132,7 @@ export async function buildWeeklyPlan(
   const derived = Artifacts.buildDerivedArtifact({
     input_query_ids: [query.artifact_id],
     input_hashes: [query.content_hash, input.tasksProjectionHash],
-    policy_version: "weekly_plan@0.0.1",
+    policy_version: "weekly_plan@0.9.3",
     output_type: "weekly_plan",
     output_data,
     created_at,

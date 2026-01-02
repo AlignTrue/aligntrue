@@ -1,25 +1,25 @@
 {
   "name": "@aligntrue/personal-crm",
-  "version": "0.0.1",
+  "version": "0.9.3",
   "packs": [
     {
       "name": "@aligntrue/pack-tasks",
-      "version": "0.0.1",
+      "version": "0.9.3",
       "source": "workspace"
     },
     {
       "name": "@aligntrue/pack-notes",
-      "version": "0.0.1",
+      "version": "0.9.3",
       "source": "workspace"
     },
     {
       "name": "@aligntrue/pack-convert",
-      "version": "0.0.1",
+      "version": "0.9.3",
       "source": "workspace"
     },
     {
       "name": "@aligntrue/pack-suggestions",
-      "version": "0.0.1",
+      "version": "0.9.3",
       "source": "workspace"
     }
   ],

@@ -8,7 +8,7 @@ import type { CompilerPolicy } from "./plan-compiler";
 
 const basePolicy = {
   policy_id: "ui-default",
-  version: "0.0.1",
+  version: "0.9.3",
   stage: "approved" as const,
   required_surfaces_by_intent: {
     list: ["tasks_list", "notes_list", "create_task_form", "create_note_form"],

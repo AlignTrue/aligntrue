@@ -48,7 +48,7 @@ export function createPackHost<TState, TProjection>(
       const config: HostConfig = {
         manifest: {
           name: "@aligntrue/cli",
-          version: "0.0.0",
+          version: "0.9.3",
           packs: [options.pack],
           capabilities: options.capabilities,
         },
