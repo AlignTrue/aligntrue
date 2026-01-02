@@ -60,14 +60,6 @@ function getDocsFiles(): string[] {
   return getAllFiles(DOCS_ROOT, /\.(md|mdx)$/);
 }
 
-function getCliFiles(): string[] {
-  const cliRoot = path.join(__dirname, "../../packages/cli/src");
-  if (!fs.existsSync(cliRoot)) {
-    return [];
-  }
-  return getAllFiles(cliRoot, /\.(ts|tsx)$/);
-}
-
 function loadRedirectSources(): Set<string> {
   try {
     const raw = fs.readFileSync(REDIRECTS_PATH, "utf-8");
@@ -273,21 +265,10 @@ function checkLinksInFile(
 export function checkAllLinks(): BrokenLink[] {
   const redirectSources = loadRedirectSources();
   const docsFiles = getDocsFiles();
-  const cliFiles = getCliFiles();
   const allErrors: BrokenLink[] = [];
 
   for (const file of docsFiles) {
     allErrors.push(...checkLinksInFile(file, redirectSources, DOCS_ROOT));
-  }
-
-  for (const file of cliFiles) {
-    allErrors.push(
-      ...checkLinksInFile(
-        file,
-        redirectSources,
-        path.join(__dirname, "../../packages/cli"),
-      ),
-    );
   }
 
   return allErrors;
@@ -295,18 +276,15 @@ export function checkAllLinks(): BrokenLink[] {
 
 export function getLinkStats(): { totalFiles: number; totalLinks: number } {
   const docsFiles = getDocsFiles();
-  const cliFiles = getCliFiles();
-  const allFiles = [...docsFiles, ...cliFiles];
-
   let totalLinks = 0;
-  for (const file of allFiles) {
+  for (const file of docsFiles) {
     const content = fs.readFileSync(file, "utf-8");
     const isMarkdown = file.endsWith(".md") || file.endsWith(".mdx");
     totalLinks += extractLinks(content, isMarkdown).length;
   }
 
   return {
-    totalFiles: allFiles.length,
+    totalFiles: docsFiles.length,
     totalLinks,
   };
 }

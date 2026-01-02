@@ -22,7 +22,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "vitest": "^4.0.16"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20"

@@ -87,22 +87,12 @@ jobs:
         run: pnpm test -- --coverage
 
       - name: 📈 Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           directory: ./
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-
-      - name: 🔁 Run conformance testkit
-        run: pnpm verify
-
-      - name: 🪙 Validate golden repository
-        shell: bash
-        run: |
-          cd examples/golden-repo
-          chmod +x test-golden-repo.sh
-          ./test-golden-repo.sh
 
   summary:
     name: CI Summary

@@ -1,14 +1,19 @@
 # Releasing AlignTrue
 
-## Prerequisites
+> Status: The sync CLI packages referenced here were removed from this
+> repository. We do not currently publish packages from this workspace.
+> Treat this document as historical context only until a new release
+> process is defined for the platform modules.
+
+## Prerequisites (historical)
 
 - Clean git status
 - Logged in to npm (`npm login`)
 - Logged in to git (`git login` or SSH keys configured)
 
-## Release Process
+## Release Process (historical)
 
-We use a helper script to automate version bumping, building, publishing, and git tagging.
+We previously used a helper script to automate version bumping, building, publishing, and git tagging.
 
 ### 1. Run Release Helper
 
