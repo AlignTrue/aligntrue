@@ -6,7 +6,7 @@ import {
 } from "@aligntrue/pack-notes";
 import { DEFAULT_EVENTS_PATH, Projections } from "@aligntrue/ops-core";
 import { getEventStore, getHost } from "@/lib/ops-services";
-import { computeHead, type ProjectionCache } from "./shared.js";
+import { computeHead, type ProjectionCache } from "./shared";
 
 let notesCache: ProjectionCache<NotesProjection> | null = null;
 

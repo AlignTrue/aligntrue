@@ -7,7 +7,7 @@ import {
 } from "@aligntrue/pack-tasks";
 import { Projections } from "@aligntrue/ops-core";
 import { getEventStore, getHost } from "@/lib/ops-services";
-import { computeHead, type ProjectionCache } from "./shared.js";
+import { computeHead, type ProjectionCache } from "./shared";
 
 let tasksCache: ProjectionCache<TasksProjection> | null = null;
 
