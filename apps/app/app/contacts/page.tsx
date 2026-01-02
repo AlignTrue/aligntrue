@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Projections } from "@aligntrue/core";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@aligntrue/ui-base";
 import { getEventStore, getHost } from "@/lib/ops-services";
 
 const CONTACTS_ENABLED = process.env.NEXT_PUBLIC_CONTACTS_ENABLED === "1";

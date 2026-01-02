@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@aligntrue/ui-base";
 import { cn } from "@/lib/utils";
 
 type SkeletonCardProps = {

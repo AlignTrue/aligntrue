@@ -1,6 +1,8 @@
 /**
- * DR-007 RowField-Auth-Projection-Strategy contract stubs.
- * Defines row/field authorization envelopes without runtime enforcement.
+ * @experimental Authorization contracts (DR-007)
+ *
+ * Semantics are public; enforcement is not wired yet.
+ * Types/interfaces only; no runtime enforcement.
  */
 export interface Redaction {
   field: string;

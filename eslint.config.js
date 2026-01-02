@@ -578,7 +578,7 @@ export default [
         {
           patterns: [
             {
-              group: ["@/components/ui/*", "**/components/ui/*"],
+              group: ["@aligntrue/ui-base", "**/components/ui/*"],
               message:
                 "Use ui/blocks/src/ui wrappers instead of importing shadcn primitives directly.",
             },

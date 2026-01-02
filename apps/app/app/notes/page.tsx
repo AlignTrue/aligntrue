@@ -2,10 +2,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { OPS_NOTES_ENABLED, Identity, Projections } from "@aligntrue/core";
 import * as PackNotes from "@aligntrue/pack-notes";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Textarea,
+} from "@aligntrue/ui-base";
 import { NotePreview } from "./NotePreview";
 import { getEventStore, getHost } from "@/lib/ops-services";
 

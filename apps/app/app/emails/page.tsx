@@ -1,8 +1,13 @@
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { Projections } from "@aligntrue/core";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@aligntrue/ui-base";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { getBaseUrl } from "@/lib/utils";
 

@@ -6,12 +6,7 @@ import {
   Projections,
 } from "@aligntrue/core";
 import { exitWithError } from "../../utils/command-utilities.js";
-
-export const CLI_ACTOR: WorkLedger.WorkCommandEnvelope["actor"] = {
-  actor_id: process.env["USER"] || "cli-user",
-  actor_type: "human",
-  display_name: process.env["USER"] || "CLI User",
-};
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
 
 export function ensureOpsCoreEnabled(): void {
   if (!OPS_CORE_ENABLED) {

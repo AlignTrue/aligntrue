@@ -1,4 +1,10 @@
-import { Identity, Projections, Contracts } from "@aligntrue/core";
+import {
+  OPS_CORE_ENABLED,
+  OPS_TASKS_ENABLED,
+  Identity,
+  Projections,
+  Contracts,
+} from "@aligntrue/core";
 import { createHost, type Host } from "@aligntrue/host";
 import {
   TasksProjectionDef,
@@ -7,6 +13,8 @@ import {
   type TasksProjection,
   type TasksProjectionState,
 } from "@aligntrue/pack-tasks";
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
+import { exitWithError } from "../../utils/command-utilities.js";
 
 const { TASK_COMMAND_TYPES } = Contracts;
 
@@ -23,15 +31,17 @@ const TASKS_PACK = {
 
 let hostPromise: Promise<Host> | null = null;
 
-export const CLI_ACTOR = {
-  actor_id: process.env["USER"] || "cli-user",
-  actor_type: "human" as const,
-  display_name: process.env["USER"] || "CLI User",
-};
-
 export function ensureTasksEnabled(): void {
-  // No env flag gating in Phase 3 for packs; keep placeholder if needed.
-  return;
+  if (!OPS_CORE_ENABLED) {
+    exitWithError(1, "ops-core is disabled", {
+      hint: "Set OPS_CORE_ENABLED=1 to enable ops-core commands",
+    });
+  }
+  if (!OPS_TASKS_ENABLED) {
+    exitWithError(1, "Tasks are disabled", {
+      hint: "Set OPS_TASKS_ENABLED=1 to enable tasks commands",
+    });
+  }
 }
 
 async function getHost(): Promise<Host> {

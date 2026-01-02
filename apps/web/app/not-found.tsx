@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@aligntrue/ui-base";
 import { PageLayout } from "@/components/PageLayout";
 
 export default function NotFoundPage() {

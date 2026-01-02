@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import { Projections } from "@aligntrue/core";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@aligntrue/ui-base";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { formatTimestamp } from "@/lib/format";
 

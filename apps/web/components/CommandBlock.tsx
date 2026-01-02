@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@aligntrue/ui-base";
 import { cn } from "@/lib/utils";
 import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
 

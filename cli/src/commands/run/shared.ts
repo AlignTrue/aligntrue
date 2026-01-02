@@ -7,7 +7,7 @@ import {
   Projections,
 } from "@aligntrue/core";
 import { exitWithError } from "../../utils/command-utilities.js";
-import { CLI_ACTOR } from "../work/shared.js";
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
 
 export function ensureHybridEnabled(): void {
   if (!OPS_CORE_ENABLED) {

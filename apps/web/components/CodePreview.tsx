@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@aligntrue/ui-base";
 import { cn } from "@/lib/utils";
 import { useCopyToClipboard } from "@/lib/useCopyToClipboard";
 import { type ReactNode } from "react";

@@ -17,7 +17,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "json-schema": "^0.4.0",
@@ -26,7 +27,8 @@
   },
   "devDependencies": {
     "@aligntrue/core": "workspace:*",
-    "@types/json-schema": "^7.0.15"
+    "@types/json-schema": "^7.0.15",
+    "vitest": "^4.0.16"
   },
   "license": "MIT"
 }

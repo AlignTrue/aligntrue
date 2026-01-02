@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@aligntrue/ui-base";
 import { SectionBadge } from "./components/SectionBadge";
 import { PageLayout } from "@/components/PageLayout";
 import { GitHubIcon } from "./components/GitHubIcon";

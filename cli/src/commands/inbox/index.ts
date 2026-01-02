@@ -10,12 +10,8 @@ import * as PackNotes from "@aligntrue/pack-notes";
 import { createJsonlTaskLedger } from "@aligntrue/pack-tasks";
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
-
-const CLI_ACTOR = {
-  actor_id: process.env["USER"] || "cli-user",
-  actor_type: "human",
-  display_name: process.env["USER"] || "CLI User",
-} as const;
+import { readNotesProjectionWithMeta } from "../notes/shared.js";
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
 
 export async function inbox(args: string[]): Promise<void> {
   ensureEnabled();
@@ -48,7 +44,7 @@ async function handleGenerate(): Promise<void> {
     projection: notes,
     hash: notesHash,
     version: notesVersion,
-  } = await readNotesProjection();
+  } = await readNotesProjectionWithMeta();
 
   const result = PackSuggestions.SuggestionGenerators.combineResults(
     await PackSuggestions.SuggestionGenerators.generateTaskTriageSuggestions({
@@ -197,22 +193,4 @@ function ensureEnabled() {
       hint: "Set OPS_SUGGESTIONS_ENABLED=1",
     });
   }
-}
-
-async function readNotesProjection() {
-  const store = new Storage.JsonlEventStore(
-    PackNotes.DEFAULT_NOTES_EVENTS_PATH,
-  );
-  const rebuilt = await Projections.rebuildOne(
-    PackNotes.NotesProjectionDef,
-    store,
-  );
-  const projection = PackNotes.buildNotesProjectionFromState(
-    rebuilt.data as PackNotes.NotesProjectionState,
-  );
-  return {
-    projection,
-    hash: PackNotes.hashNotesProjection(projection),
-    version: PackNotes.NotesProjectionDef.version,
-  };
 }

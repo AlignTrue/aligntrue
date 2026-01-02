@@ -22,11 +22,19 @@ import {
   type TaskCommandEnvelope,
 } from "@aligntrue/pack-tasks";
 import * as Suggestions from "@aligntrue/pack-suggestions";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@aligntrue/ui-base";
 import { getEventStore, getHost } from "@/lib/ops-services";
 
 async function getTasksView() {

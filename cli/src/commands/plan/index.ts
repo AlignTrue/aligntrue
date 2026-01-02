@@ -13,12 +13,7 @@ const require = createRequire(import.meta.url);
 const manifestJson = require("../../../cli.manifest.json");
 import { exitWithError } from "../../utils/command-utilities.js";
 import { readTasksProjection } from "../tasks/shared.js";
-
-const CLI_ACTOR = {
-  actor_id: process.env["USER"] || "cli-user",
-  actor_type: "human",
-  display_name: process.env["USER"] || "CLI User",
-} as const;
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
 
 const manifest = manifestJson as unknown as Contracts.AppManifest;
 let hostInstance: Host | null = null;

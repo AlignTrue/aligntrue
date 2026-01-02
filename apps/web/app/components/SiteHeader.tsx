@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { AlignTrueLogo } from "@aligntrue/ui-base";
 import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@aligntrue/ui-base";
 import { GitHubIcon } from "./GitHubIcon";
 
 function ThemeToggle() {

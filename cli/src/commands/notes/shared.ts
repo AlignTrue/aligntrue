@@ -7,12 +7,7 @@ import {
 } from "@aligntrue/core";
 import * as PackNotes from "@aligntrue/pack-notes";
 import { exitWithError } from "../../utils/command-utilities.js";
-
-export const CLI_ACTOR: PackNotes.NoteCommandEnvelope["actor"] = {
-  actor_id: process.env["USER"] || "cli-user",
-  actor_type: "human",
-  display_name: process.env["USER"] || "CLI User",
-};
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
 
 export function ensureNotesEnabled(): void {
   if (!OPS_CORE_ENABLED) {
@@ -54,11 +49,21 @@ export function buildCommand<T extends PackNotes.NoteCommandType>(
 }
 
 export async function readNotesProjection() {
+  const { projection } = await readNotesProjectionWithMeta();
+  return projection;
+}
+
+export async function readNotesProjectionWithMeta() {
   const rebuilt = await Projections.rebuildOne(
     PackNotes.NotesProjectionDef,
     new Storage.JsonlEventStore(PackNotes.DEFAULT_NOTES_EVENTS_PATH),
   );
-  return PackNotes.buildNotesProjectionFromState(
+  const projection = PackNotes.buildNotesProjectionFromState(
     rebuilt.data as PackNotes.NotesProjectionState,
   );
+  return {
+    projection,
+    hash: PackNotes.hashNotesProjection(projection),
+    version: PackNotes.NotesProjectionDef.version,
+  };
 }

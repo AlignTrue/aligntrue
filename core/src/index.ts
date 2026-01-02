@@ -73,6 +73,7 @@ export type {
 } from "./envelopes/command.js";
 export { generateEventId, hashCanonical } from "./identity/index.js";
 export { randomId, deterministicId } from "./identity/index.js";
+// Experimental/unstable export: semantics public; enforcement not yet wired (see DR-007)
 export * as Authz from "./authz/index.js";
 export * as Egress from "./egress/index.js";
 export * as SafetyClasses from "./safety-classes/index.js";
