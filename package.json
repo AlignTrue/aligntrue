@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "build:packages": "turbo run build --filter='./packages/*' --filter='./core' --filter='./host' --filter='./cli' --filter='./packs/*' --filter='./connectors/*' --filter='./ui/*'",
+    "build:packages": "turbo run build --filter=!@aligntrue/web --filter=!@aligntrue/app --filter=!@aligntrue/docs",
     "dev": "pnpm dev:app",
     "dev:app": "pnpm --filter @aligntrue/app dev",
     "dev:docs": "pnpm --filter @aligntrue/docs dev",
