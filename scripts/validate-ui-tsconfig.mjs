@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 
-const UI_PACKAGES = ["packages/ui", "apps/web", "apps/docs"];
+const UI_PACKAGES = ["packages/ui-base", "apps/web", "apps/docs"];
 
 let hasErrors = false;
 

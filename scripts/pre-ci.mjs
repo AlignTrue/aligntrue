@@ -19,7 +19,7 @@ const steps = [
   { name: "Type check", cmd: "pnpm typecheck" },
   {
     name: "Run tests",
-    cmd: "TURBO_CONCURRENCY=1 pnpm test",
+    cmd: "pnpm test",
     stdio: "inherit",
   },
 ];

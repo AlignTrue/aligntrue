@@ -126,15 +126,16 @@ export function validateDedupeScope(
 export function computeScopeKey(
   scope: string,
   command: CommandEnvelope,
-  appName: string = "unknown",
+  appName?: string,
 ): string {
+  const actualAppName = appName ?? "unknown";
   switch (scope) {
     case "actor":
       return command.actor.actor_id;
     case "target":
       return command.target_ref ?? "__missing_target__";
     case "app":
-      return appName;
+      return actualAppName;
     case "global":
     default:
       return scope ? `${scope}` : "__global__";

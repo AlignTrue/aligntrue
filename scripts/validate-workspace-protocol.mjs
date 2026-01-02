@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
-const packagesDir = join(root, "packages");
 const allowedProtocols = new Set(["workspace:*"]);
 
 const sections = [
@@ -14,7 +13,67 @@ const sections = [
   "optionalDependencies",
 ];
 
+const workspacePatterns = [
+  "packages/*",
+  "apps/*",
+  "core",
+  "host",
+  "cli",
+  "packs/*",
+  "connectors/*",
+  "ui/*",
+];
+
 const violations = [];
+
+function collectPackageJsonPaths() {
+  const paths = [join(root, "package.json")];
+
+  for (const pattern of workspacePatterns) {
+    const parts = pattern.split("/");
+    const base = join(root, parts[0]);
+    const hasGlob = parts.includes("*");
+
+    if (hasGlob) {
+      if (!existsDir(base)) continue;
+      const entries = safeReadDir(base);
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        const pkgPath = join(base, entry.name, "package.json");
+        if (fileExists(pkgPath)) paths.push(pkgPath);
+      }
+    } else {
+      const pkgPath = join(root, pattern, "package.json");
+      if (fileExists(pkgPath)) paths.push(pkgPath);
+    }
+  }
+
+  return paths;
+}
+
+function existsDir(path) {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function fileExists(path) {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function safeReadDir(path) {
+  try {
+    return readdirSync(path, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+}
 
 function validatePackage(packageJsonPath) {
   const relativePath = packageJsonPath.replace(`${root}/`, "");
@@ -48,12 +107,7 @@ function validatePackage(packageJsonPath) {
   }
 }
 
-const packageJsonPaths = [
-  join(root, "package.json"),
-  ...readdirSync(packagesDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => join(packagesDir, entry.name, "package.json")),
-];
+const packageJsonPaths = collectPackageJsonPaths();
 
 for (const packageJsonPath of packageJsonPaths) {
   validatePackage(packageJsonPath);

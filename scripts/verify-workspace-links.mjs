@@ -1,24 +1,82 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync, realpathSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  statSync,
+} from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
-const packagesDir = join(root, "packages");
 const sections = ["dependencies", "devDependencies", "peerDependencies"];
 
-const packages = readdirSync(packagesDir, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => {
-    const packageJsonPath = join(packagesDir, entry.name, "package.json");
-    const data = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-    return {
-      name: data.name,
-      dir: join(packagesDir, entry.name),
-      packageJsonPath,
-      manifest: data,
-    };
-  });
+const workspacePatterns = [
+  "packages/*",
+  "apps/*",
+  "core",
+  "host",
+  "cli",
+  "packs/*",
+  "connectors/*",
+  "ui/*",
+];
+
+function fileExists(path) {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function dirExists(path) {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function collectPackageJsons() {
+  const entries = [];
+
+  // root package
+  const rootPkg = join(root, "package.json");
+  if (fileExists(rootPkg)) {
+    entries.push({ name: "root", dir: root, packageJsonPath: rootPkg });
+  }
+
+  for (const pattern of workspacePatterns) {
+    const parts = pattern.split("/");
+    const base = join(root, parts[0]);
+    const hasGlob = parts.includes("*");
+
+    if (hasGlob) {
+      if (!dirExists(base)) continue;
+      const children = readdirSync(base, { withFileTypes: true });
+      for (const entry of children) {
+        if (!entry.isDirectory()) continue;
+        const dir = join(base, entry.name);
+        const packageJsonPath = join(dir, "package.json");
+        if (!fileExists(packageJsonPath)) continue;
+        const manifest = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+        entries.push({ name: manifest.name, dir, packageJsonPath, manifest });
+      }
+    } else {
+      const dir = join(root, pattern);
+      const packageJsonPath = join(dir, "package.json");
+      if (!fileExists(packageJsonPath)) continue;
+      const manifest = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+      entries.push({ name: manifest.name, dir, packageJsonPath, manifest });
+    }
+  }
+
+  return entries;
+}
+
+const packages = collectPackageJsons();
 
 const workspaceNames = new Set(packages.map((pkg) => pkg.name));
 const violations = [];

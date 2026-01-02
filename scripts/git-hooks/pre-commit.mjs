@@ -20,24 +20,6 @@ async function main() {
     // If git command fails, continue with empty list
   }
 
-  // Check for large batch of staged files
-  try {
-    if (stagedFiles.length > 50) {
-      clack.log.warn(
-        `⚠️  Large commit detected: ${stagedFiles.length} files staged`,
-      );
-      clack.log.message(
-        "Staging many files at once will lint ALL of them, which may surface pre-existing warnings.",
-      );
-      clack.log.message(
-        "Consider splitting into smaller commits with 'git add -p' or '--patch'.",
-      );
-      clack.log.message("");
-    }
-  } catch (error) {
-    // Non-fatal: continue with commit if this check fails
-  }
-
   // Check for temporary debug files (per debugging.mdc: temp-* files must not be committed)
   const tempFiles = stagedFiles.filter(
     (f) => f.includes("temp-") || f.match(/\/temp-[^/]+$/),
@@ -55,28 +37,19 @@ async function main() {
     process.exit(1);
   }
 
-  const packageJsonChanged = stagedFiles.some((file) =>
-    file.endsWith("package.json"),
-  );
-
-  if (packageJsonChanged) {
-    s.start("Validating workspace protocol in staged package.json files...");
-    try {
-      execSync("pnpm validate:workspace", { stdio: "inherit" });
-      s.stop("✅ Workspace protocol validated.");
-    } catch (error) {
-      s.stop("❌ Workspace validation failed.", 1);
-      console.error("");
-      clack.log.error(
-        "Some package.json files reference @aligntrue/* with non-workspace versions.",
-      );
-      console.error("");
-      console.error(
-        'Fix: set each @aligntrue/* dependency to "workspace:*" and re-stage the files.',
-      );
-      console.error("");
-      process.exit(1);
-    }
+  // Run fast structural validations up front
+  s.start("Running repository validation (validate:all)...");
+  try {
+    execSync("pnpm validate:all", { stdio: "inherit" });
+    s.stop("✅ Repository validation passed.");
+  } catch (error) {
+    s.stop("❌ Repository validation failed.", 1);
+    console.error("");
+    clack.log.error("validate:all failed (workspace/tsconfig/transpile).");
+    console.error("");
+    console.error("Fix the reported issues and re-stage the files.");
+    console.error("");
+    process.exit(1);
   }
 
   s.start("Formatting and linting staged files...");
@@ -193,30 +166,18 @@ async function main() {
     process.exit(1);
   }
 
-  s.start("Validating Next.js transpilePackages config...");
+  // Typecheck after build to catch unresolved types before push/CI
+  s.start("Type checking workspace...");
   try {
-    execSync("node scripts/validate-transpile-packages.mjs", {
-      stdio: "inherit",
-    });
-    s.stop("✅ Next.js config validated.");
+    execSync("pnpm typecheck", { stdio: "inherit" });
+    s.stop("✅ Typecheck passed.");
   } catch (error) {
-    s.stop("❌ Next.js validation failed.", 1);
+    s.stop("❌ Typecheck failed.", 1);
     console.error("");
-    clack.log.error("transpilePackages validation failed.");
+    clack.log.error("Type errors detected.");
     console.error("");
-    console.error(
-      "📦 If you modified Next.js configs or added workspace packages:",
-    );
-    console.error("   • Check that transpilePackages includes source packages");
-    console.error(
-      "   • See: https://nextjs.org/docs/app/api-reference/config/next-config-js/transpilePackages",
-    );
+    console.error("Fix the errors above and re-run the commit.");
     console.error("");
-    console.error(
-      "🔍 Re-run validation: node scripts/validate-transpile-packages.mjs",
-    );
-    console.error("");
-    clack.outro("💡 Fix the config and re-stage the files.");
     process.exit(1);
   }
 

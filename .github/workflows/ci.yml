@@ -65,14 +65,17 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install
 
-      - name: 🧩 Validate workspace protocol
-        run: pnpm validate:workspace
-
       - name: 🔗 Verify workspace links
         run: pnpm verify:workspace-links
 
       - name: 🏗️ Build workspace packages
         run: pnpm build:packages
+
+      - name: 🔍 Lint code
+        run: pnpm lint
+
+      - name: 📋 Check formatting
+        run: pnpm format:check
 
       - name: ✅ Run all validations
         run: pnpm validate:all
