@@ -7,7 +7,6 @@ import {
 import { createHost, Storage, type Host } from "@aligntrue/ops-host";
 import manifestJson from "../app.manifest.json";
 import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
-import * as GmailApi from "./gmail-api";
 
 const manifest = manifestJson as unknown as Contracts.AppManifest;
 let hostInstance: Host | null = null;
@@ -110,6 +109,58 @@ export function getConversionService(
 export function getGmailMutationExecutor(
   eventStore: Storage.JsonlEventStore,
 ): GmailMutations.GmailMutationExecutor {
+  const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
+
+  const getAccessToken = (accessToken?: string): string => {
+    const token =
+      accessToken ?? process.env["GMAIL_MUTATION_ACCESS_TOKEN"] ?? undefined;
+    if (!token) {
+      throw new Error("GMAIL_MUTATION_ACCESS_TOKEN is not set");
+    }
+    return token;
+  };
+
+  const applyLabel = async (
+    messageId: string,
+    labelId: string,
+    accessToken?: string,
+  ): Promise<{ destination_ref: string }> => {
+    const token = getAccessToken(accessToken);
+    const res = await fetch(`${GMAIL_API_BASE}/messages/${messageId}/modify`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ addLabelIds: [labelId] }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "unknown");
+      throw new Error(`applyLabel failed: ${res.status} ${text}`);
+    }
+    return { destination_ref: `label:${labelId}` };
+  };
+
+  const archiveThread = async (
+    threadId: string,
+    accessToken?: string,
+  ): Promise<{ destination_ref: string }> => {
+    const token = getAccessToken(accessToken);
+    const res = await fetch(`${GMAIL_API_BASE}/threads/${threadId}/modify`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ removeLabelIds: ["INBOX"] }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "unknown");
+      throw new Error(`archive failed: ${res.status} ${text}`);
+    }
+    return { destination_ref: `thread:${threadId}` };
+  };
+
   return new GmailMutations.GmailMutationExecutor(eventStore, {
     flagEnabled: OPS_GMAIL_MUTATIONS_ENABLED,
     performer: {
@@ -119,12 +170,10 @@ export function getGmailMutationExecutor(
           if (!labelId) {
             throw new Error("label_id is required for APPLY_LABEL");
           }
-          await GmailApi.applyLabel(input.message_id, labelId);
-          return { destination_ref: `label:${labelId}` };
+          return applyLabel(input.message_id, labelId);
         }
         if (op === "ARCHIVE") {
-          await GmailApi.archive(input.thread_id);
-          return { destination_ref: `thread:${input.thread_id}` };
+          return archiveThread(input.thread_id);
         }
         const exhaustiveCheck: never = op;
         throw new Error(`Unsupported operation: ${exhaustiveCheck}`);

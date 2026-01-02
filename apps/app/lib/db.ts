@@ -18,7 +18,10 @@ export const db = new Database(DB_PATH, {
 
 // Enable WAL for better concurrency on local
 db.pragma("journal_mode = WAL");
-db.pragma("synchronous = NORMAL");
+// Keep synchronous = FULL (default) for maximum durability.
+// In WAL mode, FULL ensures transactions are synced to disk before commit,
+// which is critical for the "Receipts first" architecture and deterministic replay.
+db.pragma("synchronous = FULL");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS plans (

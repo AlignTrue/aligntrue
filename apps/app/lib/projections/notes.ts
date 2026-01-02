@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import {
   NotesProjectionDef,
   buildNotesProjectionFromState,
@@ -7,23 +6,9 @@ import {
 } from "@aligntrue/pack-notes";
 import { DEFAULT_EVENTS_PATH, Projections } from "@aligntrue/ops-core";
 import { getEventStore, getHost } from "@/lib/ops-services";
-
-interface ProjectionCache<T> {
-  head: string | null;
-  data: T;
-}
+import { computeHead, type ProjectionCache } from "./shared.js";
 
 let notesCache: ProjectionCache<NotesProjection> | null = null;
-
-function computeHead(path: string): string | null {
-  try {
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const stat = fs.statSync(path);
-    return `${stat.mtimeMs}:${stat.size}`;
-  } catch {
-    return null;
-  }
-}
 
 export async function readNotesProjection(): Promise<NotesProjection | null> {
   await getHost();
