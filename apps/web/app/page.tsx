@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionBadge } from "./components/SectionBadge";
@@ -148,9 +147,13 @@ export default function HomePage() {
           </p>
           <div className="flex justify-center">
             <Button asChild variant="outline" size="lg" className="px-6 py-3">
-              <Link href="https://github.com/AlignTrue/aligntrue">
+              <a
+                href="https://github.com/AlignTrue/aligntrue"
+                target="_blank"
+                rel="noreferrer"
+              >
                 Star on GitHub
-              </Link>
+              </a>
             </Button>
           </div>
         </div>
