@@ -8,8 +8,7 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "eslint . --max-warnings 0",
-    "test": "vitest run --passWithNoTests",
-    "generate:og-images": "tsx scripts/generate-og-images.ts"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@aligntrue/ui-base": "workspace:*",
