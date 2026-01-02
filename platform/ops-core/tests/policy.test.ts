@@ -37,7 +37,7 @@ function buildPolicyCommand(input: {
       content: input.content,
       expected_previous_policy_id: input.expected_previous_policy_id,
     },
-    dedupe_scope: `policy.set:${user_id}`,
+    dedupe_scope: "actor",
     correlation_id: command_id,
     actor: ACTOR,
     requested_at: NOW,

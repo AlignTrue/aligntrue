@@ -258,7 +258,7 @@ async function loadPolicyForActor(userId: string) {
     policy_id: active.active_policy_id,
     version: base.version,
     stage: base.stage,
-    required_surfaces_by_intent: active.surfaces_by_intent,
+    required_surfaces_by_intent: base.required_surfaces_by_intent,
     default_layout: base.default_layout,
     surface_to_block: base.surface_to_block,
   });

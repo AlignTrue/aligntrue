@@ -42,7 +42,7 @@ export function buildCommandEnvelope<T extends Execution.ExecutionCommandType>(
     command_type,
     payload,
     target_ref: "execution",
-    dedupe_scope: "execution",
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor: CLI_ACTOR,
     requested_at: new Date().toISOString(),

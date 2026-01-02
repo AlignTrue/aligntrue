@@ -58,7 +58,7 @@ describe("JSONL storage", () => {
       command_type: "do",
       payload: {},
       target_ref: "t",
-      dedupe_scope: "tenant",
+      dedupe_scope: "target",
       correlation_id: "corr",
       actor,
       requested_at: "2024-01-01T00:00:00Z",

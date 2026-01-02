@@ -40,7 +40,7 @@ export function buildCommand<T extends WorkLedger.WorkCommandType>(
     command_type,
     payload,
     target_ref: "work-ledger",
-    dedupe_scope: "work-ledger",
+    dedupe_scope: "target",
     correlation_id: Identity.randomId(),
     actor: CLI_ACTOR,
     requested_at: new Date().toISOString(),

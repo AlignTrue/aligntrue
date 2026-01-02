@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       expected_previous_policy_id: body.expected_previous_policy_id,
     },
     target_ref: policy_id,
-    dedupe_scope: `policy.set:${actor.actor_id}`,
+    dedupe_scope: "actor",
     correlation_id: command_id,
     actor,
     requested_at: now,

@@ -43,7 +43,7 @@ describe("constitution guardrails", () => {
       command_type: "core.TestCommand",
       payload: {},
       target_ref: "agg-1",
-      dedupe_scope: "command:agg-1",
+      dedupe_scope: "target",
       correlation_id: "corr-1",
       causation_id: "evt-0",
       causation_type: "event",

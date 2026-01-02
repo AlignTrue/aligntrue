@@ -30,7 +30,7 @@ function buildCommand<T extends string, P>(
     command_type,
     payload,
     target_ref: opts?.target_ref ?? "local",
-    dedupe_scope: opts?.dedupe_scope ?? "tenant:local",
+    dedupe_scope: opts?.dedupe_scope ?? "target",
     correlation_id: "corr-1",
     actor: ACTOR,
     requested_at: NOW,
@@ -75,7 +75,7 @@ describe("tasks + notes", () => {
     const cmd = buildCommand(TASK_COMMAND_TYPES.Create, payload, {
       id: "cmd-1",
       target_ref: payload.task_id,
-      dedupe_scope: `task:${payload.task_id}`,
+      dedupe_scope: "target",
     });
 
     const first = await ledger.execute(cmd);
