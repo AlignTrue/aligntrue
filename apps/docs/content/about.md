@@ -7,12 +7,9 @@ description: About AlignTrue.
 
 ## What
 
-**AlignTrue keeps your AI rules in sync across agents, repos, and people.**
+**AlignTrue is an AI ops platform focused on supervised AI execution with receipts and auditability.** It centers on deterministic behavior, envelopes-first design, and rebuildable projections so teams can trust and replay AI outputs.
 
-- **Solo devs:** One source of truth for Cursor `.mdc`, `AGENTS.md`, `CLAUDE.md`, and whatever else you use.
-- **Teams:** Shared rules that actually stay aligned across IDEs, agents, and repos, so best practices are practiced and not just vibes.
-
-AlignTrue is [MIT licensed](https://github.com/AlignTrue/aligntrue/blob/main/LICENSE), open to contributions and mostly self-documenting. If something is broken, outdated, or missing, open a PR.
+The platform is **alpha** and will change substantially as we dogfood. If something is broken, outdated, or missing, open a PR.
 
 ## Why
 
