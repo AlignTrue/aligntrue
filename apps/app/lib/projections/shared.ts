@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { Projections } from "@aligntrue/core";
-import type { ProjectionDefinition } from "@aligntrue/core";
+import type { ProjectionDefinition, EventStore } from "@aligntrue/core";
 
 export interface ProjectionCache<T> {
   head: string | null;
@@ -21,8 +21,8 @@ export function createCachedProjectionReader<TProjection, TState>(options: {
   def: ProjectionDefinition<TState>;
   build: (state: TState) => TProjection;
   eventsPath: string;
-  getEventStore: (eventsPath: string) => unknown;
-  beforeRead?: () => Promise<void>;
+  getEventStore: (eventsPath: string) => EventStore;
+  beforeRead?: () => Promise<unknown>;
 }) {
   let cache: ProjectionCache<TProjection> | null = null;
 
