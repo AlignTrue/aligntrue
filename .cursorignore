@@ -24,7 +24,3 @@ tsconfig.tsbuildinfo
 # Test artifacts (unless in /tmp)
 temp-*
 *_test_output/
-
-# Other AI agents
-AGENTS.md
-CLAUDE.md
