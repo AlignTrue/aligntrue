@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import { OPS_DATA_DIR } from "../config.js";
+import { ValidationError } from "../errors.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type {
   CommandLog,
@@ -295,9 +296,9 @@ function resolveDataPath(
   allowExternalPaths: boolean,
 ): string {
   if (!candidate) {
-    throw new Error(
-      "JsonlCommandLog requires a valid path (received undefined or empty)",
-    );
+    throw new ValidationError("JsonlCommandLog requires a valid path", {
+      candidate,
+    });
   }
 
   // If allowExternalPaths is true, we allow any absolute path.
@@ -315,8 +316,9 @@ function resolveDataPath(
     return absolutePath;
   }
 
-  throw new Error(
-    `JsonlCommandLog refuses to write outside OPS_DATA_DIR (got ${candidate})`,
+  throw new ValidationError(
+    "JsonlCommandLog refuses to write outside OPS_DATA_DIR",
+    { candidate, resolved_path: absolutePath },
   );
 }
 

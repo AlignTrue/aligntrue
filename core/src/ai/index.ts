@@ -11,6 +11,7 @@ import {
   type AIProviderConfig,
   type AIProviderType,
 } from "./factory.js";
+import { ValidationError } from "../errors.js";
 
 const ALLOWED_PROVIDERS: readonly AIProviderType[] = [
   "openai",
@@ -25,8 +26,9 @@ function resolveProvider(raw: string | undefined): AIProviderType {
     return raw as AIProviderType;
   }
   const allowed = ALLOWED_PROVIDERS.join(", ");
-  throw new Error(
+  throw new ValidationError(
     `OPS_AI_PROVIDER must be one of [${allowed}], received "${raw}"`,
+    { value: raw, allowed },
   );
 }
 

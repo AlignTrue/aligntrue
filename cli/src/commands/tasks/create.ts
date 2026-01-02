@@ -33,8 +33,8 @@ export async function createTask(args: string[]): Promise<void> {
 
   const safeTitle: string = title;
   const task_id: string =
-    (parsed.flags.id as string | undefined) ?? Identity.randomId();
-  const bucket = parsed.flags.bucket as
+    (parsed.flags["id"] as string | undefined) ?? Identity.randomId();
+  const bucket = parsed.flags["bucket"] as
     | "today"
     | "week"
     | "later"

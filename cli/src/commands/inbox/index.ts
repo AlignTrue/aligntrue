@@ -120,15 +120,58 @@ async function handleDecision(
 
   const artifactStore = PackSuggestions.createArtifactStore();
   const feedbackEvents = PackSuggestions.createFeedbackEventStore();
+
+  // Stub implementations for PackContext fields not used in CLI suggestion flow.
+  // These throw if called to surface unexpected usage early.
+  const commandLogStub: Storage.CommandLog = {
+    record: async () => {
+      throw new Error("CommandLog.record not available in CLI context");
+    },
+    recordOutcome: async () => {
+      throw new Error("CommandLog.recordOutcome not available in CLI context");
+    },
+    getByIdempotencyKey: async () => {
+      throw new Error(
+        "CommandLog.getByIdempotencyKey not available in CLI context",
+      );
+    },
+    tryStart: async () => {
+      throw new Error("CommandLog.tryStart not available in CLI context");
+    },
+    complete: async () => {
+      throw new Error("CommandLog.complete not available in CLI context");
+    },
+  };
+
+  const projectionRegistryStub: Projections.ProjectionRegistry = {
+    register: () => {
+      throw new Error(
+        "ProjectionRegistry.register not available in CLI context",
+      );
+    },
+    get: () => {
+      throw new Error("ProjectionRegistry.get not available in CLI context");
+    },
+    getAll: () => {
+      throw new Error("ProjectionRegistry.getAll not available in CLI context");
+    },
+    unregister: () => {
+      throw new Error(
+        "ProjectionRegistry.unregister not available in CLI context",
+      );
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
+
   const executor = new PackSuggestions.SuggestionExecutor(
     {
       artifactStore,
       feedbackEventStore: feedbackEvents,
     },
     {
-      eventStore: feedbackEvents, // Dummy eventStore for context if needed, though executor uses deps
-      commandLog: null as unknown as Storage.CommandLog,
-      projectionRegistry: null as unknown as Projections.ProjectionRegistry,
+      eventStore: feedbackEvents,
+      commandLog: commandLogStub,
+      projectionRegistry: projectionRegistryStub,
       config: {},
       dispatchChild: async (cmd) => {
         if (cmd.command_type.startsWith("pack.tasks.")) {

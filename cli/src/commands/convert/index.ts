@@ -53,9 +53,7 @@ async function convertEmailToTask(args: string[]): Promise<void> {
   }
 
   const host = await getHost();
-  const command = buildConvertCommand("task", messageId, cliActor(), {
-    title: undefined,
-  });
+  const command = buildConvertCommand("task", messageId, cliActor(), {});
   const outcome = await host.runtime.dispatchCommand(command);
 
   console.log(`Converted email ${messageId} -> task (${outcome.status})`);
@@ -176,19 +174,19 @@ function buildConvertCommand(
     op: command_type,
   });
 
-  const payload =
+  const payload: Contracts.ConvertCommandPayload =
     kind === "task"
-      ? ({
+      ? {
           message_id: messageId,
-          title: opts.title,
           conversion_method: "user_action",
-        } satisfies Contracts.ConvertEmailToTaskPayload)
-      : ({
+          ...(opts.title ? { title: opts.title } : {}),
+        }
+      : {
           message_id: messageId,
-          title: opts.title,
-          body_md: opts.body_md,
           conversion_method: "user_action",
-        } satisfies Contracts.ConvertEmailToNotePayload);
+          ...(opts.title ? { title: opts.title } : {}),
+          ...(opts.body_md ? { body_md: opts.body_md } : {}),
+        };
 
   return {
     command_id,

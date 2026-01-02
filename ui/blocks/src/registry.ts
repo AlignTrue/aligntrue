@@ -42,87 +42,85 @@ export interface PlatformRegistry extends RegistryLike {
 }
 
 export function createPlatformRegistry(): PlatformRegistry {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   const blocks = createBlockRegistry([
     {
       manifest: {
         ...entityTableManifest,
         ui: withUiDefaults(entityTableManifest.ui),
       },
-      Component: EntityTable as any,
+      Component: EntityTable,
     },
     {
       manifest: {
         ...approvalGateManifest,
         ui: withUiDefaults(approvalGateManifest.ui),
       },
-      Component: ApprovalGate as any,
+      Component: ApprovalGate,
     },
     {
       manifest: {
         ...receiptTimelineManifest,
         ui: withUiDefaults(receiptTimelineManifest.ui),
       },
-      Component: ReceiptTimeline as any,
+      Component: ReceiptTimeline,
     },
     {
       manifest: {
         ...formSurfaceManifest,
         ui: withUiDefaults(formSurfaceManifest.ui),
       },
-      Component: FormSurface as any,
+      Component: FormSurface,
     },
     {
       manifest: {
         ...actionProposalCardManifest,
         ui: withUiDefaults(actionProposalCardManifest.ui),
       },
-      Component: ActionProposalCard as any,
+      Component: ActionProposalCard,
     },
     {
       manifest: {
         ...diffViewerManifest,
         ui: withUiDefaults(diffViewerManifest.ui),
       },
-      Component: DiffViewer as any,
+      Component: DiffViewer,
     },
     {
       manifest: {
         ...inboxThreadManifest,
         ui: withUiDefaults(inboxThreadManifest.ui),
       },
-      Component: InboxThread as any,
+      Component: InboxThread,
     },
     {
       manifest: {
         ...noteListManifest,
         ui: withUiDefaults(noteListManifest.ui),
       },
-      Component: NoteList as any,
+      Component: NoteList,
     },
     {
       manifest: {
         ...taskListManifest,
         ui: withUiDefaults(taskListManifest.ui),
       },
-      Component: TaskList as any,
+      Component: TaskList,
     },
     {
       manifest: {
         ...dataPanelManifest,
         ui: withUiDefaults(dataPanelManifest.ui),
       },
-      Component: DataPanel as any,
+      Component: DataPanel,
     },
     {
       manifest: {
         ...statusIndicatorManifest,
         ui: withUiDefaults(statusIndicatorManifest.ui),
       },
-      Component: StatusIndicator as any,
+      Component: StatusIndicator,
     },
   ]);
-  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   const actionIndex = new Map<string, ActionSchemaEntry>();
   for (const [, entry] of blocks.entries()) {

@@ -15,6 +15,7 @@ import {
 import { OPS_CONTACTS_ENABLED } from "../config.js";
 import { extractContactIdsFromEvent } from "./contacts.js";
 import type { DocRef } from "../docrefs/index.js";
+import { ValidationError } from "../errors.js";
 
 export type TimelineItemType = "calendar_event" | "email_message";
 
@@ -136,7 +137,10 @@ function toCalendarTimelineItem(event: CalendarEventEnvelope): TimelineItem {
   const payload = event.payload;
   const source_ref = payload.source_ref ?? event.source_ref;
   if (!source_ref) {
-    throw new Error(`Calendar event ${event.event_id} missing source_ref`);
+    throw new ValidationError(
+      `Calendar event ${event.event_id} missing source_ref`,
+      { event_id: event.event_id },
+    );
   }
   const contactRefs = OPS_CONTACTS_ENABLED
     ? extractContactIdsFromEvent(event)
@@ -167,7 +171,10 @@ function toEmailTimelineItem(event: EmailEventEnvelope): TimelineItem {
   const payload = event.payload;
   const source_ref = payload.source_ref ?? event.source_ref;
   if (!source_ref) {
-    throw new Error(`Email event ${event.event_id} missing source_ref`);
+    throw new ValidationError(
+      `Email event ${event.event_id} missing source_ref`,
+      { event_id: event.event_id },
+    );
   }
   const title = payload.subject ?? "(no subject)";
   return {

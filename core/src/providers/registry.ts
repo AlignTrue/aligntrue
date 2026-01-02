@@ -1,5 +1,6 @@
 import type { CalendarProvider } from "./calendar.js";
 import type { EmailProvider } from "./email.js";
+import { ValidationError } from "../errors.js";
 
 export type ProviderKind = "calendar" | "email";
 
@@ -25,9 +26,10 @@ export function getCalendarProvider(name: string): CalendarProvider {
   if (!provider) {
     const available =
       listProviders("calendar").join(", ") || "(none registered)";
-    throw new Error(
-      `Unknown calendar provider "${name}". Available: ${available}`,
-    );
+    throw new ValidationError(`Unknown calendar provider "${name}"`, {
+      name,
+      available,
+    });
   }
   return provider;
 }
@@ -36,9 +38,10 @@ export function getEmailProvider(name: string): EmailProvider {
   const provider = emailRegistry.get(name);
   if (!provider) {
     const available = listProviders("email").join(", ") || "(none registered)";
-    throw new Error(
-      `Unknown email provider "${name}". Available: ${available}`,
-    );
+    throw new ValidationError(`Unknown email provider "${name}"`, {
+      name,
+      available,
+    });
   }
   return provider;
 }

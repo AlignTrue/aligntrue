@@ -1,4 +1,5 @@
 import { hashCanonical } from "../identity/hash.js";
+import { ValidationError } from "../errors.js";
 import type { EventStore } from "../storage/interfaces.js";
 import type {
   ProjectionDefinition,
@@ -141,7 +142,9 @@ export async function rebuildWorkLedger(
   )?.data as ReadyQueueProjectionState | undefined;
 
   if (!workItemsState || !readyQueueState) {
-    throw new Error("Work ledger projections missing from registry output");
+    throw new ValidationError(
+      "Work ledger projections missing from registry output",
+    );
   }
 
   const workItems = buildWorkItemsProjectionFromState(workItemsState);
@@ -168,7 +171,7 @@ export async function rebuildRuns(
   )?.data as RunsProjectionState | undefined;
 
   if (!runsState) {
-    throw new Error("Runs projection missing from registry output");
+    throw new ValidationError("Runs projection missing from registry output");
   }
 
   const runs = buildRunsProjectionFromState(runsState);

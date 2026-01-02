@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { ValidationError } from "../errors.js";
 
 export type AIProviderType = "openai" | "anthropic" | "google" | "custom";
 
@@ -31,6 +32,8 @@ export function createAIProvider(config: AIProviderConfig) {
     case "google":
       return createGoogleGenerativeAI({ apiKey: config.apiKey });
     default:
-      throw new Error(`Unknown AI provider: ${config.provider}`);
+      throw new ValidationError("Unknown AI provider", {
+        provider: config.provider,
+      });
   }
 }

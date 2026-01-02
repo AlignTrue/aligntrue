@@ -2,6 +2,7 @@ import { promises as fsp } from "node:fs";
 import { statSync } from "node:fs";
 import { resolve, relative } from "node:path";
 import crypto from "node:crypto";
+import { ValidationError } from "../errors.js";
 
 export interface PackReference {
   readonly name: string;
@@ -70,7 +71,10 @@ export async function computePackIntegrity(distPath: string): Promise<string> {
 function ensureExists(distPath: string): void {
   const stats = statSync(distPath, { throwIfNoEntry: false });
   if (!stats || !stats.isDirectory()) {
-    throw new Error(`Pack dist/ not found: ${distPath}. Run pnpm build first.`);
+    throw new ValidationError(
+      `Pack dist/ not found: ${distPath}. Run pnpm build first.`,
+      { distPath },
+    );
   }
 }
 

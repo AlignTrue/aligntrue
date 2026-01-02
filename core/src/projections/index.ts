@@ -111,5 +111,3 @@ export type {
   Receipt,
   ReceiptKind,
 } from "./receipts.js";
-export { entityRef, parseEntityRef } from "../entity-ref.js";
-export type { EntityType } from "../entity-ref.js";

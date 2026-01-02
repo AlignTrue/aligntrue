@@ -16,7 +16,8 @@ export interface ValidationResult {
 
 export type BlockRegistry = Map<
   string,
-  BlockRegistryEntry<Record<string, unknown>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  BlockRegistryEntry<any>
 >;
 
 export interface RegistryFactoryOptions {
@@ -26,7 +27,8 @@ export interface RegistryFactoryOptions {
 export function createBlockRegistry(
   items: Array<{
     manifest: BlockManifest;
-    Component: ComponentType<Record<string, unknown>>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Component: ComponentType<any>;
   }>,
   opts: RegistryFactoryOptions = {},
 ): BlockRegistry {

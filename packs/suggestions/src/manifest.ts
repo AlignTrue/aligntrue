@@ -5,7 +5,7 @@ const { SUGGESTION_COMMAND_TYPES, SUGGESTION_EVENT_TYPES } = Contracts;
 
 export const manifest: PackManifest = {
   pack_id: "suggestions",
-  version: "0.0.1",
+  version: "0.9.3",
   required_core: ">=0.0.0",
   public_events: Object.values(SUGGESTION_EVENT_TYPES),
   public_commands: Object.values(SUGGESTION_COMMAND_TYPES),

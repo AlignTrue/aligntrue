@@ -5,7 +5,7 @@ const { CONVERT_COMMAND_TYPES } = Contracts;
 
 export const manifest: PackManifest = {
   pack_id: "convert",
-  version: "0.0.1",
+  version: "0.9.3",
   required_core: ">=0.0.0",
   public_events: [],
   public_commands: Object.values(CONVERT_COMMAND_TYPES),

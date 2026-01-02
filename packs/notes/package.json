@@ -1,6 +1,6 @@
 {
   "name": "@aligntrue/pack-notes",
-  "version": "0.0.1",
+  "version": "0.9.3",
   "private": true,
   "type": "module",
   "exports": {
@@ -13,9 +13,13 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@aligntrue/core": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.16"
   }
 }

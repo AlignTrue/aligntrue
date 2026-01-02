@@ -5,7 +5,7 @@ const { NOTE_COMMAND_TYPES, NOTE_EVENT_TYPES } = Contracts;
 
 export const manifest: PackManifest = {
   pack_id: "notes",
-  version: "0.0.1",
+  version: "0.9.3",
   required_core: ">=0.0.0",
   public_events: Object.values(NOTE_EVENT_TYPES),
   public_commands: Object.values(NOTE_COMMAND_TYPES),
