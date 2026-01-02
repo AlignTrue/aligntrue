@@ -122,11 +122,11 @@ export class ExecutionRuntime extends BaseLedger<
       case "run.cancel":
         return this.handleRunCancel(command, state);
       case "step.attempt":
-        return this.handleStepAttempt(command, state);
+        return await this.handleStepAttempt(command, state);
       case "step.succeed":
-        return this.handleStepSucceed(command, state);
+        return await this.handleStepSucceed(command, state);
       case "step.fail":
-        return this.handleStepFail(command, state);
+        return await this.handleStepFail(command, state);
       default:
         return {
           events: [],
