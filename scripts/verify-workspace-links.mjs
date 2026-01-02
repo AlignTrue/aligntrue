@@ -45,7 +45,13 @@ function collectPackageJsons() {
   // root package
   const rootPkg = join(root, "package.json");
   if (fileExists(rootPkg)) {
-    entries.push({ name: "root", dir: root, packageJsonPath: rootPkg });
+    const manifest = JSON.parse(readFileSync(rootPkg, "utf8"));
+    entries.push({
+      name: manifest.name || "root",
+      dir: root,
+      packageJsonPath: rootPkg,
+      manifest,
+    });
   }
 
   for (const pattern of workspacePatterns) {
