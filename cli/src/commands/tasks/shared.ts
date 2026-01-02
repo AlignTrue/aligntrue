@@ -14,6 +14,7 @@ const { TASK_COMMAND_TYPES } = Contracts;
 export interface TasksProjectionResult {
   projection: TasksProjection;
   hash: string;
+  version: string;
 }
 
 const TASKS_PACK = {
@@ -63,6 +64,10 @@ export async function dispatchTaskCommand(
 }
 
 export async function readTasksProjection(): Promise<TasksProjectionResult> {
-  const result = await packHost.readProjection();
-  return { projection: result.projection, hash: result.hash ?? "" };
+  const { projection, hash, version } = await packHost.readProjection();
+  return {
+    projection,
+    hash: hash ?? hashTasksProjection(projection),
+    version: version ?? TasksProjectionDef.version,
+  };
 }
