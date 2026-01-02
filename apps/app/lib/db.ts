@@ -11,10 +11,14 @@ const DB_PATH = path.join(process.cwd(), "data", "ui.db");
 const dataDir = path.dirname(DB_PATH);
 ensureDirectoryExists(dataDir);
 
-export const db = new Database(DB_PATH);
+export const db = new Database(DB_PATH, {
+  // Increase timeout to handle concurrent access during builds
+  timeout: 10000,
+});
 
 // Enable WAL for better concurrency on local
 db.pragma("journal_mode = WAL");
+db.pragma("synchronous = NORMAL");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS plans (

@@ -40,13 +40,18 @@ function parseErrors(logOutput) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Match FAIL lines (test failures)
-    if (line.includes(" FAIL ")) {
+    // Match FAIL lines (test failures) or explicit build errors
+    if (
+      line.includes(" FAIL ") ||
+      line.includes("Build error occurred") ||
+      line.includes("SqliteError:") ||
+      line.includes("ERROR  run failed")
+    ) {
       if (currentError) {
         errors.push(currentError);
       }
       currentError = {
-        type: "FAIL",
+        type: line.includes(" FAIL ") ? "FAIL" : "BUILD_ERROR",
         lines: [line],
       };
     } else if (
@@ -56,7 +61,8 @@ function parseErrors(logOutput) {
         line.includes("Expected") ||
         line.includes("Received") ||
         line.includes(">") ||
-        line.includes("at "))
+        line.includes("at ") ||
+        line.includes("code: 'SQLITE_BUSY'"))
     ) {
       // Collect context lines for the current error
       currentError.lines.push(line);
@@ -64,7 +70,11 @@ function parseErrors(logOutput) {
       // Empty line might signal end of error block
       if (
         currentError.lines.some(
-          (l) => l.includes("AssertionError") || l.includes("Error:"),
+          (l) =>
+            l.includes("AssertionError") ||
+            l.includes("Error:") ||
+            l.includes("SqliteError") ||
+            l.includes("exited (1)"),
         )
       ) {
         errors.push(currentError);
