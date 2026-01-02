@@ -247,32 +247,18 @@ async function loadPolicyForActor(userId: string) {
   const active = state.by_user.get(userId);
   if (!active) return DEFAULT_POLICY;
 
-  const allowedSurfaces: ReadonlySet<RequiredSurface> = new Set([
-    "create_task_form",
-    "create_note_form",
-    "tasks_list",
-    "notes_list",
-    "inbox_focus",
-  ]);
-
-  const normalizedSurfaces = Object.fromEntries(
-    Object.entries(active.surfaces_by_intent).map(([intent, surfaces]) => [
-      intent,
-      (surfaces ?? []).filter((s): s is RequiredSurface =>
-        allowedSurfaces.has(s as RequiredSurface),
-      ),
-    ]),
-  );
-
   const base = {
     ...DEFAULT_POLICY,
-    required_surfaces_by_intent: normalizedSurfaces,
+    required_surfaces_by_intent: active.surfaces_by_intent as Record<
+      string,
+      RequiredSurface[]
+    >,
   };
   const policy_hash = hashCanonical({
     policy_id: active.active_policy_id,
     version: base.version,
     stage: base.stage,
-    required_surfaces_by_intent: normalizedSurfaces,
+    required_surfaces_by_intent: active.surfaces_by_intent,
     default_layout: base.default_layout,
     surface_to_block: base.surface_to_block,
   });
