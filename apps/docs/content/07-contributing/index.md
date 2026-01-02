@@ -1,11 +1,7 @@
-<!--
-  ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
-
-  This file is generated from documentation source.
-  To make changes, edit the source file and run: pnpm generate:repo-files
-
-  Source: apps/docs/content/07-contributing/index.md
--->
+---
+title: Contributing
+description: How to contribute to the AlignTrue ops platform.
+---
 
 # Contributing to AlignTrue
 
@@ -48,7 +44,3 @@ AlignTrue (ops platform) is in alpha. Contributions are welcome—please bias to
 2. Make the change and add tests/docs.
 3. Run checks (`pnpm test:fast`, or `pnpm ci` for deeper changes).
 4. Open a PR with clear summary and risk notes.
-
----
-
-_This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._
