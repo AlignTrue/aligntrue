@@ -17,6 +17,8 @@
     "@aligntrue/connector-google-calendar": "workspace:*",
     "@aligntrue/connector-google-common": "workspace:*",
     "@aligntrue/connector-google-gmail": "workspace:*",
+    "@aligntrue/pack-convert": "workspace:*",
+    "@aligntrue/pack-hello-world": "workspace:*",
     "@aligntrue/pack-notes": "workspace:*",
     "@aligntrue/pack-suggestions": "workspace:*",
     "@aligntrue/pack-tasks": "workspace:*",

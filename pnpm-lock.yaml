@@ -99,6 +99,12 @@ importers:
       '@aligntrue/host':
         specifier: workspace:*
         version: link:../../host
+      '@aligntrue/pack-convert':
+        specifier: workspace:*
+        version: link:../../packs/convert
+      '@aligntrue/pack-hello-world':
+        specifier: workspace:*
+        version: link:../../packs/hello-world
       '@aligntrue/pack-notes':
         specifier: workspace:*
         version: link:../../packs/notes
