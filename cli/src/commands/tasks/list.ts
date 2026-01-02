@@ -1,25 +1,25 @@
 import { exitWithError } from "../../utils/command-utilities.js";
 import { ensureTasksEnabled, readTasksProjection } from "./shared.js";
 import type { TaskLatest } from "@aligntrue/pack-tasks";
+import { parseArgs, type ArgDefinition } from "../../utils/args.js";
 
 export async function listTasks(args: string[]): Promise<void> {
   ensureTasksEnabled();
-  let bucketFilter: string | undefined;
-  for (let i = 0; i < args.length; i++) {
-    const arg = args.at(i);
-    if (!arg) continue;
-    if (arg === "--bucket") {
-      const next = args.at(i + 1);
-      if (!next) {
-        exitWithError(2, "--bucket requires a value", {
-          hint: "Usage: aligntrue task list [--bucket today|week|later|waiting]",
-        });
-      }
-      bucketFilter = next;
-      i += 1;
-    }
+  const spec: ArgDefinition[] = [
+    {
+      flag: "bucket",
+      type: "string",
+      choices: ["today", "week", "later", "waiting"],
+    },
+  ];
+  const parsed = parseArgs(args, spec);
+  if (parsed.errors.length > 0) {
+    exitWithError(2, parsed.errors.join("; "), {
+      hint: "Usage: aligntrue task list [--bucket today|week|later|waiting]",
+    });
   }
 
+  const bucketFilter = parsed.flags.bucket as string | undefined;
   const { projection } = await readTasksProjection();
   const tasks = bucketFilter
     ? projection.tasks.filter((t: TaskLatest) => t.bucket === bucketFilter)

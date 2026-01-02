@@ -1,11 +1,6 @@
+import { BaseLedger } from "../ledger/base-ledger.js";
 import { PreconditionFailed, ValidationError } from "../errors.js";
-import type {
-  CommandEnvelope,
-  CommandOutcome,
-  EventEnvelope,
-} from "../envelopes/index.js";
-import { computeScopeKey } from "../envelopes/command.js";
-import { generateEventId } from "../identity/id.js";
+import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import {
   WORK_EVENT_TYPES,
@@ -51,76 +46,56 @@ export type WorkCommandPayload =
 export type WorkCommandEnvelope<T extends WorkCommandType = WorkCommandType> =
   CommandEnvelope<T, WorkCommandPayload>;
 
-export interface WorkCommandContext {
-  readonly eventStore: EventStore;
-  readonly commandLog: CommandLog;
-  readonly now?: () => string;
-}
-
-export class WorkLedger {
-  private readonly now: () => string;
-
+export class WorkLedger extends BaseLedger<
+  WorkLedgerState,
+  CommandEnvelope<WorkCommandType, WorkCommandPayload>,
+  WorkLedgerEvent
+> {
   constructor(
-    private readonly eventStore: EventStore,
-    private readonly commandLog: CommandLog,
+    eventStore: EventStore,
+    commandLog: CommandLog,
     opts?: { now?: () => string },
   ) {
-    this.now = opts?.now ?? (() => new Date().toISOString());
+    super(eventStore, commandLog, opts);
   }
 
-  async execute(
-    command: CommandEnvelope<WorkCommandType, WorkCommandPayload>,
-  ): Promise<CommandOutcome> {
-    const start = await this.commandLog.tryStart({
-      command_id: command.command_id,
-      idempotency_key: command.idempotency_key,
-      dedupe_scope: command.dedupe_scope,
-      scope_key: computeScopeKey(command.dedupe_scope, command),
-    });
+  protected override initialState(): WorkLedgerState {
+    return initialState();
+  }
 
-    if (start.status === "duplicate") {
-      // For completion, surface idempotent repeat as already_processed.
-      if (command.command_type === "work.complete") {
-        return {
-          command_id: command.command_id,
-          status: "already_processed",
-          reason: "Work item already completed",
-          ...(start.outcome?.produced_events
-            ? { produced_events: start.outcome.produced_events }
-            : {}),
-        };
-      }
-      return start.outcome;
-    }
-    if (start.status === "in_flight") {
+  protected override reduceEvent(
+    state: WorkLedgerState,
+    event: WorkLedgerEvent,
+  ): WorkLedgerState {
+    return reduceEvent(state, event);
+  }
+
+  protected override envelopeVersion(): number {
+    return WORK_LEDGER_ENVELOPE_VERSION;
+  }
+
+  protected override payloadSchemaVersion(): number {
+    return WORK_LEDGER_SCHEMA_VERSION;
+  }
+
+  protected override async onDuplicate(
+    command: CommandEnvelope<WorkCommandType, WorkCommandPayload>,
+    outcome: CommandOutcome,
+  ): Promise<CommandOutcome> {
+    if (command.command_type === "work.complete") {
       return {
         command_id: command.command_id,
-        status: "already_processing",
-        reason: "Command in flight",
+        status: "already_processed",
+        reason: "Work item already completed",
+        ...(outcome.produced_events
+          ? { produced_events: outcome.produced_events }
+          : {}),
       };
     }
-
-    const state = await this.loadState();
-    const { events, reason, outcomeStatus } = this.applyCommand(command, state);
-
-    for (const event of events) {
-      await this.eventStore.append(event);
-    }
-
-    const outcome: CommandOutcome = {
-      command_id: command.command_id,
-      status:
-        outcomeStatus ?? (events.length > 0 ? "accepted" : "already_processed"),
-      produced_events: events.map((e) => e.event_id),
-      completed_at: this.now(),
-      ...(reason ? { reason } : {}),
-    };
-
-    await this.commandLog.complete(command.command_id, outcome);
     return outcome;
   }
 
-  private applyCommand(
+  protected override applyCommand(
     command: CommandEnvelope<WorkCommandType, WorkCommandPayload>,
     state: WorkLedgerState,
   ): {
@@ -393,41 +368,6 @@ export class WorkLedger {
     ) as WorkLedgerEvent;
     reduceEvent(state, event);
     return { events: [event] };
-  }
-
-  private async loadState(): Promise<WorkLedgerState> {
-    const state = initialState();
-    for await (const event of this.eventStore.stream()) {
-      // We only expect work-ledger events in this store
-      reduceEvent(state, event as WorkLedgerEvent);
-    }
-    return state;
-  }
-
-  private buildEvent<TPayload>(
-    command: CommandEnvelope<WorkCommandType, WorkCommandPayload>,
-    eventType: WorkLedgerEvent["event_type"],
-    payload: TPayload,
-  ): EventEnvelope<WorkLedgerEvent["event_type"], TPayload> {
-    const timestamp = this.now();
-    const capability_id = command.capability_id;
-    return {
-      event_id: generateEventId({ eventType, payload }),
-      event_type: eventType,
-      payload,
-      occurred_at: command.requested_at ?? timestamp,
-      ingested_at: timestamp,
-      correlation_id: command.correlation_id,
-      causation_id: command.command_id,
-      causation_type: "command",
-      ...(command.target_ref !== undefined
-        ? { source_ref: command.target_ref }
-        : {}),
-      actor: command.actor,
-      ...(capability_id !== undefined ? { capability_id } : {}),
-      envelope_version: WORK_LEDGER_ENVELOPE_VERSION,
-      payload_schema_version: WORK_LEDGER_SCHEMA_VERSION,
-    };
   }
 }
 

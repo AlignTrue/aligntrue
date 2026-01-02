@@ -5,32 +5,44 @@ import {
   Storage,
 } from "@aligntrue/core";
 import { exitWithError } from "../../utils/command-utilities.js";
-
-const HELP_TEXT = `
-Usage: aligntrue timeline list [--since YYYY-MM-DD] [--limit N] [--type calendar_event|email]
-
-List timeline items (calendar events, email metadata). Output is stable and receipt-oriented.
-`;
+import { defineCommand } from "../../utils/command-router.js";
+import { parseArgs, type ArgDefinition } from "../../utils/args.js";
 
 type TimelineItem = Projections.TimelineProjection["items"][number];
 
-export async function timeline(args: string[]): Promise<void> {
-  const sub = args[0] ?? "list";
-  const rest = args.slice(1);
+export const timeline = defineCommand({
+  name: "timeline",
+  subcommands: {
+    list: {
+      handler: listTimeline,
+      description: "List timeline items (calendar events, email metadata)",
+    },
+  },
+});
 
-  if (sub === "--help" || sub === "-h" || sub === "help") {
-    console.log(HELP_TEXT.trim());
-    return;
-  }
+async function listTimeline(args: string[]): Promise<void> {
+  const spec: ArgDefinition[] = [
+    { flag: "since", type: "string" },
+    { flag: "limit", type: "string" },
+    { flag: "type", type: "string", choices: ["calendar_event", "email"] },
+  ];
 
-  if (sub !== "list") {
-    exitWithError(2, `Unknown subcommand: ${sub}`, {
-      hint: "Run aligntrue timeline --help",
+  const parsed = parseArgs(args, spec);
+  if (parsed.errors.length > 0) {
+    exitWithError(2, parsed.errors.join("; "), {
+      hint: "Usage: aligntrue timeline list [--since YYYY-MM-DD] [--limit N] [--type calendar_event|email]",
     });
-    return;
   }
 
-  const { since, limit, type } = parseListArgs(rest);
+  const since = parsed.flags.since as string | undefined;
+  const limitStr = parsed.flags.limit as string | undefined;
+  const limit = limitStr ? Number.parseInt(limitStr, 10) : undefined;
+  const rawType = parsed.flags.type as string | undefined;
+  const type = rawType === "email" ? "email_message" : rawType;
+
+  if (limit !== undefined && (Number.isNaN(limit) || limit < 1)) {
+    exitWithError(2, "limit must be a positive integer");
+  }
 
   if (
     !OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED &&
@@ -53,12 +65,12 @@ export async function timeline(args: string[]): Promise<void> {
   }
 
   const store = new Storage.JsonlEventStore();
-  const projection = await Projections.rebuildOne(
+  const rebuilt = await Projections.rebuildOne(
     Projections.TimelineProjectionDef,
     store,
   );
   const view = Projections.buildTimelineProjectionFromState(
-    projection.data as Projections.TimelineProjectionState,
+    rebuilt.data as Projections.TimelineProjectionState,
   );
 
   let items = view.items;
@@ -131,79 +143,4 @@ export async function timeline(args: string[]): Promise<void> {
       console.log(`  doc_refs: ${item.doc_refs.length} attachment(s)`);
     }
   }
-}
-
-function parseListArgs(args: string[]): {
-  since?: string;
-  limit?: number;
-  type?: string;
-} {
-  let since: string | undefined;
-  let limit: number | undefined;
-  let type: string | undefined;
-
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args.at(i);
-    if (!arg) continue;
-    switch (arg) {
-      case "--since":
-        if (args.at(i + 1)) {
-          since = args.at(i + 1);
-          i += 1;
-        } else {
-          exitWithError(2, "--since requires a value");
-        }
-        break;
-      case "--limit":
-        if (!args.at(i + 1)) {
-          exitWithError(2, "--limit requires a value");
-        }
-        {
-          const parsed = Number(args.at(i + 1));
-          if (Number.isNaN(parsed) || parsed < 1) {
-            exitWithError(2, "limit must be a positive integer");
-          }
-          limit = parsed;
-          i += 1;
-        }
-        break;
-      case "--type":
-        if (args.at(i + 1)) {
-          type = args.at(i + 1);
-          i += 1;
-        } else {
-          exitWithError(2, "--type requires a value");
-        }
-        break;
-      case "--help":
-      case "-h":
-        console.log(HELP_TEXT.trim());
-        process.exit(0);
-        break;
-      default:
-        exitWithError(2, `Unknown option: ${arg}`, {
-          hint: "Run aligntrue timeline --help",
-        });
-    }
-  }
-
-  const result: { since?: string; limit?: number; type?: string } = {};
-  if (since !== undefined) {
-    result.since = since;
-  }
-  if (limit !== undefined) {
-    result.limit = limit;
-  }
-  if (type !== undefined) {
-    if (type === "email") {
-      result.type = "email_message";
-    } else if (type === "calendar_event" || type === "email_message") {
-      result.type = type;
-    } else {
-      exitWithError(2, `Unsupported type filter: ${type}`, {
-        hint: "Use 'calendar_event' or 'email'",
-      });
-    }
-  }
-  return result;
 }

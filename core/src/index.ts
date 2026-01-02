@@ -47,6 +47,8 @@ export { handlePolicySetCommand } from "./handlers/policy.js";
 export * as Projections from "./projections/index.js";
 export * as EntityRef from "./entity-ref.js";
 export * as Artifacts from "./artifacts/index.js";
+export { BaseLedger } from "./ledger/base-ledger.js";
+export * as Collections from "./utils/collections.js";
 export type { ConversionMeta } from "./types/conversion.js";
 export * as Feedback from "./feedback/index.js";
 export * as Memory from "./memory/index.js";

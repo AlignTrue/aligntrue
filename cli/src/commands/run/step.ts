@@ -1,18 +1,30 @@
 import { Identity, Execution } from "@aligntrue/core";
 import { exitWithError } from "../../utils/command-utilities.js";
+import { parseArgs, type ArgDefinition } from "../../utils/args.js";
 import { buildCommandEnvelope, createRuntime } from "./shared.js";
 
 export async function attemptStep(args: string[]): Promise<void> {
-  const run_id = args.at(0);
+  const spec: ArgDefinition[] = [
+    { flag: "kind", type: "string", required: true },
+    { flag: "id", type: "string" },
+  ];
+
+  const parsed = parseArgs(args, spec);
+  if (parsed.errors.length > 0) {
+    exitWithError(2, parsed.errors.join("; "), {
+      hint: "Usage: aligntrue run step <run_id> --kind <kind> [--id <step_id>]",
+    });
+  }
+
+  const run_id = parsed.positional[0];
   if (!run_id) {
-    exitWithError(2, "Usage: aligntrue run step <run_id> --kind <kind>");
-    return;
+    exitWithError(2, "Run ID is required", {
+      hint: "Usage: aligntrue run step <run_id> --kind <kind> [--id <step_id>]",
+    });
   }
-  const { kind, step_id } = parseArgs(args.slice(1));
-  if (!kind) {
-    exitWithError(2, "Missing --kind <kind>");
-    return;
-  }
+
+  const kind = parsed.flags.kind as string;
+  const step_id = parsed.flags.id as string | undefined;
 
   const runtime = createRuntime();
   const command = buildCommandEnvelope("step.attempt", {
@@ -31,36 +43,4 @@ export async function attemptStep(args: string[]): Promise<void> {
     );
   }
   console.log(`Step attempted: ${command.payload.step_id} (run ${run_id})`);
-}
-
-function parseArgs(args: string[]): {
-  kind: string | undefined;
-  step_id: string | undefined;
-} {
-  let kind: string | undefined;
-  let step_id: string | undefined;
-  for (let i = 0; i < args.length; i++) {
-    const arg = args.at(i);
-    if (!arg) continue;
-    if (arg === "--kind") {
-      const next = args.at(i + 1);
-      if (!next) {
-        exitWithError(2, "--kind requires a value", {
-          hint: "Usage: aligntrue run step <run_id> --kind <kind> [--id <step_id>]",
-        });
-      }
-      kind = next;
-      i++;
-    } else if (arg === "--id") {
-      const next = args.at(i + 1);
-      if (!next) {
-        exitWithError(2, "--id requires a value", {
-          hint: "Usage: aligntrue run step <run_id> --kind <kind> [--id <step_id>]",
-        });
-      }
-      step_id = next;
-      i++;
-    }
-  }
-  return { kind, step_id };
 }

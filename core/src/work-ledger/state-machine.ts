@@ -3,6 +3,7 @@ import {
   type WorkLedgerEvent,
   type WorkStatus,
 } from "./events.js";
+import { cloneMapWith, cloneSet } from "../utils/collections.js";
 
 export interface WorkItemState {
   id: string;
@@ -103,13 +104,10 @@ export function reduceEvent(
 }
 
 export function cloneState(state: WorkLedgerState): WorkLedgerState {
-  const items = new Map<string, WorkItemState>();
-  for (const [id, item] of state.items.entries()) {
-    items.set(id, {
-      ...item,
-      dependencies: new Set(item.dependencies),
-    });
-  }
+  const items = cloneMapWith(state.items, (item) => ({
+    ...item,
+    dependencies: cloneSet(item.dependencies),
+  }));
   return { items };
 }
 

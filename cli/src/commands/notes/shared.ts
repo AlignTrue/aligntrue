@@ -1,26 +1,28 @@
-import {
-  OPS_CORE_ENABLED,
-  OPS_NOTES_ENABLED,
-  Identity,
-  Storage,
-  Projections,
-} from "@aligntrue/core";
+import { OPS_NOTES_ENABLED, Identity } from "@aligntrue/core";
 import * as PackNotes from "@aligntrue/pack-notes";
-import { exitWithError } from "../../utils/command-utilities.js";
+import { createPackHost } from "../../utils/pack-host.js";
 import { CLI_ACTOR } from "../../utils/cli-actor.js";
 
-export function ensureNotesEnabled(): void {
-  if (!OPS_CORE_ENABLED) {
-    exitWithError(1, "ops-core is disabled", {
-      hint: "Set OPS_CORE_ENABLED=1 to enable ops-core commands",
-    });
-  }
-  if (!OPS_NOTES_ENABLED) {
-    exitWithError(1, "Notes are disabled", {
-      hint: "Set OPS_NOTES_ENABLED=1 to enable notes",
-    });
-  }
-}
+const packHost = createPackHost<
+  PackNotes.NotesProjectionState,
+  PackNotes.NotesProjection
+>({
+  pack: {
+    name: "@aligntrue/pack-notes",
+    version: "0.0.1",
+    source: "workspace",
+  },
+  capabilities: Object.values(PackNotes.NOTE_COMMAND_TYPES),
+  domainEnabled: OPS_NOTES_ENABLED,
+  domainName: "notes",
+  projection: {
+    def: PackNotes.NotesProjectionDef,
+    build: PackNotes.buildNotesProjectionFromState,
+    hash: PackNotes.hashNotesProjection,
+  },
+});
+
+export const ensureNotesEnabled = packHost.ensureEnabled;
 
 export function createLedger(): PackNotes.NoteLedger {
   return PackNotes.createJsonlNoteLedger();
@@ -54,16 +56,10 @@ export async function readNotesProjection() {
 }
 
 export async function readNotesProjectionWithMeta() {
-  const rebuilt = await Projections.rebuildOne(
-    PackNotes.NotesProjectionDef,
-    new Storage.JsonlEventStore(PackNotes.DEFAULT_NOTES_EVENTS_PATH),
-  );
-  const projection = PackNotes.buildNotesProjectionFromState(
-    rebuilt.data as PackNotes.NotesProjectionState,
-  );
+  const { projection, hash, version } = await packHost.readProjection();
   return {
     projection,
-    hash: PackNotes.hashNotesProjection(projection),
-    version: PackNotes.NotesProjectionDef.version,
+    hash: hash ?? PackNotes.hashNotesProjection(projection),
+    version: version ?? PackNotes.NotesProjectionDef.version,
   };
 }

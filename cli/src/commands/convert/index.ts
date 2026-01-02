@@ -11,41 +11,39 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const manifestJson = require("../../../cli.manifest.json");
 import { exitWithError } from "../../utils/command-utilities.js";
-
-const HELP = `
-Usage:
-  aligntrue convert email-to-task <message_id>
-  aligntrue convert email-to-note <message_id>
-`;
+import { parseArgs, type ArgDefinition } from "../../utils/args.js";
+import { CLI_ACTOR } from "../../utils/cli-actor.js";
+import { defineCommand } from "../../utils/command-router.js";
 
 const manifest = manifestJson as unknown as Contracts.AppManifest;
 let hostInstance: Host | null = null;
 
-export async function convert(args: string[]): Promise<void> {
-  const sub = args[0];
-  const rest = args.slice(1);
-
-  if (!sub || sub === "--help" || sub === "-h" || sub === "help") {
-    console.log(HELP.trim());
-    return;
-  }
-
-  switch (sub) {
-    case "email-to-task":
-      await convertEmailToTask(rest);
-      return;
-    case "email-to-note":
-      await convertEmailToNote(rest);
-      return;
-    default:
-      exitWithError(2, `Unknown convert subcommand: ${sub}`, {
-        hint: "Use email-to-task or email-to-note",
-      });
-  }
-}
+export const convert = defineCommand({
+  name: "convert",
+  subcommands: {
+    "email-to-task": {
+      handler: convertEmailToTask,
+      description: "Convert an email to a task",
+    },
+    "email-to-note": {
+      handler: convertEmailToNote,
+      description: "Convert an email to a note",
+    },
+  },
+});
 
 async function convertEmailToTask(args: string[]): Promise<void> {
-  const { messageId, labelArchive } = parseArgs(args);
+  const spec: ArgDefinition[] = [{ flag: "label-archive", type: "boolean" }];
+  const parsed = parseArgs(args, spec);
+  const messageId = parsed.positional[0];
+  const labelArchive = !!parsed.flags["label-archive"];
+
+  if (!messageId) {
+    exitWithError(2, "message_id is required", {
+      hint: "Usage: aligntrue convert email-to-task <message_id> [--label-archive]",
+    });
+  }
+
   if (!OPS_TASKS_ENABLED) {
     exitWithError(1, "Tasks are disabled", {
       hint: "Set OPS_TASKS_ENABLED=1",
@@ -53,7 +51,7 @@ async function convertEmailToTask(args: string[]): Promise<void> {
   }
 
   const host = await getHost();
-  const command = buildConvertCommand("task", messageId, cliActor(), {});
+  const command = buildConvertCommand("task", messageId, CLI_ACTOR, {});
   const outcome = await host.runtime.dispatchCommand(command);
 
   console.log(`Converted email ${messageId} -> task (${outcome.status})`);
@@ -104,7 +102,15 @@ async function convertEmailToTask(args: string[]): Promise<void> {
 }
 
 async function convertEmailToNote(args: string[]): Promise<void> {
-  const { messageId } = parseArgs(args);
+  const parsed = parseArgs(args, []);
+  const messageId = parsed.positional[0];
+
+  if (!messageId) {
+    exitWithError(2, "message_id is required", {
+      hint: "Usage: aligntrue convert email-to-note <message_id>",
+    });
+  }
+
   if (!OPS_NOTES_ENABLED) {
     exitWithError(1, "Notes are disabled", {
       hint: "Set OPS_NOTES_ENABLED=1",
@@ -112,42 +118,10 @@ async function convertEmailToNote(args: string[]): Promise<void> {
   }
 
   const host = await getHost();
-  const command = buildConvertCommand("note", messageId, cliActor(), {});
+  const command = buildConvertCommand("note", messageId, CLI_ACTOR, {});
   const outcome = await host.runtime.dispatchCommand(command);
 
   console.log(`Converted email ${messageId} -> note (${outcome.status})`);
-}
-
-function parseArgs(args: string[]): {
-  messageId: string;
-  labelArchive: boolean;
-} {
-  let messageId: string | undefined;
-  let labelArchive = false;
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args.at(i);
-    if (arg === "--label-archive") {
-      labelArchive = true;
-      continue;
-    }
-    if (!messageId && arg) {
-      messageId = arg;
-    }
-  }
-  if (!messageId) {
-    exitWithError(2, "message_id is required", {
-      hint: HELP.trim(),
-    });
-  }
-  return { messageId, labelArchive };
-}
-
-function cliActor(): Contracts.ActorRef {
-  return {
-    actor_id: process.env["USER"] || "cli-user",
-    actor_type: "human",
-    display_name: process.env["USER"] || "CLI User",
-  };
 }
 
 async function getHost(): Promise<Host> {

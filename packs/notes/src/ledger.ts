@@ -1,19 +1,13 @@
 import { join } from "node:path";
 import {
-  Identity,
   ValidationError,
   PreconditionFailed,
   Storage,
   OPS_DATA_DIR,
-  computeScopeKey,
+  BaseLedger,
+  Identity,
 } from "@aligntrue/core";
-import type {
-  CommandEnvelope,
-  CommandOutcome,
-  CommandLog,
-  EventStore,
-  EventEnvelope,
-} from "@aligntrue/core";
+import type { CommandEnvelope, CommandOutcome } from "@aligntrue/core";
 import {
   NOTE_COMMAND_TYPES,
   type NoteCommandType,
@@ -32,8 +26,6 @@ import {
   type NotesLedgerState,
 } from "./state-machine.js";
 import { toggleCheckboxAtLine } from "./markdown.js";
-
-const NOTE_ENVELOPE_VERSION = 1;
 
 export type NoteCommandEnvelopes = {
   [NOTE_COMMAND_TYPES.Create]: CommandEnvelope<
@@ -83,59 +75,39 @@ export function createJsonlNoteLedger(opts?: {
   );
 }
 
-export class NoteLedger {
-  private readonly now: () => string;
-
+export class NoteLedger extends BaseLedger<
+  NotesLedgerState,
+  NoteCommandEnvelope<NoteCommandType>,
+  NoteEvent
+> {
   constructor(
-    private readonly eventStore: EventStore,
-    private readonly commandLog: CommandLog,
+    eventStore: Storage.EventStore,
+    commandLog: Storage.CommandLog,
     opts?: { now?: () => string },
   ) {
-    this.now = opts?.now ?? (() => new Date().toISOString());
+    super(eventStore, commandLog, opts);
   }
 
-  async execute(
-    command: NoteCommandEnvelope<NoteCommandType>,
-  ): Promise<CommandOutcome> {
-    const start = await this.commandLog.tryStart({
-      command_id: command.command_id,
-      idempotency_key: command.idempotency_key,
-      dedupe_scope: command.dedupe_scope,
-      scope_key: computeScopeKey(command.dedupe_scope, command),
-    });
-
-    if (start.status === "duplicate") {
-      return start.outcome;
-    }
-    if (start.status === "in_flight") {
-      return {
-        command_id: command.command_id,
-        status: "already_processing",
-        reason: "Command in flight",
-      };
-    }
-
-    const state = await this.loadState();
-    const { events, reason, outcomeStatus } = this.applyCommand(command, state);
-
-    for (const event of events) {
-      await this.eventStore.append(event);
-    }
-
-    const outcome: CommandOutcome = {
-      command_id: command.command_id,
-      status:
-        outcomeStatus ?? (events.length > 0 ? "accepted" : "already_processed"),
-      produced_events: events.map((e) => e.event_id),
-      completed_at: this.now(),
-      ...(reason ? { reason } : {}),
-    };
-
-    await this.commandLog.complete(command.command_id, outcome);
-    return outcome;
+  protected override initialState(): NotesLedgerState {
+    return initialState();
   }
 
-  private applyCommand(
+  protected override reduceEvent(
+    state: NotesLedgerState,
+    event: NoteEvent,
+  ): NotesLedgerState {
+    return reduceEvent(state, event);
+  }
+
+  protected override envelopeVersion(): number {
+    return 1;
+  }
+
+  protected override payloadSchemaVersion(): number {
+    return NOTES_SCHEMA_VERSION;
+  }
+
+  protected override applyCommand(
     command: CommandEnvelope<string, NoteCommandPayload>,
     state: NotesLedgerState,
   ): {
@@ -296,39 +268,5 @@ export class NoteLedger {
     ) as NoteEvent;
     reduceEvent(state, event);
     return { events: [event] };
-  }
-
-  private async loadState(): Promise<NotesLedgerState> {
-    const state = initialState();
-    for await (const event of this.eventStore.stream()) {
-      reduceEvent(state, event as NoteEvent);
-    }
-    return state;
-  }
-
-  private buildEvent<TPayload>(
-    command: CommandEnvelope<string, NoteCommandPayload>,
-    eventType: NoteEvent["event_type"],
-    payload: TPayload,
-  ): EventEnvelope<string, TPayload> {
-    const timestamp = this.now();
-    const capability_id = command.capability_id ?? command.command_type;
-    return {
-      event_id: Identity.generateEventId({ eventType, payload }),
-      event_type: eventType,
-      payload,
-      occurred_at: command.requested_at ?? timestamp,
-      ingested_at: timestamp,
-      correlation_id: command.correlation_id,
-      causation_id: command.command_id,
-      causation_type: "command",
-      actor: command.actor,
-      ...(command.target_ref !== undefined
-        ? { source_ref: command.target_ref }
-        : {}),
-      ...(capability_id !== undefined ? { capability_id } : {}),
-      envelope_version: NOTE_ENVELOPE_VERSION,
-      payload_schema_version: NOTES_SCHEMA_VERSION,
-    };
   }
 }

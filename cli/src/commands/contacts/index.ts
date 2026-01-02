@@ -1,39 +1,34 @@
 import { OPS_CONTACTS_ENABLED, Projections, Storage } from "@aligntrue/core";
 import { exitWithError } from "../../utils/command-utilities.js";
+import { defineCommand } from "../../utils/command-router.js";
+import { parseArgs, type ArgDefinition } from "../../utils/args.js";
 
-const HELP_TEXT = `
-Usage: aligntrue contacts <list|show> [options]
-
-Subcommands:
-  list [--limit N]              List contacts derived from calendar ingest
-  show <contact_id>             Show a single contact by id
-`;
-
-export async function contacts(args: string[]): Promise<void> {
-  const sub = args[0] ?? "list";
-  const rest = args.slice(1);
-
-  if (sub === "--help" || sub === "-h" || sub === "help") {
-    console.log(HELP_TEXT.trim());
-    return;
-  }
-
-  switch (sub) {
-    case "list":
-      await listContacts(rest);
-      return;
-    case "show":
-      await showContact(rest);
-      return;
-    default:
-      exitWithError(2, `Unknown subcommand: ${sub}`, {
-        hint: "Run aligntrue contacts --help",
-      });
-  }
-}
+export const contacts = defineCommand({
+  name: "contacts",
+  subcommands: {
+    list: {
+      handler: listContacts,
+      description: "List contacts derived from calendar ingest",
+    },
+    show: {
+      handler: showContact,
+      description: "Show a single contact by id",
+    },
+  },
+});
 
 async function listContacts(args: string[]): Promise<void> {
-  const { limit } = parseListArgs(args);
+  const spec: ArgDefinition[] = [{ flag: "limit", type: "string" }];
+  const parsed = parseArgs(args, spec);
+  if (parsed.errors.length > 0) {
+    exitWithError(2, parsed.errors.join("; "));
+  }
+
+  const limitStr = parsed.flags.limit as string | undefined;
+  const limit = limitStr ? Number.parseInt(limitStr, 10) : undefined;
+  if (limit !== undefined && (Number.isNaN(limit) || limit < 1)) {
+    exitWithError(2, "limit must be a positive integer");
+  }
 
   if (!OPS_CONTACTS_ENABLED) {
     console.warn(
@@ -42,12 +37,12 @@ async function listContacts(args: string[]): Promise<void> {
   }
 
   const store = new Storage.JsonlEventStore();
-  const projection = await Projections.rebuildOne(
+  const rebuilt = await Projections.rebuildOne(
     Projections.ContactsProjectionDef,
     store,
   );
   const view = Projections.buildContactsProjectionFromState(
-    projection.data as Projections.ContactsProjectionState,
+    rebuilt.data as Projections.ContactsProjectionState,
   );
 
   let contacts = view.contacts;
@@ -76,7 +71,8 @@ async function listContacts(args: string[]): Promise<void> {
 }
 
 async function showContact(args: string[]): Promise<void> {
-  const id = args[0];
+  const parsed = parseArgs(args, []);
+  const id = parsed.positional[0];
   if (!id) {
     exitWithError(2, "contact_id is required for show", {
       hint: "Usage: aligntrue contacts show <contact_id>",
@@ -91,12 +87,12 @@ async function showContact(args: string[]): Promise<void> {
   }
 
   const store = new Storage.JsonlEventStore();
-  const projection = await Projections.rebuildOne(
+  const rebuilt = await Projections.rebuildOne(
     Projections.ContactsProjectionDef,
     store,
   );
   const view = Projections.buildContactsProjectionFromState(
-    projection.data as Projections.ContactsProjectionState,
+    rebuilt.data as Projections.ContactsProjectionState,
   );
   const contact = view.contacts.find(
     (c: Projections.Contact) => c.contact_id === id,
@@ -117,42 +113,4 @@ async function showContact(args: string[]): Promise<void> {
   console.log(`source_refs: ${contact.source_refs.join(", ")}`);
   console.log(`created_at: ${contact.created_at}`);
   console.log(`updated_at: ${contact.updated_at}`);
-}
-
-function parseListArgs(args: string[]): { limit?: number } {
-  let limit: number | undefined;
-
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args.at(i);
-    if (!arg) continue;
-    switch (arg) {
-      case "--limit":
-        {
-          const next = args.at(i + 1);
-          if (!next) {
-            exitWithError(2, "--limit requires a value");
-          }
-          const parsed = Number(next);
-          if (Number.isNaN(parsed) || parsed < 1) {
-            exitWithError(2, "limit must be a positive integer");
-          }
-          limit = parsed;
-          i += 1;
-        }
-        break;
-      case "--help":
-      case "-h":
-        console.log(HELP_TEXT.trim());
-        process.exit(0);
-        break;
-      default:
-        exitWithError(2, `Unknown option: ${arg}`, {
-          hint: "Run aligntrue contacts --help",
-        });
-    }
-  }
-
-  const result: { limit?: number } = {};
-  if (limit !== undefined) result.limit = limit;
-  return result;
 }

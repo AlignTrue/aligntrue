@@ -1,11 +1,5 @@
-import {
-  OPS_CORE_ENABLED,
-  OPS_TASKS_ENABLED,
-  Identity,
-  Projections,
-  Contracts,
-} from "@aligntrue/core";
-import { createHost, type Host } from "@aligntrue/host";
+import { OPS_TASKS_ENABLED, Identity, Contracts } from "@aligntrue/core";
+import { createPackHost } from "../../utils/pack-host.js";
 import {
   TasksProjectionDef,
   buildTasksProjectionFromState,
@@ -14,7 +8,6 @@ import {
   type TasksProjectionState,
 } from "@aligntrue/pack-tasks";
 import { CLI_ACTOR } from "../../utils/cli-actor.js";
-import { exitWithError } from "../../utils/command-utilities.js";
 
 const { TASK_COMMAND_TYPES } = Contracts;
 
@@ -29,40 +22,25 @@ const TASKS_PACK = {
   source: "workspace",
 } as const;
 
-let hostPromise: Promise<Host> | null = null;
+const packHost = createPackHost<TasksProjectionState, TasksProjection>({
+  pack: TASKS_PACK,
+  capabilities: Object.values(TASK_COMMAND_TYPES),
+  domainEnabled: OPS_TASKS_ENABLED,
+  domainName: "tasks",
+  projection: {
+    def: TasksProjectionDef,
+    build: buildTasksProjectionFromState,
+    hash: hashTasksProjection,
+  },
+});
 
-export function ensureTasksEnabled(): void {
-  if (!OPS_CORE_ENABLED) {
-    exitWithError(1, "ops-core is disabled", {
-      hint: "Set OPS_CORE_ENABLED=1 to enable ops-core commands",
-    });
-  }
-  if (!OPS_TASKS_ENABLED) {
-    exitWithError(1, "Tasks are disabled", {
-      hint: "Set OPS_TASKS_ENABLED=1 to enable tasks commands",
-    });
-  }
-}
-
-async function getHost(): Promise<Host> {
-  if (!hostPromise) {
-    hostPromise = createHost({
-      manifest: {
-        name: "@aligntrue/cli",
-        version: "0.0.0",
-        packs: [TASKS_PACK],
-        capabilities: Object.values(TASK_COMMAND_TYPES),
-      },
-    });
-  }
-  return hostPromise;
-}
+export const ensureTasksEnabled = packHost.ensureEnabled;
 
 export async function dispatchTaskCommand(
   command_type: (typeof TASK_COMMAND_TYPES)[keyof typeof TASK_COMMAND_TYPES],
   payload: Record<string, unknown>,
 ) {
-  const host = await getHost();
+  const host = await packHost.getHost();
   const target = `task:${
     "task_id" in payload ? (payload as { task_id: string }).task_id : "unknown"
   }`;
@@ -85,13 +63,6 @@ export async function dispatchTaskCommand(
 }
 
 export async function readTasksProjection(): Promise<TasksProjectionResult> {
-  const host = await getHost();
-  const rebuilt = await Projections.rebuildOne(
-    TasksProjectionDef,
-    host.eventStore,
-  );
-  const projection = buildTasksProjectionFromState(
-    rebuilt.data as TasksProjectionState,
-  );
-  return { projection, hash: hashTasksProjection(projection) };
+  const result = await packHost.readProjection();
+  return { projection: result.projection, hash: result.hash ?? "" };
 }

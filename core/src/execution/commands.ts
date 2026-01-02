@@ -1,11 +1,10 @@
+import { BaseLedger } from "../ledger/base-ledger.js";
 import {
   type CommandEnvelope,
   type CommandOutcome,
-  computeScopeKey,
 } from "../envelopes/index.js";
 import type { CommandLog, EventStore } from "../storage/interfaces.js";
 import { PreconditionFailed } from "../errors.js";
-import { generateEventId } from "../identity/id.js";
 import {
   EXECUTION_EVENT_TYPES,
   EXECUTION_SCHEMA_VERSION,
@@ -76,62 +75,42 @@ export type ExecutionCommandEnvelope<
   T extends ExecutionCommandType = ExecutionCommandType,
 > = Extract<ExecutionCommand, { command_type: T }>;
 
-export class ExecutionRuntime {
+export class ExecutionRuntime extends BaseLedger<
+  ReturnType<typeof initialState>,
+  ExecutionCommandEnvelope,
+  ExecutionEvent
+> {
   private readonly budget: BudgetTracker;
-  private readonly now: () => string;
 
   constructor(
-    private readonly eventStore: EventStore,
-    private readonly commandLog: CommandLog,
+    eventStore: EventStore,
+    commandLog: CommandLog,
     opts?: { budget?: BudgetTracker; now?: () => string },
   ) {
+    super(eventStore, commandLog, opts);
     this.budget = opts?.budget ?? new BudgetTracker();
-    this.now = opts?.now ?? (() => new Date().toISOString());
   }
 
-  async execute(command: ExecutionCommandEnvelope): Promise<CommandOutcome> {
-    const start = await this.commandLog.tryStart({
-      command_id: command.command_id,
-      idempotency_key: command.idempotency_key,
-      dedupe_scope: command.dedupe_scope,
-      scope_key: computeScopeKey(command.dedupe_scope, command),
-    });
-
-    if (start.status === "duplicate") {
-      return start.outcome;
-    }
-    if (start.status === "in_flight") {
-      return {
-        command_id: command.command_id,
-        status: "already_processing",
-        reason: "Command in flight",
-      };
-    }
-
-    const state = await this.loadState();
-    const { events, reason, outcomeStatus } = await this.applyCommand(
-      command,
-      state,
-    );
-
-    for (const event of events) {
-      await this.eventStore.append(event);
-    }
-
-    const outcome: CommandOutcome = {
-      command_id: command.command_id,
-      status:
-        outcomeStatus ?? (events.length > 0 ? "accepted" : "already_processed"),
-      produced_events: events.map((e) => e.event_id),
-      completed_at: this.now(),
-      ...(reason ? { reason } : {}),
-    };
-
-    await this.commandLog.complete(command.command_id, outcome);
-    return outcome;
+  protected initialState(): ReturnType<typeof initialState> {
+    return initialState();
   }
 
-  private async applyCommand(
+  protected reduceEvent(
+    state: ReturnType<typeof initialState>,
+    event: ExecutionEvent,
+  ): ReturnType<typeof initialState> {
+    return reduceEvent(state, event);
+  }
+
+  protected envelopeVersion(): number {
+    return EXECUTION_ENVELOPE_VERSION;
+  }
+
+  protected payloadSchemaVersion(): number {
+    return EXECUTION_SCHEMA_VERSION;
+  }
+
+  protected async applyCommand(
     command: ExecutionCommandEnvelope,
     state: ReturnType<typeof initialState>,
   ): Promise<CommandApplicationResult> {
@@ -169,16 +148,12 @@ export class ExecutionRuntime {
       };
     }
 
-    const event = this.buildEvent(
-      EXECUTION_EVENT_TYPES.RunStarted,
-      {
-        run_id: command.payload.run_id,
-        ...(command.payload.target_ref
-          ? { target_ref: command.payload.target_ref }
-          : {}),
-      },
-      command,
-    );
+    const event = this.buildEvent(command, EXECUTION_EVENT_TYPES.RunStarted, {
+      run_id: command.payload.run_id,
+      ...(command.payload.target_ref
+        ? { target_ref: command.payload.target_ref }
+        : {}),
+    });
     reduceEvent(state, event);
     return { events: [event] };
   }
@@ -194,11 +169,9 @@ export class ExecutionRuntime {
     if (run.status !== "running") {
       return { events: [], outcomeStatus: "already_processed" };
     }
-    const event = this.buildEvent(
-      EXECUTION_EVENT_TYPES.RunCompleted,
-      { run_id: command.payload.run_id },
-      command,
-    );
+    const event = this.buildEvent(command, EXECUTION_EVENT_TYPES.RunCompleted, {
+      run_id: command.payload.run_id,
+    });
     reduceEvent(state, event);
     return { events: [event] };
   }
@@ -214,14 +187,10 @@ export class ExecutionRuntime {
     if (run.status !== "running") {
       return { events: [], outcomeStatus: "already_processed" };
     }
-    const event = this.buildEvent(
-      EXECUTION_EVENT_TYPES.RunCancelled,
-      {
-        run_id: command.payload.run_id,
-        ...(command.payload.reason ? { reason: command.payload.reason } : {}),
-      },
-      command,
-    );
+    const event = this.buildEvent(command, EXECUTION_EVENT_TYPES.RunCancelled, {
+      run_id: command.payload.run_id,
+      ...(command.payload.reason ? { reason: command.payload.reason } : {}),
+    });
     reduceEvent(state, event);
     return { events: [event] };
   }
@@ -257,6 +226,7 @@ export class ExecutionRuntime {
     );
 
     const event = this.buildEvent(
+      command,
       EXECUTION_EVENT_TYPES.StepAttempted,
       {
         run_id: command.payload.run_id,
@@ -266,7 +236,6 @@ export class ExecutionRuntime {
         router_decision_ref: receipt.receipt_id,
         requested_at: command.requested_at,
       },
-      command,
     );
 
     reduceEvent(state, event);
@@ -298,6 +267,7 @@ export class ExecutionRuntime {
     }
 
     const event = this.buildEvent(
+      command,
       EXECUTION_EVENT_TYPES.StepSucceeded,
       {
         run_id: command.payload.run_id,
@@ -310,7 +280,6 @@ export class ExecutionRuntime {
           command.requested_at,
         completed_at: command.payload.completed_at ?? this.now(),
       },
-      command,
     );
     reduceEvent(state, event);
     return { events: [event] };
@@ -329,57 +298,21 @@ export class ExecutionRuntime {
         reason: "Run not running",
       };
     }
-    const event = this.buildEvent(
-      EXECUTION_EVENT_TYPES.StepFailed,
-      {
-        run_id: command.payload.run_id,
-        step_id: command.payload.step_id,
-        reason: command.payload.reason,
-        proof_refs: command.payload.proof_refs ?? [],
-        router_decision_ref: command.payload.router_decision_ref,
-        started_at:
-          command.payload.started_at ??
-          run.steps.get(command.payload.step_id)?.started_at,
-        completed_at:
-          command.payload.completed_at ??
-          run.steps.get(command.payload.step_id)?.completed_at ??
-          this.now(),
-      },
-      command,
-    );
+    const event = this.buildEvent(command, EXECUTION_EVENT_TYPES.StepFailed, {
+      run_id: command.payload.run_id,
+      step_id: command.payload.step_id,
+      reason: command.payload.reason,
+      proof_refs: command.payload.proof_refs ?? [],
+      router_decision_ref: command.payload.router_decision_ref,
+      started_at:
+        command.payload.started_at ??
+        run.steps.get(command.payload.step_id)?.started_at,
+      completed_at:
+        command.payload.completed_at ??
+        run.steps.get(command.payload.step_id)?.completed_at ??
+        this.now(),
+    });
     reduceEvent(state, event);
     return { events: [event] };
-  }
-
-  private async loadState() {
-    const state = initialState();
-    for await (const event of this.eventStore.stream()) {
-      reduceEvent(state, event as ExecutionEvent);
-    }
-    return state;
-  }
-
-  private buildEvent<TPayload>(
-    eventType: ExecutionEvent["event_type"],
-    payload: TPayload,
-    command: ExecutionCommandEnvelope,
-  ): ExecutionEvent {
-    const timestamp = this.now();
-    const capability_id = command.capability_id;
-    return {
-      event_id: generateEventId({ eventType, payload }),
-      event_type: eventType,
-      payload,
-      occurred_at: command.requested_at ?? timestamp,
-      ingested_at: timestamp,
-      correlation_id: command.correlation_id,
-      causation_id: command.command_id,
-      causation_type: "command",
-      source_ref: command.target_ref,
-      actor: command.actor,
-      ...(capability_id !== undefined ? { capability_id } : {}),
-      envelope_version: EXECUTION_ENVELOPE_VERSION,
-      payload_schema_version: EXECUTION_SCHEMA_VERSION,
-    } as ExecutionEvent;
   }
 }

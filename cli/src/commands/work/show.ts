@@ -1,8 +1,16 @@
 import { exitWithError } from "../../utils/command-utilities.js";
+import { parseArgs } from "../../utils/args.js";
 import { readProjections } from "./shared.js";
 
 export async function showWork(args: string[]): Promise<void> {
-  const workId = args.at(0);
+  const parsed = parseArgs(args, []);
+  if (parsed.errors.length > 0) {
+    exitWithError(2, parsed.errors.join("; "), {
+      hint: "Usage: aligntrue work show [id]",
+    });
+  }
+
+  const workId = parsed.positional[0];
   const projection = await readProjections();
   const items = new Map(Object.entries(projection.workItems.items));
 

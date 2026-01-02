@@ -12,6 +12,7 @@ import {
   validateStatusChangePayload,
 } from "./events.js";
 import { isTransitionAllowed } from "./types.js";
+import { cloneMapShallow } from "../utils/collections.js";
 
 export interface EmailStatusState {
   source_ref: string;
@@ -86,10 +87,7 @@ export function reduceEvent(
 }
 
 export function cloneState(state: EmailLedgerState): EmailLedgerState {
-  const emails = new Map<string, EmailStatusState>();
-  for (const [id, value] of state.emails.entries()) {
-    emails.set(id, { ...value });
-  }
+  const emails = cloneMapShallow(state.emails);
   return { emails };
 }
 

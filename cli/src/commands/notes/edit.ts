@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { Identity } from "@aligntrue/core";
 import { exitWithError } from "../../utils/command-utilities.js";
+import { parseArgs } from "../../utils/args.js";
 import {
   buildCommand,
   createLedger,
@@ -14,7 +15,15 @@ import * as PackNotes from "@aligntrue/pack-notes";
 
 export async function editNote(args: string[]): Promise<void> {
   ensureNotesEnabled();
-  const noteId = args.at(0);
+
+  const parsed = parseArgs(args, []);
+  if (parsed.errors.length > 0) {
+    exitWithError(2, parsed.errors.join("; "), {
+      hint: "Usage: aligntrue note edit <id>",
+    });
+  }
+
+  const noteId = parsed.positional[0];
   if (!noteId) {
     exitWithError(2, "Note ID is required", {
       hint: "Usage: aligntrue note edit <id>",
