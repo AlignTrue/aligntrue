@@ -100,5 +100,4 @@ Security advisories must include:
 ## Related documentation
 
 - [Development Setup](/docs/06-development/setup)
-- [Architecture](/docs/06-development/architecture)
-- [CI guide](/docs/06-development/ci)
+- [Development Commands](/docs/06-development/commands)

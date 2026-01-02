@@ -175,7 +175,7 @@ export default async function DocsLayout({
       <Layout
         pageMap={pageMap}
         docsRepositoryBase={themeConfig.docsRepositoryBase}
-        editLink={themeConfig.editLink}
+        editLink={themeConfig.editLink.content}
         feedback={themeConfig.feedback}
         toc={themeConfig.toc}
         navbar={

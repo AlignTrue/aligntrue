@@ -80,7 +80,7 @@ importers:
     dependencies:
       '@ai-sdk/openai':
         specifier: ^3.0.2
-        version: 3.0.2(zod@3.25.76)
+        version: 3.0.2(zod@4.2.1)
       '@aligntrue/file-utils':
         specifier: workspace:*
         version: link:../../packages/file-utils
@@ -143,7 +143,7 @@ importers:
         version: 1.3.1(next@16.1.1(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       ai:
         specifier: ^6.0.5
-        version: 6.0.5(zod@3.25.76)
+        version: 6.0.5(zod@4.2.1)
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -184,8 +184,8 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.18)
       zod:
-        specifier: ^3.23.8
-        version: 3.25.76
+        specifier: ^4.2.1
+        version: 4.2.1
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.18
@@ -385,7 +385,11 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
-  packages/file-utils: {}
+  packages/file-utils:
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/ui:
     dependencies:
@@ -569,6 +573,10 @@ importers:
       '@aligntrue/ops-shared-google-common':
         specifier: workspace:*
         version: link:../google-common
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   platform/ops-shared/google-common:
     dependencies:
@@ -600,6 +608,10 @@ importers:
       '@aligntrue/ops-core':
         specifier: workspace:*
         version: link:../../ops-core
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   platform/packs/hello-world:
     dependencies:
@@ -618,6 +630,10 @@ importers:
       '@aligntrue/ops-core':
         specifier: workspace:*
         version: link:../../ops-core
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   platform/packs/tasks:
     dependencies:
@@ -5287,9 +5303,6 @@ packages:
     peerDependencies:
       zod: ^3.25 || ^4
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.2.1:
     resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
@@ -5324,13 +5337,6 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.2(zod@4.2.1)
       zod: 4.2.1
 
-  '@ai-sdk/gateway@3.0.4(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
-      '@vercel/oidc': 3.0.5
-      zod: 3.25.76
-
   '@ai-sdk/gateway@3.0.4(zod@4.2.1)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
@@ -5344,24 +5350,11 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.2(zod@4.2.1)
       zod: 4.2.1
 
-  '@ai-sdk/openai@3.0.2(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
-      zod: 3.25.76
-
   '@ai-sdk/openai@3.0.2(zod@4.2.1)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
       '@ai-sdk/provider-utils': 4.0.2(zod@4.2.1)
       zod: 4.2.1
-
-  '@ai-sdk/provider-utils@4.0.2(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.1
-      '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
-      zod: 3.25.76
 
   '@ai-sdk/provider-utils@4.0.2(zod@4.2.1)':
     dependencies:
@@ -7081,14 +7074,6 @@ snapshots:
   acorn@8.15.0: {}
 
   agent-base@7.1.4: {}
-
-  ai@6.0.5(zod@3.25.76):
-    dependencies:
-      '@ai-sdk/gateway': 3.0.4(zod@3.25.76)
-      '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
-      '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
 
   ai@6.0.5(zod@4.2.1):
     dependencies:
@@ -10407,8 +10392,6 @@ snapshots:
   zod-to-json-schema@3.25.1(zod@4.2.1):
     dependencies:
       zod: 4.2.1
-
-  zod@3.25.76: {}
 
   zod@4.2.1: {}
 

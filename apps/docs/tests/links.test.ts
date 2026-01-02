@@ -14,7 +14,7 @@ describe("Documentation Links", () => {
     if (brokenLinks.length > 0) {
       const errorMessages = brokenLinks.map(
         (link) =>
-          `${link.file}:${link.line} - [${link.linkText}](/docs/${link.linkPath}) -> ${link.expectedFile} (not found)`,
+          `${link.file}:${link.line} - [${link.linkText}](${link.linkPath}) -> ${link.expectedFile} (not found)`,
       );
 
       expect.fail(
