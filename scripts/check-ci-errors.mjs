@@ -62,6 +62,7 @@ function parseErrors(logOutput) {
         line.includes("Received") ||
         line.includes(">") ||
         line.includes("at ") ||
+        line.includes("exited (1)") ||
         line.includes("code: 'SQLITE_BUSY'"))
     ) {
       // Collect context lines for the current error
@@ -69,12 +70,15 @@ function parseErrors(logOutput) {
     } else if (currentError && line.trim() === "") {
       // Empty line might signal end of error block
       if (
+        currentError.type === "BUILD_ERROR" ||
         currentError.lines.some(
           (l) =>
             l.includes("AssertionError") ||
             l.includes("Error:") ||
             l.includes("SqliteError") ||
-            l.includes("exited (1)"),
+            l.includes("exited (1)") ||
+            l.includes("ERROR") ||
+            l.includes("run failed"),
         )
       ) {
         errors.push(currentError);
