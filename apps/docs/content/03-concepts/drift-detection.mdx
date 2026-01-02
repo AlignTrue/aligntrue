@@ -1,0 +1,189 @@
+---
+title: "Drift detection"
+description: "Detect and report drift between the lockfile and current state."
+---
+
+# Drift detection
+
+<Callout type="info">
+  **Solo developer?** You can skip this page. Drift detection is for teams using
+  lockfiles and team mode.
+</Callout>
+
+Drift detection helps teams keep `.aligntrue/lock.json` in sync with the rules and config it represents. It reports when rules or team config changed after the lockfile was generated.
+
+## Overview
+
+Drift detection checks if the current `bundle_hash` matches the lockfile. The bundle hash covers:
+
+- All team-scoped rules (`.aligntrue/rules/*.md` excluding `scope: personal`)
+- Team config (`.aligntrue/config.team.yaml`)
+
+If the hash differs, drift has occurred.
+
+**Key benefits:**
+
+- Catch rule changes before they silently diverge from the lockfile
+- CI/CD integration with `--gates` flag
+- Simple: one hash, one check
+
+## Usage
+
+### Basic drift check
+
+```bash
+# Show drift (human-readable)
+aligntrue drift
+
+# Output:
+# Drift detection report
+# ======================
+# Mode: team
+#
+# LOCKFILE DRIFT:
+#   _bundle
+#     Rules or team config have changed since last lockfile generation
+#     Suggestion: Run: aligntrue sync (to regenerate lockfile)
+#
+# Lockfile: .aligntrue/lock.json
+# Findings: 1
+```
+
+### CI integration
+
+```bash
+# Exit non-zero if drift detected
+aligntrue drift --gates
+
+# Exit codes:
+# 0 = No drift (or drift without --gates)
+# 1 = Not in team mode
+# 2 = Drift detected when --gates is set
+```
+
+### JSON output
+
+```bash
+# Machine-readable output
+aligntrue drift --json
+
+# Output:
+# {
+#   "mode": "team",
+#   "has_drift": true,
+#   "lockfile_path": ".aligntrue/lock.json",
+#   "findings": [
+#     {
+#       "category": "lockfile",
+#       "ruleId": "_bundle",
+#       "description": "Rules or team config have changed since last lockfile generation",
+#       "suggestion": "Run: aligntrue sync (to regenerate lockfile)",
+#       "lockfile_hash": "sha256:...",
+#       "expected_hash": "sha256:..."
+#     }
+#   ],
+#   "summary": {
+#     "total": 1,
+#     "by_category": {
+#       "lockfile": 1
+#     }
+#   }
+# }
+```
+
+### SARIF output
+
+```bash
+# For CI tools that support SARIF
+aligntrue drift --sarif
+```
+
+## CI/CD examples
+
+### GitHub Actions
+
+```yaml
+name: Drift Check
+
+on: [pull_request]
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for drift
+        run: npx aligntrue drift --gates
+```
+
+### GitLab CI
+
+```yaml
+drift-check:
+  stage: test
+  script:
+    - npm ci
+    - npx aligntrue drift --gates
+  only:
+    - merge_requests
+```
+
+## Common fixes
+
+### Lockfile drift detected
+
+**Cause:** Rules or team config changed since lockfile was generated.
+
+**Fix:**
+
+```bash
+# Regenerate the lockfile
+aligntrue sync
+
+# Commit the updated lockfile
+git add .aligntrue/lock.json
+git commit -m "chore: Update lockfile"
+```
+
+### No lockfile found
+
+**Cause:** Team mode enabled but lockfile not generated yet.
+
+**Fix:**
+
+```bash
+# Generate lockfile
+aligntrue sync
+
+# Commit
+git add .aligntrue/lock.json
+git commit -m "chore: Add lockfile"
+```
+
+## How it works
+
+1. **Load lockfile** - Read `.aligntrue/lock.json` and extract `bundle_hash`
+2. **Compute current hash** - Hash all team rules + team config
+3. **Compare** - If hashes differ, report drift
+4. **Exit code** - With `--gates`, exit 2 if drift detected
+
+The hash is deterministic: identical inputs always produce identical hashes. This relies on:
+
+- Sorted file processing
+- Canonical JSON serialization
+- Excluding personal-scoped rules
+
+## See also
+
+- **[Team Mode](/docs/03-concepts/team-mode)** - Complete team mode reference
+- **[Team Guide](/docs/01-guides/02-team-guide)** - Step-by-step setup
+- **[CLI Reference](/docs/04-reference/cli-reference)** - All commands

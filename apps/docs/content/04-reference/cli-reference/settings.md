@@ -1,0 +1,239 @@
+# Settings commands
+
+Commands for managing configuration, privacy, and system settings.
+
+## `aligntrue config show|edit`
+
+Display or edit AlignTrue configuration.
+
+**Usage:**
+
+```bash
+aligntrue config show   # Display active configuration
+aligntrue config edit   # Open config in default editor
+```
+
+**What it does:**
+
+**`show` subcommand:**
+
+- Displays active mode (solo/team/enterprise)
+- Shows effective configuration with defaults
+- Lists enabled modules (lockfile, bundle, checks, mcp)
+- Shows exporter configuration
+
+**`edit` subcommand:**
+
+- Opens `.aligntrue/config.yaml` in default editor
+- Uses `$EDITOR` environment variable
+- Falls back to `vi` on Unix, `notepad` on Windows
+
+**Example output (show):**
+
+```
+AlignTrue Configuration
+=======================
+
+Mode: solo
+
+Modules:
+  lockfile: false
+  bundle: false
+  checks: true
+  mcp: false
+
+Exporters:
+  - cursor
+  - agents
+
+Sync:
+  scope_prefixing: true
+
+Config file: .aligntrue/config.yaml
+```
+
+**Exit codes:**
+
+- `0` - Success
+- `1` - Config file not found
+- `2` - Editor failed to open (edit subcommand)
+
+**See also:** [Team Mode Guide](/docs/03-concepts/team-mode) for configuration options
+
+---
+
+## `aligntrue privacy audit|revoke`
+
+Manage privacy consents for network operations.
+
+**Usage:**
+
+```bash
+aligntrue privacy audit                    # List all consents
+aligntrue privacy revoke <operation>       # Revoke specific consent
+aligntrue privacy revoke --all             # Revoke all consents
+```
+
+**Commands:**
+
+- `audit` - List all granted consents with timestamps
+- `revoke git` - Revoke consent for git clones
+- `revoke --all` - Revoke all consents (prompts for confirmation)
+
+**How consent works:**
+
+1. **First time** a network operation is needed (git source), you'll see a clear error
+2. The error message explains what consent is needed and how to grant it
+3. **After granting**, AlignTrue remembers and won't prompt again
+4. **Revoke anytime** using `aligntrue privacy revoke`
+
+**Examples:**
+
+```bash
+# List all consents
+aligntrue privacy audit
+
+# Revoke git consent
+aligntrue privacy revoke git
+
+# Revoke all consents with confirmation
+aligntrue privacy revoke --all
+```
+
+**Audit output:**
+
+```
+Privacy Consents
+
+  ✓ git        Granted Oct 29, 2025 at 11:45 AM
+
+Use 'aligntrue privacy revoke <operation>' to revoke
+```
+
+**When no consents:**
+
+```
+No privacy consents granted yet
+
+Network operations will prompt for consent when needed.
+Run "aligntrue privacy audit" after granting consent to see details.
+```
+
+**Storage:**
+
+- Consents: `.aligntrue/privacy-consent.json` (git-ignored)
+- Per-machine, not committed to git
+- Simple JSON format you can edit manually if needed
+
+**Offline mode:**
+
+Git sources support offline mode via `aligntrue sync --offline` to use cached repositories without network operations. See the [git workflows guide](/docs/03-concepts/git-workflows) for details.
+
+**See also:**
+
+- [Git workflows](/docs/03-concepts/git-workflows) - Git sources and offline mode
+
+---
+
+## Getting help
+
+```bash
+# Show all commands
+aligntrue --help
+
+# Show command-specific help
+aligntrue sync --help
+```
+
+**Exit codes summary:**
+
+- `0` - Success
+- `1` - Validation error (user-fixable)
+- `2` - System error (permissions, disk space, etc.)
+
+---
+
+## Error codes
+
+AlignTrue uses standardized error codes for consistent debugging and support. All errors include:
+
+- **Clear title and message** - What went wrong
+- **Actionable hints** - Next steps to fix
+- **Error codes** - Reference for support
+
+### System errors (exit code 2)
+
+These errors indicate missing files, permissions, or system issues:
+
+- `ERR_CONFIG_NOT_FOUND` - Configuration file missing
+
+  ```
+  ✗ Config file not found
+
+  Could not locate: .aligntrue/config.yaml
+
+  Hint: Run 'aligntrue init' to create initial configuration
+
+  Error code: ERR_CONFIG_NOT_FOUND
+  ```
+
+- `ERR_RULES_NOT_FOUND` - Rules file missing
+
+  ```
+  ✗ Rules file not found
+
+  Could not locate: .aligntrue/rules
+
+  Hint: Run 'aligntrue init' to create initial rules
+
+  Error code: ERR_RULES_NOT_FOUND
+  ```
+
+- `ERR_FILE_WRITE_FAILED` - File I/O error
+
+  ```
+  ✗ File write failed
+
+  Could not write to: .aligntrue/config.yaml
+
+  Details:
+    - Permission denied (EACCES)
+
+  Hint: Check file permissions and disk space
+
+  Error code: ERR_FILE_WRITE_FAILED
+  ```
+
+### Validation errors (exit code 1)
+
+These errors indicate invalid configuration, rules, or data:
+
+- `ERR_VALIDATION_FAILED` - Schema or rule validation failed
+
+  ```
+  ✗ Validation failed
+
+  Errors in AGENTS.md
+
+  Details:
+    - spec_version: Missing required field
+    - rules: Missing required field
+
+  Hint: Fix the errors above and try again
+
+  Error code: ERR_VALIDATION_FAILED
+  ```
+
+- `ERR_SYNC_FAILED` - Sync operation failed
+
+  ```
+  ✗ Sync failed
+
+  Failed to load exporters: Handler not found
+
+  Hint: Run 'aligntrue sync --help' for more options
+
+  Error code: ERR_SYNC_FAILED
+  ```
+
+**See also:** [Troubleshooting Guide](/docs/05-troubleshooting) for common error solutions

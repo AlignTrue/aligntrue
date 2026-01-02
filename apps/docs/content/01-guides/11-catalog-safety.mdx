@@ -1,0 +1,25 @@
+---
+description: How to safely use Align catalog items and report issues
+---
+
+# Catalog safety
+
+The Align catalog is community-submitted content. Treat it like GitHub: review before you run or install.
+
+## What we validate
+
+- GitHub-only sources: blob/tree URLs are required.
+- File types: `.md`, `.mdc`, `.mdx`, `.markdown`, `.yaml`, `.yml`, plus agent files like `.clinerules`, `.cursorrules`, `.goosehints`.
+- Size caps: 256 KB for single files; packs are limited to 100 files, 500 KB per file, and 2 MB total.
+- Cache and resilience: cached copies are used when sources fail or disappear.
+- Content hashes: detail pages warn when fetched content differs from the submitted version.
+
+## What you should do
+
+- Read the rule or pack before installing.
+- Prefer pinned refs (tag/commit) when sharing links.
+- Re-check content if the detail page shows a content-changed warning.
+
+## Report problems
+
+If you find malicious, misleading, or spam content, open a GitHub issue using the "Report" link on the catalog card or detail page. Include the Align ID and URL so we can act quickly.

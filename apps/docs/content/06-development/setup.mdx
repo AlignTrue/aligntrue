@@ -1,0 +1,323 @@
+---
+title: Setup
+description: Prerequisites and installation instructions for AlignTrue development.
+---
+
+# Development setup
+
+## Prerequisites
+
+- **Node.js** 20 or later (`.node-version` pins 20.18.1 for Volta/asdf/nvm)
+- **pnpm** 10 (repo sets `packageManager: pnpm@10.0.0`; `engines.pnpm` is >=9)
+
+**Install pnpm:**
+
+<Tabs items={["npm", "yarn", "Homebrew (macOS)", "Direct"]}>
+
+<Tabs.Tab>```bash npm install -g pnpm@10 ```</Tabs.Tab>
+
+<Tabs.Tab>```bash yarn global add pnpm@10 ```</Tabs.Tab>
+
+<Tabs.Tab>```bash brew install pnpm pnpm env use --global 10 ```</Tabs.Tab>
+
+<Tabs.Tab>
+  Visit [pnpm.io](https://pnpm.io/installation) for platform-specific
+  installers.
+</Tabs.Tab>
+
+</Tabs>
+
+## Quick start
+
+Bootstrap the entire project with one command:
+
+```bash
+pnpm bootstrap
+```
+
+This installs dependencies and builds all packages. You're ready to develop!
+
+**Note:** First-time setup takes ~2-3 minutes depending on your machine.
+
+## Install CLI from GitHub
+
+Need to test the latest CLI changes straight from `main`? Because `@aligntrue/cli` imports other workspace packages, build the entire repo before running the binary:
+
+```bash
+git clone https://github.com/AlignTrue/aligntrue.git
+cd aligntrue
+pnpm install          # install all workspace dependencies
+pnpm build            # compile every package (core/schema/exporters/cli)
+cd packages/cli
+pnpm link --global    # exposes the aligntrue/aln commands locally
+aligntrue --version
+```
+
+Re-run `pnpm build` after dependency changes, or `pnpm --filter @aligntrue/cli build` after CLI-only edits to refresh `dist/`.
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+pnpm install
+```
+
+This will install dependencies for all workspace packages and set up Git hooks automatically.
+
+### 2. Verify installation
+
+After installation completes, verify everything works:
+
+```bash
+pnpm typecheck   # Type-check all packages
+pnpm test:fast   # Run tests with fast reporter
+```
+
+If all checks pass, you're ready to develop!
+
+## Git hooks
+
+Hooks are installed automatically when you run `pnpm install`.
+
+### Pre-commit hook
+
+Runs automatically before each commit and enforces zero warnings:
+
+1. Warns on large staged sets (>50 files)
+2. Blocks temp artifacts (`temp-*`)
+3. Regenerates repo root docs if `apps/docs/content/**` changed
+4. Validates `workspace:*` protocol in staged `package.json` files
+5. Formats + lints staged files via lint-staged (Prettier + ESLint)
+6. Builds all packages if any staged file is TypeScript (catches missing exports or module resolution issues)
+7. Validates Next.js `transpilePackages` config
+8. Validates docs accuracy when docs, CLI command list, exporter list, or perf thresholds change
+
+Typical time:
+
+- No TypeScript changes: ~5-15s
+- With TypeScript changes (build step): ~15-60s depending on scope
+
+### Commit message hook
+
+Validates commit messages follow Conventional Commits format:
+
+```bash
+# Good commit messages
+feat: Add drift detection command
+fix: Resolve lockfile sync issue
+docs: Update setup guide
+
+# Bad commit messages (will be rejected)
+updated stuff
+WIP
+fixes bug
+```
+
+Format: `type: Subject in sentence case`
+
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
+
+### Pre-push hook
+
+Runs `pnpm pre-ci` before pushing:
+
+- Install dependencies with `--frozen-lockfile`
+- Full build for all packages
+- Full typecheck
+- Full test suite (all packages, `TURBO_CONCURRENCY=1`)
+- Validate bundle sizes
+
+Expect several minutes on a fresh or large change; matches CI scope.
+
+### Bypassing hooks (emergency only)
+
+If hooks are genuinely broken (not just failing validation):
+
+```bash
+git commit --no-verify   # Skip pre-commit
+git push --no-verify     # Skip pre-push
+```
+
+**Only use when hooks are broken, not to skip validation.**
+
+### Hooks not running
+
+If Git hooks aren't running after `pnpm install`:
+
+```bash
+pnpm prepare
+```
+
+This manually runs the Husky setup.
+
+## Troubleshooting
+
+### "Command not found: pnpm"
+
+**Cause:** pnpm is not installed globally.
+
+**Fix:** See Prerequisites section above for installation instructions.
+
+Verify installation:
+
+```bash
+pnpm --version
+```
+
+### "Module not found" errors
+
+Reinstall dependencies:
+
+```bash
+pnpm clean
+pnpm install
+```
+
+### Type errors after changes
+
+Run type-check to see all errors:
+
+```bash
+pnpm typecheck
+```
+
+### Next.js dev server fails with "Cannot find module" errors
+
+**Symptom:** Dev server crashes with errors like:
+
+```
+Error: Cannot find module './vendor-chunks/nextra@4.6.0...'
+Cannot find module '@aligntrue/ui'
+```
+
+**Cause:** Next.js doesn't transpile workspace packages by default. The `@aligntrue/ui` package exports TypeScript source directly (no build step), so Next.js needs to be configured to transpile it.
+
+**Fix:**
+
+1. Check your Next.js config has `transpilePackages`:
+
+```typescript
+// apps/docs/next.config.mjs
+export default withNextra({
+  transpilePackages: ["@aligntrue/ui"],
+  // ... rest of config
+});
+```
+
+2. Clean stale build caches:
+
+```bash
+rm -rf apps/docs/.next
+```
+
+3. Restart dev servers:
+
+```bash
+pnpm dev:docs
+```
+
+**Prevention:**
+
+- CI validates `transpilePackages` config: `pnpm validate:transpile-packages`
+- Pre-commit hook validates `transpilePackages`
+- If you add a workspace package that exports TypeScript source, add it to `transpilePackages` in each Next.js app config
+
+**Workflow after editing docs:**
+
+```bash
+# 1. Edit source files in apps/docs/content/
+pnpm dev:docs  # View changes at localhost:3001
+
+# 2. When done, generate root files
+pnpm generate:repo-files
+
+# 3. Commit
+git add -A
+git commit -m "docs: Update documentation"
+```
+
+**Important:** Never manually edit `README.md`, `DEVELOPMENT.md`, or `CONTRIBUTING.md` - they're auto-generated from docs sources.
+
+### Missing DOM types in UI packages
+
+**Symptom:** TypeScript errors like `Cannot find name 'window'`, `Cannot find name 'document'`
+
+**Cause:** UI packages with React need DOM library types in `tsconfig.json`.
+
+**Fix:**
+
+Add to `tsconfig.json` compilerOptions:
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  }
+}
+```
+
+**Prevention:** CI validates UI packages with `pnpm validate:ui-tsconfig`.
+
+### Missing type exports
+
+**Symptom:** `Property 'X' does not exist on type 'Y'` in apps consuming schema types.
+
+**Cause:** Type defined in schema package but not exported in `packages/schema/src/index.ts`.
+
+**Fix:**
+
+1. Check the type exists in source file (e.g., `packages/schema/src/catalog-entry.ts`)
+2. Add export to `packages/schema/src/index.ts`:
+
+```typescript
+export {
+  // ... existing exports
+  type YourMissingType,
+} from "./catalog-entry.js";
+```
+
+3. Rebuild schema package:
+
+```bash
+pnpm --filter @aligntrue/schema build
+```
+
+**Prevention:** CI runs full typecheck across all packages to catch missing exports.
+
+## GitHub App for catalog submissions
+
+Align submissions from the website use a GitHub App to raise API limits and enable ETag caching.
+
+### Create the app
+
+1. Go to GitHub → Settings → Developer settings → GitHub Apps → New GitHub App.
+2. Name: `AlignTrue Catalog` (or similar).
+3. Repository permissions: **Contents (read)**. No user permissions.
+4. Save, then install the app on the AlignTrue org (or make it public and install on the target org).
+5. Download the private key PEM.
+
+### Add environment variables (Vercel)
+
+| Name                         | Value                                  |
+| ---------------------------- | -------------------------------------- |
+| `GITHUB_APP_ID`              | App ID from the app settings           |
+| `GITHUB_APP_INSTALLATION_ID` | Installation ID from the installed app |
+| `GITHUB_APP_PRIVATE_KEY`     | Base64 of the PEM (one line)           |
+
+Encode the PEM:
+
+```bash
+base64 -b 0 private-key.pem  # macOS (use `base64 -w0` on Linux)
+```
+
+### Notes
+
+- Tokens auto-refresh every hour; caching refreshes 10 minutes early.
+- HTTP caching (ETag) uses a 1-hour TTL; set `GITHUB_DISABLE_CACHING=true` to bypass in emergencies.
+
+## Next steps
+
+- Learn about the [workspace structure](/docs/06-development/workspace)
+- Explore [development commands](/docs/06-development/commands)
+- Understand [CI validation and troubleshooting](/docs/06-development/ci)

@@ -1,0 +1,348 @@
+# Next steps
+
+You've got AlignTrue set up and syncing. Here's what to explore next based on your needs.
+
+Edit rules in `.aligntrue/rules/*.md`. `aligntrue sync` writes exports (like `AGENTS.md` and `.cursor/rules/*.mdc`)—treat those as read-only.
+
+## Essential commands
+
+These commands will be part of your daily workflow:
+
+### Preview changes
+
+See what would change without writing files:
+
+```bash
+aligntrue sync --dry-run
+```
+
+### Validate rules
+
+Check rules for errors (great for CI):
+
+```bash
+aligntrue check
+```
+
+### Check syntax
+
+Lint your markdown rules file:
+
+```bash
+aligntrue md lint
+```
+
+**Full command reference:** [CLI Reference](/docs/04-reference/cli-reference)
+
+## Auto-sync on save
+
+Want rules to sync automatically when you save? Set up a file watcher on `.aligntrue/rules` (and config if needed).
+
+### VS Code (quick option)
+
+Add to `.vscode/tasks.json`:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AlignTrue Auto-Sync",
+      "type": "shell",
+      "command": "aligntrue sync",
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}
+```
+
+### Universal option (any editor)
+
+Use nodemon to watch for changes:
+
+**Install nodemon:**
+
+<Tabs items={["npm", "yarn", "pnpm", "bun"]}>
+
+<Tabs.Tab>```bash npm install -g nodemon ```</Tabs.Tab>
+
+<Tabs.Tab>```bash yarn global add nodemon ```</Tabs.Tab>
+
+<Tabs.Tab>```bash pnpm add -g nodemon ```</Tabs.Tab>
+
+<Tabs.Tab>```bash bun install -g nodemon ```</Tabs.Tab>
+
+</Tabs>
+
+**Run nodemon:**
+
+```bash
+nodemon --watch .aligntrue/rules --watch .aligntrue/config.yaml --exec "aligntrue sync"
+```
+
+**Learn more:** [CLI reference](/docs/04-reference/cli-reference)
+
+## Using git sources
+
+Pull rules from any git repository to share across projects or teams.
+
+**Recommended:** Add as a connected source to keep it updated on sync:
+
+```bash
+aligntrue add link https://github.com/yourorg/rules
+```
+
+The `add link` subcommand automatically adds the source to your `.aligntrue/config.yaml`, runs an immediate sync (pass `--no-sync` to skip), and fetches updates on each subsequent sync. First sync will prompt for privacy consent.
+
+**Alternative:** Manually edit `.aligntrue/config.yaml` if you prefer:
+
+```yaml
+sources:
+  - type: git
+    url: https://github.com/yourorg/rules
+    ref: main
+    path: . # Scans directory for .md/.mdc files
+```
+
+**Full documentation:** [Git Sources Guide](/docs/04-reference/git-sources)
+
+## Team collaboration
+
+Enable team mode for shared rules with lockfiles and drift detection.
+
+### For repository owners
+
+```bash
+# 1. Enable team mode
+aligntrue team enable
+
+# 2. Approve rule sources
+
+# 3. Sync to generate lockfile
+aligntrue sync
+
+# 4. Commit team files
+git add .aligntrue/
+git commit -m "Enable AlignTrue team mode"
+```
+
+### For team members
+
+```bash
+# Clone and sync
+git clone <repo> && cd <repo>
+aligntrue sync
+```
+
+Team mode provides:
+
+- Lockfile generation for reproducibility
+- Drift detection (`aligntrue drift --gates` for CI)
+- Git-based approval workflows
+- Reproducible builds
+
+**Complete workflows:** [Team Mode Guide](/docs/03-concepts/team-mode)
+
+## Supporting more agents
+
+AlignTrue supports 28+ AI coding agents out of the box.
+
+### List available exporters
+
+```bash
+aligntrue exporters list
+```
+
+### Enable additional agents
+
+**Recommended:** Use the exporters command to enable agents interactively:
+
+```bash
+aligntrue exporters list          # See all available agents
+aligntrue exporters enable --interactive  # Choose which ones to enable
+```
+
+Or enable specific agents directly:
+
+```bash
+aligntrue exporters enable windsurf claude cline
+```
+
+**Alternative:** Manually edit `.aligntrue/config.yaml`:
+
+```yaml
+exporters:
+  - cursor
+  - agents
+  - windsurf
+  - claude
+  - cline
+  - copilot
+  - aider
+```
+
+Common agent formats:
+
+- **cursor** - Cursor `.mdc` files
+- **agents** - Universal AGENTS.md format (works with Copilot, Claude Code, Aider)
+- **windsurf** - Windsurf rules format
+- **cline** - Cline configuration
+- **vscode-mcp** - VS Code MCP configuration
+
+## Customization features
+
+AlignTrue provides three powerful mechanisms for customizing rules without forking:
+
+### Plugs
+
+Fill template slots with stack-specific values:
+
+```bash
+aligntrue plugs set test.cmd "pnpm test"
+```
+
+### Overlays
+
+Customize third-party Aligns without losing upstream updates:
+
+```bash
+aligntrue override add --selector 'rule[id=no-console-log]' --set severity=error
+```
+
+### Scopes
+
+Apply different rules to different directories:
+
+```yaml
+scopes:
+  - path: "apps/web"
+    rulesets: ["base-rules", "nextjs-rules"]
+  - path: "packages/api"
+    rulesets: ["base-rules", "node-rules"]
+```
+
+**Complete guides:** [Customization Overview](/docs/02-customization)
+
+### Custom exporters
+
+Add support for new agents by creating custom exporters.
+
+**Extension guide:** [Adding Exporters](/docs/07-contributing/adding-exporters)
+
+## Migrating existing rules
+
+Copy rules from existing agent files to AlignTrue.
+
+### Manual migration
+
+Create or open a file under `.aligntrue/rules/` and paste your existing rules from agent files (Cursor `.mdc`, `AGENTS.md`, etc.). Keep exports read-only.
+
+```bash
+# After copying rules into .aligntrue/rules/imported.md (for example)
+aligntrue sync
+```
+
+**Next steps:** [Natural Markdown Sections](/docs/04-reference/natural-markdown-sections)
+
+## Workflow examples
+
+### Solo developer workflow
+
+```bash
+# Daily workflow
+cd your-project
+vim .aligntrue/rules/base.md  # Edit rules at the source
+aligntrue sync           # Update agents
+git add .
+git commit -m "Update project rules"
+```
+
+### Team workflow
+
+```bash
+# Repository owner
+aligntrue team enable
+aligntrue sync
+git add .aligntrue/
+git commit -m "Add AlignTrue configuration"
+git push
+
+# Team member
+git pull
+aligntrue sync  # Validates against lockfile
+```
+
+### Multi-project workflow
+
+```bash
+# Create shared rules in a separate repo
+cd shared-rules
+aligntrue init
+# Add rules that apply to all projects
+git add . && git commit -m "Add shared rules"
+
+# Use in projects - add as connected source
+cd project-1
+aligntrue add link ../shared-rules
+aligntrue sync
+```
+
+## Troubleshooting
+
+Common issues and solutions:
+
+**Rules not showing in agent?**
+
+- Check agent is enabled in `.aligntrue/config.yaml`
+- Run `aligntrue sync` again
+- Restart your IDE
+
+**Syntax errors?**
+
+- Run `aligntrue check` for validation
+- Run `aligntrue md lint` for markdown issues
+
+**Network consent prompts?**
+
+- First-time git source access requires consent
+- Use `--offline` flag to skip network operations
+- Run `aligntrue privacy grant git` to enable network access
+
+**Full troubleshooting:** [Troubleshooting Guide](/docs/05-troubleshooting)
+
+## Learning resources
+
+### Guides
+
+- [Sync Behavior](/docs/03-concepts/sync-behavior) - How centralized rule management works
+- [Drift Detection](/docs/03-concepts/drift-detection) - Track alignment changes
+- [Git Workflows](/docs/03-concepts/git-workflows) - Pull workflows and source management
+- [Backup & Restore](/docs/04-reference/backup-restore) - Protect your configuration
+
+### Reference
+
+- [CLI Reference](/docs/04-reference/cli-reference) - Complete command documentation
+
+### Contributing
+
+- [Getting Started](/docs/07-contributing/getting-started) - Contribute to AlignTrue
+- [Testing Workflow](/docs/07-contributing/testing-workflow) - Test standards
+- [Team Onboarding](/docs/04-reference/cli-reference/onboard) - Internal dev guide
+
+## Community
+
+**Need help?**
+
+- [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+- [Issues](https://github.com/AlignTrue/aligntrue/issues)
+
+**Want to contribute?**
+
+- [Contributing Guide](/docs/07-contributing/getting-started)
+- [Code of Conduct](https://github.com/AlignTrue/aligntrue/blob/main/CODE_OF_CONDUCT.md)
+
+---
+
+**Ready to dive deeper?** Pick a topic from the guides above and explore AlignTrue's full capabilities.

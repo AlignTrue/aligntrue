@@ -1,0 +1,358 @@
+---
+description: Team mode concepts, lockfiles, and workflows for collaborative repos.
+---
+
+# Team mode
+
+<Callout type="info">
+  **Solo developer?** You can skip this page. Team mode is for collaborative
+  projects. Solo mode (the default) works great for individual developers.
+</Callout>
+
+Comprehensive reference for team mode concepts and configuration.
+
+> **Looking for step-by-step team setup?** See the [Team Guide](/docs/01-guides/02-team-guide) for practical workflows.
+
+## Overview
+
+Team mode enables collaborative rule management with:
+
+- **Lockfiles** for reproducible rule deployment
+- **Drift detection** for alignment monitoring
+- **Git-based workflows** for rule sharing and approval
+
+## Team mode vs solo mode
+
+| Feature             | Solo mode | Team mode |
+| ------------------- | --------- | --------- |
+| Lockfile generation | No        | Yes       |
+| Drift detection     | No        | Yes       |
+| Team config file    | No        | Yes       |
+
+## Quick start
+
+### 1. Enable team mode
+
+```bash
+aligntrue team enable
+```
+
+This creates two configuration files:
+
+- **`.aligntrue/config.team.yaml`** (new, committed) - Team settings: `mode: team`, lockfile, shared sources and exporters
+- **`.aligntrue/config.yaml`** (updated, gitignored) - Personal settings: personal remotes, local overrides
+
+### 2. Sync to generate lockfile
+
+```bash
+aligntrue sync
+```
+
+This writes `.aligntrue/lock.json` with a deterministic bundle hash. Use `aligntrue sync --dry-run` to preview changes before updating the lockfile.
+
+### Lockfile format (v2)
+
+The lockfile is intentionally minimal:
+
+```json
+{
+  "version": "2",
+  "bundle_hash": "sha256:abc123def456..."
+}
+```
+
+The `bundle_hash` is computed from:
+
+- All team-scoped rules (`.aligntrue/rules/*.md` excluding `scope: personal`)
+- Team config (`.aligntrue/config.team.yaml`)
+
+If the current state matches the lockfile, team rules haven't changed since approval.
+
+### Drift detection in team mode
+
+- `aligntrue drift --gates` reports a single category: **lockfile**. If the computed bundle hash differs from `.aligntrue/lock.json`, run `aligntrue sync` and review the git diff for the lockfile.
+- Agent export drift is intentionally not tracked; exports are regenerated artifacts. Sync still backs up agent files before overwrite.
+
+### 3. Commit lockfile
+
+```bash
+git add .aligntrue/lock.json
+git commit -m "chore: Enable team mode"
+```
+
+Approval happens via standard git PR review workflow.
+
+## CLI commands
+
+### `aligntrue team enable`
+
+Enable team mode in current repository.
+
+```bash
+aligntrue team enable
+```
+
+Interactive confirmation, then updates config.
+
+### `aligntrue team disable`
+
+Disable team mode and migrate back to solo mode.
+
+```bash
+aligntrue team disable
+```
+
+**What it does:**
+
+1. Adds a `# TEAM MODE OFF` marker to `.aligntrue/config.team.yaml` (non-destructive)
+2. Personal settings in `.aligntrue/config.yaml` remain unchanged
+3. The marker prevents team settings from being loaded
+4. Re-enable by running `aligntrue team enable` (removes the marker automatically)
+
+**Note:** Your personal configuration is preserved, so you can re-enable team mode without losing local overrides.
+
+### File ownership in team mode
+
+Settings are split between two configuration files:
+
+**Team-only settings** (`.aligntrue/config.team.yaml`, committed):
+
+- `mode: team`
+- `modules.lockfile`
+- Shared `sources`
+
+**Personal-only settings** (`.aligntrue/config.yaml`, gitignored):
+
+- `remotes.personal` - Your personal rule backups
+- Local overrides of shared settings
+
+**Shared settings** (merged additively):
+
+- `sources` - Both files contribute to the final list (team first, then personal)
+- `exporters` - Both files contribute; team may set a baseline, personal adds/preferences
+- `git`, `overlays`, `export`, etc. - Personal config overrides team config
+- `modules.checks`, `modules.mcp` - Personal overrides team
+
+**Exporter ownership (recommended workflow)**
+
+- When enabling team mode, exporters stay in personal config by default. Individuals pick their agents (Cursor, Claude, Windsurf, etc.).
+- If a team wants a standard set, add exporters to `config.team.yaml`; final exporters are the union of team + personal. Per-exporter object settings merge with personal taking precedence.
+
+When loading configuration, personal settings are merged on top of team settings, allowing local overrides while maintaining team standards.
+
+## Personal + shared + custom in team mode
+
+- **Single scope per rule:** Each rule frontmatter has one `scope`: `team` (default), `personal`, or `shared`. Use custom remotes for extra copies; do not set multiple scopes.
+- **Routing:** Scope decides the default push target; custom remotes add extra destinations.
+
+| Scope in rule | Default push (team mode) | Lockfile | Typical config file               |
+| ------------- | ------------------------ | -------- | --------------------------------- |
+| `team`        | Stays in main repo       | Included | Team                              |
+| `shared`      | `remotes.shared`         | Included | Team (or personal if you publish) |
+| `personal`    | `remotes.personal`       | Excluded | Personal                          |
+
+Additional routing:
+
+- `remotes.custom[]` patterns are additive. Files matching an `include` pattern also push to that custom remote, on top of the scope target.
+- Team and personal configs both contribute to `remotes.custom`; lists are concatenated.
+- Sources marked `personal: true` tag all rules from that source as `scope: personal` (and gitignore them).
+
+### Minimal examples
+
+Team config (`config.team.yaml`):
+
+```yaml
+remotes:
+  shared: git@github.com:org/shared-rules.git
+  custom:
+    - id: lint-pack
+      url: git@github.com:org/lint-rules.git
+      include: ["lint*.md"]
+```
+
+Personal config (`config.yaml`):
+
+```yaml
+remotes:
+  personal: git@github.com:me/personal-rules.git
+  custom:
+    - id: my-a11y-pack
+      url: git@github.com:me/a11y-rules.git
+      include: ["a11y*.md"]
+```
+
+Resulting pushes (team mode):
+
+> Routing differs in solo mode: all rules go to `remotes.personal` unless a rule is `scope: shared` and a shared remote exists. See [Rule sharing & privacy](/docs/01-guides/06-rule-sharing-privacy) for full mode-based routing.
+
+- `scope: team` → main repo only (never pushed).
+- `scope: shared` → shared remote; also to any matching custom remotes.
+- `scope: personal` → personal remote; also to any matching custom remotes.
+
+## FAQs
+
+- **Can a rule be both personal and shared?** No. A rule has a single `scope`. Use `scope: personal` or `scope: shared` and add `remotes.custom` entries for extra destinations.
+- **Can the team set the shared remote?** Yes. `remotes.shared` naturally lives in `config.team.yaml`. Personal config can set it too if you’re publishing your own shared pack.
+- **Where do personal remotes live?** In your personal `config.yaml` (gitignored). They merge with team remotes but only personal rules route there.
+- **Do custom remotes conflict between team and personal?** No—arrays concatenate. Use distinct `id` values.
+
+## Workflows
+
+### Initial team setup
+
+**Repository owner:**
+
+```bash
+# 1. Enable team mode
+aligntrue team enable
+
+# 2. Sync to generate lockfile
+aligntrue sync
+
+# 3. Commit (approval via PR)
+git add .aligntrue/lock.json
+git commit -m "chore: Enable team mode"
+git push
+```
+
+**Team members:**
+
+```bash
+# 1. Clone repository
+git clone <repo>
+cd <repo>
+
+# 2. Sync
+aligntrue sync
+```
+
+### Approving new sources
+
+When adding a new rule source:
+
+```bash
+# 1. Update config to use new source
+# Edit .aligntrue/config.team.yaml, add to sources array
+
+# 2. Sync and commit (approval via PR)
+aligntrue sync
+git add .aligntrue/lock.json
+git commit -m "chore: Add new align"
+
+# 3. Sync
+aligntrue sync
+
+# 4. Commit lockfile
+git add .aligntrue/lock.json
+git commit -m "Add new rule source: new-align"
+git push
+```
+
+### Reviewing approved sources
+
+```bash
+# Check config for sources in use
+cat .aligntrue/config.team.yaml
+```
+
+### Removing sources
+
+```bash
+# 1. Remove from config first
+# Edit .aligntrue/config.team.yaml, remove from sources array
+
+# 2. Sync to update lockfile
+aligntrue sync
+
+# 3. Update config and commit
+git add .aligntrue/config.team.yaml .aligntrue/lock.json
+git commit -m "Remove old rule source"
+git push
+```
+
+### Export handling and git defaults
+
+- Exports (Cursor `.mdc`, `AGENTS.md`, etc.) are generated artifacts. Default git mode for solo/team is `ignore`, so sync will add exports to `.gitignore`. Agents still work because exports exist on disk after `aligntrue sync`.
+- Commit exports only when required (compliance snapshot, downstream handoff without AlignTrue). Otherwise keep them ignored to avoid PR noise.
+- Use per-exporter overrides when a specific format must be tracked:
+
+```yaml
+git:
+  mode: ignore # default for team
+  per_exporter:
+    agents: commit # keep AGENTS.md tracked
+    cursor: ignore # keep .cursor/rules/ ignored
+```
+
+- Backups: `aligntrue sync` backs up exports before overwriting. For redundancy, push `.aligntrue/rules/` to team or personal remotes instead of committing exports.
+
+## Troubleshooting
+
+### Source not found errors
+
+**Cause:** Config references a source that's inaccessible.
+
+**Fix:**
+
+```bash
+# List current sources
+cat .aligntrue/config.yaml
+
+# Verify git access
+git clone <repo-url>
+
+# Update config if URL changed
+```
+
+## Personal rules
+
+In team mode, rules can be marked as "personal" (using `scope: personal` in frontmatter) to exclude them from lockfile validation and team approval workflows.
+
+**What it does:**
+
+Create a markdown rule file with `scope: personal` in the frontmatter:
+
+```markdown
+---
+scope: personal
+---
+
+# My personal shortcuts
+
+Personal coding shortcuts and reminders...
+```
+
+Rules without the scope frontmatter default to `scope: team` and are included in lockfile validation:
+
+```markdown
+---
+scope: team
+---
+
+# Team standards
+
+Team coding standards and guidelines...
+```
+
+Personal rules are excluded from lockfile generation and validation:
+
+- **Team rules** (default): Included in bundle_hash (triggers drift on changes)
+- **Personal rules**: Not included (can change freely)
+
+**Use cases:**
+
+- Personal coding shortcuts and reminders
+- Individual workflow preferences
+- Local development notes
+- Experimental rules for personal projects
+
+For practical workflows, examples, and conceptual background, see [Rule sharing & privacy guide](/docs/01-guides/06-rule-sharing-privacy).
+
+## See also
+
+- **[Commands Reference](/docs/04-reference/cli-reference)** - Complete CLI command documentation
+- **[Quickstart Guide](/docs/00-getting-started/00-quickstart)** - Setup and first sync
+- **[Drift Detection](/docs/03-concepts/drift-detection)** - Monitoring team alignment
+- **[Git Workflows](/docs/03-concepts/git-workflows)** - Git-based rule sharing and vendoring
+- **[Onboarding](/docs/04-reference/cli-reference/onboard)** - Developer onboarding checklists
+- **[Examples](/docs/04-reference/examples)** - team-repo and vendored-align examples

@@ -1,0 +1,339 @@
+---
+title: FAQ
+description: Frequently asked questions
+---
+
+# Frequently asked questions
+
+## General
+
+### What is AlignTrue?
+
+AlignTrue syncs AI coding rules across multiple agents. Write rules once in `.aligntrue/rules/*.md`, and AlignTrue exports them to Cursor, GitHub Copilot, Claude Code, Windsurf, and 28+ other agents.
+
+### Why do I need AlignTrue?
+
+If you use multiple AI coding agents, you're probably copy-pasting rules between different config formats. AlignTrue eliminates this by maintaining a single source of truth and syncing to all agents automatically.
+
+### Is AlignTrue free?
+
+Yes! AlignTrue is MIT-licensed open source. The CLI and all core features are free forever.
+
+### What agents does AlignTrue support?
+
+33 agents through 51 exporters:
+
+- Cursor, GitHub Copilot, Claude Code, Aider, Windsurf
+- VS Code MCP, Amazon Q, Firebase Studio, OpenHands, Zed
+- And 18+ more
+
+[View full compatibility matrix →](/docs/04-reference/agent-support)
+
+### Can I publish a bundle of rules?
+
+Yes. Use an Align pack to bundle multiple files with preserved paths. Create it in the catalog bulk import flow, then share the catalog link or install via CLI with `aligntrue add <pack-id>` (or the full catalog URL). See [Align packs](/docs/03-concepts/align-packs) for details.
+
+## Getting started
+
+### How long does setup take?
+
+Under 60 seconds:
+
+```bash
+npm install -g aligntrue  # Install CLI globally
+aligntrue init            # Auto-detects agents, creates config
+aligntrue sync            # Generates agent files
+```
+
+### Do I need to install anything?
+
+Just Node.js 20+ and the AlignTrue CLI:
+
+<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (one-off commands)"]}>
+
+<Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash yarn global add aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash pnpm add -g aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash npx aligntrue init # For one-off commands ```</Tabs.Tab>
+
+</Tabs>
+
+**Note:** `aligntrue` is a convenience package that installs `@aligntrue/cli`. You can also install `@aligntrue/cli` directly if preferred.
+
+### What if I already have agent configs?
+
+AlignTrue can import existing configs:
+
+```bash
+aligntrue init  # Detects existing configs, offers import
+```
+
+Accept the import prompts to pull existing agent files into AlignTrue, then run `aligntrue sync` to push the merged rules everywhere.
+
+## Usage
+
+### Where do I write rules?
+
+**Edit `.aligntrue/rules/`** - Create markdown files in the `.aligntrue/rules/` directory. This is your single source of truth for all rules.
+
+**Example structure:**
+
+```
+.aligntrue/rules/
+  ├── global.md         # Global project rules
+  ├── backend.md        # Backend-specific rules
+  ├── frontend.md       # Frontend-specific rules
+  └── testing.md        # Testing guidelines
+```
+
+All agent files (Cursor, AGENTS.md, etc.) are auto-generated exports from `.aligntrue/rules/`. Do not edit them directly.
+
+### How do I sync rules to agents?
+
+```bash
+aligntrue sync
+```
+
+This generates agent-specific files like `.cursor/rules/*.mdc`, `AGENTS.md`, etc.
+
+### Can I edit agent files directly?
+
+**No.** Agent files like `.cursor/rules/*.mdc` and `AGENTS.md` are read-only exports generated from `.aligntrue/rules/`.
+
+If you edit agent files directly:
+
+- Changes will be backed up to `.aligntrue/.backups/files/`
+- Changes will be overwritten on the next sync
+- Always edit `.aligntrue/rules/` instead
+
+See [Sync behavior](/docs/03-concepts/sync-behavior) for details.
+
+### Do I need to run sync every time?
+
+Only when rules change. Set up auto-sync with file watchers if you want automatic syncing on save.
+
+See the [CLI reference](/docs/04-reference/cli-reference).
+
+### What if I have conflicts?
+
+AlignTrue uses a unidirectional sync model: rules in `.aligntrue/rules/` are the single source of truth, and all agent files are read-only exports. This eliminates conflicts by design.
+
+If you need to update rules, edit the files in `.aligntrue/rules/` and run `aligntrue sync`.
+
+## Team usage
+
+### Can teams use AlignTrue?
+
+Yes! Enable team mode for lockfiles and drift detection:
+
+```bash
+aligntrue team enable
+```
+
+See [Team mode guide](/docs/03-concepts/team-mode).
+
+### How do teams share rules?
+
+Three ways:
+
+1. **Git** - Commit `.aligntrue/` directory to your repo
+2. **Git sources** - Pull rules from separate repository
+3. **Vendoring** - Use git submodules/subtrees
+
+See [Git workflows](/docs/03-concepts/git-workflows).
+
+### What's a lockfile?
+
+A lockfile (`.aligntrue/lock.json`) pins rule versions with SHA-256 hashes. Teams use lockfiles to ensure everyone has identical rules.
+
+### What's drift detection?
+
+Drift detection monitors when upstream rules change. Useful for teams pulling rules from external sources.
+
+```bash
+aligntrue drift --gates  # Fail CI if drift detected
+```
+
+See [Drift detection guide](/docs/03-concepts/drift-detection).
+
+## Multi-agent usage
+
+### Can I use AlignTrue with multiple agents at once?
+
+Yes! AlignTrue is designed for multi-agent workflows. Configure multiple exporters:
+
+```yaml
+exporters:
+  - cursor
+  - agents
+  - claude
+  - copilot
+  - windsurf
+```
+
+Run `aligntrue sync` once and all agents get the same rules.
+
+See [Multi-Agent Workflows guide](/docs/01-guides/05-multi-agent-workflows).
+
+### How do I maintain different settings per agent?
+
+Use vendor bags for agent-specific metadata:
+
+```yaml
+rules:
+  - id: example-rule
+    summary: Example
+    vendor:
+      cursor:
+        ai_hint: "Cursor-specific hint"
+      claude:
+        mode: "assistant"
+```
+
+See [Vendor Bags reference](/docs/04-reference/vendor-bags).
+
+### Should I use solo or team mode?
+
+**Solo mode** for individual developers - fast, simple, no overhead.
+
+**Team mode** for collaborative projects - lockfiles, drift detection, reproducible builds.
+
+See [Solo vs. team mode](/docs/00-getting-started/02-solo-vs-team-mode) for detailed comparison.
+
+## Technical
+
+### Does AlignTrue require network access?
+
+No! AlignTrue works completely offline. Network access is only needed for:
+
+- Pulling rules from git repositories (optional)
+
+You'll be prompted for consent before any network operation.
+
+### Where does AlignTrue store data?
+
+- **Config:** `.aligntrue/config.yaml`
+- **Rules (user-editable):** `.aligntrue/rules/*.md`
+- **Agent exports (read-only):** `.cursor/rules/*.mdc`, `AGENTS.md`, and other agent files
+- **Lockfile:** `.aligntrue/lock.json` (auto-migrates legacy `.aligntrue/lock.json` if found)
+- **Cache:** `.aligntrue/.cache/` (git sources)
+
+### Can I use AlignTrue in CI?
+
+Yes! Validate rules in CI:
+
+```bash
+aligntrue check --ci  # Schema validation
+aligntrue drift --gates  # Drift detection
+```
+
+See [CI/CD integration guide](/docs/01-guides/07-ci-cd-integration).
+
+### What's the IR (Intermediate Representation)?
+
+AlignTrue parses `.aligntrue/rules/*.md` into an internal IR in memory, then renders agent exports and the lockfile from that source. You never edit AGENTS.md or other agent files directly; they are generated outputs.
+
+### How does AlignTrue handle agent-specific features?
+
+Agent-specific features are preserved in the `vendor.*` namespace:
+
+```yaml
+vendor:
+  cursor:
+    session: "my-session"
+```
+
+These fields are excluded from hashing but preserved on round-trips.
+
+## Troubleshooting
+
+### AlignTrue command not found
+
+Install globally:
+
+<Tabs items={["npm", "yarn", "pnpm", "bun", "npx (one-off commands)"]}>
+
+<Tabs.Tab>```bash npm install -g aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash yarn global add aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash pnpm add -g aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash bun install -g aligntrue ```</Tabs.Tab>
+
+<Tabs.Tab>```bash npx aligntrue --help # For one-off commands ```</Tabs.Tab>
+
+</Tabs>
+
+### Config file not found
+
+Run init first:
+
+```bash
+aligntrue init
+```
+
+### Rules not showing in my agent
+
+1. Check agent is enabled: `cat .aligntrue/config.yaml | grep exporters`
+2. Run sync: `aligntrue sync`
+3. Restart your IDE
+
+### Lockfile always out of sync
+
+Mark volatile fields in config:
+
+```yaml
+vendor:
+  _meta:
+    volatile: ["cursor.timestamp"]
+```
+
+### More issues?
+
+See [Troubleshooting guide](/docs/05-troubleshooting) for comprehensive solutions.
+
+## Privacy & security
+
+### Can I use AlignTrue with private rules?
+
+Yes! AlignTrue works completely offline. Your rules never leave your machine unless you explicitly push to git.
+
+### Is AlignTrue secure for enterprise use?
+
+Yes:
+
+- Local-first (no cloud required)
+- MIT license (permissive)
+- Deterministic hashing (SHA-256)
+- Audit trails (git integration)
+- No external dependencies at runtime
+
+## Contributing
+
+### Can I add support for my agent?
+
+Yes! See [Adding exporters guide](/docs/07-contributing/adding-exporters).
+
+### Can I contribute Aligns?
+
+Yes! See [Creating Aligns guide](/docs/07-contributing/creating-aligns).
+
+### Where do I report bugs?
+
+[GitHub Issues](https://github.com/AlignTrue/aligntrue/issues)
+
+### Where do I ask questions?
+
+[GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions)
+
+## Still have questions?
+
+- [Quickstart guide](/docs/00-getting-started/00-quickstart) - Get started in 60 seconds
+- [Troubleshooting](/docs/05-troubleshooting) - Common issues
+- [GitHub Discussions](https://github.com/AlignTrue/aligntrue/discussions) - Ask the community

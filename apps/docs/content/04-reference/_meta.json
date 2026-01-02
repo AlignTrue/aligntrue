@@ -1,0 +1,16 @@
+{
+  "features": "Features & implementation status",
+  "cli-reference": "CLI reference",
+  "agent-support": "Agent support",
+  "agent-verification": "Agent verification",
+  "ai-agent-guide": "AI agent guide",
+  "mcp-support": "MCP support",
+  "command-comparison": "Command comparison",
+  "config-reference": "Config reference",
+  "examples": "Examples",
+  "backup-restore": "Backup & restore",
+  "git-sources": "Git sources",
+  "natural-markdown-sections": "Natural markdown sections",
+  "personal-repo-setup": "Personal repository setup",
+  "vendor-bags": "Vendor bags"
+}
