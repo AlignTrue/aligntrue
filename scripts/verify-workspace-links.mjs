@@ -83,8 +83,7 @@ function collectPackageJsons() {
 }
 
 const packages = collectPackageJsons();
-
-const workspaceNames = new Set(packages.map((pkg) => pkg.name));
+const packageMap = new Map(packages.map((pkg) => [pkg.name, pkg]));
 const violations = [];
 
 for (const pkg of packages) {
@@ -93,14 +92,15 @@ for (const pkg of packages) {
     if (!deps) continue;
 
     for (const [depName] of Object.entries(deps)) {
-      if (!workspaceNames.has(depName) || depName === pkg.name) continue;
+      const targetPkg = packageMap.get(depName);
+      if (!targetPkg || depName === pkg.name) continue;
 
       const [, shortName] = depName.split("/");
       const modulePath = join(
         pkg.dir,
         "node_modules",
         depName.split("/")[0],
-        shortName,
+        shortName || "",
       );
 
       if (!existsSync(modulePath)) {
@@ -120,13 +120,10 @@ for (const pkg of packages) {
         continue;
       }
 
-      const expectedSegment = `/packages/${shortName}`;
-      if (
-        !resolvedPath.includes(`${expectedSegment}/`) &&
-        !resolvedPath.endsWith(expectedSegment)
-      ) {
+      const expectedPath = targetPkg.dir.replace(/\\/g, "/");
+      if (resolvedPath !== expectedPath) {
         violations.push(
-          `${pkg.name}: ${depName} resolves to ${resolvedPath}, expected workspace package under /packages/${shortName}`,
+          `${pkg.name}: ${depName} resolves to ${resolvedPath}, expected workspace package at ${expectedPath}`,
         );
       }
     }
