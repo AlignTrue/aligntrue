@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { NOTE_EVENT_TYPES } from "@aligntrue/ops-core/contracts/notes";
+import { NOTE_EVENT_TYPES } from "@aligntrue/core/contracts/notes";
 import { readNotesProjection } from "../projections/notes";
 
 const noteId = "note-123";

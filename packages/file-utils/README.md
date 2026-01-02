@@ -18,7 +18,7 @@ AlignTrue needs deterministic, safe file operations across all components. This 
 ```
 @aligntrue/file-utils (infrastructure)  ← This package
    ↓
-platform/ops-core + ops-host + ops-cli + platform packs + apps/app|web|docs
+core + ops-host + ops-cli + platform packs + apps/app|web|docs
 ```
 
 This package has **zero workspace dependencies** - it's pure Node.js utilities.
@@ -278,8 +278,8 @@ Tests cover:
 
 File utilities are infrastructure primitives used by:
 
-- `@aligntrue/ops-core` (platform kernel)
-- `@aligntrue/ops-host` and `@aligntrue/ops-cli` (host + CLI runtime)
+- `@aligntrue/core` (platform kernel)
+- `@aligntrue/host` and `@aligntrue/cli` (host + CLI runtime)
 - Platform packs (tasks/notes/suggestions/convert)
 - Apps (`@aligntrue/app`, `@aligntrue/web`, `@aligntrue/docs`)
 - Future: additional platform modules or MCP server components

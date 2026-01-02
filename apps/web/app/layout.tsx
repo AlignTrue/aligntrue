@@ -20,15 +20,14 @@ const fontMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: { default: "AlignTrue", template: "%s – AlignTrue" },
   description:
-    "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
+    "Experimental AI ops platform with deterministic receipts, governed connectors, and rebuildable projections.",
   keywords: [
-    "AI agents",
-    "Cursor rules",
-    "GitHub Copilot",
-    "Claude",
-    "team collaboration",
-    "developer tools",
-    "AI coding",
+    "AI ops",
+    "deterministic AI",
+    "receipts",
+    "auditability",
+    "local-first",
+    "AI platform",
   ],
   icons: {
     icon: "/favicon.ico",
@@ -37,7 +36,7 @@ export const metadata: Metadata = {
     type: "website",
     title: "AlignTrue",
     description:
-      "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
+      "Experimental AI ops platform with deterministic receipts, governed connectors, and rebuildable projections.",
     url: "https://aligntrue.ai",
     siteName: "AlignTrue",
     images: [
@@ -54,7 +53,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AlignTrue",
     description:
-      "Instantly sync rules across agents, people, projects and teams. Start in 60 seconds.",
+      "Experimental AI ops platform with deterministic receipts, governed connectors, and rebuildable projections.",
     images: ["/aligntrue-og-image.png"],
   },
   metadataBase: new URL("https://aligntrue.ai"),

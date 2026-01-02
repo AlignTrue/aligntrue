@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Emails, OPS_EMAIL_STATUS_ENABLED } from "@aligntrue/ops-core";
+import { Emails, OPS_EMAIL_STATUS_ENABLED } from "@aligntrue/core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 
 export async function PATCH(

@@ -424,7 +424,7 @@ This release introduces a complete architectural refactor. The complex bidirecti
 ### Removed
 
 - Removed unused v2 error handling system (common-errors-v2.ts, error-formatter-v2.ts)
-- Deleted the deprecated `@aligntrue/ui/nextra` theme factory and CLI multi-agent import stub; docs now reference the standard `apps/docs/theme.config.tsx` flow.
+- Deleted the deprecated `@aligntrue/ui-base/nextra` theme factory and CLI multi-agent import stub; docs now reference the standard `apps/docs/theme.config.tsx` flow.
 
 ### Fixed
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type * as Projections from "@aligntrue/ops-core/projections";
+import type * as Projections from "@aligntrue/core/projections";
 
 interface NextEvent {
   title: string;

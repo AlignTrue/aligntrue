@@ -1,0 +1,31 @@
+{
+  "name": "@aligntrue/connector-google-gmail",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./mutations": {
+      "types": "./dist/mutations/index.d.ts",
+      "import": "./dist/mutations/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aligntrue/core": "workspace:*",
+    "@aligntrue/connector-google-common": "workspace:*"
+  },
+  "devDependencies": {
+    "@aligntrue/pack-tasks": "workspace:*",
+    "@aligntrue/pack-notes": "workspace:*",
+    "vitest": "^4.0.16"
+  }
+}

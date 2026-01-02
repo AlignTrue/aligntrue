@@ -19,12 +19,12 @@ Derived artifacts record **what the AI decided** and the lineage that produced i
 - `created_at`, `created_by`, `correlation_id`
 - `content_hash`
 
-Implementation: `platform/ops-core/src/artifacts/derived.ts`
+Implementation: `core/src/artifacts/derived.ts`
 
 ## Example (TypeScript)
 
 ```ts
-import { Artifacts } from "platform/ops-core";
+import { Artifacts } from "core";
 
 const derived = Artifacts.buildDerivedArtifact({
   input_query_ids: ["qry-123"],
@@ -42,7 +42,7 @@ const derived = Artifacts.buildDerivedArtifact({
 
 JSONL store enforces lineage: `JsonlArtifactStore.putDerivedArtifact` rejects writes unless every `input_query_id` already exists.
 
-Reference test: `platform/ops-core/tests/artifacts.test.ts`
+Reference test: `core/tests/artifacts.test.ts`
 
 ## Notes
 

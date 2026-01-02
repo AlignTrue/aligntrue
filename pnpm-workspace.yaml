@@ -1,8 +1,9 @@
 packages:
-  # Platform-focused workspace after sync tool split
-  # Sync tool now lives at: https://github.com/AlignTrue/aligntrue-sync
   - "packages/*"
   - "apps/*"
-  - "platform/*"
-  - "platform/packs/*"
-  - "platform/ops-shared/*"
+  - "core"
+  - "host"
+  - "cli"
+  - "packs/*"
+  - "connectors/*"
+  - "ui/*"

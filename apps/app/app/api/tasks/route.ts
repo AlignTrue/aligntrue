@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Identity, Contracts } from "@aligntrue/ops-core";
+import { Identity, Contracts } from "@aligntrue/core";
 const { TASK_COMMAND_TYPES } = Contracts;
 import { getHost } from "@/lib/ops-services";
 

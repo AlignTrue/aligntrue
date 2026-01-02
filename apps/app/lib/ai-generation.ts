@@ -1,6 +1,6 @@
 import { generateText, type ToolSet } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
-import { deterministicId } from "@aligntrue/ops-core";
+import { deterministicId } from "@aligntrue/core";
 import type { BlockManifest } from "@aligntrue/ui-contracts";
 import { createRenderPageTool } from "@aligntrue/ui-blocks";
 import type { UIContext } from "./ui-context";

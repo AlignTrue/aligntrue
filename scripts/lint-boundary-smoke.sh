@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-tmp_file="platform/ops-core/src/__lint_smoke__.ts"
+tmp_file="core/src/__lint_smoke__.ts"
 
 cleanup() {
   rm -f "$tmp_file"
@@ -11,8 +11,8 @@ trap cleanup EXIT
 
 cat >"$tmp_file" <<'EOF'
 // Intentional violation to ensure boundary rule is enforced by ESLint.
-// ops-core must not import from ops-shared.
-import "../../ops-shared/google-gmail/src/index.js";
+// core must not import from connectors.
+import "../../connectors/google-gmail/src/index.js";
 EOF
 
 echo "Running ESLint boundary smoke test..."

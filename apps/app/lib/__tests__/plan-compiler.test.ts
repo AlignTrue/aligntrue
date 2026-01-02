@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { hashCanonical } from "@aligntrue/ops-core";
+import { hashCanonical } from "@aligntrue/core";
 import {
   type LayoutIntent,
   type LayoutIntentCore,

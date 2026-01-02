@@ -1,0 +1,70 @@
+{
+  "name": "@aligntrue/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./emails/gmail-contracts": {
+      "types": "./dist/emails/gmail-contracts.d.ts",
+      "import": "./dist/emails/gmail-contracts.js"
+    },
+    "./calendar/google-contracts": {
+      "types": "./dist/calendar/google-contracts.d.ts",
+      "import": "./dist/calendar/google-contracts.js"
+    },
+    "./projections": {
+      "types": "./dist/projections/index.d.ts",
+      "import": "./dist/projections/index.js"
+    },
+    "./contracts/tasks": {
+      "types": "./dist/contracts/tasks.d.ts",
+      "import": "./dist/contracts/tasks.js"
+    },
+    "./contracts/notes": {
+      "types": "./dist/contracts/notes.d.ts",
+      "import": "./dist/contracts/notes.js"
+    },
+    "./contracts/capability": {
+      "types": "./dist/contracts/capability.d.ts",
+      "import": "./dist/contracts/capability.js"
+    },
+    "./envelopes": {
+      "types": "./dist/envelopes/index.d.ts",
+      "import": "./dist/envelopes/index.js"
+    },
+    "./safety-classes": {
+      "types": "./dist/safety-classes/index.d.ts",
+      "import": "./dist/safety-classes/index.js"
+    },
+    "./storage/interfaces": {
+      "types": "./dist/storage/interfaces.d.ts",
+      "import": "./dist/storage/interfaces.js"
+    },
+    "./identity": {
+      "types": "./dist/identity/index.d.ts",
+      "import": "./dist/identity/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "@aligntrue/file-utils": "workspace:*",
+    "ai": "^6.0.5",
+    "@ai-sdk/openai": "^3.0.2",
+    "@ai-sdk/anthropic": "^3.0.2",
+    "@ai-sdk/google": "^3.0.2",
+    "zod": "^4.2.1"
+  }
+}

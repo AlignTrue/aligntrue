@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Projections } from "@aligntrue/ops-core";
+import { Projections } from "@aligntrue/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getEventStore, getHost } from "@/lib/ops-services";

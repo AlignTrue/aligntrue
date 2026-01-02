@@ -20,8 +20,8 @@ export default withNextra({
       : undefined,
   reactStrictMode: true,
   // Transpile workspace packages that export TypeScript source directly
-  // Required for @aligntrue/ui which has no build step
-  transpilePackages: ["@aligntrue/ui"],
+  // Required for @aligntrue/ui-base which has no build step
+  transpilePackages: ["@aligntrue/ui-base"],
   experimental: {
     mdxRs: false,
   },

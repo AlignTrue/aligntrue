@@ -1,4 +1,4 @@
-import { hashCanonical, type ActorRef } from "@aligntrue/ops-core";
+import { hashCanonical, type ActorRef } from "@aligntrue/core";
 import type {
   PlanMode,
   PlanReceipt,

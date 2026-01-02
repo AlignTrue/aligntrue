@@ -5,7 +5,7 @@ import {
   type TasksProjection,
   type TasksProjectionState,
 } from "@aligntrue/pack-tasks";
-import { Projections } from "@aligntrue/ops-core";
+import { Projections } from "@aligntrue/core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { computeHead, type ProjectionCache } from "./shared";
 

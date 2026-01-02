@@ -15,7 +15,7 @@ import {
   getPendingActionRaw,
   finalizeProcessedAction,
 } from "@/lib/db";
-import { deterministicId } from "@aligntrue/ops-core";
+import { deterministicId } from "@aligntrue/core";
 import {
   createPlatformRegistry,
   ActionDispatcher,
@@ -23,7 +23,7 @@ import {
   registerNoteHandlers,
   formSurfaceManifest,
 } from "@aligntrue/ui-blocks";
-import type { CommandEnvelope, CommandOutcome } from "@aligntrue/ops-core";
+import type { CommandEnvelope, CommandOutcome } from "@aligntrue/core";
 import { getHost } from "@/lib/ops-services";
 
 export const runtime = "nodejs";

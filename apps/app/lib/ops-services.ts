@@ -3,10 +3,10 @@ import {
   Contracts,
   Identity,
   Emails,
-} from "@aligntrue/ops-core";
-import { createHost, Storage, type Host } from "@aligntrue/ops-host";
+} from "@aligntrue/core";
+import { createHost, Storage, type Host } from "@aligntrue/host";
 import manifestJson from "../app.manifest.json";
-import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
+import { Mutations as GmailMutations } from "@aligntrue/connector-google-gmail";
 
 const manifest = manifestJson as unknown as Contracts.AppManifest;
 let hostInstance: Host | null = null;

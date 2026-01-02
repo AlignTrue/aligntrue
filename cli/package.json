@@ -1,0 +1,34 @@
+{
+  "name": "@aligntrue/cli",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "dependencies": {
+    "@aligntrue/core": "workspace:*",
+    "@aligntrue/host": "workspace:*",
+    "@aligntrue/connector-google-common": "workspace:*",
+    "@aligntrue/connector-google-gmail": "workspace:*",
+    "@aligntrue/connector-google-calendar": "workspace:*",
+    "@aligntrue/pack-tasks": "workspace:*",
+    "@aligntrue/pack-notes": "workspace:*",
+    "@aligntrue/pack-suggestions": "workspace:*",
+    "@huggingface/transformers": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "private": true
+}

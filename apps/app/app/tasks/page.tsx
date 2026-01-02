@@ -8,7 +8,7 @@ import {
   Identity,
   Projections,
   Storage,
-} from "@aligntrue/ops-core";
+} from "@aligntrue/core";
 import {
   TasksProjectionDef,
   buildTasksProjectionFromState,

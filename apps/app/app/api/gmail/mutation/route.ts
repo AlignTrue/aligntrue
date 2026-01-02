@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { Identity, Storage } from "@aligntrue/ops-core";
-import { Mutations as GmailMutations } from "@aligntrue/ops-shared-google-gmail";
+import { Identity, Storage } from "@aligntrue/core";
+import { Mutations as GmailMutations } from "@aligntrue/connector-google-gmail";
 import { getGmailMutationExecutor, getHost } from "@/lib/ops-services";
 
 export async function POST(request: Request) {

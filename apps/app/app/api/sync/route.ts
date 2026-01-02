@@ -4,14 +4,14 @@ import {
   Storage,
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
   OPS_CONNECTOR_GOOGLE_CALENDAR_ENABLED,
-} from "@aligntrue/ops-core";
-import * as GoogleGmail from "@aligntrue/ops-shared-google-gmail";
-import * as GoogleCalendar from "@aligntrue/ops-shared-google-calendar";
+} from "@aligntrue/core";
+import * as GoogleGmail from "@aligntrue/connector-google-gmail";
+import * as GoogleCalendar from "@aligntrue/connector-google-calendar";
 import {
   loadTokenSet,
   withTokenRefresh,
   type TokenSet,
-} from "@aligntrue/ops-shared-google-common";
+} from "@aligntrue/connector-google-common";
 
 export const dynamic = "force-dynamic";
 

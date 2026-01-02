@@ -5,7 +5,7 @@ import {
   type NotesProjection,
   type NotesProjectionState,
 } from "@aligntrue/pack-notes";
-import { Projections } from "@aligntrue/ops-core";
+import { Projections } from "@aligntrue/core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { computeHead, type ProjectionCache } from "./shared";
 

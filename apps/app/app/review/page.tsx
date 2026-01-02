@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Projections } from "@aligntrue/ops-core";
+import { Projections } from "@aligntrue/core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 import { ReviewPageClient } from "./ReviewPageClient";
 

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   OPS_GMAIL_SEND_ENABLED,
   OPS_CONNECTOR_GOOGLE_GMAIL_ENABLED,
-} from "@aligntrue/ops-core";
-import { sendPlainTextReply } from "@aligntrue/ops-shared-google-gmail";
+} from "@aligntrue/core";
+import { sendPlainTextReply } from "@aligntrue/connector-google-gmail";
 
 const FROM_ADDRESS =
   process.env["GMAIL_FROM_ADDRESS"] ?? process.env["GMAIL_MUTATION_FROM"];

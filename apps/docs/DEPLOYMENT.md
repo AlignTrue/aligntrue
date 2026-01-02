@@ -122,7 +122,7 @@ The site includes the following security headers (configured in `vercel.json`):
 
 - Ensure you're running from `apps/docs` or using `--cwd apps/docs`
 - Verify `pnpm install` completed successfully
-- Check that `@aligntrue/ui` is in workspace dependencies
+- Check that `@aligntrue/ui-base` is in workspace dependencies
 
 ### Sitemap doesn't include homepage
 

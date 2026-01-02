@@ -24,7 +24,7 @@ import {
   getOrCreatePlanAndReceipt,
   logServeEvent,
 } from "@/lib/plan-service";
-import { Projections, hashCanonical } from "@aligntrue/ops-core";
+import { Projections, hashCanonical } from "@aligntrue/core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 
 export const runtime = "nodejs";

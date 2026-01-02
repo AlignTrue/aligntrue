@@ -81,45 +81,45 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.2
         version: 3.0.2(zod@4.2.1)
+      '@aligntrue/connector-google-calendar':
+        specifier: workspace:*
+        version: link:../../connectors/google-calendar
+      '@aligntrue/connector-google-common':
+        specifier: workspace:*
+        version: link:../../connectors/google-common
+      '@aligntrue/connector-google-gmail':
+        specifier: workspace:*
+        version: link:../../connectors/google-gmail
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
       '@aligntrue/file-utils':
         specifier: workspace:*
         version: link:../../packages/file-utils
-      '@aligntrue/ops-core':
+      '@aligntrue/host':
         specifier: workspace:*
-        version: link:../../platform/ops-core
-      '@aligntrue/ops-host':
-        specifier: workspace:*
-        version: link:../../platform/ops-host
-      '@aligntrue/ops-shared-google-calendar':
-        specifier: workspace:*
-        version: link:../../platform/ops-shared/google-calendar
-      '@aligntrue/ops-shared-google-common':
-        specifier: workspace:*
-        version: link:../../platform/ops-shared/google-common
-      '@aligntrue/ops-shared-google-gmail':
-        specifier: workspace:*
-        version: link:../../platform/ops-shared/google-gmail
+        version: link:../../host
       '@aligntrue/pack-notes':
         specifier: workspace:*
-        version: link:../../platform/packs/notes
+        version: link:../../packs/notes
       '@aligntrue/pack-suggestions':
         specifier: workspace:*
-        version: link:../../platform/packs/suggestions
+        version: link:../../packs/suggestions
       '@aligntrue/pack-tasks':
         specifier: workspace:*
-        version: link:../../platform/packs/tasks
-      '@aligntrue/ui':
+        version: link:../../packs/tasks
+      '@aligntrue/ui-base':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:../../packages/ui-base
       '@aligntrue/ui-blocks':
         specifier: workspace:*
-        version: link:../../platform/ui-blocks
+        version: link:../../ui/blocks
       '@aligntrue/ui-contracts':
         specifier: workspace:*
-        version: link:../../packages/ui-contracts
+        version: link:../../ui/contracts
       '@aligntrue/ui-renderer':
         specifier: workspace:*
-        version: link:../../packages/ui-renderer
+        version: link:../../ui/renderer
       '@radix-ui/react-checkbox':
         specifier: ^1.1.2
         version: 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -220,9 +220,9 @@ importers:
 
   apps/docs:
     dependencies:
-      '@aligntrue/ui':
+      '@aligntrue/ui-base':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:../../packages/ui-base
       '@theguild/remark-mermaid':
         specifier: ^0.3.0
         version: 0.3.0(react@19.2.3)
@@ -278,9 +278,9 @@ importers:
 
   apps/web:
     dependencies:
-      '@aligntrue/ui':
+      '@aligntrue/ui-base':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:../../packages/ui-base
       '@radix-ui/react-checkbox':
         specifier: ^1.1.2
         version: 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -385,13 +385,129 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
+  cli:
+    dependencies:
+      '@aligntrue/connector-google-calendar':
+        specifier: workspace:*
+        version: link:../connectors/google-calendar
+      '@aligntrue/connector-google-common':
+        specifier: workspace:*
+        version: link:../connectors/google-common
+      '@aligntrue/connector-google-gmail':
+        specifier: workspace:*
+        version: link:../connectors/google-gmail
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../core
+      '@aligntrue/host':
+        specifier: workspace:*
+        version: link:../host
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../packs/notes
+      '@aligntrue/pack-suggestions':
+        specifier: workspace:*
+        version: link:../packs/suggestions
+      '@aligntrue/pack-tasks':
+        specifier: workspace:*
+        version: link:../packs/tasks
+      '@huggingface/transformers':
+        specifier: ^3.0.0
+        version: 3.8.1
+    devDependencies:
+      '@types/node':
+        specifier: ^25.0.3
+        version: 25.0.3
+
+  connectors/google-calendar:
+    dependencies:
+      '@aligntrue/connector-google-common':
+        specifier: workspace:*
+        version: link:../google-common
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  connectors/google-common:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  connectors/google-gmail:
+    dependencies:
+      '@aligntrue/connector-google-common':
+        specifier: workspace:*
+        version: link:../google-common
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../../packs/notes
+      '@aligntrue/pack-tasks':
+        specifier: workspace:*
+        version: link:../../packs/tasks
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  core:
+    dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.2.1)
+      '@ai-sdk/google':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.2.1)
+      '@ai-sdk/openai':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.2.1)
+      '@aligntrue/file-utils':
+        specifier: workspace:*
+        version: link:../packages/file-utils
+      ai:
+        specifier: ^6.0.5
+        version: 6.0.5(zod@4.2.1)
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  host:
+    dependencies:
+      '@aligntrue/connector-google-calendar':
+        specifier: workspace:*
+        version: link:../connectors/google-calendar
+      '@aligntrue/connector-google-common':
+        specifier: workspace:*
+        version: link:../connectors/google-common
+      '@aligntrue/connector-google-gmail':
+        specifier: workspace:*
+        version: link:../connectors/google-gmail
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
   packages/file-utils:
     devDependencies:
       vitest:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
-  packages/ui:
+  packages/ui-base:
     dependencies:
       clsx:
         specifier: ^2.1.1
@@ -437,7 +553,82 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
-  packages/ui-contracts:
+  packs/convert:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  packs/hello-world:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  packs/notes:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  packs/suggestions:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      vitest:
+        specifier: ^4.0.16
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  packs/tasks:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  ui/blocks:
+    dependencies:
+      '@aligntrue/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@aligntrue/pack-notes':
+        specifier: workspace:*
+        version: link:../../packs/notes
+      '@aligntrue/pack-tasks':
+        specifier: workspace:*
+        version: link:../../packs/tasks
+      '@aligntrue/ui-contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@aligntrue/ui-renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      ai:
+        specifier: ^6.0.5
+        version: 6.0.5(zod@4.2.1)
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.7
+      react:
+        specifier: ^19.0.0
+        version: 19.2.3
+
+  ui/contracts:
     dependencies:
       json-schema:
         specifier: ^0.4.0
@@ -449,21 +640,21 @@ importers:
         specifier: ^3.25.1
         version: 3.25.1(zod@4.2.1)
     devDependencies:
-      '@aligntrue/ops-core':
+      '@aligntrue/core':
         specifier: workspace:*
-        version: link:../../platform/ops-core
+        version: link:../../core
       '@types/json-schema':
         specifier: ^7.0.15
         version: 7.0.15
 
-  packages/ui-renderer:
+  ui/renderer:
     dependencies:
-      '@aligntrue/ops-core':
+      '@aligntrue/core':
         specifier: workspace:*
-        version: link:../../platform/ops-core
+        version: link:../../core
       '@aligntrue/ui-contracts':
         specifier: workspace:*
-        version: link:../ui-contracts
+        version: link:../contracts
       ai:
         specifier: ^6.0.5
         version: 6.0.5(zod@4.2.1)
@@ -489,197 +680,6 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.3(react@19.2.3)
-
-  platform/ops-cli:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../ops-core
-      '@aligntrue/ops-host':
-        specifier: workspace:*
-        version: link:../ops-host
-      '@aligntrue/ops-shared-google-calendar':
-        specifier: workspace:*
-        version: link:../ops-shared/google-calendar
-      '@aligntrue/ops-shared-google-common':
-        specifier: workspace:*
-        version: link:../ops-shared/google-common
-      '@aligntrue/ops-shared-google-gmail':
-        specifier: workspace:*
-        version: link:../ops-shared/google-gmail
-      '@aligntrue/pack-notes':
-        specifier: workspace:*
-        version: link:../packs/notes
-      '@aligntrue/pack-suggestions':
-        specifier: workspace:*
-        version: link:../packs/suggestions
-      '@aligntrue/pack-tasks':
-        specifier: workspace:*
-        version: link:../packs/tasks
-      '@huggingface/transformers':
-        specifier: ^3.0.0
-        version: 3.8.1
-    devDependencies:
-      '@types/node':
-        specifier: ^25.0.3
-        version: 25.0.3
-
-  platform/ops-core:
-    dependencies:
-      '@ai-sdk/anthropic':
-        specifier: ^3.0.2
-        version: 3.0.2(zod@4.2.1)
-      '@ai-sdk/google':
-        specifier: ^3.0.2
-        version: 3.0.2(zod@4.2.1)
-      '@ai-sdk/openai':
-        specifier: ^3.0.2
-        version: 3.0.2(zod@4.2.1)
-      '@aligntrue/file-utils':
-        specifier: workspace:*
-        version: link:../../packages/file-utils
-      ai:
-        specifier: ^6.0.5
-        version: 6.0.5(zod@4.2.1)
-      zod:
-        specifier: ^4.2.1
-        version: 4.2.1
-    devDependencies:
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
-  platform/ops-host:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../ops-core
-      '@aligntrue/ops-shared-google-calendar':
-        specifier: workspace:*
-        version: link:../ops-shared/google-calendar
-      '@aligntrue/ops-shared-google-common':
-        specifier: workspace:*
-        version: link:../ops-shared/google-common
-      '@aligntrue/ops-shared-google-gmail':
-        specifier: workspace:*
-        version: link:../ops-shared/google-gmail
-    devDependencies:
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
-  platform/ops-shared/google-calendar:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-      '@aligntrue/ops-shared-google-common':
-        specifier: workspace:*
-        version: link:../google-common
-    devDependencies:
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
-  platform/ops-shared/google-common:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-
-  platform/ops-shared/google-gmail:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-      '@aligntrue/ops-shared-google-common':
-        specifier: workspace:*
-        version: link:../google-common
-    devDependencies:
-      '@aligntrue/pack-notes':
-        specifier: workspace:*
-        version: link:../../packs/notes
-      '@aligntrue/pack-tasks':
-        specifier: workspace:*
-        version: link:../../packs/tasks
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
-  platform/packs/convert:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-    devDependencies:
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
-  platform/packs/hello-world:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-
-  platform/packs/notes:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-
-  platform/packs/suggestions:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-    devDependencies:
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
-  platform/packs/tasks:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../../ops-core
-
-  platform/ui-blocks:
-    dependencies:
-      '@aligntrue/ops-core':
-        specifier: workspace:*
-        version: link:../ops-core
-      '@aligntrue/pack-notes':
-        specifier: workspace:*
-        version: link:../packs/notes
-      '@aligntrue/pack-tasks':
-        specifier: workspace:*
-        version: link:../packs/tasks
-      '@aligntrue/ui-contracts':
-        specifier: workspace:*
-        version: link:../../packages/ui-contracts
-      '@aligntrue/ui-renderer':
-        specifier: workspace:*
-        version: link:../../packages/ui-renderer
-      ai:
-        specifier: ^6.0.5
-        version: 6.0.5(zod@4.2.1)
-      ajv:
-        specifier: ^8.17.1
-        version: 8.17.1
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
-      zod:
-        specifier: ^4.2.1
-        version: 4.2.1
-    devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.7
-      react:
-        specifier: ^19.0.0
-        version: 19.2.3
 
 packages:
 

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
-import type { ActorRef } from "@aligntrue/ops-core";
+import type { ActorRef } from "@aligntrue/core";
 
 const COOKIE_NAME = "ui_actor_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year

@@ -1,4 +1,4 @@
-import { hashCanonical } from "@aligntrue/ops-core";
+import { hashCanonical } from "@aligntrue/core";
 import {
   taskListManifest,
   formSurfaceManifest,

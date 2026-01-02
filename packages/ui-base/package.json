@@ -1,0 +1,43 @@
+{
+  "name": "@aligntrue/ui-base",
+  "version": "0.9.3",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./styles/tokens.css": "./src/styles/tokens.css",
+    "./tokens/colors.css": "./src/tokens/colors.css",
+    "./tokens/themes.css": "./src/tokens/themes.css",
+    "./tailwind-preset": "./src/tailwind-preset.ts",
+    "./nextra/nextra.css": "./src/nextra/nextra.css",
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.0.16",
+    "jsdom": "^27.4.0",
+    "tailwindcss": "^4",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "next-themes": "^0.4.6",
+    "tailwind-merge": "^3.4.0"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

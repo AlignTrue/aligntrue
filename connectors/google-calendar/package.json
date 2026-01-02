@@ -1,0 +1,25 @@
+{
+  "name": "@aligntrue/connector-google-calendar",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aligntrue/core": "workspace:*",
+    "@aligntrue/connector-google-common": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.16"
+  }
+}

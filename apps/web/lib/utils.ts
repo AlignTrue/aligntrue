@@ -1,1 +1,1 @@
-export { cn, formatBytes, isAbortError } from "@aligntrue/ui";
+export { cn, formatBytes, isAbortError } from "@aligntrue/ui-base";

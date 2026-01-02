@@ -93,30 +93,30 @@ if (docsTranspilePackages !== null) {
   console.log("   (file not found)");
 }
 
-// Check packages/ui (known source package)
-const uiPackagePath = join(rootDir, "packages/ui/package.json");
+// Check packages/ui-base (known source package)
+const uiPackagePath = join(rootDir, "packages/ui-base/package.json");
 const isUiSourcePackage = isSourcePackage(uiPackagePath);
 
 console.log("\n📦 Workspace packages:");
 console.log(
-  `   @aligntrue/ui: ${isUiSourcePackage ? "source package (requires transpilation)" : "built package"}`,
+  `   @aligntrue/ui-base: ${isUiSourcePackage ? "source package (requires transpilation)" : "built package"}`,
 );
 
 // Validation
 if (
   webTranspilePackages !== null &&
   isUiSourcePackage &&
-  !webTranspilePackages.includes("@aligntrue/ui")
+  !webTranspilePackages.includes("@aligntrue/ui-base")
 ) {
-  errors.push("apps/web: Missing '@aligntrue/ui' in transpilePackages");
+  errors.push("apps/web: Missing '@aligntrue/ui-base' in transpilePackages");
 }
 
 if (
   docsTranspilePackages !== null &&
   isUiSourcePackage &&
-  !docsTranspilePackages.includes("@aligntrue/ui")
+  !docsTranspilePackages.includes("@aligntrue/ui-base")
 ) {
-  errors.push("apps/docs: Missing '@aligntrue/ui' in transpilePackages");
+  errors.push("apps/docs: Missing '@aligntrue/ui-base' in transpilePackages");
 }
 
 // Report results

@@ -33,11 +33,7 @@ export const dynamic = "force-static";
 export async function GET() {
   const now = new Date().toISOString();
 
-  const entries: Entry[] = [
-    { url: BASE_URL, lastModified: now },
-    { url: `${BASE_URL}/docs`, lastModified: now },
-    { url: `${BASE_URL}/a/demo`, lastModified: now },
-  ];
+  const entries: Entry[] = [{ url: BASE_URL, lastModified: now }];
 
   const xml = toXml(entries);
 

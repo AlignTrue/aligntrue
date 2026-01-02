@@ -5,15 +5,15 @@ import unusedImports from "eslint-plugin-unused-imports";
 import nextPlugin from "@next/eslint-plugin-next";
 import security from "eslint-plugin-security";
 
-// Custom rule to prevent asset imports in @aligntrue/ui (zero-build package)
+// Custom rule to prevent asset imports in @aligntrue/ui-base (zero-build package)
 const noAssetImportsInUI = {
   create(context) {
     return {
       ImportDeclaration(node) {
         const filePath = context.filename;
 
-        // Only check files in packages/ui/src
-        if (!filePath.includes("packages/ui/src")) {
+        // Only check files in packages/ui-base/src
+        if (!filePath.includes("packages/ui-base/src")) {
           return;
         }
 
@@ -35,7 +35,7 @@ const noAssetImportsInUI = {
         if (isAssetImport) {
           context.report({
             node,
-            message: `❌ Asset import forbidden in @aligntrue/ui (zero-build package). Embed SVGs inline as JSX or use data URIs. See sync_implementation_specs.mdc Section 14.`,
+            message: `❌ Asset import forbidden in @aligntrue/ui-base (zero-build package). Embed SVGs inline as JSX or use data URIs. See sync_implementation_specs.mdc Section 14.`,
             fix(fixer) {
               return null; // Manual fix required
             },
@@ -393,7 +393,7 @@ export default [
       "archive/**",
       ".archive/**",
       "eslint.config.js", // Config file doesn't use rules it defines
-      "platform/ops-core/**/*.d.ts", // TS project config excludes these declaration files
+      "core/**/*.d.ts", // TS project config excludes these declaration files
     ],
   },
   {
@@ -476,7 +476,7 @@ export default [
     },
   },
   {
-    files: ["packages/ui/src/**/*.{ts,tsx}"],
+    files: ["packages/ui-base/src/**/*.{ts,tsx}"],
     rules: {
       "custom-rules/no-asset-imports-in-ui": "error",
     },
@@ -493,8 +493,8 @@ export default [
   },
   {
     files: [
-      "platform/ops-core/**/*.ts",
-      "packages/ui/src/components/AlignTrueLogo.tsx",
+      "core/**/*.ts",
+      "packages/ui-base/src/components/AlignTrueLogo.tsx",
     ],
     rules: {
       // Platform kernel and specific UI components use safe object property access
@@ -502,7 +502,7 @@ export default [
     },
   },
   {
-    files: ["platform/ops-core/**/*.ts"],
+    files: ["core/**/*.ts"],
     rules: {
       // Platform kernel runs after CLI/API validation; data is trusted at this layer.
       // Object iteration uses static field lists or own keys; no user-controlled keys flow here.
@@ -514,9 +514,9 @@ export default [
         {
           patterns: [
             {
-              group: ["**/ops-shared/**", "**/packs/**"],
+              group: ["**/connectors/**", "**/packs/**"],
               message:
-                "ops-core cannot import from ops-shared or packs (constitution Section 7).",
+                "core cannot import from connectors or packs (constitution Section 7).",
             },
             {
               group: ["@aligntrue/pack-*"],
@@ -529,7 +529,7 @@ export default [
     },
   },
   {
-    files: ["platform/ops-shared/**/*.ts"],
+    files: ["connectors/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -538,14 +538,11 @@ export default [
             {
               group: ["**/packs/**"],
               message:
-                "ops-shared cannot import from packs (constitution Section 7).",
+                "connectors cannot import from packs (constitution Section 7).",
             },
             {
-              group: [
-                "@aligntrue/ops-core/dist/**",
-                "@aligntrue/ops-core/src/**",
-              ],
-              message: "ops-shared must use ops-core public exports only.",
+              group: ["@aligntrue/core/dist/**", "@aligntrue/core/src/**"],
+              message: "connectors must use core public exports only.",
             },
           ],
         },
@@ -553,7 +550,7 @@ export default [
     },
   },
   {
-    files: ["platform/packs/**/*.ts"],
+    files: ["packs/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -562,11 +559,11 @@ export default [
             {
               group: [
                 "../**/packs/**",
-                "**/ops-shared/**/src/**",
-                "**/ops-core/**/src/**",
+                "**/connectors/**/src/**",
+                "**/core/**/src/**",
               ],
               message:
-                "packs cannot import other packs directly or deep-import ops-core/ops-shared (use package exports/contracts).",
+                "packs cannot import other packs directly or deep-import core/connectors (use package exports/contracts).",
             },
           ],
         },
@@ -574,7 +571,7 @@ export default [
     },
   },
   {
-    files: ["platform/ui-blocks/src/blocks/**/*.{ts,tsx}"],
+    files: ["ui/blocks/src/blocks/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -583,7 +580,7 @@ export default [
             {
               group: ["@/components/ui/*", "**/components/ui/*"],
               message:
-                "Use platform/ui-blocks/src/ui wrappers instead of importing shadcn primitives directly.",
+                "Use ui/blocks/src/ui wrappers instead of importing shadcn primitives directly.",
             },
           ],
         },
@@ -591,7 +588,7 @@ export default [
     },
   },
   {
-    files: ["platform/ui-blocks/src/ui/**/*.{ts,tsx}"],
+    files: ["ui/blocks/src/ui/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": "off",
     },

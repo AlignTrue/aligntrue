@@ -21,7 +21,6 @@ out/
 # production
 build
 dist
-platform/ops-cli/dist/
 
 # misc
 .DS_Store
@@ -79,9 +78,9 @@ packages/**/test-*/
 **/tests/tmp/
 **/.backups/
 # ops-core build artifacts emitted to src (ignore generated JS + d.ts)
-platform/ops-core/src/**/*.d.ts
-platform/ops-core/src/**/*.d.ts.map
-platform/ops-core/src/**/*.js
+core/src/**/*.d.ts
+core/src/**/*.d.ts.map
+core/src/**/*.js
 
 # Turborepo cache (generated during build)
 .turbo/
@@ -99,6 +98,6 @@ packages/cli/data/ops-core-events.jsonl
 
 # Data
 apps/app/data/*
-platform/ops-core/data/*.jsonl
-platform/ops-core/data/data/
-platform/ops-core/docs/LM-STUDIO-SETUP.md
+core/data/*.jsonl
+core/data/data/
+core/docs/LM-STUDIO-SETUP.md

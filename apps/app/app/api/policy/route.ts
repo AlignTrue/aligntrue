@@ -4,7 +4,7 @@ import {
   Contracts,
   Projections,
   handlePolicySetCommand,
-} from "@aligntrue/ops-core";
+} from "@aligntrue/core";
 import { getHost, getEventStore, getCommandLog } from "@/lib/ops-services";
 import { getOrCreateActorId } from "@/lib/actor";
 

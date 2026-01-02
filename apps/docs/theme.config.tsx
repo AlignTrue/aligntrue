@@ -1,5 +1,5 @@
 // apps/docs/theme.config.tsx
-import { AlignTrueLogo } from "@aligntrue/ui";
+import { AlignTrueLogo } from "@aligntrue/ui-base";
 
 const config = {
   logo: <AlignTrueLogo size="md" />,

@@ -1,4 +1,4 @@
-import { deterministicId } from "@aligntrue/ops-core";
+import { deterministicId } from "@aligntrue/core";
 import type { InputRef } from "@aligntrue/ui-contracts";
 import type { TasksProjection } from "@aligntrue/pack-tasks";
 import type { NotesProjection } from "@aligntrue/pack-notes";

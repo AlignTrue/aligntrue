@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { OPS_NOTES_ENABLED, Identity } from "@aligntrue/ops-core";
+import { OPS_NOTES_ENABLED, Identity } from "@aligntrue/core";
 import * as PackNotes from "@aligntrue/pack-notes";
 import { getHost } from "@/lib/ops-services";
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "build:packages": "turbo run build --filter='./packages/*' --filter='./platform/*'",
+    "build:packages": "turbo run build --filter='./packages/*' --filter='./core' --filter='./host' --filter='./cli' --filter='./packs/*' --filter='./connectors/*' --filter='./ui/*'",
     "dev": "pnpm dev:app",
     "dev:app": "pnpm --filter @aligntrue/app dev",
     "dev:docs": "pnpm --filter @aligntrue/docs dev",
@@ -36,7 +36,7 @@
     "pre-ci": "node scripts/pre-ci.mjs",
     "verify:workspace-links": "node scripts/verify-workspace-links.mjs",
     "debug:workspace": "node scripts/debug/workspace-types.mjs",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist platform/*/node_modules platform/*/dist apps/*/node_modules apps/*/.next",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist core/node_modules core/dist host/node_modules host/dist cli/node_modules cli/dist packs/*/node_modules packs/*/dist connectors/*/node_modules connectors/*/dist ui/*/node_modules ui/*/dist apps/*/node_modules apps/*/.next",
     "clean-temp": "find . -type f -name 'temp-*' -not -path '*/node_modules/*' -delete",
     "cleanup:temps": "node scripts/cleanup-test-temps.mjs --delete",
     "cleanup:temps:dry": "node scripts/cleanup-test-temps.mjs --verbose",

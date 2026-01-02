@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Projections } from "@aligntrue/ops-core";
+import { Projections } from "@aligntrue/core";
 import { getEventStore, getHost } from "@/lib/ops-services";
 
 export async function GET() {

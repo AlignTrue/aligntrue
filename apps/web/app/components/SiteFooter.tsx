@@ -1,4 +1,4 @@
-import { AlignTrueLogo } from "@aligntrue/ui";
+import { AlignTrueLogo } from "@aligntrue/ui-base";
 
 export function SiteFooter() {
   const currentYear = new Date().getFullYear();
@@ -10,25 +10,6 @@ export function SiteFooter() {
         <div className="space-y-3 w-full md:w-auto">
           <div className="text-foreground flex justify-center md:justify-start">
             <AlignTrueLogo size="md" />
-          </div>
-          <div className="flex flex-wrap justify-center md:justify-start gap-4 text-foreground">
-            <a href="/docs" className="hover:underline">
-              Docs
-            </a>
-            <a href="/docs/04-reference/features" className="hover:underline">
-              Features
-            </a>
-            <a href="/docs/about" className="hover:underline">
-              About
-            </a>
-            <a
-              href="https://github.com/AlignTrue/aligntrue"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:underline"
-            >
-              GitHub
-            </a>
           </div>
           <p>
             © {currentYear} AlignTrue.{" "}
@@ -43,7 +24,7 @@ export function SiteFooter() {
             .
           </p>
           <p className="text-muted-foreground">
-            Made with ❤️ + hash determinism.
+            Experimental alpha. Built for deterministic AI ops.
           </p>
         </div>
 

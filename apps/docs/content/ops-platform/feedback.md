@@ -14,7 +14,7 @@ Feedback events capture user responses to derived artifacts. Each event is an `E
 - `overridden`
 - `snoozed`
 
-Schema: `platform/ops-core/src/feedback/events.ts`
+Schema: `core/src/feedback/events.ts`
 
 ## Fields
 
@@ -27,7 +27,7 @@ Schema: `platform/ops-core/src/feedback/events.ts`
 ## Example (TypeScript)
 
 ```ts
-import { Feedback } from "platform/ops-core";
+import { Feedback } from "core";
 
 const feedback = Feedback.buildFeedbackEvent({
   artifact_id: "derived-123",
@@ -39,7 +39,7 @@ const feedback = Feedback.buildFeedbackEvent({
 });
 ```
 
-`Feedback.feedbackByArtifactId()` filters an event stream to the matching artifact IDs. See `platform/ops-core/tests/feedback.test.ts`.
+`Feedback.feedbackByArtifactId()` filters an event stream to the matching artifact IDs. See `core/tests/feedback.test.ts`.
 
 ## Notes
 

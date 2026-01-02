@@ -18,12 +18,12 @@ Query artifacts capture the structured view of **what the AI inspected**. They a
 - `created_at`, `created_by`, `correlation_id`
 - `content_hash` – matches `artifact_id`
 
-Implementation: `platform/ops-core/src/artifacts/query.ts`
+Implementation: `core/src/artifacts/query.ts`
 
 ## Example (TypeScript)
 
 ```ts
-import { Artifacts } from "platform/ops-core";
+import { Artifacts } from "core";
 
 const query = Artifacts.buildQueryArtifact({
   referenced_entities: ["work_item"],
@@ -39,10 +39,10 @@ const query = Artifacts.buildQueryArtifact({
 
 ## Storage
 
-JSONL-backed store: `platform/ops-core/src/storage/jsonl-artifact-store.ts`
+JSONL-backed store: `core/src/storage/jsonl-artifact-store.ts`
 
 - Append-only, idempotent writes
-- Used by tests in `platform/ops-core/tests/artifacts.test.ts`
+- Used by tests in `core/tests/artifacts.test.ts`
 
 ## Notes
 

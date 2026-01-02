@@ -1,6 +1,10 @@
-# Platform layer
+# Platform layer (moved)
 
-This directory holds platform packages that power the ops runtime.
+Platform packages now live at the repository root:
 
-- `platform/*` is included in `pnpm-workspace.yaml`; installs and CI pick it up.
-- Packages: ops-core (kernel), ops-host (runtime), ops-cli, packs, ui-blocks
+- `core/` (kernel)
+- `host/` (runtime)
+- `cli/`
+- `packs/*`
+- `connectors/*`
+- `ui/*`

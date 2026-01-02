@@ -1,4 +1,4 @@
-export { cn, formatBytes, isAbortError } from "@aligntrue/ui";
+export { cn, formatBytes, isAbortError } from "@aligntrue/ui-base";
 
 /**
  * Get the base URL for the application, considering environment variables.
