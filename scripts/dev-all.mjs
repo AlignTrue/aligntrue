@@ -61,11 +61,11 @@ function setupSignalHandlers() {
 }
 
 function main() {
-  console.log("Starting AlignTrue dev stack (packages watch + web)...");
+  console.log("Starting AlignTrue dev stack (packages watch + app)...");
   setupSignalHandlers();
 
   spawnTask("packages:watch", "pnpm", ["dev:packages"]);
-  spawnTask("web", "pnpm", ["--filter", "@aligntrue/web", "dev"]);
+  spawnTask("app", "pnpm", ["--filter", "@aligntrue/app", "dev"]);
 }
 
 main();

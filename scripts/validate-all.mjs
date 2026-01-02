@@ -10,7 +10,7 @@ const validators = [
   {
     name: "UI tsconfig",
     script: "validate-ui-tsconfig.mjs",
-    hint: "Check apps/docs and packages/ui tsconfig paths for mismatches.",
+    hint: "Check apps/app and packages/ui tsconfig paths for mismatches.",
   },
   {
     name: "Transpile packages",
