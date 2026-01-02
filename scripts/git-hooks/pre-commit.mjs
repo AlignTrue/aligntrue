@@ -55,10 +55,6 @@ async function main() {
     process.exit(1);
   }
 
-  // Note: Docs site moved to aligntrue-sync repo
-  // Docs checks disabled in this platform repo
-  clack.log.info("✅ Docs check skipped (docs in sync repo)");
-
   const packageJsonChanged = stagedFiles.some((file) =>
     file.endsWith("package.json"),
   );
@@ -66,7 +62,7 @@ async function main() {
   if (packageJsonChanged) {
     s.start("Validating workspace protocol in staged package.json files...");
     try {
-      execSync("pnpm validate:workspace", { stdio: "pipe" });
+      execSync("pnpm validate:workspace", { stdio: "inherit" });
       s.stop("✅ Workspace protocol validated.");
     } catch (error) {
       s.stop("❌ Workspace validation failed.", 1);
@@ -199,7 +195,9 @@ async function main() {
 
   s.start("Validating Next.js transpilePackages config...");
   try {
-    execSync("node scripts/validate-transpile-packages.mjs", { stdio: "pipe" });
+    execSync("node scripts/validate-transpile-packages.mjs", {
+      stdio: "inherit",
+    });
     s.stop("✅ Next.js config validated.");
   } catch (error) {
     s.stop("❌ Next.js validation failed.", 1);
@@ -221,8 +219,6 @@ async function main() {
     clack.outro("💡 Fix the config and re-stage the files.");
     process.exit(1);
   }
-
-  // Note: Docs validation moved to aligntrue-sync repo
 
   clack.outro("✅ Pre-commit checks passed");
   process.exit(0);

@@ -9,6 +9,13 @@ const config = {
   },
   docsRepositoryBase:
     "https://github.com/AlignTrue/aligntrue/tree/main/apps/docs",
+  editLink: {
+    content: "Edit this page on GitHub",
+  },
+  feedback: {
+    content: "Questions? Give us feedback →",
+    labels: "documentation",
+  },
 
   // Table of contents configuration
   toc: {
