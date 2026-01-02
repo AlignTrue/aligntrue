@@ -1,6 +1,6 @@
-# Platform layer (future)
+# Platform layer
 
-This directory holds platform packages we are incubating within the monorepo workspace.
+This directory holds platform packages that power the ops runtime.
 
 - `platform/*` is included in `pnpm-workspace.yaml`; installs and CI pick it up.
-- Keep contents self contained and side-effect free; promote contracts behind flags.
+- Packages: ops-core (kernel), ops-host (runtime), ops-cli, packs, ui-blocks

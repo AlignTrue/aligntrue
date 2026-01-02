@@ -446,7 +446,7 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1
       zod-to-json-schema:
-        specifier: ^3.23.3
+        specifier: ^3.25.1
         version: 3.25.1(zod@4.2.1)
     devDependencies:
       '@aligntrue/ops-core':
@@ -535,6 +535,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.2
         version: 3.0.2(zod@4.2.1)
+      '@aligntrue/file-utils':
+        specifier: workspace:*
+        version: link:../../packages/file-utils
       ai:
         specifier: ^6.0.5
         version: 6.0.5(zod@4.2.1)
@@ -2668,6 +2671,7 @@ packages:
 
   boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   brace-expansion@1.1.12:
     resolution: {integrity: sha512-9T9UjW3r0UW5c1Q7GTwllptXwhvYmEzFhzMfZ9H7FQWt+uZePjZPjBP/W1ZEyZ1twGWom5/56TF4lPcqjnDHcg==}

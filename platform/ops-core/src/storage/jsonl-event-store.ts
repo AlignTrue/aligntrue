@@ -1,7 +1,8 @@
 import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import readline from "node:readline";
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import { OPS_DATA_DIR } from "../config.js";
 import type { EventEnvelope } from "../envelopes/index.js";
 import type { EventStore } from "./interfaces.js";
@@ -12,7 +13,7 @@ export class JsonlEventStore implements EventStore {
   constructor(private readonly filePath: string = DEFAULT_EVENTS_PATH) {}
 
   async append(event: EventEnvelope): Promise<void> {
-    await ensureDir(this.filePath);
+    await ensureFile(this.filePath);
     const stream = createWriteStream(this.filePath, { flags: "a" });
     stream.write(`${JSON.stringify(event)}\n`);
     await new Promise<void>((resolveWrite, reject) => {
@@ -70,8 +71,8 @@ export class JsonlEventStore implements EventStore {
   }
 }
 
-async function ensureDir(filePath: string): Promise<void> {
-  await mkdir(dirname(resolve(filePath)), { recursive: true });
+async function ensureFile(filePath: string): Promise<void> {
+  ensureDirectoryExists(dirname(resolve(filePath)));
   // Ensure file exists
   try {
     await writeFile(resolve(filePath), "", { flag: "a" });

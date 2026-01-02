@@ -1,6 +1,7 @@
 import { createWriteStream } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 import { OPS_DATA_DIR } from "../config.js";
 import type { CommandEnvelope, CommandOutcome } from "../envelopes/index.js";
 import type {
@@ -337,7 +338,7 @@ async function appendLine(path: string, value: unknown): Promise<void> {
 }
 
 async function ensureFile(path: string): Promise<void> {
-  await mkdir(dirname(resolve(path)), { recursive: true });
+  ensureDirectoryExists(dirname(resolve(path)));
   try {
     await writeFile(resolve(path), "", { flag: "a" });
   } catch {
