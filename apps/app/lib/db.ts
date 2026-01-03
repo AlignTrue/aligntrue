@@ -52,10 +52,11 @@ try {
     error.code === "SQLITE_BUSY"
   ) {
     console.warn(
-      "SQLite busy during schema check. Assuming another process is initializing.",
+      "SQLite busy during schema check. Proceeding to initialization block.",
     );
-    // We'll proceed to the verifySchema step which has the built-in timeout wait.
-    schemaExists = true; // Skip the db.exec block
+    // We'll proceed to the initialization block which handles SQLITE_BUSY internally,
+    // and then to verifySchema which acts as the final safety net.
+    schemaExists = false;
   } else {
     throw error;
   }
