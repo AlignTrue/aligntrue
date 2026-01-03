@@ -76,9 +76,7 @@ export function parseArtifactRef(
   return { artifact_type, artifact_id };
 }
 
-export function parseExternalRef(
-  ref: string,
-): {
+export function parseExternalRef(ref: string): {
   provider: string;
   external_id: string;
   version_hint?: string | undefined;

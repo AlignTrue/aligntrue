@@ -13,3 +13,10 @@ export type {
   CommandLogTryStartResult,
   ArtifactStore,
 } from "./interfaces.js";
+export {
+  JsonlTrajectoryStore,
+  DEFAULT_TRAJECTORIES_PATH,
+  DEFAULT_TRAJECTORY_OUTCOMES_PATH,
+  DEFAULT_TRAJECTORY_DB_PATH,
+} from "./jsonl-trajectory-store.js";
+export type { TrajectoryStore } from "./trajectory-store.js";
