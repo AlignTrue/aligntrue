@@ -10,9 +10,9 @@ import { SectionBadge } from "./components/SectionBadge";
 import { PageLayout } from "@/components/PageLayout";
 import { GitHubIcon } from "./components/GitHubIcon";
 
-const title = "AlignTrue | AI ops platform (experimental alpha)";
+const title = "AlignTrue | The system of record for AI (experimental alpha)";
 const description =
-  "Deterministic, receipts-first AI ops platform. Local-first, rebuildable projections, and governed connectors.";
+  "The system of record for AI. Receipts-first, deterministic projections, and rebuildable history so teams can trust AI outputs.";
 
 export const metadata: Metadata = {
   title,
@@ -53,12 +53,12 @@ export default function HomePage() {
             id="hero-heading"
             className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-foreground text-balance"
           >
-            AI ops with receipts, replay, and deterministic projections.
+            The system of record for AI.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto text-pretty">
-            AlignTrue is an experimental, local-first AI ops platform focused on
-            deterministic behavior, envelopes-first design, and rebuildable
-            projections so teams can trust AI outputs.
+            AlignTrue is the system of record for AI: receipts-first,
+            deterministic projections, and rebuildable history so teams can
+            trust every output.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="px-5 py-3 font-semibold">
