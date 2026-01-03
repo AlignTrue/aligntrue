@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { OPS_NOTES_ENABLED, Identity, Projections } from "@aligntrue/core";
+import { OPS_NOTES_ENABLED, Identity } from "@aligntrue/core";
 import * as PackNotes from "@aligntrue/pack-notes";
 import {
   Button,
@@ -11,20 +12,9 @@ import {
   Input,
   Textarea,
 } from "@aligntrue/ui-base";
+import { getNotesView } from "@/lib/views";
 import { NotePreview } from "./NotePreview";
-import { getEventStore, getHost } from "@/lib/ops-services";
-
-async function getNotesView() {
-  if (!OPS_NOTES_ENABLED) return null;
-  await getHost();
-  const rebuilt = await Projections.rebuildOne(
-    PackNotes.NotesProjectionDef,
-    getEventStore(),
-  );
-  return PackNotes.buildNotesProjectionFromState(
-    rebuilt.data as PackNotes.NotesProjectionState,
-  );
-}
+import { getHost } from "@/lib/ops-services";
 
 function buildCommand<T extends PackNotes.NoteCommandType>(
   command_type: T,
@@ -110,6 +100,13 @@ export default async function NotesPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-8">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Notes</h1>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/notes">+ New Note</Link>
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Create Note</CardTitle>
