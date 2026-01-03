@@ -9,7 +9,7 @@
 
 # Introduction
 
-> ⚠️ **Alpha:** AlignTrue AI ops platform is in active development. Expect substantial changes while we dogfood the architecture.
+> ⚠️ **Beta:** AlignTrue AI ops platform is in active development. Expect substantial changes while we dogfood the architecture.
 
 AlignTrue is the system of record for AI. Models commoditize, trust doesn't. We lead with receipts and auditability, emphasizing deterministic behavior, envelopes-first design, and rebuildable projections so teams can trust AI outputs.
 
@@ -21,7 +21,7 @@ AlignTrue is the system of record for AI. Models commoditize, trust doesn't. We 
 
 ## Current status
 
-- Alpha-quality; APIs and contracts may change.
+- Beta-quality; APIs and contracts may change.
 - Local-first: core flows run without cloud dependencies.
 - Dogfooding across tasks/notes; broader capabilities will evolve.
 

@@ -9,7 +9,7 @@
 
 # Contributing to AlignTrue
 
-AlignTrue (ops platform) is in alpha. Contributions are welcome—please bias toward small, reviewable changes and include tests where practical.
+AlignTrue (ops platform) is in beta. Contributions are welcome—please bias toward small, reviewable changes and include tests where practical.
 
 ## Ways to contribute
 

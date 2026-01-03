@@ -9,7 +9,7 @@ description: About AlignTrue.
 
 **AlignTrue is the system of record for AI. Models commoditize, trust doesn't.** We focus on receipts and auditability, centering on deterministic behavior, envelopes-first design, and rebuildable projections so teams can trust and replay AI outputs.
 
-The platform is **alpha** and will change substantially as we dogfood. If something is broken, outdated, or missing, open a PR.
+The platform is **beta** and will change substantially as we dogfood. If something is broken, outdated, or missing, open a PR.
 
 ## Why
 

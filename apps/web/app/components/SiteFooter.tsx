@@ -24,7 +24,7 @@ export function SiteFooter() {
             .
           </p>
           <p className="text-muted-foreground">
-            Experimental alpha. Built for deterministic AI ops.
+            Experimental beta. Built for deterministic AI ops.
           </p>
         </div>
 

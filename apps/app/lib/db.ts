@@ -16,19 +16,50 @@ export const db = new Database(DB_PATH, {
   timeout: 10000,
 });
 
-// Enable WAL for better concurrency on local
-db.pragma("journal_mode = WAL");
-// Keep synchronous = FULL (default) for maximum durability.
-// In WAL mode, FULL ensures transactions are synced to disk before commit,
-// which is critical for the "Receipts first" architecture and deterministic replay.
-db.pragma("synchronous = FULL");
+// Setting pragmas can sometimes fail with SQLITE_BUSY if multiple processes
+// are competing for the lock during initialization (e.g. during 'next build').
+try {
+  db.pragma("journal_mode = WAL");
+  db.pragma("synchronous = FULL");
+} catch (error) {
+  if (
+    error instanceof Error &&
+    "code" in error &&
+    error.code === "SQLITE_BUSY"
+  ) {
+    console.warn(
+      "SQLite busy during pragma setup. Assuming another process is handling it.",
+    );
+  } else {
+    throw error;
+  }
+}
 
 // Initialize schema if needed.
 // We check if a core table exists first to avoid redundant CREATE TABLE calls
 // that can cause SQLITE_BUSY errors during parallel Next.js builds.
-const schemaExists = db
-  .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='plans'")
-  .get();
+let schemaExists: unknown = false;
+try {
+  schemaExists = db
+    .prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='plans'",
+    )
+    .get();
+} catch (error) {
+  if (
+    error instanceof Error &&
+    "code" in error &&
+    error.code === "SQLITE_BUSY"
+  ) {
+    console.warn(
+      "SQLite busy during schema check. Assuming another process is initializing.",
+    );
+    // We'll proceed to the verifySchema step which has the built-in timeout wait.
+    schemaExists = true; // Skip the db.exec block
+  } else {
+    throw error;
+  }
+}
 
 if (!schemaExists) {
   try {

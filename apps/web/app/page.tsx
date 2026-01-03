@@ -10,7 +10,7 @@ import { SectionBadge } from "./components/SectionBadge";
 import { PageLayout } from "@/components/PageLayout";
 import { GitHubIcon } from "./components/GitHubIcon";
 
-const title = "AlignTrue | The system of record for AI (experimental alpha)";
+const title = "AlignTrue | The system of record for AI (experimental beta)";
 const description =
   "Models commoditize, trust doesn't. AlignTrue captures what AI saw, why it decided, and what it did so you can ship AI with receipts and replay.";
 
