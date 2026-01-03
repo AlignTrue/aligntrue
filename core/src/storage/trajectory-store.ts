@@ -3,17 +3,17 @@ import type { TrajectoryStepType } from "../trajectories/steps.js";
 import type { OutcomeRecorded } from "../trajectories/outcome.js";
 
 export interface TrajectoryFilters {
-  entity_ref?: string;
-  command_id?: string;
-  time_after?: string;
-  time_before?: string;
-  step_types?: TrajectoryStepType[];
+  entity_ref?: string | undefined;
+  command_id?: string | undefined;
+  time_after?: string | undefined;
+  time_before?: string | undefined;
+  step_types?: TrajectoryStepType[] | undefined;
 }
 
 export interface TrajectoryListOptions {
   filters: TrajectoryFilters;
-  limit?: number;
-  cursor?: string;
+  limit?: number | undefined;
+  cursor?: string | undefined;
   sort: "time_desc" | "time_asc";
 }
 

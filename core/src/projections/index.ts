@@ -14,6 +14,34 @@ export {
   type ProjectionOutput,
 } from "./rebuild.js";
 export {
+  type TrajectoryProjectionDefinition,
+  type TrajectoryProjectionFreshness,
+  type TrajectoryProjectionOutput,
+} from "./trajectory-definition.js";
+export { rebuildTrajectoryProjection } from "./trajectory-rebuild.js";
+export {
+  CooccurrenceProjectionDef,
+  cooccurrenceHash,
+  pruneCooccurrence,
+  type CooccurrenceState,
+} from "./cooccurrence.js";
+export {
+  TransitionProjectionDef,
+  transitionsHash,
+  type TransitionState,
+  finalizeTransitions,
+} from "./transitions.js";
+export {
+  SignatureProjectionDef,
+  finalizeSignatures,
+  type SignatureState,
+} from "./signatures.js";
+export {
+  OutcomeCorrelationProjectionDef,
+  outcomeCorrelationHash,
+  type OutcomeCorrelationState,
+} from "./outcome-correlations.js";
+export {
   TimelineProjectionDef,
   buildTimelineProjectionFromState,
   replayTimeline,
