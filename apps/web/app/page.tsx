@@ -48,7 +48,21 @@ export default function HomePage() {
         aria-labelledby="hero-heading"
       >
         <div className="relative max-w-5xl mx-auto space-y-8">
-          <SectionBadge>Experimental alpha</SectionBadge>
+          <a
+            href="https://github.com/AlignTrue/aligntrue"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 w-fit mx-auto rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium bg-muted/50 text-muted-foreground border border-border hover:border-primary/30 hover:bg-muted/80 transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <GitHubIcon size={16} />
+              <span>AlignTrue (Beta)</span>
+            </div>
+            <span className="text-border/60">|</span>
+            <span>Open Source</span>
+            <span className="text-border/60">|</span>
+            <span>MIT License</span>
+          </a>
           <h1
             id="hero-heading"
             className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-foreground text-balance"
@@ -56,10 +70,10 @@ export default function HomePage() {
             The system of record for AI.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto text-pretty">
-            Models commoditize, trust doesn&apos;t. AI without receipts is a
-            liability, behavior drift is a death spiral, and if you can&apos;t
-            replay it you can&apos;t run it. AlignTrue captures what AI saw, why
-            it decided, and what it did so you can actually ship it.
+            <strong>Models commoditize, trust doesn&apos;t.</strong> AI without
+            receipts is a liability, behavior drift is a death spiral, and if
+            you can&apos;t replay it you can&apos;t run it.{" "}
+            <strong>We fix that.</strong>
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="px-5 py-3 font-semibold">
@@ -142,14 +156,13 @@ export default function HomePage() {
 
       <section className="px-4 sm:px-6 py-16 text-center">
         <div className="max-w-4xl mx-auto space-y-5">
-          <SectionBadge>Alpha notice</SectionBadge>
+          <SectionBadge>Beta notice</SectionBadge>
           <h3 className="text-2xl md:text-3xl font-bold text-foreground">
             Experimental. Expect changes.
           </h3>
           <p className="text-base md:text-lg text-muted-foreground leading-7 text-pretty">
             Interfaces, connectors, and UI contracts may change rapidly while we
-            dogfood the architecture. Contributions and issues are welcome in
-            the GitHub repo.
+            dogfood the architecture.
           </p>
           <div className="flex justify-center">
             <Button asChild variant="outline" size="lg" className="px-6 py-3">
