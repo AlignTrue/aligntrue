@@ -184,7 +184,7 @@ function deterministicSample(
   // Use last 8 hex chars for a stable fraction
   const tail = hash.slice(-8);
   const intVal = parseInt(tail, 16);
-  const fraction = intVal / 0xffffffff;
+  const fraction = intVal / 0x100000000;
   return fraction < rate;
 }
 

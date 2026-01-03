@@ -28,6 +28,26 @@ function toJSONValue(value: unknown): JSONValue {
     return value.map((v) => toJSONValue(v));
   }
 
+  if (value instanceof Map) {
+    const entries: [string, JSONValue][] = [];
+    for (const [key, child] of value.entries()) {
+      if (child === undefined) continue;
+      entries.push([String(key), toJSONValue(child)]);
+    }
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
+    return Object.assign(Object.create(null), Object.fromEntries(entries));
+  }
+
+  if (value instanceof Set) {
+    return Array.from(value)
+      .map((v) => toJSONValue(v))
+      .sort((a, b) => {
+        const sa = JSON.stringify(a);
+        const sb = JSON.stringify(b);
+        return sa.localeCompare(sb);
+      });
+  }
+
   if (typeof value === "object") {
     const entries: [string, JSONValue][] = [];
     for (const [key, child] of Object.entries(

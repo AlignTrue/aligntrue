@@ -1,5 +1,6 @@
 // Canonical entity references used across ops-core.
-// Format: "{type}:{id}" where type is a known EntityType and id has no colon.
+// Format: "{type}:{id}" where type is a known EntityType; ids may include colons
+// as part of provider-specific identifiers (e.g., GitHub refs).
 //
 import { ValidationError } from "./errors.js";
 
@@ -10,10 +11,18 @@ export type EntityType =
   | "task"
   | "note"
   | "voice_call"
-  | "trajectory";
+  | "trajectory"
+  // GitHub entities
+  | "gh_repo"
+  | "gh_pr"
+  | "gh_issue"
+  | "gh_commit"
+  | "gh_file"
+  | "gh_workflow"
+  | "gh_actor";
 
 export function entityRef(type: EntityType, id: string): string {
-  if (!id || id.includes(":")) {
+  if (!id) {
     throw new ValidationError(`Invalid entity id: ${id}`, { id, type });
   }
   return `${type}:${id}`;

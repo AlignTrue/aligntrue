@@ -44,10 +44,27 @@ export { DEFAULT_EVENTS_PATH } from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
 export * as Trajectories from "./trajectories/index.js";
+export {
+  buildTrajectoryEvent,
+  validateTrajectoryEvent,
+} from "./trajectories/envelope.js";
+export type { TrajectoryEvent } from "./trajectories/envelope.js";
+export { buildOutcome, validateOutcome } from "./trajectories/outcome.js";
+export type { OutcomeRecorded, OutcomeKind } from "./trajectories/outcome.js";
+export type { TrajectoryRefs } from "./trajectories/refs.js";
 export * as Simulation from "./simulation/index.js";
 export { handlePolicySetCommand } from "./handlers/policy.js";
 export * as Projections from "./projections/index.js";
 export * as EntityRef from "./entity-ref.js";
+export {
+  entityRef,
+  parseEntityRef,
+  artifactRef,
+  parseArtifactRef,
+  externalRef,
+  parseExternalRef,
+} from "./entity-ref.js";
+export type { EntityType } from "./entity-ref.js";
 export * as Artifacts from "./artifacts/index.js";
 export { BaseLedger } from "./ledger/base-ledger.js";
 export * as Collections from "./utils/collections.js";

@@ -108,20 +108,36 @@ describe("trajectory projections", () => {
       },
       payload: { trigger: "old" },
     });
-    const newStep = { ...oldStep, trajectory_id: "t-new", timestamp: tsNew };
+    const newStep = Trajectories.buildTrajectoryEvent({
+      trajectory_id: "t-new",
+      step_seq: 0,
+      prev_step_hash: null,
+      step_type: "trajectory_started",
+      producer: "host",
+      timestamp: tsNew,
+      correlation_id: "corr-new",
+      refs: {
+        entity_refs: [
+          { ref: "entity:C", link: "observed" },
+          { ref: "entity:D", link: "observed" },
+        ],
+        artifact_refs: [],
+        external_refs: [],
+      },
+      payload: { trigger: "new" },
+    });
     await store.appendStep(oldStep);
-    await store.appendStep(newStep as any);
+    await store.appendStep(newStep);
 
     const rebuilt = await Projections.rebuildTrajectoryProjection(
       Projections.CooccurrenceProjectionDef as any,
       store,
     );
+    const hashBefore = Projections.cooccurrenceHash(rebuilt.data as any);
     const pruned = Projections.pruneCooccurrence(
       rebuilt.data as any,
       30, // window days
     );
-
-    const hashBefore = Projections.cooccurrenceHash(rebuilt.data as any);
     const hashAfter = Projections.cooccurrenceHash(pruned);
     expect(hashBefore).not.toBe(hashAfter);
 

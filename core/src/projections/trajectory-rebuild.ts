@@ -8,6 +8,35 @@ import type {
 } from "./trajectory-definition.js";
 import type { OutcomeRecorded } from "../trajectories/outcome.js";
 
+function stripRebuiltAt<T>(value: T): T {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((v) => stripRebuiltAt(v)) as T;
+  if (value instanceof Map) {
+    const next = new Map();
+    for (const [k, v] of value.entries()) {
+      if (k === "rebuilt_at") continue;
+      next.set(k, stripRebuiltAt(v));
+    }
+    return next as T;
+  }
+  if (value instanceof Set) {
+    const next = new Set();
+    for (const v of value.values()) {
+      next.add(stripRebuiltAt(v));
+    }
+    return next as T;
+  }
+  if (typeof value === "object") {
+    const entries: [string, unknown][] = [];
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (k === "rebuilt_at") continue;
+      entries.push([k, stripRebuiltAt(v)]);
+    }
+    return Object.assign(Object.create(null), Object.fromEntries(entries)) as T;
+  }
+  return value;
+}
+
 async function listAllTrajectoryIds(store: TrajectoryStore): Promise<string[]> {
   const ids: string[] = [];
   let cursor: string | undefined;
@@ -97,8 +126,8 @@ export async function rebuildTrajectoryProjection<TState>(
     canonicalize({
       name: def.name,
       version: def.version,
-      data: state,
-      freshness: combinedFreshness,
+      data: stripRebuiltAt(state),
+      freshness: stripRebuiltAt(combinedFreshness),
     }),
   );
 
