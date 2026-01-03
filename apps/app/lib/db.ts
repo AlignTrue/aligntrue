@@ -23,116 +23,142 @@ db.pragma("journal_mode = WAL");
 // which is critical for the "Receipts first" architecture and deterministic replay.
 db.pragma("synchronous = FULL");
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS plans (
-    plan_id TEXT PRIMARY KEY,
-    core TEXT NOT NULL,
-    meta TEXT NOT NULL,
-    status TEXT NOT NULL,
-    created_at TEXT NOT NULL
-  );
+// Initialize schema if needed.
+// We check if a core table exists first to avoid redundant CREATE TABLE calls
+// that can cause SQLITE_BUSY errors during parallel Next.js builds.
+const schemaExists = db
+  .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='plans'")
+  .get();
 
-  -- Stored plan artifacts for deterministic serving
-  CREATE TABLE IF NOT EXISTS plan_artifacts (
-    plan_id TEXT PRIMARY KEY,
-    compiled_plan_json TEXT NOT NULL,
-    render_request_json TEXT NOT NULL,
-    render_plan_json TEXT NOT NULL,
-    render_request_hash TEXT NOT NULL,
-    created_at TEXT NOT NULL
-  );
+if (!schemaExists) {
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS plans (
+        plan_id TEXT PRIMARY KEY,
+        core TEXT NOT NULL,
+        meta TEXT NOT NULL,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
 
-  -- Receipt metadata (idempotent)
-  CREATE TABLE IF NOT EXISTS plan_receipts (
-    receipt_id TEXT PRIMARY KEY,
-    plan_id TEXT NOT NULL,
-    idempotency_key TEXT NOT NULL UNIQUE,
-    mode TEXT NOT NULL,
-    workspace_id TEXT,
-    occurred_at TEXT NOT NULL,
-    ingested_at TEXT NOT NULL,
-    provider TEXT NOT NULL,
-    model TEXT,
-    ai_failed INTEGER,
-    ai_failed_reason TEXT,
-    policy_id TEXT NOT NULL,
-    policy_version TEXT NOT NULL,
-    policy_hash TEXT NOT NULL,
-    policy_stage TEXT NOT NULL,
-    compiler_version TEXT NOT NULL,
-    context_hash TEXT NOT NULL,
-    layout_intent_core_hash TEXT,
-    render_request_hash TEXT NOT NULL,
-    causation_id TEXT,
-    causation_type TEXT,
-    actor_id TEXT NOT NULL,
-    actor_type TEXT NOT NULL
-  );
+      -- Stored plan artifacts for deterministic serving
+      CREATE TABLE IF NOT EXISTS plan_artifacts (
+        plan_id TEXT PRIMARY KEY,
+        compiled_plan_json TEXT NOT NULL,
+        render_request_json TEXT NOT NULL,
+        render_plan_json TEXT NOT NULL,
+        render_request_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
 
-  CREATE TABLE IF NOT EXISTS plan_served_events (
-    event_id TEXT PRIMARY KEY,
-    receipt_id TEXT NOT NULL,
-    plan_id TEXT NOT NULL,
-    idempotency_key TEXT NOT NULL,
-    workspace_id TEXT,
-    served_at TEXT NOT NULL,
-    correlation_id TEXT NOT NULL,
-    actor_id TEXT NOT NULL,
-    actor_type TEXT NOT NULL
-  );
+      -- Receipt metadata (idempotent)
+      CREATE TABLE IF NOT EXISTS plan_receipts (
+        receipt_id TEXT PRIMARY KEY,
+        plan_id TEXT NOT NULL,
+        idempotency_key TEXT NOT NULL UNIQUE,
+        mode TEXT NOT NULL,
+        workspace_id TEXT,
+        occurred_at TEXT NOT NULL,
+        ingested_at TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        model TEXT,
+        ai_failed INTEGER,
+        ai_failed_reason TEXT,
+        policy_id TEXT NOT NULL,
+        policy_version TEXT NOT NULL,
+        policy_hash TEXT NOT NULL,
+        policy_stage TEXT NOT NULL,
+        compiler_version TEXT NOT NULL,
+        context_hash TEXT NOT NULL,
+        layout_intent_core_hash TEXT,
+        render_request_hash TEXT NOT NULL,
+        causation_id TEXT,
+        causation_type TEXT,
+        actor_id TEXT NOT NULL,
+        actor_type TEXT NOT NULL
+      );
 
-  CREATE TABLE IF NOT EXISTS plan_events (
-    event_id TEXT PRIMARY KEY,
-    event_type TEXT NOT NULL,
-    plan_id TEXT,
-    idempotency_key TEXT,
-    receipt_id TEXT,
-    occurred_at TEXT NOT NULL,
-    details_json TEXT
-  );
+      CREATE TABLE IF NOT EXISTS plan_served_events (
+        event_id TEXT PRIMARY KEY,
+        receipt_id TEXT NOT NULL,
+        plan_id TEXT NOT NULL,
+        idempotency_key TEXT NOT NULL,
+        workspace_id TEXT,
+        served_at TEXT NOT NULL,
+        correlation_id TEXT NOT NULL,
+        actor_id TEXT NOT NULL,
+        actor_type TEXT NOT NULL
+      );
 
-  CREATE TABLE IF NOT EXISTS ui_state (
-    plan_id TEXT NOT NULL,
-    version INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    content_hash TEXT NOT NULL,
-    PRIMARY KEY (plan_id, version)
-  );
+      CREATE TABLE IF NOT EXISTS plan_events (
+        event_id TEXT PRIMARY KEY,
+        event_type TEXT NOT NULL,
+        plan_id TEXT,
+        idempotency_key TEXT,
+        receipt_id TEXT,
+        occurred_at TEXT NOT NULL,
+        details_json TEXT
+      );
 
-  CREATE TABLE IF NOT EXISTS action_sequence (
-    plan_id TEXT NOT NULL,
-    actor_id TEXT NOT NULL,
-    last_sequence INTEGER NOT NULL,
-    PRIMARY KEY (plan_id, actor_id)
-  );
+      CREATE TABLE IF NOT EXISTS ui_state (
+        plan_id TEXT NOT NULL,
+        version INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        content_hash TEXT NOT NULL,
+        PRIMARY KEY (plan_id, version)
+      );
 
-  CREATE TABLE IF NOT EXISTS processed_actions (
-    plan_id TEXT NOT NULL,
-    actor_id TEXT NOT NULL,
-    idempotency_key TEXT NOT NULL,
-    action_id TEXT NOT NULL,
-    status TEXT NOT NULL, -- "pending" | "completed" | "failed"
-    state_version INTEGER,
-    result_json TEXT, -- envelope preview or outcome summary
-    errors_json TEXT,
-    created_at TEXT NOT NULL,
-    PRIMARY KEY (plan_id, actor_id, idempotency_key)
-  );
+      CREATE TABLE IF NOT EXISTS action_sequence (
+        plan_id TEXT NOT NULL,
+        actor_id TEXT NOT NULL,
+        last_sequence INTEGER NOT NULL,
+        PRIMARY KEY (plan_id, actor_id)
+      );
 
-  CREATE TABLE IF NOT EXISTS plan_debug (
-    plan_id TEXT PRIMARY KEY,
-    render_request_json TEXT,
-    validation_errors_json TEXT,
-    manifests_hash TEXT,
-    context_hash TEXT,
-    attempts INTEGER,
-    created_at TEXT
-  );
+      CREATE TABLE IF NOT EXISTS processed_actions (
+        plan_id TEXT NOT NULL,
+        actor_id TEXT NOT NULL,
+        idempotency_key TEXT NOT NULL,
+        action_id TEXT NOT NULL,
+        status TEXT NOT NULL, -- "pending" | "completed" | "failed"
+        state_version INTEGER,
+        result_json TEXT, -- envelope preview or outcome summary
+        errors_json TEXT,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (plan_id, actor_id, idempotency_key)
+      );
 
-  CREATE INDEX IF NOT EXISTS idx_receipts_plan_id ON plan_receipts (plan_id);
-  CREATE INDEX IF NOT EXISTS idx_plan_events_type ON plan_events (event_type);
-  CREATE INDEX IF NOT EXISTS idx_served_events_receipt ON plan_served_events (receipt_id);
-`);
+      CREATE TABLE IF NOT EXISTS plan_debug (
+        plan_id TEXT PRIMARY KEY,
+        render_request_json TEXT,
+        validation_errors_json TEXT,
+        manifests_hash TEXT,
+        context_hash TEXT,
+        attempts INTEGER,
+        created_at TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_receipts_plan_id ON plan_receipts (plan_id);
+      CREATE INDEX IF NOT EXISTS idx_plan_events_type ON plan_events (event_type);
+      CREATE INDEX IF NOT EXISTS idx_served_events_receipt ON plan_served_events (receipt_id);
+    `);
+  } catch (error) {
+    // If multiple workers are initializing the same DB file during 'next build',
+    // one might fail with SQLITE_BUSY if another is holding an exclusive lock
+    // during CREATE TABLE. We log it and continue if it's a busy error.
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "SQLITE_BUSY"
+    ) {
+      console.warn(
+        "SQLite busy during schema initialization. Assuming another process is handling it.",
+      );
+    } else {
+      throw error;
+    }
+  }
+}
 
 // Generic transaction helper for SQLite (serializes writers)
 export function runInTransaction<T>(fn: () => T): T {
