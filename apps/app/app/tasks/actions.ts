@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   OPS_TASKS_ENABLED,
+  OPS_PLANS_DAILY_ENABLED,
   OPS_PLANS_WEEKLY_ENABLED,
   OPS_DATA_DIR,
   Identity,

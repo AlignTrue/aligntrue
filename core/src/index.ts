@@ -44,6 +44,7 @@ export { DEFAULT_EVENTS_PATH } from "./storage/index.js";
 export * as Outbox from "./outbox/index.js";
 export * as WorkLedger from "./work-ledger/index.js";
 export * as Trajectories from "./trajectories/index.js";
+export * as Simulation from "./simulation/index.js";
 export { handlePolicySetCommand } from "./handlers/policy.js";
 export * as Projections from "./projections/index.js";
 export * as EntityRef from "./entity-ref.js";

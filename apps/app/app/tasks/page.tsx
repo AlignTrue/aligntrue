@@ -27,6 +27,7 @@ import {
   triageTaskAction,
 } from "./actions";
 import { getTasksView } from "@/lib/views";
+import * as Suggestions from "@aligntrue/pack-suggestions";
 
 export default async function TasksPage() {
   if (!OPS_TASKS_ENABLED) {

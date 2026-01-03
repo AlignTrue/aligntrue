@@ -13,7 +13,7 @@ const links = [
   { href: "/", label: "Dashboard" },
   { href: "/tasks", label: "Tasks" },
   { href: "/notes", label: "Notes" },
-];
+] as const;
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
