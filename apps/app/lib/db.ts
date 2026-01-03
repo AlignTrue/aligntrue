@@ -193,11 +193,27 @@ if (!schemaExists) {
   // Verify schema actually exists before proceeding.
   // This also acts as a wait-and-retry if another process is still initializing,
   // because the .get() call will respect the 10s busy timeout.
-  const verifySchema = db
-    .prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='plans'",
-    )
-    .get();
+  let verifySchema: unknown = null;
+  try {
+    verifySchema = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='plans'",
+      )
+      .get();
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "SQLITE_BUSY"
+    ) {
+      console.warn(
+        "SQLite busy during schema verification. Assuming another process completed initialization.",
+      );
+      verifySchema = true; // Skip the error below if busy during verification
+    } else {
+      throw error;
+    }
+  }
 
   if (!verifySchema) {
     throw new Error(
