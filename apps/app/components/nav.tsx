@@ -8,11 +8,18 @@ import { useTheme } from "next-themes";
 
 import { Button } from "@aligntrue/ui-base";
 import { cn } from "@/lib/utils";
+import { OPS_TRAJECTORIES_ENABLED } from "@aligntrue/core";
 
 const links = [
   { href: "/", label: "Dashboard" },
   { href: "/tasks", label: "Tasks" },
   { href: "/notes", label: "Notes" },
+  ...(OPS_TRAJECTORIES_ENABLED
+    ? [
+        { href: "/trajectories", label: "Trajectories" },
+        { href: "/simulate", label: "Simulate" },
+      ]
+    : []),
 ] as const;
 
 function ThemeToggle() {

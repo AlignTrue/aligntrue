@@ -45,8 +45,9 @@ export function TaskActions({
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
           <input
             type="checkbox"
+            name="completed"
             defaultChecked={status === "completed"}
-            disabled={status === "completed" || pending}
+            disabled={pending}
             onChange={(e) => {
               startTransition(() => {
                 e.currentTarget.form?.requestSubmit();

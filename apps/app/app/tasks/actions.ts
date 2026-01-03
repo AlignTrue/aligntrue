@@ -101,9 +101,15 @@ export async function triageTaskAction(formData: FormData) {
 
 export async function completeTaskAction(formData: FormData) {
   const task_id = String(formData.get("task_id") ?? "");
+  const completed = formData.get("completed") === "on";
   if (!task_id) return;
+
+  const commandType = completed
+    ? TASK_COMMAND_TYPES.Complete
+    : TASK_COMMAND_TYPES.Reopen;
+
   await execute(
-    buildCommand(TASK_COMMAND_TYPES.Complete, {
+    buildCommand(commandType, {
       task_id,
     }),
   );

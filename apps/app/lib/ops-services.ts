@@ -13,7 +13,7 @@ let hostInstance: Host | null = null;
 
 export async function getHost(): Promise<Host> {
   if (!hostInstance) {
-    hostInstance = await createHost({ manifest });
+    hostInstance = await createHost({ manifest, enableTrajectories: true });
   }
   return hostInstance;
 }
@@ -37,6 +37,13 @@ export function getCommandLog(
     throw new Error("Host not initialized. Call getHost() first.");
   }
   return hostInstance.commandLog as Storage.JsonlCommandLog;
+}
+
+export function getTrajectoryStore(): Storage.JsonlTrajectoryStore {
+  if (!hostInstance) {
+    throw new Error("Host not initialized. Call getHost() first.");
+  }
+  return hostInstance.trajectoryStore as Storage.JsonlTrajectoryStore;
 }
 
 export async function dispatchConvertCommand(
