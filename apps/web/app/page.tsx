@@ -12,7 +12,7 @@ import { GitHubIcon } from "./components/GitHubIcon";
 
 const title = "AlignTrue | The system of record for AI (experimental alpha)";
 const description =
-  "The system of record for AI. Receipts-first, deterministic projections, and rebuildable history so teams can trust AI outputs.";
+  "Models commoditize, trust doesn't. AlignTrue captures what AI saw, why it decided, and what it did so you can ship AI with receipts and replay.";
 
 export const metadata: Metadata = {
   title,
@@ -56,9 +56,10 @@ export default function HomePage() {
             The system of record for AI.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto text-pretty">
-            AlignTrue is the system of record for AI: receipts-first,
-            deterministic projections, and rebuildable history so teams can
-            trust every output.
+            Models commoditize, trust doesn&apos;t. AI without receipts is a
+            liability, behavior drift is a death spiral, and if you can&apos;t
+            replay it you can&apos;t run it. AlignTrue captures what AI saw, why
+            it decided, and what it did so you can actually ship it.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="px-5 py-3 font-semibold">

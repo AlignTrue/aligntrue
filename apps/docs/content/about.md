@@ -15,11 +15,11 @@ The platform is **alpha** and will change substantially as we dogfood. If someth
 
 ### TL;DR
 
-- **No more ICs:** Most "ICs" will spend more time managing agents than writing raw code. _Everyone is a manager now._
-- **Unlock GDP:** Future GDP is constrained more by _bad AI usage_ than by bad models. _Make 'doing it right' easy._
-- **Level up humanity:** Clear rules for agents also make human collaboration saner & faster. _Aligned goals & priorities_
+- **AI without receipts is a liability:** If you can’t prove what it saw, why it decided, and what it did, you can’t trust it in production. Receipts turn “vibes” into accountability.
+- **Behavior drift is a death spiral:** Agents copy inconsistency at machine speed across tools, teams, and time. A single system of record keeps behavior coherent and governable.
+- **If you can’t replay it, you can’t run it:** Real operations require auditability, rollback, and deterministic recovery. Rebuildable history turns AI work into software.
 
-AlignTrue is my attempt to fix that binding constraint so we can actually scale with AI instead of fighting it.
+AlignTrue is how we make AI trustworthy enough to run real workflows, not just write pretty text.
 
 ### Details
 

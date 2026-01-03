@@ -15,9 +15,9 @@ AlignTrue is the system of record for AI. Models commoditize, trust doesn't. We 
 
 ## What it does
 
-- Separates commands (intent) from events (what happened), with explicit time and causality.
-- Stores receipts and artifacts so executions are explainable and replayable.
-- Keeps behavior out of the core event log; policies and packs are versioned and testable.
+- **AI without receipts is a liability.** If you can’t prove what it saw, why it decided, and what it did, you can’t trust it in production.
+- **Behavior drift is a death spiral.** Agents copy inconsistency at machine speed; a system of record keeps behavior governable.
+- **If you can’t replay it, you can’t run it.** Real operations need auditability, rollback, and deterministic recovery.
 
 ## Current status
 
