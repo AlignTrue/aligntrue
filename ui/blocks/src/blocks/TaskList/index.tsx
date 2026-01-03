@@ -7,6 +7,8 @@ import { taskListManifest } from "./manifest.js";
 export interface TaskListItem {
   id: string;
   title: string;
+  bucket: string;
+  status: string;
   due_at?: string;
 }
 

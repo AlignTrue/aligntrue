@@ -18,6 +18,8 @@ export const taskListManifest: BlockManifest = finalizeManifest({
           properties: {
             id: { type: "string" },
             title: { type: "string" },
+            bucket: { type: "string" },
+            status: { type: "string" },
             due_at: { type: "string" },
           },
           required: ["id", "title"],
