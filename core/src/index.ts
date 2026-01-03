@@ -60,6 +60,7 @@ export type {
   CommandLogTryStartResult,
   ArtifactStore,
 } from "./storage/interfaces.js";
+export type { TrajectoryStore } from "./storage/trajectory-store.js";
 export type {
   MemoryProvider,
   MemoryReference,

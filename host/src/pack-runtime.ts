@@ -9,6 +9,7 @@ import type {
   PackModule,
   PackCommandHandler,
   ProjectionRegistry,
+  TrajectoryStore,
 } from "@aligntrue/core";
 import {
   Projections,
@@ -19,6 +20,10 @@ import {
   Contracts,
   handlePolicySetCommand,
 } from "@aligntrue/core";
+import {
+  createTrajectoryContext,
+  type TrajectoryContext,
+} from "./trajectory-context.js";
 
 export interface RuntimeLoadedPack {
   manifest: PackManifest;
@@ -31,6 +36,8 @@ export interface PackRuntimeOptions {
   projectionRegistry?: ProjectionRegistry;
   config?: Record<string, Record<string, unknown>>; // keyed by pack_id
   appName?: string;
+  trajectoryStore?: TrajectoryStore;
+  enableTrajectories?: boolean;
 }
 
 export interface PackRuntime {
@@ -182,6 +189,20 @@ export async function createPackRuntime(
       return rejection;
     }
 
+    const trajectoryCtx =
+      opts.enableTrajectories && opts.trajectoryStore
+        ? createTrajectoryContext({
+            store: opts.trajectoryStore,
+            correlation_id: command.correlation_id ?? command.command_id,
+          })
+        : undefined;
+
+    if (trajectoryCtx) {
+      await trajectoryCtx.start("command_dispatched", {
+        command_type: command.command_type,
+      });
+    }
+
     const childCommands: string[] = [];
     const handler =
       pack.module.commandHandlers?.[command.command_type] ??
@@ -205,7 +226,13 @@ export async function createPackRuntime(
     try {
       const outcome = await (handler as PackCommandHandler)(
         command,
-        createContext(pack.manifest.pack_id, command, childCommands),
+        createContext(
+          pack.manifest.pack_id,
+          command,
+          childCommands,
+          undefined,
+          trajectoryCtx,
+        ),
       );
       const mergedChildCommands = [
         ...childCommands,
@@ -227,6 +254,19 @@ export async function createPackRuntime(
           : {}),
       };
       await opts.commandLog.complete(command.command_id, normalizedOutcome);
+
+      if (trajectoryCtx) {
+        await trajectoryCtx.emitStep(
+          "entity_written",
+          {
+            entity_ref: command.target_ref ?? "entity:__unspecified__",
+            command_id: command.command_id,
+          },
+          { entity_refs: [], artifact_refs: [], external_refs: [] },
+          { related_command_id: command.command_id },
+        );
+        await trajectoryCtx.end(outcome?.reason);
+      }
       return normalizedOutcome;
     } catch (err) {
       const failure: CommandOutcome = {
@@ -237,6 +277,17 @@ export async function createPackRuntime(
         ...(childCommands.length ? { child_commands: childCommands } : {}),
       };
       await opts.commandLog.complete(command.command_id, failure);
+      if (trajectoryCtx) {
+        await trajectoryCtx.emitStep(
+          "step_failed",
+          {
+            error: err instanceof Error ? err.message : "unknown",
+            recoverable: false,
+          },
+          { entity_refs: [], artifact_refs: [], external_refs: [] },
+        );
+        await trajectoryCtx.end("failed");
+      }
       return failure;
     }
   }
@@ -364,25 +415,27 @@ export async function createPackRuntime(
     parentCommand?: CommandEnvelope,
     childCommands: string[] = [],
     moduleOverride?: PackModule,
+    trajectory?: TrajectoryContext,
   ): PackContext {
-    const baseContext: PackContext = {
+    const baseContext: PackContext & { trajectory?: TrajectoryContext } = {
       eventStore: opts.eventStore,
       commandLog: opts.commandLog,
       projectionRegistry,
       config: configByPack.get(packId) ?? {},
       dispatchChild: buildDispatchChild(packId, parentCommand, childCommands),
+      ...(trajectory ? { trajectory } : {}),
     };
 
     const moduleRef = moduleOverride ?? packs.get(packId)?.module;
     if (moduleRef?.extendContext) {
-      return moduleRef.extendContext(baseContext, {
+      return moduleRef.extendContext(baseContext as PackContext, {
         packId,
         ...(parentCommand !== undefined ? { parentCommand } : {}),
         childCommands,
       });
     }
 
-    return baseContext;
+    return baseContext as PackContext;
   }
 
   return {

@@ -27,6 +27,7 @@ export interface HostConfig {
   manifest?: AppManifest;
   packs?: string[];
   config?: Record<string, Record<string, unknown>>;
+  enableTrajectories?: boolean;
 }
 
 export interface Host {
@@ -38,6 +39,7 @@ export interface Host {
   readonly Identity: typeof Identity;
   readonly Projections: typeof Projections;
   readonly Envelopes: typeof Envelopes;
+  readonly trajectoryStore: Storage.TrajectoryStore;
 }
 
 export async function createHost(config?: HostConfig): Promise<Host> {
@@ -45,11 +47,14 @@ export async function createHost(config?: HostConfig): Promise<Host> {
   const correlationId = Identity.randomId();
   const eventStore = new Storage.JsonlEventStore();
   const commandLog = new Storage.JsonlCommandLog();
+  const trajectoryStore = new Storage.JsonlTrajectoryStore();
   const runtime = await createPackRuntime({
     eventStore,
     commandLog,
     appName: config?.manifest?.name ?? "unknown",
     config: config?.config ?? {},
+    trajectoryStore,
+    enableTrajectories: config?.enableTrajectories ?? false,
   });
 
   if (config?.manifest?.packs?.length) {
@@ -174,6 +179,7 @@ export async function createHost(config?: HostConfig): Promise<Host> {
     Identity,
     Projections,
     Envelopes,
+    trajectoryStore,
   };
 }
 

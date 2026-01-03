@@ -1,3 +1,108 @@
+import { afterEach, describe, expect, it } from "vitest";
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+
+import {
+  Identity,
+  type CommandEnvelope,
+  type EventStore,
+  type CommandLog,
+  Storage,
+} from "@aligntrue/core";
+
+import { createPackRuntime } from "../src/pack-runtime.js";
+import type { RuntimeLoadedPack } from "../src/pack-runtime.js";
+
+let tmpDir: string;
+
+afterEach(async () => {
+  if (tmpDir) {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
+});
+
+async function makeStores(): Promise<{
+  eventStore: EventStore;
+  commandLog: CommandLog;
+  trajectoryStore: Storage.TrajectoryStore;
+}> {
+  tmpDir = await mkdtemp(join(tmpdir(), "pack-rt-"));
+  process.env.OPS_DATA_DIR = tmpDir;
+  return {
+    eventStore: new Storage.JsonlEventStore(),
+    commandLog: new Storage.JsonlCommandLog(),
+    trajectoryStore: new Storage.JsonlTrajectoryStore(),
+  };
+}
+
+function buildCommand(
+  command_type: string,
+  target_ref: string,
+): CommandEnvelope {
+  const now = new Date().toISOString();
+  return {
+    command_id: Identity.randomId(),
+    idempotency_key: Identity.randomId(),
+    command_type,
+    payload: { msg: "hi" },
+    dedupe_scope: "actor",
+    target_ref,
+    actor: { actor_id: "actor-1", actor_type: "human" },
+    requested_at: now,
+    correlation_id: "corr-test",
+  };
+}
+
+describe("pack-runtime trajectories", () => {
+  it("emits trajectory steps on command dispatch when enabled", async () => {
+    const { eventStore, commandLog, trajectoryStore } = await makeStores();
+    const runtime = await createPackRuntime({
+      eventStore,
+      commandLog,
+      trajectoryStore,
+      enableTrajectories: true,
+      appName: "test-app",
+    });
+
+    const manifest = {
+      pack_id: "demo-pack",
+      version: "1.0.0",
+      integrity: "dev",
+      public_commands: ["demo.echo"],
+      capabilities_requested: ["demo.echo"],
+      name: "demo",
+    };
+
+    const handler = async () => ({ status: "accepted" as const });
+    const loaded: RuntimeLoadedPack = {
+      manifest,
+      module: { manifest, commandHandlers: { "demo.echo": handler } },
+    };
+    runtime.packs.set(manifest.pack_id, loaded);
+
+    const command = buildCommand("demo.echo", "entity:1");
+    const outcome = await runtime.dispatchCommand(command);
+    expect(outcome.status).toBe("accepted");
+
+    const list = await trajectoryStore.listTrajectories({
+      filters: {},
+      limit: 10,
+      sort: "time_desc",
+    } as any);
+    expect(list.ids.length).toBe(1);
+
+    const steps = await trajectoryStore.readTrajectory(list.ids[0]);
+    const types = steps.map((s) => s.step_type);
+    expect(types).toContain("trajectory_started");
+    expect(types).toContain("entity_written");
+    expect(types).toContain("trajectory_ended");
+
+    const write = steps.find((s) => s.step_type === "entity_written");
+    expect(write?.causation?.related_command_id).toBe(command.command_id);
+    expect(write?.correlation_id).toBe(command.correlation_id);
+  });
+});
 import { resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { describe, expect, test, vi } from "vitest";
