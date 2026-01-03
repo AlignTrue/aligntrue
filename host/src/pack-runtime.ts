@@ -203,7 +203,6 @@ export async function createPackRuntime(
       });
     }
 
-    const childCommands: string[] = [];
     const handler =
       pack.module.commandHandlers?.[command.command_type] ??
       pack.module.handlers?.[command.command_type];
@@ -214,9 +213,13 @@ export async function createPackRuntime(
         reason: "Command handler not found",
       };
       await opts.commandLog.complete(command.command_id, rejection);
+      if (trajectoryCtx) {
+        await trajectoryCtx.end("rejected: handler not found");
+      }
       return rejection;
     }
 
+    const childCommands: string[] = [];
     const handledBy = {
       pack_id: pack.manifest.pack_id,
       pack_version: pack.manifest.version,

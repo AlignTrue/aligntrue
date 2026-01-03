@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import { dirname, resolve } from "node:path";
 import Database from "better-sqlite3";
+import { ensureDirectoryExists } from "@aligntrue/file-utils";
 
 import { OPS_DATA_DIR } from "../config.js";
 import { ValidationError } from "../errors.js";
@@ -37,8 +38,8 @@ export class JsonlTrajectoryStore implements TrajectoryStore {
       opts?.outcomesPath ?? DEFAULT_TRAJECTORY_OUTCOMES_PATH,
     );
     const dbPath = resolve(opts?.dbPath ?? DEFAULT_TRAJECTORY_DB_PATH);
-    ensureDir(dirname(this.trajectoryPath));
-    ensureDir(dirname(dbPath));
+    ensureDirectoryExists(dirname(this.trajectoryPath));
+    ensureDirectoryExists(dirname(dbPath));
     this.db = new Database(dbPath);
     this.migrate();
   }
@@ -330,10 +331,4 @@ function decodeCursor(cursor?: string): Cursor {
   } catch {
     throw new ValidationError("Invalid cursor");
   }
-}
-
-function ensureDir(dir: string) {
-  fs.mkdir(dir, { recursive: true }).catch(() => {
-    /* ignore */
-  });
 }

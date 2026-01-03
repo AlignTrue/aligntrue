@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OPS_NOTES_ENABLED, OPS_TASKS_ENABLED } from "@aligntrue/core";
 import {
   Button,
   Card,
@@ -21,7 +22,7 @@ export default async function HomePage() {
     <div className="mx-auto max-w-4xl space-y-4 py-8">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      {true ? (
+      {OPS_TASKS_ENABLED ? (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Tasks</CardTitle>
@@ -62,7 +63,7 @@ export default async function HomePage() {
         </Card>
       ) : null}
 
-      {true ? (
+      {OPS_NOTES_ENABLED ? (
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Notes</CardTitle>
