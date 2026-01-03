@@ -22,7 +22,7 @@ export const taskListManifest: BlockManifest = finalizeManifest({
             status: { type: "string" },
             due_at: { type: "string" },
           },
-          required: ["id", "title"],
+          required: ["id", "title", "bucket", "status"],
           additionalProperties: false,
         },
       },
