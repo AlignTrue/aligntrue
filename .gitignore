@@ -100,4 +100,5 @@ packages/cli/data/ops-core-events.jsonl
 apps/app/data/*
 core/data/*.jsonl
 core/data/data/
+host/data/
 core/docs/LM-STUDIO-SETUP.md
