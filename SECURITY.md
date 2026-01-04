@@ -103,8 +103,8 @@ Security advisories must include:
 
 ## Related documentation
 
-- [Development Setup](https://aligntrue.ai/docs/06-development/setup)
-- [Development Commands](https://aligntrue.ai/docs/06-development/commands)
+- [Development Setup](https://aligntrue.ai/docs/development/setup)
+- [Development Commands](https://aligntrue.ai/docs/development/commands)
 
 ---
 

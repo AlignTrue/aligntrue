@@ -99,5 +99,5 @@ Security advisories must include:
 
 ## Related documentation
 
-- [Development Setup](/docs/06-development/setup)
-- [Development Commands](/docs/06-development/commands)
+- [Development Setup](/docs/development/setup)
+- [Development Commands](/docs/development/commands)

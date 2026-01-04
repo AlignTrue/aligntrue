@@ -11,6 +11,8 @@
 
 > ⚠️ **Beta:** AlignTrue AI ops platform is in active development. Expect substantial changes while we dogfood the architecture.
 
+_Note: The Aligntrue Sync tool for managing AI rules was split out to it's own repo [here](https://github.com/AlignTrue/aligntrue)_
+
 AlignTrue is the system of record for AI. Models commoditize, trust doesn't. We lead with receipts and auditability, emphasizing deterministic behavior, envelopes-first design, and rebuildable projections so teams can trust AI outputs.
 
 ## What it does

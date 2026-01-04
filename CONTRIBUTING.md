@@ -4,7 +4,7 @@
   This file is generated from documentation source.
   To make changes, edit the source file and run: pnpm generate:repo-files
 
-  Source: apps/docs/content/07-contributing/index.md
+  Source: apps/docs/content/contributing/index.md
 -->
 
 # Contributing to AlignTrue
