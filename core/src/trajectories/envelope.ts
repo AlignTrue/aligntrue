@@ -2,6 +2,7 @@ import { ValidationError } from "../errors.js";
 import { canonicalize } from "../identity/canonicalize.js";
 import { deterministicId } from "../identity/id.js";
 import type { TrajectoryRefs } from "./refs.js";
+import { isBaseStep, isOverlayStep } from "./steps.js";
 import type {
   TrajectoryStepPayloadByType,
   TrajectoryStepType,
@@ -67,6 +68,16 @@ export function validateTrajectoryEvent<T extends TrajectoryStepType>(
   }
   if (typeof candidate.correlation_id !== "string") {
     throw new ValidationError("correlation_id required");
+  }
+  if (isBaseStep(candidate.step_type!) && candidate.producer !== "host") {
+    throw new ValidationError(
+      `Base step "${candidate.step_type}" requires producer "host", got "${candidate.producer}"`,
+    );
+  }
+  if (isOverlayStep(candidate.step_type!) && candidate.producer === "host") {
+    throw new ValidationError(
+      `Overlay step "${candidate.step_type}" cannot have producer "host"`,
+    );
   }
   return candidate as TrajectoryEvent<T>;
 }

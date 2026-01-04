@@ -1,0 +1,94 @@
+{
+  "trajectory_id": "t-multi-1",
+  "steps": [
+    {
+      "trajectory_id": "t-multi-1",
+      "step_seq": 0,
+      "prev_step_hash": null,
+      "step_type": "trajectory_started",
+      "producer": "host",
+      "timestamp": "2024-02-01T10:00:00.000Z",
+      "correlation_id": "corr-multi-1",
+      "payload": { "trigger": "analysis" },
+      "refs": {
+        "entity_refs": [
+          { "ref": "service:payments", "link": "observed" },
+          { "ref": "service:orders", "link": "observed" }
+        ],
+        "artifact_refs": [],
+        "external_refs": []
+      }
+    },
+    {
+      "trajectory_id": "t-multi-1",
+      "step_seq": 1,
+      "prev_step_hash": null,
+      "step_type": "entity_read",
+      "producer": "host",
+      "timestamp": "2024-02-01T10:01:00.000Z",
+      "correlation_id": "corr-multi-1",
+      "payload": { "entity_ref": "service:payments", "fields": ["config"] },
+      "refs": {
+        "entity_refs": [{ "ref": "service:payments", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      }
+    },
+    {
+      "trajectory_id": "t-multi-1",
+      "step_seq": 2,
+      "prev_step_hash": null,
+      "step_type": "entity_written",
+      "producer": "host",
+      "timestamp": "2024-02-01T10:02:00.000Z",
+      "correlation_id": "corr-multi-1",
+      "payload": {
+        "entity_ref": "service:orders",
+        "command_id": "cmd-update-orders"
+      },
+      "refs": {
+        "entity_refs": [{ "ref": "service:orders", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "causation": { "related_command_id": "cmd-update-orders" }
+    },
+    {
+      "trajectory_id": "t-multi-1",
+      "step_seq": 3,
+      "prev_step_hash": null,
+      "step_type": "entity_written",
+      "producer": "host",
+      "timestamp": "2024-02-01T10:03:00.000Z",
+      "correlation_id": "corr-multi-1",
+      "payload": {
+        "entity_ref": "service:payments",
+        "command_id": "cmd-update-payments"
+      },
+      "refs": {
+        "entity_refs": [{ "ref": "service:payments", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "causation": { "related_command_id": "cmd-update-payments" }
+    }
+  ],
+  "outcomes": [
+    {
+      "outcome_id": "out-multi-1",
+      "attaches_to": { "trajectory_id": "t-multi-1" },
+      "kind": "success",
+      "severity": 1,
+      "metrics": { "latency_ms": 2500 },
+      "refs": {
+        "entity_refs": [
+          { "ref": "service:payments", "link": "observed" },
+          { "ref": "service:orders", "link": "observed" }
+        ],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "timestamp": "2024-02-01T10:05:00.000Z"
+    }
+  ]
+}

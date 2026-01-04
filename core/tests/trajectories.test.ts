@@ -142,3 +142,37 @@ describe("step taxonomy helpers", () => {
     expect(isOverlayStep("decision_rationale")).toBe(true);
   });
 });
+
+describe("producer enforcement", () => {
+  it("rejects base step with non-host producer", () => {
+    expect(() =>
+      buildTrajectoryEvent({
+        trajectory_id: "t1",
+        step_seq: 0,
+        prev_step_hash: null,
+        step_type: "entity_written",
+        producer: "pack",
+        timestamp: new Date().toISOString(),
+        correlation_id: "c1",
+        refs: baseRefs,
+        payload: { entity_ref: "task:1", command_id: "cmd-1" },
+      }),
+    ).toThrow(/Base step "entity_written" requires producer "host"/);
+  });
+
+  it("rejects overlay step with host producer", () => {
+    expect(() =>
+      buildTrajectoryEvent({
+        trajectory_id: "t1",
+        step_seq: 0,
+        prev_step_hash: null,
+        step_type: "hypothesis",
+        producer: "host",
+        timestamp: new Date().toISOString(),
+        correlation_id: "c1",
+        refs: baseRefs,
+        payload: { statement: "maybe", confidence: 0.5, grounding: [] },
+      }),
+    ).toThrow(/Overlay step "hypothesis" cannot have producer "host"/);
+  });
+});

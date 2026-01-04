@@ -12,6 +12,7 @@ export async function GET(
   if (!OPS_TRAJECTORIES_ENABLED) {
     return new NextResponse("Trajectories disabled", { status: 404 });
   }
-  const detail = await getTrajectoryDetail(params.id);
+  const trajectory_id = decodeURIComponent(params.id);
+  const detail = await getTrajectoryDetail(trajectory_id);
   return NextResponse.json(detail);
 }

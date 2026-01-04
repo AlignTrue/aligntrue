@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Simulation, type Projections as ProjNS } from "@aligntrue/core";
+import { FEATURE_SCHEMA_V1 } from "../src/simulation/types.js";
 
 function makeCooccurrence(): ProjNS.CooccurrenceState {
   const state: ProjNS.CooccurrenceState = {
@@ -162,5 +163,28 @@ describe("Simulation API", () => {
     );
     expect(res.affected_entities.length).toBe(0);
     expect(res.confidence).toBe(0);
+  });
+
+  it("includes algorithm and feature schema versions", () => {
+    const res = Simulation.blastRadius(
+      makeCooccurrence(),
+      makeOutcomeCorrelations(),
+      {
+        entity_ref: "entity:A",
+      },
+    );
+    expect(res.algorithm_version).toBe("v1.0.0");
+    expect(res.feature_schema_version).toBe("v1");
+  });
+
+  it("feature schema v1 matches documented set", () => {
+    expect(FEATURE_SCHEMA_V1).toEqual([
+      "entity_type_match",
+      "cooccurrence_weight",
+      "transition_ngram_match",
+      "structural_signature_similarity",
+      "outcome_correlation_prior",
+      "recency_decay",
+    ]);
   });
 });

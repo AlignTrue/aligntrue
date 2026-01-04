@@ -1,0 +1,51 @@
+{
+  "trajectory_id": "t-simple-1",
+  "steps": [
+    {
+      "trajectory_id": "t-simple-1",
+      "step_seq": 0,
+      "prev_step_hash": null,
+      "step_type": "trajectory_started",
+      "producer": "host",
+      "timestamp": "2024-01-01T00:00:00.000Z",
+      "correlation_id": "corr-simple-1",
+      "payload": { "trigger": "task:create" },
+      "refs": {
+        "entity_refs": [{ "ref": "task:1", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      }
+    },
+    {
+      "trajectory_id": "t-simple-1",
+      "step_seq": 1,
+      "prev_step_hash": null,
+      "step_type": "entity_written",
+      "producer": "host",
+      "timestamp": "2024-01-01T00:01:00.000Z",
+      "correlation_id": "corr-simple-1",
+      "payload": { "entity_ref": "task:1", "command_id": "cmd-task-create" },
+      "refs": {
+        "entity_refs": [{ "ref": "task:1", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "causation": { "related_command_id": "cmd-task-create" }
+    }
+  ],
+  "outcomes": [
+    {
+      "outcome_id": "out-simple-1",
+      "attaches_to": { "trajectory_id": "t-simple-1" },
+      "kind": "success",
+      "severity": 0,
+      "metrics": { "latency_ms": 1200 },
+      "refs": {
+        "entity_refs": [{ "ref": "task:1", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "timestamp": "2024-01-01T00:02:00.000Z"
+    }
+  ]
+}

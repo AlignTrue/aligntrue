@@ -1,0 +1,81 @@
+{
+  "trajectory_id": "t-revert-1",
+  "steps": [
+    {
+      "trajectory_id": "t-revert-1",
+      "step_seq": 0,
+      "prev_step_hash": null,
+      "step_type": "trajectory_started",
+      "producer": "host",
+      "timestamp": "2024-03-10T08:00:00.000Z",
+      "correlation_id": "corr-revert-1",
+      "payload": { "trigger": "deploy" },
+      "refs": {
+        "entity_refs": [
+          { "ref": "service:billing", "link": "observed" },
+          { "ref": "gh_commit:owner/repo@abc123", "link": "observed" }
+        ],
+        "artifact_refs": [],
+        "external_refs": []
+      }
+    },
+    {
+      "trajectory_id": "t-revert-1",
+      "step_seq": 1,
+      "prev_step_hash": null,
+      "step_type": "tool_called",
+      "producer": "host",
+      "timestamp": "2024-03-10T08:01:00.000Z",
+      "correlation_id": "corr-revert-1",
+      "payload": {
+        "tool_name": "ci/workflow",
+        "args_summary": "run workflow main",
+        "result_summary": "failure"
+      },
+      "refs": {
+        "entity_refs": [
+          { "ref": "gh_workflow:owner/repo:ci", "link": "observed" }
+        ],
+        "artifact_refs": [],
+        "external_refs": []
+      }
+    },
+    {
+      "trajectory_id": "t-revert-1",
+      "step_seq": 2,
+      "prev_step_hash": null,
+      "step_type": "entity_written",
+      "producer": "host",
+      "timestamp": "2024-03-10T08:02:00.000Z",
+      "correlation_id": "corr-revert-1",
+      "payload": {
+        "entity_ref": "service:billing",
+        "command_id": "cmd-revert"
+      },
+      "refs": {
+        "entity_refs": [{ "ref": "service:billing", "link": "observed" }],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "causation": { "related_command_id": "cmd-revert" }
+    }
+  ],
+  "outcomes": [
+    {
+      "outcome_id": "out-revert-1",
+      "attaches_to": { "trajectory_id": "t-revert-1" },
+      "kind": "rollback",
+      "severity": 3,
+      "metrics": { "incidents": 1 },
+      "refs": {
+        "entity_refs": [
+          { "ref": "service:billing", "link": "observed" },
+          { "ref": "gh_commit:owner/repo@abc123", "link": "observed" }
+        ],
+        "artifact_refs": [],
+        "external_refs": []
+      },
+      "timestamp": "2024-03-10T08:05:00.000Z"
+    }
+  ]
+}

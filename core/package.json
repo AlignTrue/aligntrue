@@ -67,6 +67,7 @@
     "@aligntrue/file-utils": "workspace:*",
     "ai": "^6.0.5",
     "better-sqlite3": "^11.10.0",
+    "date-fns": "^4.1.0",
     "zod": "^4.2.1"
   }
 }
