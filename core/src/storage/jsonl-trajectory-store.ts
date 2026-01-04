@@ -167,10 +167,11 @@ export class JsonlTrajectoryStore implements TrajectoryStore {
     const decoded = decodeCursor(cursor);
     const rows = this.db
       .prepare(
-        `SELECT DISTINCT trajectory_id, timestamp, step_id
+        `SELECT trajectory_id, MAX(timestamp) as last_timestamp
          FROM trajectory_steps
          ${where}
-         ORDER BY timestamp ${sort === "time_asc" ? "ASC" : "DESC"}, step_id ASC
+         GROUP BY trajectory_id
+         ORDER BY last_timestamp ${sort === "time_asc" ? "ASC" : "DESC"}, trajectory_id ASC
          LIMIT ? OFFSET ?`,
       )
       .all(...params, limit, decoded.offset) as { trajectory_id: string }[];

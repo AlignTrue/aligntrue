@@ -17,13 +17,14 @@ export const runtime = "nodejs";
 export default async function TrajectoryDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   if (!OPS_TRAJECTORIES_ENABLED) {
     notFound();
   }
 
-  const trajectory_id = decodeURIComponent(params.id);
+  const trajectory_id = decodeURIComponent(id);
   const detail = await getTrajectoryDetail(trajectory_id);
   if (!detail) {
     notFound();

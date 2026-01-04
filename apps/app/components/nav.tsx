@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -50,14 +51,14 @@ export function Nav({
 }: NavProps) {
   const pathname = usePathname();
 
-  const links = [
+  const links: { href: Route; label: string }[] = [
     { href: "/", label: "Dashboard" },
-    ...(tasksEnabled ? [{ href: "/tasks", label: "Tasks" }] : []),
-    ...(notesEnabled ? [{ href: "/notes", label: "Notes" }] : []),
+    ...(tasksEnabled ? [{ href: "/tasks" as Route, label: "Tasks" }] : []),
+    ...(notesEnabled ? [{ href: "/notes" as Route, label: "Notes" }] : []),
     ...(trajectoriesEnabled
       ? [
-          { href: "/trajectories", label: "Trajectories" },
-          { href: "/simulate", label: "Simulate" },
+          { href: "/trajectories" as Route, label: "Trajectories" },
+          { href: "/simulate" as Route, label: "Simulate" },
         ]
       : []),
   ];

@@ -15,11 +15,16 @@ import {
   Textarea,
 } from "@aligntrue/ui-base";
 
+import { Simulation } from "@aligntrue/core";
 import { SimulationResults } from "./SimulationResults";
 
-type Result = Awaited<ReturnType<typeof fetchResult>>;
+type Result =
+  | Simulation.BlastRadiusResult
+  | Simulation.SimilarTrajectoriesResult
+  | Simulation.ChangeSimulationResult
+  | null;
 
-async function fetchResult(type: string, payload: unknown) {
+async function fetchResult(type: string, payload: unknown): Promise<Result> {
   const path =
     type === "blast-radius"
       ? "/api/simulate/blast-radius"

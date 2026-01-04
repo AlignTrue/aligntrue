@@ -7,12 +7,13 @@ export const runtime = "nodejs";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   if (!OPS_TRAJECTORIES_ENABLED) {
     return new NextResponse("Trajectories disabled", { status: 404 });
   }
-  const trajectory_id = decodeURIComponent(params.id);
+  const trajectory_id = decodeURIComponent(id);
   const detail = await getTrajectoryDetail(trajectory_id);
   if (!detail) {
     return new NextResponse("Trajectory not found", { status: 404 });

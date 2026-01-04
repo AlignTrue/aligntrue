@@ -4,18 +4,19 @@ import { OPS_TRAJECTORIES_ENABLED } from "@aligntrue/core";
 
 import { getTrajectoryDetail } from "@/lib/trajectory-views";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   if (!OPS_TRAJECTORIES_ENABLED) {
     return new Response("Trajectories disabled", { status: 404 });
   }
-  const trajectory_id = decodeURIComponent(params.id);
+  const trajectory_id = decodeURIComponent(id);
   const detail = await getTrajectoryDetail(trajectory_id);
   if (!detail) {
     return new Response("Trajectory not found", { status: 404 });

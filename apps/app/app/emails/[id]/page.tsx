@@ -81,13 +81,14 @@ async function noteAction(formData: FormData) {
 export default async function EmailDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   if (!GMAIL_ENABLED) {
     notFound();
   }
 
-  const email = await getEmail(params.id);
+  const email = await getEmail(id);
   if (!email) {
     notFound();
   }
