@@ -2,7 +2,7 @@
 description: Local, deterministic work ledger for ops-core Phase 0
 ---
 
-# Work ledger (Phase 0)
+# Work ledger
 
 The ops-core work ledger tracks local work items with an auditable event trail and rebuildable projections. It is fully local and gated by `OPS_CORE_ENABLED=1`.
 

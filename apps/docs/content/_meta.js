@@ -12,11 +12,14 @@ export default {
     type: "separator",
     title: "Platform",
   },
-  "ops-platform": "Architecture",
+  architecture: "Architecture",
+  concepts: "Concepts",
+  reference: "Reference",
+  development: "Development",
+  contributing: "Contributing",
   "--policies": {
     type: "separator",
     title: "Policies",
   },
   security: "Security",
-  about: "About",
 };

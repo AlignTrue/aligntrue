@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Context Graphs initiative complete (Phases 0-8):**
+  - Trajectories as first-class primitive with hash-chained steps, typed payloads, provenance-aware refs
+  - TrajectoryStore with JSONL log and SQLite sidecar indexes
+  - TrajectoryContext runtime capture with budgets and volume controls
+  - Deterministic projections: co-occurrence graphs, transition n-grams, WL structural signatures, outcome correlations
+  - Simulation API: blast radius, similar trajectories, change simulation with evidence and confidence
+  - GitHub connector ingesting PR/commit/CI activity into trajectories
+  - Trajectory timeline viewer and simulation explorer UX
+  - Golden fixtures, calibration tests, producer enforcement, redaction utilities
+
 ### Changed
 
 - **BREAKING: Catalog shortcut and command renames** - `aligntrue <id>` now installs catalog IDs directly; `aligntrue init <url|id>` replaces `--source`; `aligntrue add link <url>` replaces `add source`; `aligntrue remove link <url>` replaces `remove source`

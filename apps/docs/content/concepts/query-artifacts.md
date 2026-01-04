@@ -4,7 +4,7 @@ description: Deterministic receipts for what the AI looked at
 
 # Query artifacts
 
-Query artifacts capture the structured view of **what the AI inspected**. They are deterministic, hashable envelopes that reference projections, entities, and fields without storing raw result sets by default.
+Query artifacts capture the structured view of **what the AI inspected** (the retrieval step in RAG-style workflows). They are deterministic, hashable envelopes that reference projections, entities, and fields without storing raw result sets by default.
 
 ## Envelope
 

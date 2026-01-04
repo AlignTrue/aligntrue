@@ -4,7 +4,7 @@ description: Deterministic receipts for AI decisions with lineage
 
 # Derived artifacts
 
-Derived artifacts record **what the AI decided** and the lineage that produced it. They must point to existing query artifacts and include hashes of the inputs used.
+Derived artifacts record **what the AI decided** (the generation receipt in RAG-style workflows) and the lineage that produced it. They must point to existing query artifacts and include hashes of the inputs used.
 
 ## Envelope
 
