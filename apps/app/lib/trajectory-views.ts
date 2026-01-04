@@ -18,7 +18,8 @@ export async function getTrajectoryList(opts?: {
 }) {
   await getHost();
   const store = getTrajectoryStore();
-  const limit = opts?.limit ?? 20;
+  const limit =
+    opts?.limit !== undefined && !isNaN(opts.limit) ? opts.limit : 20;
   const page = await store.listTrajectories({
     filters: {
       entity_ref: opts?.entity_ref,

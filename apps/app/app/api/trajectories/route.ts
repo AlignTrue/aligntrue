@@ -14,9 +14,10 @@ export async function GET(req: Request) {
   const time_after = searchParams.get("time_after") ?? undefined;
   const time_before = searchParams.get("time_before") ?? undefined;
   const cursor = searchParams.get("cursor") ?? undefined;
-  const limit = searchParams.get("limit")
-    ? Number(searchParams.get("limit"))
-    : undefined;
+  const limitParam = searchParams.get("limit");
+  const parsedLimit = limitParam ? parseInt(limitParam, 10) : undefined;
+  const limit =
+    parsedLimit !== undefined && !isNaN(parsedLimit) ? parsedLimit : undefined;
 
   const result = await getTrajectoryList({
     entity_ref,
