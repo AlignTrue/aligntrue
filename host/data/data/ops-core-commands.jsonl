@@ -1,0 +1,2 @@
+{"command_id":"1305598d-5cc5-4520-9b74-b12d112d155a","idempotency_key":"66368659-8b24-427f-996a-44f8f9c80f58","dedupe_scope":"actor","scope_key":"actor-1","status":"pending","started_at":"2026-01-04T05:04:19.918Z"}
+{"command_id":"1305598d-5cc5-4520-9b74-b12d112d155a","idempotency_key":"66368659-8b24-427f-996a-44f8f9c80f58","dedupe_scope":"actor","scope_key":"actor-1","status":"completed","started_at":"2026-01-04T05:04:19.918Z","completed_at":"2026-01-04T05:04:19.920Z"}
