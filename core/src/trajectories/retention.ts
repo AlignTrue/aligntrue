@@ -109,7 +109,7 @@ export async function identifyPrunableTrajectories(
         m.last_ts !== null &&
         m.last_ts < ageCutoff &&
         !m.has_protected_outcome &&
-        (m.only_prunable_steps || true),
+        m.only_prunable_steps,
     )
     .map((m) => m.id);
 

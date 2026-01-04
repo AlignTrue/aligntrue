@@ -116,6 +116,50 @@ describe("Simulation API", () => {
     expect(res.trajectories[0].trajectory_id).toBe("t1");
   });
 
+  it("similar trajectories returns normalized similarity score", () => {
+    const sigState = makeSignatures();
+    const coState = makeCooccurrence();
+
+    // Add another entity with same signature to same trajectory
+    sigState.entity_signatures.set("entity:C", "sig-1");
+    sigState.signature_index.set("sig-1", ["entity:B", "entity:C"]);
+    coState.entity_trajectories.set("entity:C", ["t1"]);
+
+    const res = Simulation.similarTrajectories(sigState, coState, {
+      entity_refs: ["entity:B"],
+    });
+
+    expect(res.trajectories.length).toBeGreaterThan(0);
+    expect(res.trajectories[0].similarity_score).toBe(1.0); // 1/1 target signatures matched
+  });
+
+  it("similar trajectories handles multiple target entities", () => {
+    const sigState = makeSignatures();
+    const coState = makeCooccurrence();
+
+    // Add another target entity with different signature
+    sigState.entity_signatures.set("entity:D", "sig-2");
+    sigState.signature_index.set("sig-2", ["entity:D"]);
+    coState.entity_trajectories.set("entity:D", ["t1"]);
+
+    const res = Simulation.similarTrajectories(sigState, coState, {
+      entity_refs: ["entity:B", "entity:D"],
+    });
+
+    expect(res.trajectories[0].similarity_score).toBe(1.0); // 2/2 target signatures matched
+
+    // Trajectory only matching one sig
+    coState.entity_trajectories.set("entity:E", ["t2"]);
+    sigState.entity_signatures.set("entity:E", "sig-1");
+    // sig-1 matches entity:B
+
+    const res2 = Simulation.similarTrajectories(sigState, coState, {
+      entity_refs: ["entity:B", "entity:D"],
+    });
+    const t2 = res2.trajectories.find((t) => t.trajectory_id === "t2");
+    expect(t2?.similarity_score).toBe(0.5); // 1/2 target signatures matched
+  });
+
   it("simulateChange combines pattern and entity outcomes", () => {
     const res = Simulation.simulateChange(
       makeTransitions(),

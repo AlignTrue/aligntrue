@@ -34,36 +34,43 @@ export function similarTrajectories(
     .map((e) => signatures.entity_signatures.get(e))
     .filter((s): s is string => Boolean(s));
 
-  const trajectoryScores = new Map<
-    string,
-    { score: number; matched: Set<string>; outcome?: string | undefined }
-  >();
+  const trajectoryMatchedSigs = new Map<string, Set<string>>();
+  const trajectoryMatchedEntities = new Map<string, Set<string>>();
 
   for (const sig of targetSigs) {
     const peers = signatures.signature_index.get(sig) ?? [];
     for (const entity of peers) {
       const trajs = cooccurrence.entity_trajectories.get(entity) ?? [];
       for (const tid of trajs) {
-        const entry = trajectoryScores.get(tid) ?? {
-          score: 0,
-          matched: new Set<string>(),
-          outcome: signatures.trajectory_outcomes?.get?.(tid),
-        };
-        entry.score += 1; // increment per matched entity with same signature
-        entry.matched.add(entity);
-        trajectoryScores.set(tid, entry);
+        let matchedSigs = trajectoryMatchedSigs.get(tid);
+        if (!matchedSigs) {
+          matchedSigs = new Set<string>();
+          trajectoryMatchedSigs.set(tid, matchedSigs);
+        }
+        matchedSigs.add(sig);
+
+        let matchedEntities = trajectoryMatchedEntities.get(tid);
+        if (!matchedEntities) {
+          matchedEntities = new Set<string>();
+          trajectoryMatchedEntities.set(tid, matchedEntities);
+        }
+        matchedEntities.add(entity);
       }
     }
   }
 
+  const denominator = targetSigs.length || 1;
+
   const results: SimilarTrajectoriesResult["trajectories"] = Array.from(
-    trajectoryScores.entries(),
+    trajectoryMatchedSigs.entries(),
   )
-    .map(([tid, data]) => ({
+    .map(([tid, matchedSigs]) => ({
       trajectory_id: tid,
-      similarity_score: data.score,
-      matched_entities: Array.from(data.matched).sort(),
-      outcome: data.outcome,
+      similarity_score: matchedSigs.size / denominator,
+      matched_entities: Array.from(
+        trajectoryMatchedEntities.get(tid) ?? [],
+      ).sort(),
+      outcome: signatures.trajectory_outcomes?.get?.(tid),
     }))
     .filter((r) => r.similarity_score >= minSim)
     .sort((a, b) => {
