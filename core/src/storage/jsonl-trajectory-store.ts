@@ -263,6 +263,10 @@ export class JsonlTrajectoryStore implements TrajectoryStore {
       ...(next_cursor ? { next_cursor } : {}),
     };
   }
+
+  async close(): Promise<void> {
+    this.db.close();
+  }
 }
 
 function buildStepWhere(filters: TrajectoryFilters) {

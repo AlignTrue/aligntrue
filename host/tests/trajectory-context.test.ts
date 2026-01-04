@@ -8,8 +8,12 @@ import { Storage } from "@aligntrue/core";
 import { createTrajectoryContext } from "../src/trajectory-context.js";
 
 let tmpDir: string;
+let store: Storage.TrajectoryStore;
 
 afterEach(async () => {
+  if (store) {
+    await store.close();
+  }
   if (tmpDir) {
     await rm(tmpDir, { recursive: true, force: true });
   }
@@ -17,18 +21,19 @@ afterEach(async () => {
 
 async function makeStore() {
   tmpDir = await mkdtemp(join(tmpdir(), "traj-ctx-"));
-  return new Storage.JsonlTrajectoryStore({
+  store = new Storage.JsonlTrajectoryStore({
     trajectoryPath: join(tmpDir, "traj.jsonl"),
     outcomesPath: join(tmpDir, "outcomes.jsonl"),
     dbPath: join(tmpDir, "traj.db"),
   });
+  return store;
 }
 
 describe("trajectory-context", () => {
   it("emits start and chained steps with deterministic ids", async () => {
-    const store = await makeStore();
+    const s = await makeStore();
     const ctx = createTrajectoryContext({
-      store,
+      store: s,
       correlation_id: "corr-1",
       trajectory_id: "t-1",
     });

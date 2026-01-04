@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, afterEach } from "vitest";
 import { join } from "node:path";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import {
@@ -21,13 +21,29 @@ function loadFixture(name: string): Fixture {
   return JSON.parse(readFileSync(path, "utf-8")) as Fixture;
 }
 
+let tmpDirs: string[] = [];
+let stores: Storage.JsonlTrajectoryStore[] = [];
+
+afterEach(async () => {
+  for (const store of stores) {
+    await store.close();
+  }
+  for (const dir of tmpDirs) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  tmpDirs = [];
+  stores = [];
+});
+
 async function buildStoreFromFixture(fix: Fixture) {
   const dir = mkdtempSync(join(tmpdir(), "traj-fixture-"));
+  tmpDirs.push(dir);
   const store = new Storage.JsonlTrajectoryStore({
     trajectoryPath: join(dir, "traj.jsonl"),
     outcomesPath: join(dir, "outcomes.jsonl"),
     dbPath: join(dir, "traj.db"),
   });
+  stores.push(store);
 
   for (const step of fix.steps) {
     const evt = Trajectories.buildTrajectoryEvent({

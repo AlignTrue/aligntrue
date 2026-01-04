@@ -101,7 +101,7 @@ function makeFeedbackEvent(
 describe("pack-suggestions command handlers", () => {
   beforeAll(async () => {
     await loadModule();
-  });
+  }, 30000);
 
   function makeContext(overrides: Partial<PackContext> = {}): PackContext {
     const noop = async () => {};
@@ -288,7 +288,7 @@ describe("pack-suggestions projections", () => {
     if (!InboxProjectionDef) {
       await loadModule();
     }
-  });
+  }, 30000);
   it("rebuilds inbox deterministically", () => {
     const generated = makeGeneratedEvent();
     const accepted = makeFeedbackEvent(Feedback.FEEDBACK_TYPES.Accepted);

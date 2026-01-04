@@ -15,8 +15,12 @@ const baseRefs: TrajectoryRefs = {
 };
 
 let tmpDir: string;
+let store: JsonlTrajectoryStore;
 
 afterEach(async () => {
+  if (store) {
+    await store.close();
+  }
   if (tmpDir) {
     await rm(tmpDir, { recursive: true, force: true });
   }
@@ -24,7 +28,7 @@ afterEach(async () => {
 
 async function createStore() {
   tmpDir = await mkdtemp(join(tmpdir(), "traj-store-"));
-  const store = new JsonlTrajectoryStore({
+  store = new JsonlTrajectoryStore({
     trajectoryPath: join(tmpDir, "trajectories.jsonl"),
     outcomesPath: join(tmpDir, "outcomes.jsonl"),
     dbPath: join(tmpDir, "traj.db"),

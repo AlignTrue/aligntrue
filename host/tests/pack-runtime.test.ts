@@ -20,8 +20,12 @@ import { createPackRuntime, type PackRuntime } from "../src/pack-runtime.js";
 import type { RuntimeLoadedPack } from "../src/pack-runtime.js";
 
 let tmpDir: string;
+let trajectoryStore: Storage.TrajectoryStore;
 
 afterEach(async () => {
+  if (trajectoryStore) {
+    await trajectoryStore.close();
+  }
   if (tmpDir) {
     await rm(tmpDir, { recursive: true, force: true });
   }
@@ -37,14 +41,20 @@ async function makeStores(): Promise<{
   const outcomesPath = join(tmpDir, "outcomes.jsonl");
   const dbPath = join(tmpDir, "trajectories.db");
 
+  trajectoryStore = new Storage.JsonlTrajectoryStore({
+    trajectoryPath,
+    outcomesPath,
+    dbPath,
+  });
+
   return {
-    eventStore: new Storage.JsonlEventStore(),
-    commandLog: new Storage.JsonlCommandLog(),
-    trajectoryStore: new Storage.JsonlTrajectoryStore({
-      trajectoryPath,
-      outcomesPath,
-      dbPath,
-    }),
+    eventStore: new Storage.JsonlEventStore(join(tmpDir, "events.jsonl")),
+    commandLog: new Storage.JsonlCommandLog(
+      join(tmpDir, "commands.jsonl"),
+      join(tmpDir, "command-outcomes.jsonl"),
+      { allowExternalPaths: true },
+    ),
+    trajectoryStore: trajectoryStore as Storage.JsonlTrajectoryStore,
   };
 }
 

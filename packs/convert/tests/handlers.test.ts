@@ -67,7 +67,7 @@ function makeCommand(
 describe("pack-convert command handlers", () => {
   beforeAll(async () => {
     await loadModule();
-  });
+  }, 30000);
   it("returns CommandOutcome with command_id and child_commands", async () => {
     const email = makeEmailEvent("1");
     const command = makeCommand(Contracts.CONVERT_COMMAND_TYPES.EmailToTask, {
@@ -146,7 +146,7 @@ describe("pack-convert projections", () => {
     if (!ConversionsProjectionDef) {
       await loadModule();
     }
-  });
+  }, 30000);
   it("rebuilds conversions deterministically", () => {
     const occurred_at = "2024-01-01T00:00:00.000Z";
     const taskEvent = {

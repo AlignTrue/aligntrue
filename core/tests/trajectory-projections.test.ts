@@ -83,6 +83,7 @@ describe("trajectory projections", () => {
 
     expect(firstHashes).toEqual(secondHashes);
 
+    await store.close();
     await rm(dir, { recursive: true, force: true });
   });
 
@@ -141,6 +142,7 @@ describe("trajectory projections", () => {
     const hashAfter = Projections.cooccurrenceHash(pruned);
     expect(hashBefore).not.toBe(hashAfter);
 
+    await store.close();
     await rm(dir, { recursive: true, force: true });
   });
 });

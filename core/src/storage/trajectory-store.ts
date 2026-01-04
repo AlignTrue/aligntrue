@@ -29,4 +29,5 @@ export interface TrajectoryStore {
     outcomes: OutcomeRecorded[];
     next_cursor?: string;
   }>;
+  close(): Promise<void>;
 }
