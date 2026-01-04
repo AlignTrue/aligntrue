@@ -86,6 +86,4 @@ pnpm ci           # pre-ci + validate + lint + typecheck + full tests
 
 ---
 
----
-
 _This file is auto-generated from the AlignTrue documentation site. To make changes, edit the source files in `apps/docs/content/` and run `pnpm generate:repo-files`._

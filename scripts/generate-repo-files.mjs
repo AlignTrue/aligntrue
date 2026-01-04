@@ -99,7 +99,7 @@ function generateReadme() {
   content = transformLinks(content);
 
   // Add header and footer
-  content = addHeader("index.mdx") + content + addFooter();
+  content = addHeader("index.mdx") + content.trim() + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "README.md");
@@ -124,7 +124,7 @@ function generateContributing() {
   content = transformLinks(content);
 
   // Add header and footer
-  content = addHeader("contributing/index.md") + content + addFooter();
+  content = addHeader("contributing/index.md") + content.trim() + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "CONTRIBUTING.md");
@@ -166,6 +166,7 @@ function generateDevelopment() {
   content += "\n---\n\n";
 
   // Concatenate all files
+  const parts = [];
   for (const file of files) {
     const filePath = join(devDir, file);
     let fileContent = readFileSync(filePath, "utf-8");
@@ -176,8 +177,10 @@ function generateDevelopment() {
     // Transform links
     fileContent = transformLinks(fileContent);
 
-    content += fileContent + "\n\n---\n\n";
+    parts.push(fileContent.trim());
   }
+
+  content += parts.join("\n\n---\n\n");
 
   // Add header and footer
   content = addHeader("development/*.md") + content + addFooter();
@@ -205,7 +208,7 @@ function generateSecurity() {
   content = transformLinks(content);
 
   // Add header and footer
-  content = addHeader("security.md") + content + addFooter();
+  content = addHeader("security.md") + content.trim() + addFooter();
 
   // Write to root
   const outputPath = join(rootDir, "SECURITY.md");
