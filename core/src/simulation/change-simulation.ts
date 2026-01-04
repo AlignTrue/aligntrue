@@ -101,19 +101,23 @@ function probabilitiesFromEntities(
   entities: string[],
 ): Map<string, number> {
   const probs = new Map<string, number>();
+  let contributingEntities = 0;
   for (const entity of entities) {
     const outcomes = outcomeCorrelations.entity_outcomes.get(entity);
     if (!outcomes) continue;
     const total = outcomeCorrelations.entity_totals.get(entity) ?? 0;
     if (total === 0) continue;
+    contributingEntities++;
     for (const [outcome, count] of outcomes.entries()) {
       const p = count / total;
       probs.set(outcome, (probs.get(outcome) ?? 0) + p);
     }
   }
   // average across entities
-  for (const outcome of Array.from(probs.keys())) {
-    probs.set(outcome, probs.get(outcome)! / entities.length);
+  if (contributingEntities > 0) {
+    for (const outcome of Array.from(probs.keys())) {
+      probs.set(outcome, probs.get(outcome)! / contributingEntities);
+    }
   }
   return probs;
 }

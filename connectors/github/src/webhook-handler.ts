@@ -44,7 +44,10 @@ async function handlePullRequest(
   opts: WebhookHandlerOptions,
 ): Promise<WebhookResult> {
   const builder: GitHubTrajectoryBuilder = createTrajectoryBuilder(event);
-  builder.addPrOpened(event);
+
+  if (event.action === "opened") {
+    builder.addPrOpened(event);
+  }
 
   if (
     event.action === "merged" ||

@@ -173,6 +173,23 @@ describe("Simulation API", () => {
     expect(res.risk_factors.length).toBeGreaterThan(0);
   });
 
+  it("probabilitiesFromEntities averages correctly when some entities have no outcomes", () => {
+    const oc = makeOutcomeCorrelations();
+    // entity:B has 1 success, 1 incident (total 2) -> P(success)=0.5, P(incident)=0.5
+    // Add entity:C with NO outcomes
+    oc.entity_totals.set("entity:C", 0);
+
+    const res = Simulation.simulateChange(makeTransitions(), oc, {
+      affected_entities: ["entity:B", "entity:C"],
+      // No step pattern to isolate entity probs
+    });
+
+    const success = res.predicted_outcomes.find((o) => o.outcome === "success");
+    // Before fix: (0.5 + 0) / 2 = 0.25
+    // After fix: (0.5) / 1 = 0.5
+    expect(success?.probability).toBe(0.5);
+  });
+
   it("determinism: same inputs yield same hashes", () => {
     const co = makeCooccurrence();
     const oc = makeOutcomeCorrelations();
