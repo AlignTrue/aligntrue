@@ -52,10 +52,13 @@ async function rebuildAll(store: Storage.JsonlTrajectoryStore) {
     Projections.TransitionProjectionDef,
     store,
   );
+  Projections.finalizeTransitions(transitions.data);
+
   const signatures = await Projections.rebuildTrajectoryProjection(
     Projections.SignatureProjectionDef,
     store,
   );
+  Projections.finalizeSignatures(signatures.data);
   const outcomes = await Projections.rebuildTrajectoryProjection(
     Projections.OutcomeCorrelationProjectionDef,
     store,
