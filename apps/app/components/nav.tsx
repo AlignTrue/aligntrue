@@ -8,19 +8,12 @@ import { useTheme } from "next-themes";
 
 import { Button } from "@aligntrue/ui-base";
 import { cn } from "@/lib/utils";
-import { OPS_TRAJECTORIES_ENABLED } from "@aligntrue/core";
 
-const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/tasks", label: "Tasks" },
-  { href: "/notes", label: "Notes" },
-  ...(OPS_TRAJECTORIES_ENABLED
-    ? [
-        { href: "/trajectories", label: "Trajectories" },
-        { href: "/simulate", label: "Simulate" },
-      ]
-    : []),
-] as const;
+export interface NavProps {
+  tasksEnabled?: boolean;
+  notesEnabled?: boolean;
+  trajectoriesEnabled?: boolean;
+}
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -50,8 +43,24 @@ function ThemeToggle() {
   );
 }
 
-export function Nav() {
+export function Nav({
+  tasksEnabled = false,
+  notesEnabled = false,
+  trajectoriesEnabled = false,
+}: NavProps) {
   const pathname = usePathname();
+
+  const links = [
+    { href: "/", label: "Dashboard" },
+    ...(tasksEnabled ? [{ href: "/tasks", label: "Tasks" }] : []),
+    ...(notesEnabled ? [{ href: "/notes", label: "Notes" }] : []),
+    ...(trajectoriesEnabled
+      ? [
+          { href: "/trajectories", label: "Trajectories" },
+          { href: "/simulate", label: "Simulate" },
+        ]
+      : []),
+  ];
 
   return (
     <nav className="border-b bg-background px-4 py-2">

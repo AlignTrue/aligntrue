@@ -4,6 +4,11 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  OPS_NOTES_ENABLED,
+  OPS_TASKS_ENABLED,
+  OPS_TRAJECTORIES_ENABLED,
+} from "@aligntrue/core";
 import { Nav } from "@/components/nav";
 import { GlobalCapture } from "@/components/GlobalCapture";
 
@@ -71,7 +76,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Nav />
+          <Nav
+            tasksEnabled={OPS_TASKS_ENABLED}
+            notesEnabled={OPS_NOTES_ENABLED}
+            trajectoriesEnabled={OPS_TRAJECTORIES_ENABLED}
+          />
           {children}
           <GlobalCapture />
           <SpeedInsights />
