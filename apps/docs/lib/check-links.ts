@@ -20,7 +20,8 @@ const REDIRECTS_PATH = path.join(__dirname, "../vercel.json");
 const MARKDOWN_LINK_PATTERN =
   /\[([^\]]+)\]\(((?:https?:\/\/aligntrue\.ai\/[^\s)]+)|(?:\/docs\/[^\s)]+))\)/g;
 const ABSOLUTE_LINK_PATTERN = /https?:\/\/aligntrue\.ai\/[^\s)"']+/g;
-const RELATIVE_DOCS_PATTERN = /\/docs\/[^\s)"']+/g;
+// Exclude ) " ' ] ( so we don't consume markdown link syntax like ](
+const RELATIVE_DOCS_PATTERN = /\/docs\/[^\s)"'\]\(]+/g;
 
 export interface BrokenLink {
   file: string;
