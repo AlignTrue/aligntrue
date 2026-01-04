@@ -17,6 +17,9 @@ export async function GET(
   }
   const trajectory_id = decodeURIComponent(params.id);
   const detail = await getTrajectoryDetail(trajectory_id);
+  if (!detail) {
+    return new Response("Trajectory not found", { status: 404 });
+  }
 
   const primaryOutcome = detail.outcomes[0]?.kind ?? "pending";
   const stepCount = detail.steps.length;

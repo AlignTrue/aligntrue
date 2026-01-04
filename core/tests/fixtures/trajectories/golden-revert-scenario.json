@@ -2,6 +2,7 @@
   "trajectory_id": "t-revert-1",
   "steps": [
     {
+      "schema_version": 1,
       "trajectory_id": "t-revert-1",
       "step_seq": 0,
       "prev_step_hash": null,
@@ -20,6 +21,7 @@
       }
     },
     {
+      "schema_version": 1,
       "trajectory_id": "t-revert-1",
       "step_seq": 1,
       "prev_step_hash": null,
@@ -41,6 +43,7 @@
       }
     },
     {
+      "schema_version": 1,
       "trajectory_id": "t-revert-1",
       "step_seq": 2,
       "prev_step_hash": null,
@@ -62,6 +65,7 @@
   ],
   "outcomes": [
     {
+      "schema_version": 1,
       "outcome_id": "out-revert-1",
       "attaches_to": { "trajectory_id": "t-revert-1" },
       "kind": "rollback",

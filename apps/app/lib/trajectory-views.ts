@@ -58,10 +58,12 @@ export async function getTrajectoryDetail(trajectory_id: string): Promise<{
   steps: TrajectoryEvent[];
   outcomes: OutcomeRecorded[];
   entity_refs: string[];
-}> {
+} | null> {
   await getHost();
   const store = getTrajectoryStore();
   const steps = await store.readTrajectory(trajectory_id);
+  if (steps.length === 0) return null;
+
   const outcomesPage = await store.listOutcomes({
     filters: {},
     limit: 500,

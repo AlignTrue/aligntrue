@@ -2,6 +2,7 @@
   "trajectory_id": "t-multi-1",
   "steps": [
     {
+      "schema_version": 1,
       "trajectory_id": "t-multi-1",
       "step_seq": 0,
       "prev_step_hash": null,
@@ -20,6 +21,7 @@
       }
     },
     {
+      "schema_version": 1,
       "trajectory_id": "t-multi-1",
       "step_seq": 1,
       "prev_step_hash": null,
@@ -35,6 +37,7 @@
       }
     },
     {
+      "schema_version": 1,
       "trajectory_id": "t-multi-1",
       "step_seq": 2,
       "prev_step_hash": null,
@@ -54,6 +57,7 @@
       "causation": { "related_command_id": "cmd-update-orders" }
     },
     {
+      "schema_version": 1,
       "trajectory_id": "t-multi-1",
       "step_seq": 3,
       "prev_step_hash": null,
@@ -75,6 +79,7 @@
   ],
   "outcomes": [
     {
+      "schema_version": 1,
       "outcome_id": "out-multi-1",
       "attaches_to": { "trajectory_id": "t-multi-1" },
       "kind": "success",
