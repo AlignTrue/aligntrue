@@ -66,7 +66,7 @@
     "@ai-sdk/openai": "^3.0.2",
     "@aligntrue/file-utils": "workspace:*",
     "ai": "^6.0.7",
-    "better-sqlite3": "^11.10.0",
+    "better-sqlite3": "^12.5.0",
     "date-fns": "^4.1.0",
     "zod": "^4.3.5"
   }
