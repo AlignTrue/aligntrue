@@ -54,8 +54,8 @@
   },
   "devDependencies": {
     "@clack/prompts": "^0.11.0",
-    "@commitlint/cli": "^20.2.0",
-    "@commitlint/config-conventional": "^20.2.0",
+    "@commitlint/cli": "^20.3.0",
+    "@commitlint/config-conventional": "^20.3.0",
     "@next/eslint-plugin-next": "^16.1.1",
     "@types/node": "^25",
     "@typescript-eslint/eslint-plugin": "^8.50.1",

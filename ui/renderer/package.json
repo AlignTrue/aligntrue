@@ -18,10 +18,10 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/ui-contracts": "workspace:*",
-    "ai": "^6.0.5",
+    "ai": "^6.0.7",
     "ajv": "^8.17.1",
     "ajv-formats": "^2.1.1",
-    "zod": "^4.2.1"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
