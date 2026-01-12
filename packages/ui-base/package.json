@@ -25,10 +25,10 @@
     "@testing-library/react": "^16.3.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.0.16",
+    "@vitest/coverage-v8": "^4.0.17",
     "jsdom": "^27.4.0",
     "tailwindcss": "^4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.2",
