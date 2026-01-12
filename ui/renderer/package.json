@@ -18,7 +18,7 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/ui-contracts": "workspace:*",
-    "ai": "^6.0.7",
+    "ai": "^6.0.29",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "zod": "^4.3.5"
