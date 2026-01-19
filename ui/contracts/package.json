@@ -28,7 +28,7 @@
   "devDependencies": {
     "@aligntrue/core": "workspace:*",
     "@types/json-schema": "^7.0.15",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   },
   "license": "MIT"
 }

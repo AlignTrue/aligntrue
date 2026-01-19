@@ -31,7 +31,7 @@
     "@aligntrue/pack-tasks": "workspace:*",
     "@aligntrue/ui-contracts": "workspace:*",
     "@aligntrue/ui-renderer": "workspace:*",
-    "ai": "^6.0.7",
+    "ai": "^6.0.41",
     "ajv": "^8.17.1",
     "class-variance-authority": "^0.7.1",
     "zod": "^4.3.5"
