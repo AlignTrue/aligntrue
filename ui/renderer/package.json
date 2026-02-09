@@ -18,16 +18,16 @@
   "dependencies": {
     "@aligntrue/core": "workspace:*",
     "@aligntrue/ui-contracts": "workspace:*",
-    "ai": "^6.0.7",
+    "ai": "^6.0.78",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.2.4"
   },
   "license": "MIT"
 }
