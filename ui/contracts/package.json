@@ -22,13 +22,13 @@
   },
   "dependencies": {
     "json-schema": "^0.4.0",
-    "zod": "^4.3.5",
+    "zod": "^4.3.6",
     "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
     "@aligntrue/core": "workspace:*",
     "@types/json-schema": "^7.0.15",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.18"
   },
   "license": "MIT"
 }
