@@ -37,8 +37,8 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
-    "react": "^19.0.0"
+    "@types/react": "^19.2.8",
+    "react": "^19.2.3"
   },
   "license": "MIT"
 }
