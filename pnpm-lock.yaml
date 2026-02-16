@@ -8966,6 +8966,10 @@ snapshots:
     dependencies:
       react: 19.2.4
 
+  lucide-react@0.564.0(react@19.2.4):
+    dependencies:
+      react: 19.2.4
+
   lz-string@1.5.0: {}
 
   magic-string@0.30.21:
