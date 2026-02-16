@@ -31,13 +31,13 @@
     "@aligntrue/pack-tasks": "workspace:*",
     "@aligntrue/ui-contracts": "workspace:*",
     "@aligntrue/ui-renderer": "workspace:*",
-    "ai": "^6.0.78",
-    "ajv": "^8.17.1",
+    "ai": "^6.0.86",
+    "ajv": "^8.18.0",
     "class-variance-authority": "^0.7.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "react": "^19.2.4"
   },
   "license": "MIT"
