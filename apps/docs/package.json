@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@pagefind/default-ui": "^1.1.0",
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "fast-xml-parser": "^5.3.5",
     "pagefind": "^1.1.0"
