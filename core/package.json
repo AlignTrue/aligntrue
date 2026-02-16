@@ -61,11 +61,11 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.4",
-    "@ai-sdk/google": "^3.0.23",
-    "@ai-sdk/openai": "^3.0.26",
+    "@ai-sdk/anthropic": "^3.0.44",
+    "@ai-sdk/google": "^3.0.29",
+    "@ai-sdk/openai": "^3.0.29",
     "@aligntrue/file-utils": "workspace:*",
-    "ai": "^6.0.78",
+    "ai": "^6.0.86",
     "better-sqlite3": "^12.6.2",
     "date-fns": "^4.1.0",
     "zod": "^4.3.6"
