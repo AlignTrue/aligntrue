@@ -13,7 +13,6 @@ const withNextra = nextra({
 });
 
 export default withNextra({
-  output: "export",
   assetPrefix:
     process.env.VERCEL_ENV === "production"
       ? "https://docs.aligntrue.ai"

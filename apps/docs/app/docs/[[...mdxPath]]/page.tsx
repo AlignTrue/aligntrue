@@ -3,6 +3,7 @@ import { generateStaticParamsFor, importPage } from "nextra/pages";
 import { useMDXComponents } from "../../../mdx-components";
 
 export const generateStaticParams = generateStaticParamsFor("mdxPath");
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: {
   params: Promise<{ mdxPath?: string[] }>;
@@ -20,19 +21,17 @@ export default async function Page(props: {
     default: MDXContent,
     toc,
     metadata,
-    sourceCode,
   } = await importPage(params.mdxPath);
   const { wrapper } = useMDXComponents();
   const Wrapper = wrapper as ComponentType<{
     children: ReactNode;
     toc: unknown;
     metadata: unknown;
-    sourceCode: string;
   }>;
 
   return (
-    <Wrapper toc={toc} metadata={metadata} sourceCode={sourceCode}>
-      <MDXContent {...props} params={params} />
+    <Wrapper toc={toc} metadata={metadata}>
+      <MDXContent params={params} />
     </Wrapper>
   );
 }

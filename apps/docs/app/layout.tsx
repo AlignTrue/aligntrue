@@ -1,10 +1,7 @@
 // apps/docs/app/layout.tsx
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "next-themes";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import Script from "next/script";
+import { Providers } from "./providers";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aligntrue.ai";
 
@@ -80,24 +77,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <Script
+        <script
           id="structured-data"
           type="application/ld+json"
-          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
           }}
         />
         {gaId && (
           <>
-            <Script
+            <script
               id="ga-loader"
               src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
+              async
             />
-            <Script
+            <script
               id="ga-inline"
-              strategy="beforeInteractive"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
@@ -111,11 +106,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         )}
       </head>
       <body style={{ margin: 0, padding: 0 }}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-          <Analytics />
-          <SpeedInsights />
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

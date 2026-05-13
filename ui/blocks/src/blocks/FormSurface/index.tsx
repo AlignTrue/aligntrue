@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import type { SyntheticEvent } from "react";
 import type { InjectedBlockProps } from "@aligntrue/ui-renderer";
 import { BlockForm } from "../../ui/BlockForm.js";
 import { BlockStack } from "../../ui/BlockStack.js";
@@ -60,7 +61,9 @@ export function FormSurface({
     });
   }, [fields]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (
+    event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
+  ) => {
     event.preventDefault();
     if (!onAction || disabled) return;
 
