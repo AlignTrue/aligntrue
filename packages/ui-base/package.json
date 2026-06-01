@@ -28,7 +28,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "jsdom": "^28.1.0",
     "tailwindcss": "^4",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.2",
