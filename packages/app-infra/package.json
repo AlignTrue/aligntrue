@@ -21,19 +21,19 @@
   },
   "dependencies": {
     "@upstash/redis": "^1.36.2",
-    "@vercel/blob": "^2.2.0",
-    "sharp": "^0.34.5"
+    "@vercel/blob": "^2.4.0",
+    "sharp": "^0.35.1"
   },
   "peerDependencies": {
     "next": ">=14",
     "react": ">=18"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14",
-    "next": "^16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "vitest": "^4.0.18"
+    "@types/react": "^19.2.17",
+    "next": "^16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "vitest": "^4.1.9"
   },
   "engines": {
     "node": ">=20"
