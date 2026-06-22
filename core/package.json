@@ -58,16 +58,16 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.9"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.44",
-    "@ai-sdk/google": "^3.0.29",
-    "@ai-sdk/openai": "^3.0.29",
+    "@ai-sdk/anthropic": "^3.0.85",
+    "@ai-sdk/google": "^3.0.83",
+    "@ai-sdk/openai": "^3.0.74",
     "@aligntrue/file-utils": "workspace:*",
-    "ai": "^6.0.86",
-    "better-sqlite3": "^12.6.2",
-    "date-fns": "^4.1.0",
+    "ai": "^6.0.208",
+    "better-sqlite3": "^12.11.1",
+    "date-fns": "^4.4.0",
     "zod": "^4.3.6"
   }
 }
