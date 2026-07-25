@@ -5,8 +5,7 @@ let Contracts: typeof import("@aligntrue/core").Contracts;
 type CommandEnvelope = import("@aligntrue/core").CommandEnvelope;
 type PackContext = import("@aligntrue/core").PackContext;
 let commandHandlers:
-  | typeof import("../src/index.js").commandHandlers
-  | undefined;
+  typeof import("../src/index.js").commandHandlers | undefined;
 let packModule:
   | (typeof import("../src/index.js").default & {
       extendContext?: (
@@ -16,8 +15,7 @@ let packModule:
     })
   | undefined;
 let InboxProjectionDef:
-  | typeof import("../src/projection.js").InboxProjectionDef
-  | undefined;
+  typeof import("../src/projection.js").InboxProjectionDef | undefined;
 let buildInboxProjectionFromState:
   | typeof import("../src/projection.js").buildInboxProjectionFromState
   | undefined;

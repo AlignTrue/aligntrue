@@ -27,5 +27,4 @@ export interface ConvertEmailToNotePayload {
 }
 
 export type ConvertCommandPayload =
-  | ConvertEmailToTaskPayload
-  | ConvertEmailToNotePayload;
+  ConvertEmailToTaskPayload | ConvertEmailToNotePayload;

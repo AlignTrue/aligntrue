@@ -1,11 +1,7 @@
 import type { EmailResolution, EmailStatus } from "./types.js";
 
 export type EmailClassification =
-  | "informational"
-  | "simple_reply"
-  | "complex_reply"
-  | "task"
-  | "ambiguous";
+  "informational" | "simple_reply" | "complex_reply" | "task" | "ambiguous";
 
 export const CLASSIFICATION_ACTIONS: Record<
   EmailClassification,

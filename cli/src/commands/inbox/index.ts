@@ -107,9 +107,7 @@ async function handleSnooze(id?: string): Promise<void> {
 
 async function handleDecision(
   command_type:
-    | "suggestion.approve"
-    | "suggestion.reject"
-    | "suggestion.snooze",
+    "suggestion.approve" | "suggestion.reject" | "suggestion.snooze",
   id?: string,
 ): Promise<void> {
   if (!id) {

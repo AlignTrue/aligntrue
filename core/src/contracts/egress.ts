@@ -4,9 +4,7 @@
 
 export type HoldState = "none" | "held" | "released";
 export type ReversibilityClass =
-  | "reversible"
-  | "compensatable"
-  | "irreversible";
+  "reversible" | "compensatable" | "irreversible";
 
 export interface EgressEnvelope {
   readonly destination: string; // e.g., gmail.send, http.webhook:foo

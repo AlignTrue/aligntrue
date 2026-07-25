@@ -35,11 +35,7 @@ export async function createTask(args: string[]): Promise<void> {
   const task_id: string =
     (parsed.flags["id"] as string | undefined) ?? Identity.randomId();
   const bucket = parsed.flags["bucket"] as
-    | "today"
-    | "week"
-    | "later"
-    | "waiting"
-    | undefined;
+    "today" | "week" | "later" | "waiting" | undefined;
   const payload = {
     task_id,
     title: safeTitle,

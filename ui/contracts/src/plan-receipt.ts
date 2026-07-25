@@ -1,10 +1,6 @@
 export type PlanMode = "deterministic" | "ai";
 export type PolicyStage =
-  | "draft"
-  | "simulated"
-  | "approved"
-  | "active"
-  | "deprecated";
+  "draft" | "simulated" | "approved" | "active" | "deprecated";
 
 export interface PlanReceipt {
   readonly receipt_id: string;

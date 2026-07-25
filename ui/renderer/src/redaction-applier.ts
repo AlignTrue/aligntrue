@@ -102,8 +102,7 @@ function pickStrategy(
   const annotations = schema as Record<string, unknown>;
   const explicitSensitive = annotations["x-sensitive"] === true;
   const explicitRedaction = annotations["x-redaction"] as
-    | RedactionStrategy
-    | undefined;
+    RedactionStrategy | undefined;
 
   if (explicitSensitive) {
     return explicitRedaction ?? "hash";

@@ -7,10 +7,7 @@ import type { ActorRef } from "../envelopes/actor.js";
 export type { ActorRef };
 
 export type CommandCausationType =
-  | "event"
-  | "command"
-  | "derived_artifact"
-  | "user_action";
+  "event" | "command" | "derived_artifact" | "user_action";
 
 export interface EventEnvelope<T extends string = string, P = unknown> {
   readonly event_id: string; // deterministic: hash(source_ref, source_native_id, payload_hash, occurred_at)

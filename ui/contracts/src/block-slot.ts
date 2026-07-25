@@ -1,10 +1,5 @@
 export type BlockSlot =
-  | "main"
-  | "left"
-  | "right"
-  | "header"
-  | "footer"
-  | "sidebar";
+  "main" | "left" | "right" | "header" | "footer" | "sidebar";
 
 export const VALID_SLOTS: readonly BlockSlot[] = [
   "main",

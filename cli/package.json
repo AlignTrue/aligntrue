@@ -13,18 +13,18 @@
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
-    "@aligntrue/core": "workspace:*",
-    "@aligntrue/host": "workspace:*",
+    "@aligntrue/connector-google-calendar": "workspace:*",
     "@aligntrue/connector-google-common": "workspace:*",
     "@aligntrue/connector-google-gmail": "workspace:*",
-    "@aligntrue/connector-google-calendar": "workspace:*",
-    "@aligntrue/pack-tasks": "workspace:*",
+    "@aligntrue/core": "workspace:*",
+    "@aligntrue/host": "workspace:*",
     "@aligntrue/pack-notes": "workspace:*",
     "@aligntrue/pack-suggestions": "workspace:*",
-    "@huggingface/transformers": "^3.0.0"
+    "@aligntrue/pack-tasks": "workspace:*",
+    "@huggingface/transformers": "^4.2.0"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3"
+    "@types/node": "^25.9.5"
   },
   "engines": {
     "node": ">=20"

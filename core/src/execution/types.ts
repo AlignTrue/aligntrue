@@ -64,11 +64,7 @@ export interface UsageReceiptContent {
 export type RunStatus = "running" | "completed" | "cancelled";
 
 export type StepStatus =
-  | "pending"
-  | "in_progress"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
+  "pending" | "in_progress" | "succeeded" | "failed" | "cancelled";
 
 export interface StepState {
   step_id: StepId;

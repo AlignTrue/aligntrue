@@ -1,10 +1,5 @@
 type JSONValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JSONValue[]
-  | { [key: string]: JSONValue };
+  string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
 /**
  * Deterministic JSON stringify with sorted object keys and no whitespace.

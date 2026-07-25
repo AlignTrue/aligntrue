@@ -12,9 +12,7 @@ export interface ConversionMeta {
    * How the conversion was initiated (user action, accepted suggestion, rule trigger).
    */
   conversion_method:
-    | "user_action"
-    | "ai_suggestion_accepted"
-    | "rule_triggered";
+    "user_action" | "ai_suggestion_accepted" | "rule_triggered";
   /**
    * Timestamp when conversion occurred.
    */

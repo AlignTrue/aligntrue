@@ -1,8 +1,5 @@
 export type InputArtifactType =
-  | "message"
-  | "projection"
-  | "document"
-  | "tool_output";
+  "message" | "projection" | "document" | "tool_output";
 
 export interface InputRef {
   readonly artifact_type: InputArtifactType;

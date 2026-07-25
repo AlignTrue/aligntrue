@@ -417,8 +417,7 @@ export function getLatestState(
       `SELECT version, content, content_hash FROM ui_state WHERE plan_id = ? ORDER BY version DESC LIMIT 1`,
     )
     .get(plan_id) as
-    | { version: number; content: string; content_hash: string }
-    | undefined;
+    { version: number; content: string; content_hash: string } | undefined;
   if (!row) return null;
   return {
     version: row.version,
@@ -436,8 +435,7 @@ export function getStateVersion(
       `SELECT version, content, content_hash FROM ui_state WHERE plan_id = ? AND version = ?`,
     )
     .get(plan_id, version) as
-    | { version: number; content: string; content_hash: string }
-    | undefined;
+    { version: number; content: string; content_hash: string } | undefined;
   if (!row) return null;
   return {
     version: row.version,

@@ -20,8 +20,7 @@ const {
 } = { ...Contracts, ...Emails };
 
 type ConvertPayload =
-  | Contracts.ConvertEmailToTaskPayload
-  | Contracts.ConvertEmailToNotePayload;
+  Contracts.ConvertEmailToTaskPayload | Contracts.ConvertEmailToNotePayload;
 
 function mapConversionMethod(
   method: ConvertPayload["conversion_method"],

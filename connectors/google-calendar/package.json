@@ -16,10 +16,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aligntrue/core": "workspace:*",
-    "@aligntrue/connector-google-common": "workspace:*"
+    "@aligntrue/connector-google-common": "workspace:*",
+    "@aligntrue/core": "workspace:*"
   },
   "devDependencies": {
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.10"
   }
 }

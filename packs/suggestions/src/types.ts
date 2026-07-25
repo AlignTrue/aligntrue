@@ -1,10 +1,7 @@
 import { Artifacts, Contracts, Emails } from "@aligntrue/core";
 
 export type SuggestionType =
-  | "task_triage"
-  | "note_hygiene"
-  | "email_conversion"
-  | "email_triage";
+  "task_triage" | "note_hygiene" | "email_conversion" | "email_triage";
 
 export type SuggestionStatus = "new" | "approved" | "rejected" | "snoozed";
 export type SuggestionAction = "archive" | "reply" | "flag" | "task" | "defer";
@@ -48,10 +45,7 @@ export interface EmailTriageDiff {
 }
 
 export type SuggestionDiff =
-  | TaskTriageDiff
-  | NoteHygieneDiff
-  | EmailConversionDiff
-  | EmailTriageDiff;
+  TaskTriageDiff | NoteHygieneDiff | EmailConversionDiff | EmailTriageDiff;
 
 export interface SuggestionContent {
   readonly suggestion_type: SuggestionType;

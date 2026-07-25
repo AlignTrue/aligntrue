@@ -8,12 +8,7 @@ export function canonicalize(value: unknown): string {
 }
 
 type JSONValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JSONValue[]
-  | { [key: string]: JSONValue };
+  string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
 function toJSONValue(value: unknown): JSONValue {
   if (

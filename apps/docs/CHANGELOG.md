@@ -1,6 +1,6 @@
 # @aligntrue/docs
 
-This package is not versioned. It deploys automatically to Vercel on every push to main.
+This package is not versioned. Vercel deployments are triggered manually.
 
 ## Notable Changes
 

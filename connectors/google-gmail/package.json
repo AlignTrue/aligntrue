@@ -20,12 +20,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aligntrue/core": "workspace:*",
-    "@aligntrue/connector-google-common": "workspace:*"
+    "@aligntrue/connector-google-common": "workspace:*",
+    "@aligntrue/core": "workspace:*"
   },
   "devDependencies": {
-    "@aligntrue/pack-tasks": "workspace:*",
     "@aligntrue/pack-notes": "workspace:*",
-    "vitest": "^4.0.18"
+    "@aligntrue/pack-tasks": "workspace:*",
+    "vitest": "^4.1.10"
   }
 }

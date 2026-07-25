@@ -15,12 +15,7 @@ import {
 import type { EmailStatus } from "../emails/types.js";
 
 export type ConversationChannel =
-  | "email"
-  | "slack"
-  | "imessage"
-  | "sms"
-  | "teams"
-  | "intercom";
+  "email" | "slack" | "imessage" | "sms" | "teams" | "intercom";
 
 export interface ConversationSummary {
   conversation_id: string;

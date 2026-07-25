@@ -13,11 +13,7 @@ export interface TrajectoryBudgets {
 }
 
 export type VolumePolicy =
-  | "emit"
-  | "sample"
-  | "summarize"
-  | "aggregate"
-  | "drop";
+  "emit" | "sample" | "summarize" | "aggregate" | "drop";
 
 export interface VolumeControlConfig {
   entity_read: VolumePolicy;
