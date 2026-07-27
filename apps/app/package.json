@@ -34,7 +34,7 @@
     "@radix-ui/react-tabs": "^1.1.21",
     "@radix-ui/react-tooltip": "^1.2.16",
     "@vercel/speed-insights": "^2.0.0",
-    "ai": "^6.0.235",
+    "ai": "^7.0.37",
     "ajv": "^8.20.0",
     "better-sqlite3": "^12.11.1",
     "class-variance-authority": "^0.7.1",
