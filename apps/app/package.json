@@ -11,7 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.88",
+    "@ai-sdk/openai": "^4.0.20",
     "@aligntrue/connector-google-calendar": "workspace:*",
     "@aligntrue/connector-google-common": "workspace:*",
     "@aligntrue/connector-google-gmail": "workspace:*",
