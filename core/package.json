@@ -61,7 +61,7 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.102",
+    "@ai-sdk/anthropic": "^4.0.21",
     "@ai-sdk/google": "^3.0.101",
     "@ai-sdk/openai": "^3.0.88",
     "@aligntrue/file-utils": "workspace:*",
