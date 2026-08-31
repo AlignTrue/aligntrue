@@ -26,6 +26,6 @@
   "devDependencies": {
     "@aligntrue/pack-notes": "workspace:*",
     "@aligntrue/pack-tasks": "workspace:*",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }

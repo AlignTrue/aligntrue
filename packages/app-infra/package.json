@@ -20,20 +20,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@upstash/redis": "^1.38.0",
-    "@vercel/blob": "^2.6.1",
-    "sharp": "^0.35.3"
+    "@upstash/redis": "^1.38.3",
+    "@vercel/blob": "^2.8.0",
+    "sharp": "^0.35.4"
   },
   "peerDependencies": {
     "next": ">=14",
     "react": ">=18"
   },
   "devDependencies": {
-    "@types/react": "^19.2.17",
-    "next": "^16.2.11",
+    "@types/react": "^19.2.18",
+    "next": "^16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=20"
