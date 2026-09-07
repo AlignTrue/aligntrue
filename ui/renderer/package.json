@@ -21,11 +21,11 @@
     "ai": "^6.0.235",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
