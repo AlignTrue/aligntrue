@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "json-schema": "^0.4.0",
-    "zod": "^4.4.3",
+    "zod": "^4.5.4",
     "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
