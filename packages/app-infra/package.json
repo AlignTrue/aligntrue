@@ -22,7 +22,7 @@
   "dependencies": {
     "@upstash/redis": "^1.38.0",
     "@vercel/blob": "^2.6.1",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.4"
   },
   "peerDependencies": {
     "next": ">=14",
