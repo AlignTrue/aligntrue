@@ -21,7 +21,7 @@
     "@aligntrue/pack-notes": "workspace:*",
     "@aligntrue/pack-suggestions": "workspace:*",
     "@aligntrue/pack-tasks": "workspace:*",
-    "@huggingface/transformers": "^4.2.0"
+    "@huggingface/transformers": "^4.3.1"
   },
   "devDependencies": {
     "@types/node": "^25.9.5"
